@@ -6,6 +6,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/yourusername/fitness-management/internal/models"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -59,6 +61,19 @@ func NewPostgresGORM() (*gorm.DB, error) {
 	log.Println("database connection established")
 
 	return db, nil
+}
+
+// SetupDatabase applies database migrations for all core models.
+func SetupDatabase(db *gorm.DB) error {
+	return db.AutoMigrate(
+		&models.User{},
+		&models.CoachProfile{},
+		&models.ServicePlan{},
+		&models.Subscription{},
+		&models.Transaction{},
+		&models.WorkoutPlan{},
+		&models.PlanItem{},
+	)
 }
 
 func getEnv(key, fallback string) string {
