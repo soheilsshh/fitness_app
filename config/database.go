@@ -77,6 +77,8 @@ func SetupDatabase(db *gorm.DB) error {
 		&models.NutritionProgram{},
 		&models.ProgramItem{},
 		&models.NutritionItem{},
+		&models.CheckIn{},
+		&models.Notification{},
 	)
 	if err != nil {
 		log.Printf("AutoMigrate encountered an error: %v\n", err)

@@ -14,6 +14,7 @@ type UserPhoto struct {
 	UploadedAt     time.Time `gorm:"not null"`
 	Type           string    `gorm:"size:50"`
 	Notes          string    `gorm:"type:text"`
+	CheckInDate    *time.Time `gorm:"index"` // nil for initial registration photos, non-nil for check-in photos
 }
 
 

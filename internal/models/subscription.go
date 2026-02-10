@@ -8,8 +8,11 @@ import (
 
 type Subscription struct {
 	gorm.Model
-	UserID        uint      `gorm:"not null;index"`
-	ServicePlanID uint      `gorm:"not null;index"`
-	StartsAt      time.Time `gorm:"not null"`
-	EndsAt        *time.Time
+	UserID              uint       `gorm:"not null;index"`
+	ServicePlanID       uint       `gorm:"not null;index"`
+	StartsAt            time.Time  `gorm:"not null"`
+	EndsAt              *time.Time
+	LastCheckInDate     *time.Time
+	NextCheckInDueDate  *time.Time
+	CheckinFrequencyDays int       `gorm:"default:7"`
 }
