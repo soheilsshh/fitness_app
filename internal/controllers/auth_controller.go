@@ -59,6 +59,18 @@ type messageResponse struct {
 
 // Handlers
 
+// Register godoc
+// @Summary Register new user
+// @Description Register a new user with name, email, phone and password
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body registerRequest true "Register request"
+// @Success 201 {object} authResponse
+// @Failure 400 {object} map[string]string
+// @Failure 409 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /auth/register [post]
 func (h *AuthController) Register(c *gin.Context) {
 	var req registerRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -94,6 +106,18 @@ func (h *AuthController) Register(c *gin.Context) {
 	})
 }
 
+// LoginWithPassword godoc
+// @Summary Login with email or phone and password
+// @Description Login using identifier (email or phone) and password
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body loginPasswordRequest true "Login request"
+// @Success 200 {object} authResponse
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /auth/login/password [post]
 func (h *AuthController) LoginWithPassword(c *gin.Context) {
 	var req loginPasswordRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -124,6 +148,17 @@ func (h *AuthController) LoginWithPassword(c *gin.Context) {
 	})
 }
 
+// RequestOTP godoc
+// @Summary Request OTP for phone
+// @Description Request a 6-digit OTP sent to the given phone (currently logged only)
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body otpRequest true "OTP request"
+// @Success 200 {object} messageResponse
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /auth/otp/request [post]
 func (h *AuthController) RequestOTP(c *gin.Context) {
 	var req otpRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -139,6 +174,18 @@ func (h *AuthController) RequestOTP(c *gin.Context) {
 	c.JSON(http.StatusOK, messageResponse{Message: "کد ارسال شد"})
 }
 
+// VerifyOTP godoc
+// @Summary Verify OTP for phone login
+// @Description Verify OTP code for the given phone; creates user if needed and returns tokens
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body otpVerifyRequest true "OTP verify request"
+// @Success 200 {object} authResponse
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /auth/otp/verify [post]
 func (h *AuthController) VerifyOTP(c *gin.Context) {
 	var req otpVerifyRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

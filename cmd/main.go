@@ -6,12 +6,20 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 
 	"github.com/yourusername/fitness-management/config"
+	_ "github.com/yourusername/fitness-management/docs"
 	"github.com/yourusername/fitness-management/internal/controllers"
 	"github.com/yourusername/fitness-management/internal/repository"
 	"github.com/yourusername/fitness-management/internal/service"
 )
+
+// @title Fitness CMS API
+// @version 1.0
+// @description Fitness Management System API documentation.
+// @BasePath /
 
 // Server is the base application server that wires routes, middleware, and dependencies.
 type Server struct {
@@ -52,6 +60,9 @@ func NewServer() *Server {
 	router.POST("/auth/login/password", authController.LoginWithPassword)
 	router.POST("/auth/otp/request", authController.RequestOTP)
 	router.POST("/auth/otp/verify", authController.VerifyOTP)
+
+	// Swagger endpoint
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	return &Server{
 		engine: router,
