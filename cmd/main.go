@@ -12,6 +12,7 @@ import (
 	"github.com/yourusername/fitness-management/config"
 	_ "github.com/yourusername/fitness-management/docs"
 	"github.com/yourusername/fitness-management/internal/controllers"
+	"github.com/yourusername/fitness-management/internal/middleware"
 	"github.com/yourusername/fitness-management/internal/repository"
 	"github.com/yourusername/fitness-management/internal/service"
 )
@@ -60,6 +61,15 @@ func NewServer() *Server {
 	router.POST("/auth/login/password", authController.LoginWithPassword)
 	router.POST("/auth/otp/request", authController.RequestOTP)
 	router.POST("/auth/otp/verify", authController.VerifyOTP)
+
+	// Protected auth routes
+	authGroup := router.Group("/auth")
+	authGroup.Use(middleware.AuthMiddleware())
+	{
+		authGroup.POST("/logout", authController.Logout)
+		authGroup.GET("/me", authController.Me)
+		authGroup.POST("/change-password", authController.ChangePassword)
+	}
 
 	// Swagger endpoint
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

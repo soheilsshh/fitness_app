@@ -2,9 +2,11 @@ package controllers
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/yourusername/fitness-management/internal/middleware"
 	"github.com/yourusername/fitness-management/internal/service"
 )
 
@@ -55,6 +57,24 @@ type authResponse struct {
 
 type messageResponse struct {
 	Message string `json:"message"`
+}
+
+type logoutRequest struct {
+	RefreshToken string `json:"refresh_token"`
+}
+
+type meResponse struct {
+	ID        uint      `json:"id"`
+	Name      string    `json:"name"`
+	Email     string    `json:"email"`
+	Phone     string    `json:"phone"`
+	Role      string    `json:"role"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+type changePasswordRequest struct {
+	CurrentPassword string `json:"current_password" binding:"required"`
+	NewPassword     string `json:"new_password" binding:"required,min=8"`
 }
 
 // Handlers
@@ -214,4 +234,127 @@ func (h *AuthController) VerifyOTP(c *gin.Context) {
 		AccessToken:  result.AccessToken,
 		RefreshToken: result.RefreshToken,
 	})
+}
+
+// Logout godoc
+// @Summary Logout current user
+// @Description Invalidate current user's refresh tokens
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body logoutRequest false "Optional refresh token to revoke"
+// @Success 200 {object} messageResponse
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /auth/logout [post]
+func (h *AuthController) Logout(c *gin.Context) {
+	userIDVal, exists := c.Get(middleware.ContextUserIDKey)
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	userID, ok := userIDVal.(uint)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid user id in context"})
+		return
+	}
+
+	var req logoutRequest
+	// refresh_token is optional; ignore binding errors (e.g., empty body).
+	_ = c.ShouldBindJSON(&req)
+
+	if err := h.authService.Logout(c.Request.Context(), userID, req.RefreshToken); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, messageResponse{Message: "با موفقیت خارج شدید"})
+}
+
+// Me godoc
+// @Summary Get current user profile
+// @Description Returns profile of the currently authenticated user
+// @Tags auth
+// @Produce json
+// @Success 200 {object} meResponse
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /auth/me [get]
+func (h *AuthController) Me(c *gin.Context) {
+	userIDVal, exists := c.Get(middleware.ContextUserIDKey)
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	userID, ok := userIDVal.(uint)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid user id in context"})
+		return
+	}
+
+	user, err := h.authService.GetMe(c.Request.Context(), userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	resp := meResponse{
+		ID:        user.ID,
+		Name:      user.Name,
+		Email:     user.Email,
+		Phone:     user.Phone,
+		Role:      user.Role,
+		CreatedAt: user.CreatedAt,
+	}
+
+	c.JSON(http.StatusOK, resp)
+}
+
+// ChangePassword godoc
+// @Summary Change current user's password
+// @Description Change password by providing current and new password
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body changePasswordRequest true "Change password request"
+// @Success 200 {object} messageResponse
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /auth/change-password [post]
+func (h *AuthController) ChangePassword(c *gin.Context) {
+	userIDVal, exists := c.Get(middleware.ContextUserIDKey)
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	userID, ok := userIDVal.(uint)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid user id in context"})
+		return
+	}
+
+	var req changePasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := h.authService.ChangePassword(c.Request.Context(), userID, req.CurrentPassword, req.NewPassword); err != nil {
+		switch err {
+		case service.ErrInvalidPassword:
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "current password is incorrect"})
+			return
+		default:
+			// If it's a validation error coming from service
+			if err.Error() == "new password must be at least 8 characters" {
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+	}
+
+	c.JSON(http.StatusOK, messageResponse{Message: "رمز عبور با موفقیت تغییر یافت"})
 }

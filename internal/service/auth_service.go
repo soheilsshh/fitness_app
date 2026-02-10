@@ -32,6 +32,9 @@ type AuthService interface {
 	LoginWithPassword(ctx context.Context, identifier, password string) (*AuthResult, error)
 	RequestOTP(ctx context.Context, phone string) error
 	VerifyOTP(ctx context.Context, phone, code string) (*AuthResult, error)
+	Logout(ctx context.Context, userID uint, refreshToken string) error
+	GetMe(ctx context.Context, userID uint) (*models.User, error)
+	ChangePassword(ctx context.Context, userID uint, currentPassword, newPassword string) error
 }
 
 type authService struct {
@@ -53,6 +56,7 @@ var (
 	ErrPhoneAlreadyExists = errors.New("phone already exists")
 	ErrInvalidCredentials = errors.New("invalid credentials")
 	ErrInvalidOTP         = errors.New("invalid or expired otp code")
+	ErrInvalidPassword    = errors.New("current password is incorrect")
 )
 
 // NewAuthService constructs a new AuthService.
@@ -197,6 +201,62 @@ func (s *authService) VerifyOTP(ctx context.Context, phone, code string) (*AuthR
 	}
 
 	return s.generateTokens(ctx, user)
+}
+
+func (s *authService) Logout(ctx context.Context, userID uint, refreshToken string) error {
+	// If a specific refresh token is provided, delete only that one.
+	if strings.TrimSpace(refreshToken) != "" {
+		if err := s.refreshTokenRepo.DeleteByUserIDAndToken(ctx, userID, refreshToken); err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			return err
+		}
+		return nil
+	}
+
+	// Otherwise, delete all refresh tokens for this user.
+	if err := s.refreshTokenRepo.DeleteByUserID(ctx, userID); err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return err
+	}
+	return nil
+}
+
+func (s *authService) GetMe(ctx context.Context, userID uint) (*models.User, error) {
+	return s.userRepo.FindByID(ctx, userID)
+}
+
+func (s *authService) ChangePassword(ctx context.Context, userID uint, currentPassword, newPassword string) error {
+	currentPassword = strings.TrimSpace(currentPassword)
+	newPassword = strings.TrimSpace(newPassword)
+
+	if len(newPassword) < 8 {
+		return errors.New("new password must be at least 8 characters")
+	}
+
+	user, err := s.userRepo.FindByID(ctx, userID)
+	if err != nil {
+		return err
+	}
+
+	// Verify current password
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(currentPassword)); err != nil {
+		return ErrInvalidPassword
+	}
+
+	// Hash and update new password
+	hashed, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	if err := s.userRepo.UpdatePassword(ctx, user.ID, string(hashed)); err != nil {
+		return err
+	}
+
+	// Invalidate all refresh tokens for this user (best practice)
+	if err := s.refreshTokenRepo.DeleteByUserID(ctx, user.ID); err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return err
+	}
+
+	return nil
 }
 
 func (s *authService) generateTokens(ctx context.Context, user *models.User) (*AuthResult, error) {
