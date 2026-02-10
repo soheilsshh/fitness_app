@@ -21,18 +21,16 @@ import (
 //   - DB_USER
 //   - DB_PASSWORD
 //   - DB_NAME
-//   - DB_SSLMODE (optional, default: disable)
 func NewPostgresGORM() (*gorm.DB, error) {
 	host := getEnv("DB_HOST", "localhost")
 	port := getEnv("DB_PORT", "5432")
 	user := getEnv("DB_USER", "postgres")
 	password := getEnv("DB_PASSWORD", "password")
 	dbName := getEnv("DB_NAME", "fitness_db")
-	sslMode := getEnv("DB_SSLMODE", "disable")
 
 	dsn := fmt.Sprintf(
-		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
-		host, port, user, password, dbName, sslMode,
+		"host=%s port=%s user=%s password=%s dbname=%s",
+		host, port, user, password, dbName,
 	)
 
 	gormConfig := &gorm.Config{
