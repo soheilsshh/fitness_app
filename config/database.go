@@ -71,6 +71,7 @@ func SetupDatabase(db *gorm.DB) error {
 		&models.ServicePlan{},
 		&models.Subscription{},
 		&models.Transaction{},
+		&models.RefreshToken{},
 		&models.UserPhoto{},
 		&models.WorkoutProgram{},
 		&models.NutritionProgram{},

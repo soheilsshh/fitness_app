@@ -8,8 +8,7 @@ import (
 	"github.com/joho/godotenv"
 
 	"github.com/yourusername/fitness-management/config"
-	"github.com/yourusername/fitness-management/internal/handler"
-	"github.com/yourusername/fitness-management/internal/middleware"
+	"github.com/yourusername/fitness-management/internal/controllers"
 	"github.com/yourusername/fitness-management/internal/repository"
 	"github.com/yourusername/fitness-management/internal/service"
 )
@@ -40,29 +39,19 @@ func NewServer() *Server {
 
 	// Initialize repositories
 	userRepo := repository.NewUserRepository(db)
+	refreshTokenRepo := repository.NewRefreshTokenRepository(db)
 
 	// Initialize services
-	authService := service.NewAuthService(userRepo)
+	authService := service.NewAuthService(userRepo, refreshTokenRepo)
 
 	// Initialize handlers
-	authHandler := handler.NewAuthHandler(authService)
+	authController := controllers.NewAuthController(authService)
 
-	// Public routes
-	api := router.Group("/api")
-	v1 := api.Group("/v1")
-
-	authGroup := v1.Group("/auth")
-	{
-		authGroup.POST("/signup", authHandler.SignUp)
-		authGroup.POST("/login", authHandler.Login)
-	}
-
-	// Protected example group (for future expansion)
-	protected := v1.Group("/protected")
-	protected.Use(middleware.JWTAuthMiddleware())
-	{
-		protected.GET("/me", authHandler.Me)
-	}
+	// Auth routes
+	router.POST("/auth/register", authController.Register)
+	router.POST("/auth/login/password", authController.LoginWithPassword)
+	router.POST("/auth/otp/request", authController.RequestOTP)
+	router.POST("/auth/otp/verify", authController.VerifyOTP)
 
 	return &Server{
 		engine: router,
