@@ -1,19 +1,14 @@
 package models
 
-import "time"
+import "gorm.io/gorm"
 
-// ServicePlan represents a pricing/feature plan offered by the coach.
 type ServicePlan struct {
-	ID          uint   `gorm:"primaryKey" json:"id"`
-	Name        string `gorm:"size:255;not null;uniqueIndex" json:"name"`
-	Description string `gorm:"type:text" json:"description"`
-	PriceCents  int64  `gorm:"not null" json:"price_cents"`
-	IsActive    bool   `gorm:"not null;default:true" json:"is_active"`
-
-	Subscriptions []Subscription `gorm:"constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;" json:"subscriptions,omitempty"`
-
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	gorm.Model
+	Name         string `gorm:"size:255;uniqueIndex;not null"`
+	Description  string `gorm:"type:text"`
+	PriceCents   int64  `gorm:"not null"`
+	DurationDays int    `gorm:"not null"`
+	Type         string `gorm:"size:50;not null"`
+	IsActive     bool   `gorm:"not null;default:true"`
 }
-
 

@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 
 	"github.com/yourusername/fitness-management/config"
 	"github.com/yourusername/fitness-management/internal/handler"
@@ -23,10 +24,18 @@ func NewServer() *Server {
 	// Initialize Gin router
 	router := gin.Default()
 
+	// Load environment variables from .env file (if present)
+	if err := godotenv.Load(); err != nil {
+		log.Println("no .env file found or failed to load, falling back to environment variables")
+	}
+
 	// Initialize database
 	db, err := config.NewPostgresGORM()
 	if err != nil {
 		log.Fatalf("failed to initialize database: %v", err)
+	}
+	if err := config.SetupDatabase(db); err != nil {
+		log.Fatalf("failed to migrate database: %v", err)
 	}
 
 	// Initialize repositories

@@ -71,8 +71,11 @@ func SetupDatabase(db *gorm.DB) error {
 		&models.ServicePlan{},
 		&models.Subscription{},
 		&models.Transaction{},
-		&models.WorkoutPlan{},
-		&models.PlanItem{},
+		&models.UserPhoto{},
+		&models.WorkoutProgram{},
+		&models.NutritionProgram{},
+		&models.ProgramItem{},
+		&models.NutritionItem{},
 	)
 }
 
