@@ -34,11 +34,19 @@ func NewServer() *Server {
 
 	// Load environment variables from .env file (if present)
 	if err := godotenv.Load(); err != nil {
-		log.Println("no .env file found or failed to load, falling back to environment variables")
+		log.Println("no .env file found or failed to load, falling back to existing environment variables")
+	} else {
+		log.Println(".env file loaded successfully")
+		log.Printf("DB_HOST=%s DB_PORT=%s DB_USER=%s DB_NAME=%s\n",
+			os.Getenv("DB_HOST"),
+			os.Getenv("DB_PORT"),
+			os.Getenv("DB_USER"),
+			os.Getenv("DB_NAME"),
+		)
 	}
 
 	// Initialize database
-	db, err := config.NewPostgresGORM()
+	db, err := config.NewMySQLGORM()
 	if err != nil {
 		log.Fatalf("failed to initialize database: %v", err)
 	}
