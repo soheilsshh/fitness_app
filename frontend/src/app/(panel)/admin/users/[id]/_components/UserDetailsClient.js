@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 import {
   FiPhone,
   FiCalendar,
@@ -12,10 +12,8 @@ import {
   FiClipboard,
   FiChevronLeft,
 } from "react-icons/fi";
-import { mockUsers } from "../../_components/usersMock";
-import { userProgramsMockByUserId } from "./userProgramsMock";
+import { api } from "@/lib/axios/client";
 import UserBodySection from "./UserBodySection";
-import { userBodyMockByUserId } from "./userBodyMock";
 
 function cn(...xs) {
   return xs.filter(Boolean).join(" ");
@@ -35,19 +33,47 @@ function formatToman(n) {
 }
 
 export default function UserDetailsClient({ id }) {
-  const user = useMemo(() => mockUsers.find((u) => u.id === id), [id]);
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const programs = useMemo(() => {
-    return userProgramsMockByUserId[id] || [];
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchDetails() {
+      setLoading(true);
+      try {
+        const res = await api.get(`/admin/users/${id}`);
+        if (cancelled) return;
+        setData(res.data || null);
+      } catch (error) {
+        if (!cancelled) {
+          // eslint-disable-next-line no-console
+          console.error("Failed to load admin user details", error);
+          setData(null);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    if (id) {
+      fetchDetails();
+    }
+
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
-  const body = useMemo(() => {
+  if (loading) {
     return (
-      userBodyMockByUserId[id] || { heightCm: null, weightKg: null, photos: [] }
+      <div className="rounded-[26px] border border-white/10 bg-white/5 p-6 text-sm text-zinc-300">
+        در حال بارگذاری جزئیات کاربر...
+      </div>
     );
-  }, [id]);
+  }
 
-  if (!user) {
+  if (!data || !data.user) {
     return (
       <div className="rounded-[26px] border border-white/10 bg-white/5 p-6 text-sm text-zinc-300">
         کاربر پیدا نشد.
@@ -55,6 +81,9 @@ export default function UserDetailsClient({ id }) {
     );
   }
 
+  const user = data.user;
+  const programs = Array.isArray(data.programs) ? data.programs : [];
+  const body = data.body || {};
   const activeCount = programs.filter((p) => p.status === "active").length;
 
   return (
