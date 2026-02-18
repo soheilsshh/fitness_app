@@ -22,6 +22,10 @@ import (
 // @version 1.0
 // @description Fitness Management System API documentation.
 // @BasePath /
+//
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 
 // Server is the base application server that wires routes, middleware, and dependencies.
 type Server struct {

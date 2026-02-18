@@ -625,4 +625,9 @@ paths:
       summary: Register new user
       tags:
       - auth
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"
