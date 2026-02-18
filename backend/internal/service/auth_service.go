@@ -35,6 +35,8 @@ type AuthService interface {
 	Logout(ctx context.Context, userID uint, refreshToken string) error
 	GetMe(ctx context.Context, userID uint) (*models.User, error)
 	ChangePassword(ctx context.Context, userID uint, currentPassword, newPassword string) error
+	RequestPasswordResetOTP(ctx context.Context, phone string) error
+	ResetPasswordWithOTP(ctx context.Context, phone, code, newPassword string) error
 }
 
 type authService struct {
@@ -252,6 +254,60 @@ func (s *authService) ChangePassword(ctx context.Context, userID uint, currentPa
 	}
 
 	// Invalidate all refresh tokens for this user (best practice)
+	if err := s.refreshTokenRepo.DeleteByUserID(ctx, user.ID); err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return err
+	}
+
+	return nil
+}
+
+func (s *authService) RequestPasswordResetOTP(ctx context.Context, phone string) error {
+	// For now password-reset OTP is the same as login OTP.
+	return s.RequestOTP(ctx, phone)
+}
+
+func (s *authService) ResetPasswordWithOTP(ctx context.Context, phone, code, newPassword string) error {
+	phone = strings.TrimSpace(phone)
+	code = strings.TrimSpace(code)
+	newPassword = strings.TrimSpace(newPassword)
+
+	if phone == "" || code == "" {
+		return ErrInvalidOTP
+	}
+	if len(newPassword) < 8 {
+		return errors.New("new password must be at least 8 characters")
+	}
+
+	// Validate and consume OTP
+	s.otpMutex.Lock()
+	entry, ok := s.otpStore[phone]
+	if !ok || time.Now().After(entry.ExpiresAt) || entry.Code != code {
+		s.otpMutex.Unlock()
+		return ErrInvalidOTP
+	}
+	delete(s.otpStore, phone)
+	s.otpMutex.Unlock()
+
+	// Find user by phone
+	user, err := s.userRepo.FindByPhone(ctx, phone)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrInvalidCredentials
+		}
+		return err
+	}
+
+	// Hash and update new password
+	hashed, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	if err := s.userRepo.UpdatePassword(ctx, user.ID, string(hashed)); err != nil {
+		return err
+	}
+
+	// Invalidate all refresh tokens for this user
 	if err := s.refreshTokenRepo.DeleteByUserID(ctx, user.ID); err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return err
 	}

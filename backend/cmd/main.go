@@ -74,6 +74,8 @@ func NewServer() *Server {
 	router.POST("/auth/login/password", authController.LoginWithPassword)
 	router.POST("/auth/otp/request", authController.RequestOTP)
 	router.POST("/auth/otp/verify", authController.VerifyOTP)
+	router.POST("/auth/forgot/send-otp", authController.ForgotSendOTP)
+	router.POST("/auth/reset-password", authController.ResetPasswordWithOTP)
 
 	// Protected auth routes
 	authGroup := router.Group("/auth")

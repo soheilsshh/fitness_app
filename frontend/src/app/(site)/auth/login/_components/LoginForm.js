@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { FiLock, FiSmartphone, FiKey, FiArrowLeft, FiEdit3 } from "react-icons/fi";
 import {
@@ -10,10 +11,11 @@ import {
   toastError,
   toastSuccess,
 } from "../../_components/helpers";
-
-const DEMO_OTP = "12345"; // demo only
+import { api } from "@/lib/axios/client";
 
 export default function LoginForm() {
+  const router = useRouter();
+
   const [mode, setMode] = useState("password"); // "password" | "otp"
 
   const [phone, setPhone] = useState("");
@@ -32,17 +34,43 @@ export default function LoginForm() {
     setPhoneLocked(false);
   };
 
+  const handleAuthSuccess = (data) => {
+    const { access_token, refresh_token, user } = data || {};
+    if (access_token) {
+      window.localStorage.setItem("access_token", access_token);
+    }
+    if (refresh_token) {
+      window.localStorage.setItem("refresh_token", refresh_token);
+    }
+    if (user?.role) {
+      window.localStorage.setItem("user_role", user.role);
+    }
+    if (user?.name) {
+      window.localStorage.setItem("user_name", user.name);
+    }
+
+    const target =
+      user?.role === "admin"
+        ? "/admin/dashboard"
+        : "/user/my-programs";
+    router.replace(target);
+  };
+
   const onSendOtp = async () => {
     if (!isValidIranPhone(phone)) {
       return toastError("شماره نامعتبر", "شماره موبایل را با فرمت 09xxxxxxxxx وارد کنید.");
     }
 
-    // TODO: axios.post('/auth/send-otp', { phone })
-    setOtpSent(true);
-    setPhoneLocked(true);
-    setOtp("");
-
-    return toastSuccess("ارسال شد", "کد یکبار مصرف ارسال شد (دمو: 12345).");
+    try {
+      await api.post("/auth/otp/request", { phone });
+      setOtpSent(true);
+      setPhoneLocked(true);
+      setOtp("");
+      return toastSuccess("ارسال شد", "کد یکبار مصرف ارسال شد.");
+    } catch (error) {
+      const msg = error?.response?.data?.error || "خطا در ارسال کد.";
+      return toastError("خطا", msg);
+    }
   };
 
   const onLoginPassword = async () => {
@@ -53,8 +81,17 @@ export default function LoginForm() {
       return toastError("رمز عبور کوتاه است", "رمز عبور باید حداقل ۶ کاراکتر باشد.");
     }
 
-    // TODO: axios.post('/auth/login', { phone, password })
-    return toastSuccess("ورود موفق", "با موفقیت وارد شدید (دمو).");
+    try {
+      const res = await api.post("/auth/login/password", {
+        identifier: phone,
+        password,
+      });
+      await toastSuccess("ورود موفق", "با موفقیت وارد شدید.");
+      handleAuthSuccess(res.data);
+    } catch (error) {
+      const msg = error?.response?.data?.error || "ورود ناموفق بود.";
+      return toastError("خطا در ورود", msg);
+    }
   };
 
   const onLoginOtp = async () => {
@@ -67,12 +104,18 @@ export default function LoginForm() {
     if (!isValidOtp(otp)) {
       return toastError("کد نامعتبر", "کد را به صورت عددی وارد کنید.");
     }
-    if (otp !== DEMO_OTP) {
-      return toastError("کد اشتباه است", "کد وارد شده صحیح نیست (دمو: 12345).");
-    }
 
-    // TODO: axios.post('/auth/login-otp', { phone, otp })
-    return toastSuccess("ورود موفق", "با OTP وارد شدید (دمو).");
+    try {
+      const res = await api.post("/auth/otp/verify", {
+        phone,
+        code: otp,
+      });
+      await toastSuccess("ورود موفق", "با OTP وارد شدید.");
+      handleAuthSuccess(res.data);
+    } catch (error) {
+      const msg = error?.response?.data?.error || "کد وارد شده صحیح نیست یا منقضی شده است.";
+      return toastError("OTP نامعتبر", msg);
+    }
   };
 
   const switchMode = (nextMode) => {

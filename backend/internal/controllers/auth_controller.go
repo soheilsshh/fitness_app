@@ -41,6 +41,16 @@ type otpVerifyRequest struct {
 	Code  string `json:"code" binding:"required"`
 }
 
+type forgotSendOTPRequest struct {
+	Phone string `json:"phone" binding:"required"`
+}
+
+type resetPasswordWithOTPRequest struct {
+	Phone       string `json:"phone" binding:"required"`
+	Code        string `json:"code" binding:"required"`
+	NewPassword string `json:"new_password" binding:"required,min=8"`
+}
+
 type authUserResponse struct {
 	ID    uint   `json:"id"`
 	Name  string `json:"name"`
@@ -234,6 +244,51 @@ func (h *AuthController) VerifyOTP(c *gin.Context) {
 		AccessToken:  result.AccessToken,
 		RefreshToken: result.RefreshToken,
 	})
+}
+
+// ForgotSendOTP sends an OTP for password reset.
+func (h *AuthController) ForgotSendOTP(c *gin.Context) {
+	var req forgotSendOTPRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := h.authService.RequestPasswordResetOTP(c.Request.Context(), req.Phone); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, messageResponse{Message: "کد بازیابی ارسال شد"})
+}
+
+// ResetPasswordWithOTP resets the user's password using phone + OTP.
+func (h *AuthController) ResetPasswordWithOTP(c *gin.Context) {
+	var req resetPasswordWithOTPRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := h.authService.ResetPasswordWithOTP(c.Request.Context(), req.Phone, req.Code, req.NewPassword); err != nil {
+		switch err {
+		case service.ErrInvalidOTP:
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "کد وارد شده نامعتبر یا منقضی شده است"})
+			return
+		case service.ErrInvalidCredentials:
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "کاربری با این شماره یافت نشد"})
+			return
+		default:
+			if err.Error() == "new password must be at least 8 characters" {
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+	}
+
+	c.JSON(http.StatusOK, messageResponse{Message: "رمز عبور با موفقیت تغییر یافت"})
 }
 
 // Logout godoc

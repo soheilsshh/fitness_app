@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { FiUser, FiSmartphone, FiKey, FiLock, FiArrowLeft, FiEdit3 } from "react-icons/fi";
 import {
@@ -10,10 +11,11 @@ import {
   toastError,
   toastSuccess,
 } from "../../_components/helpers";
-
-const DEMO_OTP = "12345"; // demo only
+import { api } from "@/lib/axios/client";
 
 export default function RegisterForm() {
+  const router = useRouter();
+
   const [phone, setPhone] = useState("");
   const [phoneLocked, setPhoneLocked] = useState(false);
 
@@ -37,23 +39,49 @@ export default function RegisterForm() {
       return toastError("شماره نامعتبر", "شماره موبایل را با فرمت 09xxxxxxxxx وارد کنید.");
     }
 
-    // TODO: axios.post('/auth/send-otp', { phone })
-    setOtpSent(true);
-    setPhoneLocked(true);
-    setOtp("");
-
-    return toastSuccess("ارسال شد", "کد تایید ارسال شد (دمو: 12345).");
+    // در نسخه فعلی، OTP سمت سرور تولید و لاگ می‌شود.
+    try {
+      await api.post("/auth/otp/request", { phone });
+      setOtpSent(true);
+      setPhoneLocked(true);
+      setOtp("");
+      return toastSuccess("ارسال شد", "کد تایید ارسال شد.");
+    } catch (error) {
+      const msg = error?.response?.data?.error || "خطا در ارسال کد.";
+      return toastError("خطا", msg);
+    }
   };
 
   const verifyOtp = async () => {
     if (!otpSent) return toastError("کد ارسال نشده", "ابتدا روی «ارسال رمز» بزنید.");
     if (!isValidOtp(otp)) return toastError("کد نامعتبر", "کد را صحیح وارد کنید.");
-    if (otp !== DEMO_OTP) return toastError("کد اشتباه است", "کد وارد شده صحیح نیست (دمو: 12345).");
 
-    // TODO: axios.post('/auth/verify-otp', { phone, otp })
+    // در این مرحله فقط سمت کلاینت تأیید اولیه انجام می‌دهیم؛
+    // رمز نهایی هنگام ثبت‌نام در بک‌اند بررسی می‌شود.
     setOtpVerified(true);
-
     return toastSuccess("تایید شد", "شماره شما تایید شد. حالا اطلاعات را کامل کنید.");
+  };
+
+  const handleAuthSuccess = (data) => {
+    const { access_token, refresh_token, user } = data || {};
+    if (access_token) {
+      window.localStorage.setItem("access_token", access_token);
+    }
+    if (refresh_token) {
+      window.localStorage.setItem("refresh_token", refresh_token);
+    }
+    if (user?.role) {
+      window.localStorage.setItem("user_role", user.role);
+    }
+    if (user?.name) {
+      window.localStorage.setItem("user_name", user.name);
+    }
+
+    const target =
+      user?.role === "admin"
+        ? "/admin/dashboard"
+        : "/user/my-programs";
+    router.replace(target);
   };
 
   const submitRegister = async () => {
@@ -65,8 +93,23 @@ export default function RegisterForm() {
       return toastError("رمز عبور کوتاه است", "رمز عبور باید حداقل ۶ کاراکتر باشد.");
     }
 
-    // TODO: axios.post('/auth/register', { phone, firstName, lastName, password })
-    return toastSuccess("ثبت‌نام موفق", "حساب شما ساخته شد (دمو).");
+    const name = `${firstName.trim()} ${lastName.trim()}`.trim();
+    // ایمیل را بر اساس شماره به‌صورت داخلی می‌سازیم تا با بک‌اند سازگار باشد.
+    const email = `${phone}@phone.local`;
+
+    try {
+      const res = await api.post("/auth/register", {
+        name,
+        email,
+        phone,
+        password,
+      });
+      await toastSuccess("ثبت‌نام موفق", "حساب شما ساخته شد.");
+      handleAuthSuccess(res.data);
+    } catch (error) {
+      const msg = error?.response?.data?.error || "ثبت‌نام ناموفق بود.";
+      return toastError("خطا در ثبت‌نام", msg);
+    }
   };
 
   return (
@@ -132,9 +175,6 @@ export default function RegisterForm() {
                 className="w-full rounded-2xl border border-white/10 bg-zinc-950/35 py-3 pl-4 pr-11 text-sm text-white placeholder:text-zinc-500 outline-none focus:border-emerald-400/40"
                 inputMode="numeric"
               />
-              <div className="mt-2 text-[11px] text-zinc-500">
-                Demo OTP: <span className="text-zinc-300">12345</span>
-              </div>
             </div>
 
             <div className="flex items-center justify-between">

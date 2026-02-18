@@ -10,8 +10,7 @@ import {
   toastError,
   toastSuccess,
 } from "../../_components/helpers";
-
-const DEMO_OTP = "12345"; // demo only
+import { api } from "@/lib/axios/client";
 
 export default function ForgotForm() {
   const [phone, setPhone] = useState("");
@@ -38,20 +37,23 @@ export default function ForgotForm() {
       return toastError("شماره نامعتبر", "شماره موبایل را با فرمت 09xxxxxxxxx وارد کنید.");
     }
 
-    // TODO: axios.post('/auth/forgot/send-otp', { phone })
-    setOtpSent(true);
-    setPhoneLocked(true);
-    setOtp("");
-
-    return toastSuccess("ارسال شد", "کد بازیابی ارسال شد (دمو: 12345).");
+    try {
+      await api.post("/auth/forgot/send-otp", { phone });
+      setOtpSent(true);
+      setPhoneLocked(true);
+      setOtp("");
+      return toastSuccess("ارسال شد", "کد بازیابی ارسال شد.");
+    } catch (error) {
+      const msg = error?.response?.data?.error || "خطا در ارسال کد.";
+      return toastError("خطا", msg);
+    }
   };
 
   const verifyOtp = async () => {
     if (!otpSent) return toastError("کد ارسال نشده", "ابتدا روی «ارسال رمز» بزنید.");
     if (!isValidOtp(otp)) return toastError("کد نامعتبر", "کد را صحیح وارد کنید.");
-    if (otp !== DEMO_OTP) return toastError("کد اشتباه است", "کد وارد شده صحیح نیست (دمو: 12345).");
 
-    // TODO: axios.post('/auth/forgot/verify-otp', { phone, otp })
+    // در این مرحله فقط تأیید اولیه انجام می‌شود؛ صحت نهایی کد هنگام تغییر رمز چک می‌شود.
     setOtpVerified(true);
     return toastSuccess("تایید شد", "حالا رمز جدید را تعیین کنید.");
   };
@@ -61,13 +63,23 @@ export default function ForgotForm() {
     if (newPass.length < 6) return toastError("رمز کوتاه است", "رمز باید حداقل ۶ کاراکتر باشد.");
     if (newPass !== newPass2) return toastError("عدم تطابق", "رمزها یکسان نیستند.");
 
-    // TODO: axios.post('/auth/reset-password', { phone, otp, newPassword: newPass })
-    return toastSuccess("موفق", "رمز عبور با موفقیت تغییر کرد (دمو).");
+    try {
+      await api.post("/auth/reset-password", {
+        phone,
+        code: otp,
+        new_password: newPass,
+      });
+      await toastSuccess("موفق", "رمز عبور با موفقیت تغییر کرد.");
+      resetOtpFlow();
+    } catch (error) {
+      const msg = error?.response?.data?.error || "تغییر رمز ناموفق بود.";
+      return toastError("خطا در تغییر رمز", msg);
+    }
   };
 
   return (
     <div>
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify_between">
         <h1 className="text-lg font-extrabold">فراموشی رمز عبور</h1>
         <Link href="/auth/login" className="text-sm text-emerald-200 hover:text-emerald-100">
           برگشت به ورود
@@ -110,7 +122,7 @@ export default function ForgotForm() {
         {!otpSent && !otpVerified && (
           <button
             onClick={sendOtp}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-extrabold text-white hover:bg-white/10"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border_white/10 bg-white/5 px-4 py-3 text-sm font-extrabold text-white hover:bg-white/10"
           >
             ارسال رمز <FiKey />
           </button>
@@ -128,9 +140,6 @@ export default function ForgotForm() {
                 className="w-full rounded-2xl border border-white/10 bg-zinc-950/35 py-3 pl-4 pr-11 text-sm text-white placeholder:text-zinc-500 outline-none focus:border-emerald-400/40"
                 inputMode="numeric"
               />
-              <div className="mt-2 text-[11px] text-zinc-500">
-                Demo OTP: <span className="text-zinc-300">12345</span>
-              </div>
             </div>
 
             <div className="flex items-center justify-between">
