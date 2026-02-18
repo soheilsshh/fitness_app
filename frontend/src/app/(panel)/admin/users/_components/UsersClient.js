@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { FiSearch, FiUsers, FiChevronLeft, FiChevronRight } from "react-icons/fi";
-import {  mockUsers } from "./usersMock";
+import { api } from "@/lib/axios/client";
 
 function formatDateFa(iso) {
   try {
@@ -24,31 +24,50 @@ export default function UsersClient() {
 
   const pageSize = 8;
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
+  const [items, setItems] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
 
-    return mockUsers
-      .filter((u) => {
-        if (status === "active") return u.activeProgram;
-        if (status === "inactive") return !u.activeProgram;
-        return true;
-      })
-      .filter((u) => {
-        if (!q) return true;
-        const full = `${u.firstName} ${u.lastName}`.toLowerCase();
-        return full.includes(q) || String(u.phone).includes(q);
-      });
-  }, [query, status]);
+  useEffect(() => {
+    let cancelled = false;
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+    async function fetchUsers() {
+      setLoading(true);
+      try {
+        const res = await api.get("/admin/users", {
+          params: {
+            page,
+            pageSize,
+            query,
+            status,
+          },
+        });
+        if (cancelled) return;
+        setItems(res.data.items || []);
+        setTotal(res.data.total || 0);
+      } catch (error) {
+        if (!cancelled) {
+          // eslint-disable-next-line no-console
+          console.error("Failed to load admin users", error);
+          setItems([]);
+          setTotal(0);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    fetchUsers();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [page, pageSize, query, status]);
+
+  const totalPages = Math.max(1, Math.ceil((total || 0) / pageSize));
 
   // Never out of range (derived, no setState needed)
   const pageSafe = Math.min(page, totalPages);
-
-  const pageItems = useMemo(() => {
-    const start = (pageSafe - 1) * pageSize;
-    return filtered.slice(start, start + pageSize);
-  }, [filtered, pageSafe]);
 
   const goPrev = () => setPage((p) => Math.max(1, p - 1));
   const goNext = () => setPage((p) => Math.min(totalPages, p + 1));
@@ -66,7 +85,7 @@ export default function UsersClient() {
 
         <div className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-zinc-950/30 px-4 py-3 text-sm text-zinc-200">
           <FiUsers className="text-emerald-200" />
-          تعداد نتایج: <span className="font-bold text-white">{filtered.length}</span>
+          تعداد نتایج: <span className="font-bold text-white">{total}</span>
         </div>
       </div>
 
@@ -129,10 +148,12 @@ export default function UsersClient() {
         </div>
 
         <div className="divide-y divide-white/10 bg-white/5">
-          {pageItems.length === 0 ? (
+          {loading ? (
+            <div className="p-5 text-sm text-zinc-300">در حال بارگذاری...</div>
+          ) : items.length === 0 ? (
             <div className="p-5 text-sm text-zinc-300">کاربری پیدا نشد.</div>
           ) : (
-            pageItems.map((u) => (
+            items.map((u) => (
               <Link
                 key={u.id}
                 href={`/admin/users/${u.id}`}

@@ -54,6 +54,8 @@ type AdminUserDetails struct {
 type AdminUserService interface {
 	ListUsers(ctx context.Context, page, pageSize int, query, status string) ([]AdminUserSummary, int64, error)
 	GetUserDetails(ctx context.Context, id uint) (*AdminUserDetails, error)
+	GetUserPrograms(ctx context.Context, id uint) ([]AdminUserProgram, error)
+	GetUserBody(ctx context.Context, id uint) (*AdminUserBody, error)
 }
 
 type adminUserService struct {
@@ -295,5 +297,110 @@ func (s *adminUserService) GetUserDetails(ctx context.Context, id uint) (*AdminU
 		Programs: programs,
 		Body:     body,
 	}, nil
+}
+
+// GetUserPrograms returns only the program list for a user (used by admin endpoints).
+func (s *adminUserService) GetUserPrograms(ctx context.Context, id uint) ([]AdminUserProgram, error) {
+	now := time.Now()
+
+	var subs []models.Subscription
+	if err := s.db.WithContext(ctx).
+		Where("user_id = ?", id).
+		Order("starts_at DESC").
+		Find(&subs).Error; err != nil {
+		return nil, err
+	}
+
+	var programs []AdminUserProgram
+	for i := range subs {
+		sub := subs[i]
+		var plan models.ServicePlan
+		if err := s.db.WithContext(ctx).First(&plan, sub.ServicePlanID).Error; err != nil {
+			continue
+		}
+
+		status := "ended"
+		if sub.EndsAt == nil || sub.EndsAt.After(now) {
+			status = "active"
+		}
+
+		duration := plan.DurationDays
+		if duration <= 0 && sub.EndsAt != nil {
+			duration = int(sub.EndsAt.Sub(sub.StartsAt).Hours() / 24)
+		}
+
+		remaining := 0
+		if status == "active" && duration > 0 {
+			daysPassed := int(now.Sub(sub.StartsAt).Hours() / 24)
+			if daysPassed < 0 {
+				daysPassed = 0
+			}
+			if daysPassed < duration {
+				remaining = duration - daysPassed
+			}
+		}
+
+		programs = append(programs, AdminUserProgram{
+			ID:            sub.ID,
+			Title:         plan.Name,
+			Type:          plan.Type,
+			Status:        status,
+			StartDate:     sub.StartsAt,
+			DurationDays:  duration,
+			RemainingDays: remaining,
+			Price:         plan.PriceCents,
+		})
+	}
+
+	return programs, nil
+}
+
+// GetUserBody returns only body/measurements & photos for a user (used by admin endpoints).
+func (s *adminUserService) GetUserBody(ctx context.Context, id uint) (*AdminUserBody, error) {
+	// latest check-in for weight
+	var latestCheck models.CheckIn
+	var hasCheck bool
+	if err := s.db.WithContext(ctx).
+		Where("user_id = ?", id).
+		Order("check_in_date DESC").
+		First(&latestCheck).Error; err == nil {
+		hasCheck = true
+	}
+
+	var weightPtr *float64
+	if hasCheck {
+		w := latestCheck.Weight
+		weightPtr = &w
+	}
+
+	// photos
+	var photosDB []models.UserPhoto
+	if err := s.db.WithContext(ctx).
+		Where("user_id = ?", id).
+		Order("uploaded_at DESC").
+		Find(&photosDB).Error; err != nil {
+		return nil, err
+	}
+
+	photos := make([]AdminUserPhoto, 0, len(photosDB))
+	for _, p := range photosDB {
+		name := p.Type
+		if strings.TrimSpace(name) == "" {
+			name = "Photo"
+		}
+		photos = append(photos, AdminUserPhoto{
+			ID:   p.ID,
+			URL:  p.FilePath,
+			Name: name,
+		})
+	}
+
+	body := &AdminUserBody{
+		HeightCm: nil,
+		WeightKg: weightPtr,
+		Photos:   photos,
+	}
+
+	return body, nil
 }
 

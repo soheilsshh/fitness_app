@@ -121,6 +121,8 @@ func NewServer() *Server {
 	{
 		adminGroup.GET("/users", adminUserController.ListUsers)
 		adminGroup.GET("/users/:id", adminUserController.GetUserDetails)
+		adminGroup.GET("/users/:id/programs", adminUserController.GetUserPrograms)
+		adminGroup.GET("/users/:id/body", adminUserController.GetUserBody)
 	}
 
 	// Swagger endpoint
