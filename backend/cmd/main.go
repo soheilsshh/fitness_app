@@ -75,9 +75,10 @@ func NewServer() *Server {
 	subscriptionRepo := repository.NewSubscriptionRepository(db)
 	servicePlanRepo := repository.NewServicePlanRepository(db)
 	programRepo := repository.NewProgramRepository(db)
+	otpRepo := repository.NewOtpRepository(db)
 
 	// Initialize services
-	authService := service.NewAuthService(userRepo, refreshTokenRepo)
+	authService := service.NewAuthService(userRepo, refreshTokenRepo, otpRepo)
 	studentService := service.NewStudentService(userRepo, subscriptionRepo, servicePlanRepo, programRepo)
 
 	// Initialize handlers

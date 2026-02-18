@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"log"
 	"strings"
-	"sync"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -42,15 +41,9 @@ type AuthService interface {
 type authService struct {
 	userRepo          repository.UserRepository
 	refreshTokenRepo  repository.RefreshTokenRepository
-	otpStore          map[string]otpEntry
-	otpMutex          sync.RWMutex
+	otpRepo           repository.OtpRepository
 	otpTTL            time.Duration
 	defaultUserRole   string
-}
-
-type otpEntry struct {
-	Code      string
-	ExpiresAt time.Time
 }
 
 var (
@@ -65,12 +58,13 @@ var (
 func NewAuthService(
 	userRepo repository.UserRepository,
 	refreshTokenRepo repository.RefreshTokenRepository,
+	otpRepo repository.OtpRepository,
 ) AuthService {
 	return &authService{
 		userRepo:         userRepo,
 		refreshTokenRepo: refreshTokenRepo,
-		otpStore:         make(map[string]otpEntry),
-		otpTTL:           5 * time.Minute,
+		otpRepo:          otpRepo,
+		otpTTL:           2 * time.Minute,
 		defaultUserRole:  "student",
 	}
 }
@@ -138,8 +132,6 @@ func (s *authService) LoginWithPassword(ctx context.Context, identifier, passwor
 }
 
 func (s *authService) RequestOTP(ctx context.Context, phone string) error {
-	_ = ctx // currently unused but kept for future DB logging, rate limiting, etc.
-
 	phone = strings.TrimSpace(phone)
 	if phone == "" {
 		return errors.New("phone is required")
@@ -150,13 +142,17 @@ func (s *authService) RequestOTP(ctx context.Context, phone string) error {
 		return err
 	}
 
-	// store in memory with TTL
-	s.otpMutex.Lock()
-	s.otpStore[phone] = otpEntry{
-		Code:      code,
-		ExpiresAt: time.Now().Add(s.otpTTL),
+	expiresAt := time.Now().Add(s.otpTTL)
+
+	otp := &models.OtpCode{
+		Phone:    phone,
+		Code:     code,
+		Purpose:  "login",
+		ExpiresAt: expiresAt,
 	}
-	s.otpMutex.Unlock()
+	if err := s.otpRepo.Create(ctx, otp); err != nil {
+		return err
+	}
 
 	// for now just log it
 	log.Printf("OTP code for phone %s is %s\n", phone, code)
@@ -171,17 +167,20 @@ func (s *authService) VerifyOTP(ctx context.Context, phone, code string) (*AuthR
 		return nil, ErrInvalidOTP
 	}
 
-	s.otpMutex.RLock()
-	entry, ok := s.otpStore[phone]
-	s.otpMutex.RUnlock()
-	if !ok || time.Now().After(entry.ExpiresAt) || entry.Code != code {
+	entry, err := s.otpRepo.FindValidByPhoneAndPurpose(ctx, phone, "login", time.Now())
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrInvalidOTP
+		}
+		return nil, err
+	}
+	if entry.Code != code {
 		return nil, ErrInvalidOTP
 	}
 
-	// OTP is valid, delete it
-	s.otpMutex.Lock()
-	delete(s.otpStore, phone)
-	s.otpMutex.Unlock()
+	if err := s.otpRepo.MarkUsed(ctx, entry.ID, time.Now()); err != nil {
+		return nil, err
+	}
 
 	// find or create user by phone
 	user, err := s.userRepo.FindByPhone(ctx, phone)
@@ -262,8 +261,29 @@ func (s *authService) ChangePassword(ctx context.Context, userID uint, currentPa
 }
 
 func (s *authService) RequestPasswordResetOTP(ctx context.Context, phone string) error {
-	// For now password-reset OTP is the same as login OTP.
-	return s.RequestOTP(ctx, phone)
+	phone = strings.TrimSpace(phone)
+	if phone == "" {
+		return errors.New("phone is required")
+	}
+
+	code, err := generateOTPCode()
+	if err != nil {
+		return err
+	}
+
+	expiresAt := time.Now().Add(s.otpTTL)
+	otp := &models.OtpCode{
+		Phone:    phone,
+		Code:     code,
+		Purpose:  "password_reset",
+		ExpiresAt: expiresAt,
+	}
+	if err := s.otpRepo.Create(ctx, otp); err != nil {
+		return err
+	}
+
+	log.Printf("Password reset OTP for phone %s is %s\n", phone, code)
+	return nil
 }
 
 func (s *authService) ResetPasswordWithOTP(ctx context.Context, phone, code, newPassword string) error {
@@ -278,15 +298,20 @@ func (s *authService) ResetPasswordWithOTP(ctx context.Context, phone, code, new
 		return errors.New("new password must be at least 8 characters")
 	}
 
-	// Validate and consume OTP
-	s.otpMutex.Lock()
-	entry, ok := s.otpStore[phone]
-	if !ok || time.Now().After(entry.ExpiresAt) || entry.Code != code {
-		s.otpMutex.Unlock()
+	entry, err := s.otpRepo.FindValidByPhoneAndPurpose(ctx, phone, "password_reset", time.Now())
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrInvalidOTP
+		}
+		return err
+	}
+	if entry.Code != code {
 		return ErrInvalidOTP
 	}
-	delete(s.otpStore, phone)
-	s.otpMutex.Unlock()
+
+	if err := s.otpRepo.MarkUsed(ctx, entry.ID, time.Now()); err != nil {
+		return err
+	}
 
 	// Find user by phone
 	user, err := s.userRepo.FindByPhone(ctx, phone)
