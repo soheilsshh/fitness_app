@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	swaggerFiles "github.com/swaggo/files"
@@ -31,6 +32,20 @@ type Server struct {
 func NewServer() *Server {
 	// Initialize Gin router
 	router := gin.Default()
+
+	// CORS configuration for frontend <-> backend communication
+	frontendOrigin := os.Getenv("FRONTEND_ORIGIN")
+	if frontendOrigin == "" {
+		// Default to common Next.js dev origin
+		frontendOrigin = "http://localhost:3000"
+	}
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{frontendOrigin},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: false, // we send JWT via Authorization header, not cookies
+	}))
 
 	// Load environment variables from .env file (if present)
 	if err := godotenv.Load(); err != nil {
