@@ -6,6 +6,8 @@ import (
 	"os"
 	"time"
 
+	"golang.org/x/crypto/bcrypt"
+
 	"github.com/yourusername/fitness-management/internal/models"
 
 	"gorm.io/driver/mysql"
@@ -90,6 +92,45 @@ func SetupDatabase(db *gorm.DB) error {
 		return err
 	}
 	log.Println("GORM AutoMigrate completed successfully")
+
+	// Seed default admin user (hard‑coded for initial setup).
+	const (
+		adminName     = "admin"
+		adminEmail    = "admin@gmail.com"
+		adminPhone    = "09150000000"
+		adminPassword = "12345678"
+	)
+
+	var count int64
+	if err := db.Model(&models.User{}).Where("email = ?", adminEmail).Count(&count).Error; err != nil {
+		log.Printf("failed counting admin user: %v\n", err)
+		return err
+	}
+
+	if count == 0 {
+		hashed, err := bcrypt.GenerateFromPassword([]byte(adminPassword), bcrypt.DefaultCost)
+		if err != nil {
+			log.Printf("failed hashing admin password: %v\n", err)
+			return err
+		}
+
+		admin := &models.User{
+			Name:     adminName,
+			Email:    adminEmail,
+			Phone:    adminPhone,
+			Password: string(hashed),
+			Role:     "admin",
+		}
+
+		if err := db.Create(admin).Error; err != nil {
+			log.Printf("failed creating admin user: %v\n", err)
+			return err
+		}
+		log.Println("seeded default admin user with email admin@gmail.com")
+	} else {
+		log.Println("admin user already exists, skipping seeding")
+	}
+
 	return nil
 }
 

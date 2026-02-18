@@ -11,6 +11,7 @@ import (
 type SubscriptionRepository interface {
 	FindCurrentByUserID(ctx context.Context, userID uint, now time.Time) (*models.Subscription, error)
 	FindByUserIDPaginated(ctx context.Context, userID uint, page, limit int) ([]models.Subscription, error)
+	CountByUserID(ctx context.Context, userID uint) (int64, error)
 }
 
 type subscriptionRepository struct {
@@ -53,5 +54,14 @@ func (r *subscriptionRepository) FindByUserIDPaginated(ctx context.Context, user
 		return nil, err
 	}
 	return subs, nil
+}
+
+func (r *subscriptionRepository) CountByUserID(ctx context.Context, userID uint) (int64, error) {
+	var count int64
+	err := r.db.WithContext(ctx).
+		Model(&models.Subscription{}).
+		Where("user_id = ?", userID).
+		Count(&count).Error
+	return count, err
 }
 

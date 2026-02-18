@@ -76,14 +76,17 @@ func NewServer() *Server {
 	servicePlanRepo := repository.NewServicePlanRepository(db)
 	programRepo := repository.NewProgramRepository(db)
 	otpRepo := repository.NewOtpRepository(db)
+	txRepo := repository.NewTransactionRepository(db)
 
 	// Initialize services
 	authService := service.NewAuthService(userRepo, refreshTokenRepo, otpRepo)
 	studentService := service.NewStudentService(userRepo, subscriptionRepo, servicePlanRepo, programRepo)
+	adminUserService := service.NewAdminUserService(db, subscriptionRepo, txRepo)
 
 	// Initialize handlers
 	authController := controllers.NewAuthController(authService)
 	studentController := controllers.NewStudentController(studentService)
+	adminUserController := controllers.NewAdminUserController(adminUserService)
 
 	// Auth routes
 	router.POST("/auth/register", authController.Register)
@@ -110,6 +113,14 @@ func NewServer() *Server {
 		studentGroup.GET("/subscriptions/current", studentController.GetCurrentSubscription)
 		studentGroup.GET("/subscriptions", studentController.ListSubscriptions)
 		studentGroup.GET("/programs/current", studentController.GetCurrentPrograms)
+	}
+
+	// Admin routes - protected and admin-only
+	adminGroup := router.Group("/admin")
+	adminGroup.Use(middleware.AuthMiddleware(), middleware.AdminOnly())
+	{
+		adminGroup.GET("/users", adminUserController.ListUsers)
+		adminGroup.GET("/users/:id", adminUserController.GetUserDetails)
 	}
 
 	// Swagger endpoint
