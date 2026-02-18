@@ -57,12 +57,17 @@ func NewServer() *Server {
 	// Initialize repositories
 	userRepo := repository.NewUserRepository(db)
 	refreshTokenRepo := repository.NewRefreshTokenRepository(db)
+	subscriptionRepo := repository.NewSubscriptionRepository(db)
+	servicePlanRepo := repository.NewServicePlanRepository(db)
+	programRepo := repository.NewProgramRepository(db)
 
 	// Initialize services
 	authService := service.NewAuthService(userRepo, refreshTokenRepo)
+	studentService := service.NewStudentService(userRepo, subscriptionRepo, servicePlanRepo, programRepo)
 
 	// Initialize handlers
 	authController := controllers.NewAuthController(authService)
+	studentController := controllers.NewStudentController(studentService)
 
 	// Auth routes
 	router.POST("/auth/register", authController.Register)
@@ -77,6 +82,16 @@ func NewServer() *Server {
 		authGroup.POST("/logout", authController.Logout)
 		authGroup.GET("/me", authController.Me)
 		authGroup.POST("/change-password", authController.ChangePassword)
+	}
+
+	// Student (client) routes - all protected
+	studentGroup := router.Group("/")
+	studentGroup.Use(middleware.AuthMiddleware())
+	{
+		studentGroup.GET("/me", studentController.GetMe)
+		studentGroup.GET("/subscriptions/current", studentController.GetCurrentSubscription)
+		studentGroup.GET("/subscriptions", studentController.ListSubscriptions)
+		studentGroup.GET("/programs/current", studentController.GetCurrentPrograms)
 	}
 
 	// Swagger endpoint
