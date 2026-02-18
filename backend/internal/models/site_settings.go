@@ -1,7 +1,8 @@
 package models
 
 import (
-	"gorm.io/datatypes"
+	"encoding/json"
+
 	"gorm.io/gorm"
 )
 
@@ -17,9 +18,10 @@ type SiteSettings struct {
 
 	// JSON blobs are used to keep the structure flexible while still typed.
 	// They follow the shapes defined in frontend/docs/frontend-overview.md.
-	FeatureBullets datatypes.JSON `gorm:"type:json"` // { title: string, items: string[] }
-	Stats          datatypes.JSON `gorm:"type:json"` // [{ id, value, label }]
-	Steps          datatypes.JSON `gorm:"type:json"` // [{ id, title, text }]
-	ContactInfo    datatypes.JSON `gorm:"type:json"` // { address, phone, email, instagram, telegram, whatsapp }
+	// json.RawMessage is an alias for []byte and works well with GORM for JSON columns.
+	FeatureBullets json.RawMessage `gorm:"type:json"` // { title: string, items: string[] }
+	Stats          json.RawMessage `gorm:"type:json"` // [{ id, value, label }]
+	Steps          json.RawMessage `gorm:"type:json"` // [{ id, title, text }]
+	ContactInfo    json.RawMessage `gorm:"type:json"` // { address, phone, email, instagram, telegram, whatsapp }
 }
 
