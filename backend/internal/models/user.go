@@ -14,6 +14,7 @@ type User struct {
 	Password     string     `gorm:"size:255;not null"`
 	Role         string     `gorm:"type:varchar(20);not null;default:'student'"`
 	LastActiveAt *time.Time `gorm:"index"`
-	HeightCm     *float64   `gorm:"column:height_cm"` // optional body height for admin/user body section
+	HeightCm     *float64   `gorm:"column:height_cm"`   // optional body height for admin/user body section
+	CoachStatus  string     `gorm:"column:coach_status;size:20"` // admin: "pending" | "active" for student list
 }
 

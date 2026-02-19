@@ -86,11 +86,15 @@ func NewServer() *Server {
 	authService := service.NewAuthService(userRepo, refreshTokenRepo, otpRepo)
 	studentService := service.NewStudentService(userRepo, subscriptionRepo, servicePlanRepo, programRepo)
 	adminUserService := service.NewAdminUserService(db, subscriptionRepo, txRepo)
+	adminDashboardService := service.NewAdminDashboardService(db, subscriptionRepo, txRepo)
+	adminStudentService := service.NewAdminStudentService(db, userRepo, subscriptionRepo, servicePlanRepo)
 
 	// Initialize handlers
 	authController := controllers.NewAuthController(authService)
 	studentController := controllers.NewStudentController(studentService)
 	adminUserController := controllers.NewAdminUserController(adminUserService)
+	adminDashboardController := controllers.NewAdminDashboardController(adminDashboardService)
+	adminStudentController := controllers.NewAdminStudentController(adminStudentService)
 
 	// Auth routes
 	router.POST("/auth/register", authController.Register)
@@ -123,12 +127,17 @@ func NewServer() *Server {
 	adminGroup := router.Group("/admin")
 	adminGroup.Use(middleware.AuthMiddleware(), middleware.AdminOnly())
 	{
+		adminGroup.GET("/dashboard/stats", adminDashboardController.GetStats)
+		adminGroup.GET("/dashboard/monthly-sales", adminDashboardController.GetMonthlySales)
 		adminGroup.GET("/users", adminUserController.ListUsers)
 		adminGroup.GET("/users/:id", adminUserController.GetUserDetails)
 		adminGroup.GET("/users/:id/programs", adminUserController.GetUserPrograms)
 		adminGroup.GET("/users/:id/body", adminUserController.GetUserBody)
 		adminGroup.POST("/users/:id/body/photos", adminUserController.UploadUserBodyPhoto)
 		adminGroup.DELETE("/users/:id/body/photos/:photoId", adminUserController.DeleteUserBodyPhoto)
+		adminGroup.GET("/students", adminStudentController.ListStudents)
+		adminGroup.GET("/students/:id", adminStudentController.GetStudentByID)
+		adminGroup.PATCH("/students/:id", adminStudentController.UpdateStudent)
 	}
 
 	// Serve uploaded files (e.g. user body photos) at /uploads/*
