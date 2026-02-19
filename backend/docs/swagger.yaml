@@ -387,6 +387,21 @@ definitions:
       programsCount:
         type: integer
     type: object
+  service.ContactInfoDTO:
+    properties:
+      address:
+        type: string
+      email:
+        type: string
+      instagram:
+        type: string
+      phone:
+        type: string
+      telegram:
+        type: string
+      whatsapp:
+        type: string
+    type: object
   service.DashboardStatsResponse:
     properties:
       activeUsers:
@@ -398,6 +413,63 @@ definitions:
       year:
         type: integer
     type: object
+  service.FeatureBulletsDTO:
+    properties:
+      items:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+    type: object
+  service.FeedbackCreateRequest:
+    properties:
+      email:
+        type: string
+      fullName:
+        type: string
+      message:
+        type: string
+      phone:
+        type: string
+    required:
+    - email
+    - fullName
+    - message
+    type: object
+  service.FeedbackItemDTO:
+    properties:
+      createdAt:
+        type: string
+      email:
+        type: string
+      fullName:
+        type: string
+      id:
+        type: integer
+      message:
+        type: string
+      phone:
+        type: string
+    type: object
+  service.FeedbackListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/service.FeedbackItemDTO'
+        type: array
+      page:
+        type: integer
+      pageSize:
+        type: integer
+      total:
+        type: integer
+    type: object
+  service.HeroImageDTO:
+    properties:
+      url:
+        type: string
+    type: object
   service.MonthlySaleItem:
     properties:
       courses:
@@ -406,6 +478,41 @@ definitions:
         type: string
       sales:
         type: integer
+    type: object
+  service.SiteSettingsDTO:
+    properties:
+      contactInfo:
+        $ref: '#/definitions/service.ContactInfoDTO'
+      featureBullets:
+        $ref: '#/definitions/service.FeatureBulletsDTO'
+      heroImage:
+        $ref: '#/definitions/service.HeroImageDTO'
+      stats:
+        items:
+          $ref: '#/definitions/service.StatItemDTO'
+        type: array
+      steps:
+        items:
+          $ref: '#/definitions/service.StepItemDTO'
+        type: array
+    type: object
+  service.StatItemDTO:
+    properties:
+      id:
+        type: string
+      label:
+        type: string
+      value:
+        type: string
+    type: object
+  service.StepItemDTO:
+    properties:
+      id:
+        type: string
+      text:
+        type: string
+      title:
+        type: string
     type: object
 info:
   contact: {}
@@ -507,6 +614,48 @@ paths:
       summary: Get dashboard stats for a year
       tags:
       - admin-dashboard
+  /admin/feedbacks:
+    get:
+      description: Returns paginated list of feedback messages
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/service.FeedbackListResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List feedbacks (admin)
+      tags:
+      - admin-feedback
   /admin/plans:
     get:
       description: Returns paginated list of plans with optional search and tag filter
@@ -764,6 +913,137 @@ paths:
       summary: Update a plan
       tags:
       - admin-plans
+  /admin/site-settings:
+    get:
+      description: Same as public GET, for admin edit form
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/service.SiteSettingsDTO'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get site settings (admin)
+      tags:
+      - admin-site
+    put:
+      consumes:
+      - application/json
+      description: 'PUT body: same structure as GET (featureBullets, stats, steps,
+        contactInfo, heroImage.url)'
+      parameters:
+      - description: Site settings
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/service.SiteSettingsDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/service.SiteSettingsDTO'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update site settings (admin)
+      tags:
+      - admin-site
+  /admin/site-settings/hero-image:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Accepts multipart form file, saves to uploads/site/, returns URL
+        for use in site settings
+      parameters:
+      - description: Image file
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'url: /uploads/site/...'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Upload hero image for site
+      tags:
+      - admin-site
   /admin/students:
     get:
       description: Returns paginated list of students with status, plan info (for
@@ -1466,6 +1746,63 @@ paths:
       summary: Register new user
       tags:
       - auth
+  /feedbacks:
+    post:
+      consumes:
+      - application/json
+      description: 'POST body: fullName, email, phone, message (fullName, email, message
+        required)'
+      parameters:
+      - description: Feedback data
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/service.FeedbackCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 'message: ok'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Submit feedback (public contact form)
+      tags:
+      - feedback
+  /site-settings:
+    get:
+      description: Returns hero, featureBullets, stats, steps, contactInfo for landing
+        page
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/service.SiteSettingsDTO'
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get site settings (public)
+      tags:
+      - site
 securityDefinitions:
   BearerAuth:
     in: header

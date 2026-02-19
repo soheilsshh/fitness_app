@@ -81,6 +81,8 @@ func NewServer() *Server {
 	programRepo := repository.NewProgramRepository(db)
 	otpRepo := repository.NewOtpRepository(db)
 	txRepo := repository.NewTransactionRepository(db)
+	siteSettingsRepo := repository.NewSiteSettingsRepository(db)
+	feedbackRepo := repository.NewFeedbackRepository(db)
 
 	// Initialize services
 	authService := service.NewAuthService(userRepo, refreshTokenRepo, otpRepo)
@@ -89,6 +91,8 @@ func NewServer() *Server {
 	adminDashboardService := service.NewAdminDashboardService(db, subscriptionRepo, txRepo)
 	adminStudentService := service.NewAdminStudentService(db, userRepo, subscriptionRepo, servicePlanRepo)
 	adminPlanService := service.NewAdminPlanService(servicePlanRepo)
+	siteSettingsService := service.NewSiteSettingsService(siteSettingsRepo)
+	feedbackService := service.NewFeedbackService(feedbackRepo)
 
 	// Initialize handlers
 	authController := controllers.NewAuthController(authService)
@@ -97,6 +101,9 @@ func NewServer() *Server {
 	adminDashboardController := controllers.NewAdminDashboardController(adminDashboardService)
 	adminStudentController := controllers.NewAdminStudentController(adminStudentService)
 	adminPlanController := controllers.NewAdminPlanController(adminPlanService)
+	siteSettingsController := controllers.NewSiteSettingsController(siteSettingsService)
+	feedbackController := controllers.NewFeedbackController(feedbackService)
+	adminFeedbackController := controllers.NewAdminFeedbackController(feedbackService)
 
 	// Auth routes
 	router.POST("/auth/register", authController.Register)
@@ -114,6 +121,10 @@ func NewServer() *Server {
 		authGroup.GET("/me", authController.Me)
 		authGroup.POST("/change-password", authController.ChangePassword)
 	}
+
+	// Public routes (no auth)
+	router.GET("/site-settings", siteSettingsController.GetSiteSettingsPublic)
+	router.POST("/feedbacks", feedbackController.CreateFeedback)
 
 	// Student (client) routes - all protected
 	studentGroup := router.Group("/")
@@ -145,6 +156,10 @@ func NewServer() *Server {
 		adminGroup.POST("/plans", adminPlanController.CreatePlan)
 		adminGroup.PATCH("/plans/:id", adminPlanController.UpdatePlan)
 		adminGroup.DELETE("/plans/:id", adminPlanController.DeletePlan)
+		adminGroup.GET("/site-settings", siteSettingsController.GetSiteSettingsAdmin)
+		adminGroup.PUT("/site-settings", siteSettingsController.UpdateSiteSettings)
+		adminGroup.POST("/site-settings/hero-image", siteSettingsController.UploadHeroImage)
+		adminGroup.GET("/feedbacks", adminFeedbackController.ListFeedbacks)
 	}
 
 	// Serve uploaded files (e.g. user body photos) at /uploads/*
