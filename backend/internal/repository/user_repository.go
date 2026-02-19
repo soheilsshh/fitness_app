@@ -14,6 +14,7 @@ type UserRepository interface {
 	FindByPhone(ctx context.Context, phone string) (*models.User, error)
 	FindByIdentifier(ctx context.Context, identifier string) (*models.User, error)
 	FindByID(ctx context.Context, id uint) (*models.User, error)
+	Update(ctx context.Context, user *models.User) error
 	UpdatePassword(ctx context.Context, id uint, hashedPassword string) error
 }
 
@@ -63,6 +64,10 @@ func (r *userRepository) FindByID(ctx context.Context, id uint) (*models.User, e
 		return nil, err
 	}
 	return &user, nil
+}
+
+func (r *userRepository) Update(ctx context.Context, user *models.User) error {
+	return r.db.WithContext(ctx).Save(user).Error
 }
 
 func (r *userRepository) UpdatePassword(ctx context.Context, id uint, hashedPassword string) error {

@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"errors"
 	"net/http"
 	"strings"
 
@@ -13,6 +14,21 @@ const (
 	ContextUserIDKey = "userID"
 	ContextRoleKey   = "role"
 )
+
+var ErrNoUserID = errors.New("user id not in context")
+
+// GetUserID returns the authenticated user ID from context. Use after AuthMiddleware.
+func GetUserID(c *gin.Context) (uint, error) {
+	val, exists := c.Get(ContextUserIDKey)
+	if !exists {
+		return 0, ErrNoUserID
+	}
+	id, ok := val.(uint)
+	if !ok {
+		return 0, ErrNoUserID
+	}
+	return id, nil
+}
 
 // AuthMiddleware validates the access token and injects user id and role into Gin context.
 // Accepts "Authorization: Bearer <token>" or "Authorization: <token>" (for Swagger / clients that send only the token).

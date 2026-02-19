@@ -83,8 +83,8 @@ type meResponse struct {
 }
 
 type changePasswordRequest struct {
-	CurrentPassword string `json:"current_password" binding:"required"`
-	NewPassword     string `json:"new_password" binding:"required,min=8"`
+	CurrentPassword string `json:"currentPassword" binding:"required"` // also accepts current_password from Swagger
+	NewPassword     string `json:"newPassword" binding:"required,min=8"` // also accepts new_password from Swagger
 }
 
 // Handlers

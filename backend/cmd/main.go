@@ -83,10 +83,12 @@ func NewServer() *Server {
 	txRepo := repository.NewTransactionRepository(db)
 	siteSettingsRepo := repository.NewSiteSettingsRepository(db)
 	feedbackRepo := repository.NewFeedbackRepository(db)
+	orderRepo := repository.NewOrderRepository(db)
 
 	// Initialize services
 	authService := service.NewAuthService(userRepo, refreshTokenRepo, otpRepo)
 	studentService := service.NewStudentService(userRepo, subscriptionRepo, servicePlanRepo, programRepo)
+	meService := service.NewMeService(db, userRepo, orderRepo, subscriptionRepo, servicePlanRepo)
 	adminUserService := service.NewAdminUserService(db, subscriptionRepo, txRepo)
 	adminDashboardService := service.NewAdminDashboardService(db, subscriptionRepo, txRepo)
 	adminStudentService := service.NewAdminStudentService(db, userRepo, subscriptionRepo, servicePlanRepo)
@@ -97,6 +99,7 @@ func NewServer() *Server {
 	// Initialize handlers
 	authController := controllers.NewAuthController(authService)
 	studentController := controllers.NewStudentController(studentService)
+	meController := controllers.NewMeController(meService)
 	adminUserController := controllers.NewAdminUserController(adminUserService)
 	adminDashboardController := controllers.NewAdminDashboardController(adminDashboardService)
 	adminStudentController := controllers.NewAdminStudentController(adminStudentService)
@@ -126,11 +129,17 @@ func NewServer() *Server {
 	router.GET("/site-settings", siteSettingsController.GetSiteSettingsPublic)
 	router.POST("/feedbacks", feedbackController.CreateFeedback)
 
-	// Student (client) routes - all protected
+	// Student (user panel) routes - all protected
 	studentGroup := router.Group("/")
 	studentGroup.Use(middleware.AuthMiddleware())
 	{
-		studentGroup.GET("/me", studentController.GetMe)
+		studentGroup.GET("/me", meController.GetProfile)
+		studentGroup.PATCH("/me", meController.UpdateProfile)
+		studentGroup.POST("/me/change-password", authController.ChangePassword)
+		studentGroup.GET("/me/orders", meController.ListMyOrders)
+		studentGroup.GET("/me/orders/:id", meController.GetMyOrderByID)
+		studentGroup.GET("/me/programs", meController.ListMyPrograms)
+		studentGroup.GET("/me/programs/:id", meController.GetMyProgramByID)
 		studentGroup.GET("/subscriptions/current", studentController.GetCurrentSubscription)
 		studentGroup.GET("/subscriptions", studentController.ListSubscriptions)
 		studentGroup.GET("/programs/current", studentController.GetCurrentPrograms)

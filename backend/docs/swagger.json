@@ -1926,6 +1926,338 @@
                 }
             }
         },
+        "/me": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns profile with firstName, lastName, phone, heightCm, weightKg, photos, counts",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "me"
+                ],
+                "summary": "Get current user profile (user panel)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/service.MeProfileDTO"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update firstName, lastName, heightCm, weightKg",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "me"
+                ],
+                "summary": "Update current user profile",
+                "parameters": [
+                    {
+                        "description": "Profile update",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/service.MeProfileUpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/service.MeProfileDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/me/orders": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Paginated list with optional status filter",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "me"
+                ],
+                "summary": "List current user orders",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page (default 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size (default 10)",
+                        "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter: paid, pending, failed, refunded, or empty",
+                        "name": "status",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/service.MeOrderListResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/me/orders/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "me"
+                ],
+                "summary": "Get order by ID (own orders only)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Order ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/service.MeOrderDTO"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/me/programs": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "me"
+                ],
+                "summary": "List current user programs (subscriptions)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/service.MeProgramsResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/me/programs/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "me"
+                ],
+                "summary": "Get program by ID (own programs only)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Program (subscription) ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/service.MeProgramDetailDTO"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/site-settings": {
             "get": {
                 "description": "Returns hero, featureBullets, stats, steps, contactInfo for landing page",
@@ -2014,14 +2346,16 @@
         "controllers.changePasswordRequest": {
             "type": "object",
             "required": [
-                "current_password",
-                "new_password"
+                "currentPassword",
+                "newPassword"
             ],
             "properties": {
-                "current_password": {
+                "currentPassword": {
+                    "description": "also accepts current_password from Swagger",
                     "type": "string"
                 },
-                "new_password": {
+                "newPassword": {
+                    "description": "also accepts new_password from Swagger",
                     "type": "string",
                     "minLength": 8
                 }
@@ -2665,6 +2999,319 @@
             "type": "object",
             "properties": {
                 "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "service.MeDayPlanDTO": {
+            "type": "object",
+            "properties": {
+                "nutrition": {
+                    "$ref": "#/definitions/service.MeNutritionDTO"
+                },
+                "workout": {
+                    "$ref": "#/definitions/service.MeWorkoutDTO"
+                }
+            }
+        },
+        "service.MeMealDTO": {
+            "type": "object",
+            "properties": {
+                "detail": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "service.MeNutritionDTO": {
+            "type": "object",
+            "properties": {
+                "caloriesTarget": {
+                    "type": "integer"
+                },
+                "meals": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/service.MeMealDTO"
+                    }
+                },
+                "proteinTarget": {
+                    "type": "string"
+                }
+            }
+        },
+        "service.MeOrderDTO": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "discountPercent": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/service.MeOrderItemDTO"
+                    }
+                },
+                "note": {
+                    "type": "string"
+                },
+                "paymentMethod": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "trackingCode": {
+                    "type": "string"
+                }
+            }
+        },
+        "service.MeOrderItemDTO": {
+            "type": "object",
+            "properties": {
+                "price": {
+                    "type": "integer"
+                },
+                "qty": {
+                    "type": "integer"
+                },
+                "refId": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "service.MeOrderListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/service.MeOrderDTO"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "service.MePhotoDTO": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "service.MeProfileDTO": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "heightCm": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "ordersCount": {
+                    "type": "integer"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "photos": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/service.MePhotoDTO"
+                    }
+                },
+                "programsCount": {
+                    "type": "integer"
+                },
+                "weightKg": {
+                    "type": "number"
+                }
+            }
+        },
+        "service.MeProfileUpdateRequest": {
+            "type": "object",
+            "properties": {
+                "firstName": {
+                    "type": "string"
+                },
+                "heightCm": {
+                    "type": "number"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "weightKg": {
+                    "type": "number"
+                }
+            }
+        },
+        "service.MeProgramDTO": {
+            "type": "object",
+            "properties": {
+                "durationDays": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "price": {
+                    "type": "integer"
+                },
+                "remainingDays": {
+                    "type": "integer"
+                },
+                "startDate": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "service.MeProgramDetailDTO": {
+            "type": "object",
+            "properties": {
+                "coach": {
+                    "type": "string"
+                },
+                "durationDays": {
+                    "type": "integer"
+                },
+                "goal": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "level": {
+                    "type": "string"
+                },
+                "planByDay": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/service.MeDayPlanDTO"
+                    }
+                },
+                "price": {
+                    "type": "integer"
+                },
+                "remainingDays": {
+                    "type": "integer"
+                },
+                "schedule": {
+                    "$ref": "#/definitions/service.MeScheduleDTO"
+                },
+                "startDate": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "service.MeProgramsResponse": {
+            "type": "object",
+            "properties": {
+                "programs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/service.MeProgramDTO"
+                    }
+                }
+            }
+        },
+        "service.MeScheduleDTO": {
+            "type": "object",
+            "properties": {
+                "restDays": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "weekly": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "service.MeWorkoutDTO": {
+            "type": "object",
+            "properties": {
+                "calories": {
+                    "type": "integer"
+                },
+                "durationMin": {
+                    "type": "integer"
+                },
+                "steps": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
                     "type": "string"
                 }
             }
