@@ -116,6 +116,130 @@ definitions:
     - password
     - phone
     type: object
+  service.AdminPlanCreateRequest:
+    properties:
+      courseName:
+        type: string
+      description:
+        type: string
+      discountPercent:
+        type: integer
+      discountPrice:
+        type: integer
+      durationDays:
+        type: integer
+      featuresText:
+        type: string
+      isPopular:
+        type: boolean
+      planType:
+        description: workout | nutrition | both
+        type: string
+      price:
+        type: integer
+      subtitle:
+        type: string
+      title:
+        type: string
+    type: object
+  service.AdminPlanDetail:
+    properties:
+      courseName:
+        type: string
+      createdAt:
+        type: string
+      description:
+        type: string
+      discountPercent:
+        type: integer
+      discountPrice:
+        type: integer
+      durationDays:
+        type: integer
+      featuresText:
+        type: string
+      id:
+        type: integer
+      isPopular:
+        type: boolean
+      planType:
+        type: string
+      price:
+        type: integer
+      subtitle:
+        type: string
+      title:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  service.AdminPlanItem:
+    properties:
+      courseName:
+        type: string
+      createdAt:
+        type: string
+      discountPercent:
+        type: integer
+      discountPrice:
+        type: integer
+      durationDays:
+        type: integer
+      featuresText:
+        type: string
+      id:
+        type: integer
+      isPopular:
+        type: boolean
+      planType:
+        type: string
+      price:
+        type: integer
+      subtitle:
+        type: string
+      title:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  service.AdminPlanListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/service.AdminPlanItem'
+        type: array
+      page:
+        type: integer
+      pageSize:
+        type: integer
+      total:
+        type: integer
+    type: object
+  service.AdminPlanUpdateRequest:
+    properties:
+      courseName:
+        type: string
+      description:
+        type: string
+      discountPercent:
+        type: integer
+      discountPrice:
+        type: integer
+      durationDays:
+        type: integer
+      featuresText:
+        type: string
+      isPopular:
+        type: boolean
+      planType:
+        type: string
+      price:
+        type: integer
+      subtitle:
+        type: string
+      title:
+        type: string
+    type: object
   service.AdminStudentDetail:
     properties:
       durationDays:
@@ -383,6 +507,263 @@ paths:
       summary: Get dashboard stats for a year
       tags:
       - admin-dashboard
+  /admin/plans:
+    get:
+      description: Returns paginated list of plans with optional search and tag filter
+        (discounted, popular)
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      - description: Search by title, subtitle, courseName
+        in: query
+        name: query
+        type: string
+      - description: 'Filter: all | discounted | popular'
+        in: query
+        name: tag
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/service.AdminPlanListResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List plans for admin
+      tags:
+      - admin-plans
+    post:
+      consumes:
+      - application/json
+      description: Body matches frontend PlanForm (title, subtitle, courseName, description,
+        featuresText, planType, price, discountPrice, discountPercent, durationDays,
+        isPopular)
+      parameters:
+      - description: Plan data
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/service.AdminPlanCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/service.AdminPlanDetail'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new plan
+      tags:
+      - admin-plans
+  /admin/plans/{id}:
+    delete:
+      description: Soft or hard delete (implementation defined)
+      parameters:
+      - description: Plan ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete a plan
+      tags:
+      - admin-plans
+    get:
+      description: Returns full plan detail for edit/view
+      parameters:
+      - description: Plan ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/service.AdminPlanDetail'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get plan by ID for admin
+      tags:
+      - admin-plans
+    patch:
+      consumes:
+      - application/json
+      description: 'PATCH body: optional fields (title, subtitle, courseName, description,
+        featuresText, planType, price, discountPrice, discountPercent, durationDays,
+        isPopular)'
+      parameters:
+      - description: Plan ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Fields to update
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/service.AdminPlanUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/service.AdminPlanDetail'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update a plan
+      tags:
+      - admin-plans
   /admin/students:
     get:
       description: Returns paginated list of students with status, plan info (for

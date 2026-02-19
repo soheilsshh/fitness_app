@@ -88,6 +88,7 @@ func NewServer() *Server {
 	adminUserService := service.NewAdminUserService(db, subscriptionRepo, txRepo)
 	adminDashboardService := service.NewAdminDashboardService(db, subscriptionRepo, txRepo)
 	adminStudentService := service.NewAdminStudentService(db, userRepo, subscriptionRepo, servicePlanRepo)
+	adminPlanService := service.NewAdminPlanService(servicePlanRepo)
 
 	// Initialize handlers
 	authController := controllers.NewAuthController(authService)
@@ -95,6 +96,7 @@ func NewServer() *Server {
 	adminUserController := controllers.NewAdminUserController(adminUserService)
 	adminDashboardController := controllers.NewAdminDashboardController(adminDashboardService)
 	adminStudentController := controllers.NewAdminStudentController(adminStudentService)
+	adminPlanController := controllers.NewAdminPlanController(adminPlanService)
 
 	// Auth routes
 	router.POST("/auth/register", authController.Register)
@@ -138,6 +140,11 @@ func NewServer() *Server {
 		adminGroup.GET("/students", adminStudentController.ListStudents)
 		adminGroup.GET("/students/:id", adminStudentController.GetStudentByID)
 		adminGroup.PATCH("/students/:id", adminStudentController.UpdateStudent)
+		adminGroup.GET("/plans", adminPlanController.ListPlans)
+		adminGroup.GET("/plans/:id", adminPlanController.GetPlanByID)
+		adminGroup.POST("/plans", adminPlanController.CreatePlan)
+		adminGroup.PATCH("/plans/:id", adminPlanController.UpdatePlan)
+		adminGroup.DELETE("/plans/:id", adminPlanController.DeletePlan)
 	}
 
 	// Serve uploaded files (e.g. user body photos) at /uploads/*
