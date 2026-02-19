@@ -326,6 +326,111 @@ paths:
       summary: Get body measurements and photos of a user
       tags:
       - admin-users
+  /admin/users/{id}/body/photos:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Accepts multipart form with file and optional name (display label)
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Image file
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: Display name (e.g. Front, Side)
+        in: formData
+        name: name
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/service.AdminUserPhoto'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Upload a body photo for a user
+      tags:
+      - admin-users
+  /admin/users/{id}/body/photos/{photoId}:
+    delete:
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Photo ID
+        in: path
+        name: photoId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete a body photo of a user
+      tags:
+      - admin-users
   /admin/users/{id}/programs:
     get:
       description: Returns all purchased/assigned programs of a user

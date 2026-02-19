@@ -2,6 +2,10 @@ package service
 
 import (
 	"context"
+	"fmt"
+	"io"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -56,6 +60,8 @@ type AdminUserService interface {
 	GetUserDetails(ctx context.Context, id uint) (*AdminUserDetails, error)
 	GetUserPrograms(ctx context.Context, id uint) ([]AdminUserProgram, error)
 	GetUserBody(ctx context.Context, id uint) (*AdminUserBody, error)
+	AddUserBodyPhoto(ctx context.Context, userID uint, file io.Reader, filename string, nameLabel string) (*AdminUserPhoto, error)
+	DeleteUserBodyPhoto(ctx context.Context, userID uint, photoID uint) error
 }
 
 type adminUserService struct {
@@ -249,7 +255,9 @@ func (s *adminUserService) GetUserDetails(ctx context.Context, id uint) (*AdminU
 		})
 	}
 
-	// Build basic body info from latest check-in and photos
+	// Build basic body info: height from user, weight from latest check-in, photos from UserPhoto
+	heightPtr := user.HeightCm
+
 	var latestCheck models.CheckIn
 	var hasCheck bool
 	if err := s.db.WithContext(ctx).
@@ -287,7 +295,7 @@ func (s *adminUserService) GetUserDetails(ctx context.Context, id uint) (*AdminU
 	}
 
 	body := AdminUserBody{
-		HeightCm: nil, // height is not tracked yet
+		HeightCm: heightPtr,
 		WeightKg: weightPtr,
 		Photos:   photos,
 	}
@@ -357,6 +365,12 @@ func (s *adminUserService) GetUserPrograms(ctx context.Context, id uint) ([]Admi
 
 // GetUserBody returns only body/measurements & photos for a user (used by admin endpoints).
 func (s *adminUserService) GetUserBody(ctx context.Context, id uint) (*AdminUserBody, error) {
+	var user models.User
+	if err := s.db.WithContext(ctx).First(&user, id).Error; err != nil {
+		return nil, err
+	}
+	heightPtr := user.HeightCm
+
 	// latest check-in for weight
 	var latestCheck models.CheckIn
 	var hasCheck bool
@@ -396,11 +410,95 @@ func (s *adminUserService) GetUserBody(ctx context.Context, id uint) (*AdminUser
 	}
 
 	body := &AdminUserBody{
-		HeightCm: nil,
+		HeightCm: heightPtr,
 		WeightKg: weightPtr,
 		Photos:   photos,
 	}
 
 	return body, nil
+}
+
+// getUploadDir returns the base directory for uploads (from env or default).
+func getUploadDir() string {
+	dir := os.Getenv("UPLOAD_DIR")
+	if dir == "" {
+		dir = "uploads"
+	}
+	return dir
+}
+
+// AddUserBodyPhoto saves the uploaded file and creates a UserPhoto record.
+// nameLabel is the display name (e.g. "Front", "Side"). filename is the original file name for extension.
+func (s *adminUserService) AddUserBodyPhoto(ctx context.Context, userID uint, file io.Reader, filename string, nameLabel string) (*AdminUserPhoto, error) {
+	baseDir := getUploadDir()
+	relDir := filepath.Join("users", fmt.Sprintf("%d", userID))
+	dir := filepath.Join(baseDir, relDir)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return nil, fmt.Errorf("creating upload dir: %w", err)
+	}
+
+	ext := filepath.Ext(filename)
+	if ext == "" {
+		ext = ".jpg"
+	}
+	uniqueName := fmt.Sprintf("%d%s", time.Now().UnixNano(), ext)
+	fullPath := filepath.Join(dir, uniqueName)
+
+	dst, err := os.Create(fullPath)
+	if err != nil {
+		return nil, fmt.Errorf("creating file: %w", err)
+	}
+	defer dst.Close()
+
+	if _, err := io.Copy(dst, file); err != nil {
+		_ = os.Remove(fullPath)
+		return nil, fmt.Errorf("writing file: %w", err)
+	}
+
+	// Store URL path for API responses (frontend uses baseURL + url)
+	urlPath := "/" + filepath.ToSlash(filepath.Join("uploads", relDir, uniqueName))
+
+	name := strings.TrimSpace(nameLabel)
+	if name == "" {
+		name = "Photo"
+	}
+
+	photo := models.UserPhoto{
+		UserID:     userID,
+		FilePath:   urlPath,
+		Type:       name,
+		UploadedAt: time.Now(),
+	}
+	if err := s.db.WithContext(ctx).Create(&photo).Error; err != nil {
+		_ = os.Remove(fullPath)
+		return nil, err
+	}
+
+	return &AdminUserPhoto{
+		ID:   photo.ID,
+		URL:  photo.FilePath,
+		Name: photo.Type,
+	}, nil
+}
+
+// DeleteUserBodyPhoto removes the photo record and the file from disk.
+func (s *adminUserService) DeleteUserBodyPhoto(ctx context.Context, userID uint, photoID uint) error {
+	var photo models.UserPhoto
+	if err := s.db.WithContext(ctx).
+		Where("id = ? AND user_id = ?", photoID, userID).
+		First(&photo).Error; err != nil {
+		return err
+	}
+
+	// File path in DB is URL path like /uploads/users/1/xxx.jpg; resolve to filesystem path
+	baseDir := getUploadDir()
+	relPath := strings.TrimPrefix(photo.FilePath, "/")
+	fullPath := filepath.Join(baseDir, filepath.FromSlash(relPath))
+	_ = os.Remove(fullPath)
+
+	if err := s.db.WithContext(ctx).Delete(&photo).Error; err != nil {
+		return err
+	}
+	return nil
 }
 

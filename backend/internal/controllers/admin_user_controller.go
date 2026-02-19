@@ -1,10 +1,13 @@
 package controllers
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 
 	"github.com/yourusername/fitness-management/internal/middleware"
 	"github.com/yourusername/fitness-management/internal/service"
@@ -165,5 +168,101 @@ func (h *AdminUserController) GetUserBody(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, body)
+}
+
+// UploadUserBodyPhoto godoc
+// @Summary Upload a body photo for a user
+// @Description Accepts multipart form with file and optional name (display label)
+// @Tags admin-users
+// @Accept multipart/form-data
+// @Produce json
+// @Param id path int true "User ID"
+// @Param file formData file true "Image file"
+// @Param name formData string false "Display name (e.g. Front, Side)"
+// @Success 201 {object} service.AdminUserPhoto
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 403 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /admin/users/{id}/body/photos [post]
+func (h *AdminUserController) UploadUserBodyPhoto(c *gin.Context) {
+	_, _ = c.Get(middleware.ContextRoleKey)
+
+	idStr := c.Param("id")
+	idUint64, err := strconv.ParseUint(idStr, 10, 64)
+	if err != nil || idUint64 == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+		return
+	}
+	userID := uint(idUint64)
+
+	file, err := c.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "file is required"})
+		return
+	}
+	nameLabel := strings.TrimSpace(c.PostForm("name"))
+	if nameLabel == "" {
+		nameLabel = "Photo"
+	}
+
+	opened, err := file.Open()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to read file"})
+		return
+	}
+	defer opened.Close()
+
+	photo, err := h.adminUserService.AddUserBodyPhoto(c.Request.Context(), userID, opened, file.Filename, nameLabel)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, photo)
+}
+
+// DeleteUserBodyPhoto godoc
+// @Summary Delete a body photo of a user
+// @Tags admin-users
+// @Produce json
+// @Param id path int true "User ID"
+// @Param photoId path int true "Photo ID"
+// @Success 204 "No Content"
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 403 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /admin/users/{id}/body/photos/{photoId} [delete]
+func (h *AdminUserController) DeleteUserBodyPhoto(c *gin.Context) {
+	_, _ = c.Get(middleware.ContextRoleKey)
+
+	idStr := c.Param("id")
+	idUint64, err := strconv.ParseUint(idStr, 10, 64)
+	if err != nil || idUint64 == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+		return
+	}
+	userID := uint(idUint64)
+
+	photoIDStr := c.Param("photoId")
+	photoIDUint64, err := strconv.ParseUint(photoIDStr, 10, 64)
+	if err != nil || photoIDUint64 == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid photo id"})
+		return
+	}
+	photoID := uint(photoIDUint64)
+
+	if err := h.adminUserService.DeleteUserBodyPhoto(c.Request.Context(), userID, photoID); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "photo not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.Status(http.StatusNoContent)
 }
 

@@ -127,7 +127,12 @@ func NewServer() *Server {
 		adminGroup.GET("/users/:id", adminUserController.GetUserDetails)
 		adminGroup.GET("/users/:id/programs", adminUserController.GetUserPrograms)
 		adminGroup.GET("/users/:id/body", adminUserController.GetUserBody)
+		adminGroup.POST("/users/:id/body/photos", adminUserController.UploadUserBodyPhoto)
+		adminGroup.DELETE("/users/:id/body/photos/:photoId", adminUserController.DeleteUserBodyPhoto)
 	}
+
+	// Serve uploaded files (e.g. user body photos) at /uploads/*
+	router.Static("/uploads", "./uploads")
 
 	// Swagger endpoint
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
