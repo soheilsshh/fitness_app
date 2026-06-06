@@ -210,47 +210,47 @@
 
 ---
 
-## فاز ۵ — اتصال پنل دانشجو + امنیت
+## فاز ۵ — اتصال پنل دانشجو + امنیت ✅
 
 ### TASK-F5-01: My Programs — API واقعی
-- [ ] حذف `mock.js`
-- [ ] `GET /me/programs`
-- [ ] نمایش نام مربی
-- **فایل:** `user/my-programs/_components/MyProgramsClient.js`
+- [x] حذف `mock.js`
+- [x] `GET /me/programs`
+- [x] نمایش نام مربی
+- **فایل:** `user/my-programs/_components/MyProgramsListClient.js`
 
 ### TASK-F5-02: Program Details — API واقعی
-- [ ] `GET /me/programs/:id`
-- [ ] نمایش schedule / planByDay
+- [x] `GET /me/programs/:id`
+- [x] نمایش schedule / planByDay
 - **فایل:** `user/my-programs/[id]/page.js`
 
 ### TASK-F5-03: Orders — API واقعی
-- [ ] `GET /me/orders`, `GET /me/orders/:id`
-- [ ] حذف `ordersMock.js`
+- [x] `GET /me/orders`, `GET /me/orders/:id`
+- [x] حذف `ordersMock.js`
 - **فایل:** `user/orders/*`
 
 ### TASK-F5-04: Profile — API واقعی
-- [ ] `GET/PATCH /me`
-- [ ] `POST /me/change-password`
-- [ ] حذف داده hardcode
+- [x] `GET/PATCH /me`
+- [x] `POST /me/change-password`
+- [x] حذف داده hardcode
 - **فایل:** `user/profile/*`
 
 ### TASK-F5-05: Navbar هوشمند
-- [ ] اگر لاگین: نمایش نام + لینک پنل + خروج
-- [ ] مخفی کردن login/register
+- [x] اگر لاگین: نمایش نام + لینک پنل + خروج
+- [x] مخفی کردن login/register
 - **فایل:** `Navbar.js`
 
 ### TASK-F5-06: جلوگیری از خرید مجدد
-- [ ] اگر student قبلاً `assignedCoachId` دارد → مخفی کردن دکمه خرید در لندینگ coach دیگر
-- [ ] یا نمایش پیام «شما زیر نظر مربی X هستید»
-- **فایل:** `coach/[slug]/_components/CoachPlans.js`
+- [x] اگر student قبلاً `assignedCoachId` دارد → مخفی کردن دکمه خرید در لندینگ coach دیگر
+- [x] یا نمایش پیام «شما زیر نظر مربی X هستید»
+- **فایل:** `coach/[slug]/_components/CoachLandingClient.jsx`
 
 ### TASK-F5-07: Site Settings — API (لندینگ برند)
-- [ ] `GET /site-settings` در لندینگ `/`
-- [ ] جایگزینی داده ثابت Hero, Stats, Contact
+- [x] `GET /site-settings` در لندینگ `/`
+- [x] جایگزینی داده ثابت Hero, Stats, Contact
 - **فایل:** `(site)/page.js`, `_components/*`
 
 ### TASK-F5-08: Contact Form — API
-- [ ] `POST /feedbacks` در ContactSection
+- [x] `POST /feedbacks` در ContactSection
 - **فایل:** `ContactSection.js`
 
 ---

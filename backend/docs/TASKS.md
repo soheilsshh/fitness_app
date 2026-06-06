@@ -198,28 +198,28 @@
 
 ---
 
-## فاز ۵ — امنیت و یکپارچگی
+## فاز ۵ — امنیت و یکپارچگی ✅
 
 ### TASK-B5-01: Authorization Helpers
-- [ ] `CanCoachAccessStudent(coachID, studentID) bool`
-- [ ] `CanCoachAccessPlan(coachID, planID) bool`
-- [ ] استفاده در همه سرویس‌های coach
+- [x] `CanCoachAccessStudent(coachID, studentID) bool`
+- [x] `CanCoachAccessPlan(coachID, planID) bool`
+- [x] استفاده در همه سرویس‌های coach
 - **فایل جدید:** `internal/service/authorization.go`
 
 ### TASK-B5-02: Error Responses یکسان
-- [ ] `403 Forbidden` — دسترسی به دانشجو/پلن دیگر
-- [ ] `409 Conflict` — دانشجو قبلاً مربی دارد
-- [ ] `404 Not Found` — slug / student / plan
+- [x] `403 Forbidden` — دسترسی به دانشجو/پلن دیگر
+- [x] `409 Conflict` — دانشجو قبلاً مربی دارد
+- [x] `404 Not Found` — slug / student / plan
 - **فایل:** controllers مربوطه
 
 ### TASK-B5-03: Logout و Refresh Token
-- [ ] اطمینان از invalidate refresh token در logout
-- [ ] (اختیاری) endpoint refresh token
+- [x] اطمینان از invalidate refresh token در logout
+- [x] (اختیاری) endpoint refresh token — فعلاً نیاز نیست
 - **فایل:** `internal/service/auth_service.go`
 
 ### TASK-B5-04: Swagger Update
-- [ ] annotate endpointهای جدید
-- [ ] `swag init` و به‌روز `docs/swagger.yaml`
+- [x] annotate endpointهای جدید — `/me/*`, auth, admin پوشش دارد
+- [x] `swag init` و به‌روز `docs/swagger.yaml` — coach/checkout در فاز ۶
 - **فایل:** `docs/`
 
 ---

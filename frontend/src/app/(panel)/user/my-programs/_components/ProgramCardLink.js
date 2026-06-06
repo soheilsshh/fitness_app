@@ -54,6 +54,9 @@ export default function ProgramCardLink({ program, timeline }) {
 
           <div className="mt-3 truncate text-base font-extrabold text-white">{program.title}</div>
           <div className="mt-1 text-sm text-zinc-300">{program.goal}</div>
+          {program.coachName ? (
+            <div className="mt-1 text-[11px] text-emerald-300">مربی: {program.coachName}</div>
+          ) : null}
         </div>
 
         <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-zinc-950/30 text-zinc-100 group-hover:bg-zinc-900/40">

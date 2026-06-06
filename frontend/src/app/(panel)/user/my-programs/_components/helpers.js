@@ -13,21 +13,25 @@ export function clamp(n, min, max) {
 }
 
 // Returns { totalDays, passedDays, remainingDays, percent, isActive, isExpired }
-export function computeTimeline(startISO, durationDays) {
+export function computeTimeline(startISO, durationDays, status, apiRemainingDays) {
   const start = new Date(startISO).getTime();
   const now = Date.now();
-
   const total = Number(durationDays) || 0;
 
   const diffDays = Math.floor((now - start) / (1000 * 60 * 60 * 24));
   const passedDays = clamp(diffDays, 0, total);
 
-  const remainingDays = clamp(total - passedDays, 0, total);
+  let remainingDays =
+    apiRemainingDays != null ? Number(apiRemainingDays) : clamp(total - passedDays, 0, total);
 
   const percent = total === 0 ? 0 : Math.round((passedDays / total) * 100);
 
-  const isExpired = total > 0 && now >= start + total * (1000 * 60 * 60 * 24);
-  const isActive = now >= start && !isExpired;
+  let isExpired = status === "ended";
+  let isActive = status === "active";
+  if (!status) {
+    isExpired = total > 0 && now >= start + total * (1000 * 60 * 60 * 24);
+    isActive = now >= start && !isExpired;
+  }
 
   return {
     totalDays: total,
@@ -36,6 +40,38 @@ export function computeTimeline(startISO, durationDays) {
     percent,
     isActive,
     isExpired,
+  };
+}
+
+export function mapApiProgram(item) {
+  return {
+    id: item.id,
+    title: item.title,
+    goal: item.type === "workout" ? "برنامه تمرین" : item.type === "nutrition" ? "برنامه تغذیه" : "برنامه ترکیبی",
+    type: item.type,
+    status: item.status,
+    startDate: item.startDate,
+    durationDays: item.durationDays,
+    remainingDays: item.remainingDays,
+    coach: item.coachName || "",
+    coachName: item.coachName || "",
+    coachSlug: item.coachSlug || "",
+    tags: item.coachName ? [item.coachName] : [],
+    planByDay: {},
+    schedule: { weekly: [], restDays: [] },
+  };
+}
+
+export function mapApiProgramDetail(item) {
+  const base = mapApiProgram(item);
+  return {
+    ...base,
+    goal: item.goal || base.goal,
+    level: item.level || "",
+    coach: item.coach || item.coachName || "",
+    tags: item.tags || base.tags,
+    schedule: item.schedule || base.schedule,
+    planByDay: item.planByDay || {},
   };
 }
 

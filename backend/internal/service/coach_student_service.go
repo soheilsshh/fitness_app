@@ -41,6 +41,7 @@ type coachStudentService struct {
 	subRepo     repository.SubscriptionRepository
 	planRepo    repository.ServicePlanRepository
 	programRepo repository.ProgramRepository
+	authz       AuthorizationService
 }
 
 func NewCoachStudentService(
@@ -48,8 +49,9 @@ func NewCoachStudentService(
 	subRepo repository.SubscriptionRepository,
 	planRepo repository.ServicePlanRepository,
 	programRepo repository.ProgramRepository,
+	authz AuthorizationService,
 ) CoachStudentService {
-	return &coachStudentService{db: db, subRepo: subRepo, planRepo: planRepo, programRepo: programRepo}
+	return &coachStudentService{db: db, subRepo: subRepo, planRepo: planRepo, programRepo: programRepo, authz: authz}
 }
 
 func (s *coachStudentService) coachStudentQuery(ctx context.Context, coachID uint) *gorm.DB {
@@ -147,6 +149,9 @@ func (s *coachStudentService) userToStudentItem(ctx context.Context, coachID uin
 }
 
 func (s *coachStudentService) CanAccessStudent(ctx context.Context, coachID, studentID uint) (bool, error) {
+	if s.authz != nil {
+		return s.authz.CanCoachAccessStudent(ctx, coachID, studentID)
+	}
 	var count int64
 	err := s.coachStudentQuery(ctx, coachID).Where("id = ?", studentID).Count(&count).Error
 	return count > 0, err

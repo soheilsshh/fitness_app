@@ -14,17 +14,20 @@ import (
 
 // MeProfileDTO matches frontend ProfileClient (firstName, lastName, phone, heightCm, weightKg, photos).
 type MeProfileDTO struct {
-	ID             uint           `json:"id"`
-	FirstName      string         `json:"firstName"`
-	LastName       string         `json:"lastName"`
-	Phone          string         `json:"phone"`
-	Email          string         `json:"email"`
-	HeightCm       *float64       `json:"heightCm,omitempty"`
-	WeightKg       *float64       `json:"weightKg,omitempty"`
-	Photos         []MePhotoDTO   `json:"photos"`
-	ProgramsCount  int64          `json:"programsCount"`
-	OrdersCount    int64          `json:"ordersCount"`
-	CreatedAt      time.Time      `json:"createdAt"`
+	ID                  uint           `json:"id"`
+	FirstName           string         `json:"firstName"`
+	LastName            string         `json:"lastName"`
+	Phone               string         `json:"phone"`
+	Email               string         `json:"email"`
+	HeightCm            *float64       `json:"heightCm,omitempty"`
+	WeightKg            *float64       `json:"weightKg,omitempty"`
+	Photos              []MePhotoDTO   `json:"photos"`
+	ProgramsCount       int64          `json:"programsCount"`
+	OrdersCount         int64          `json:"ordersCount"`
+	AssignedCoachID     *uint          `json:"assignedCoachId,omitempty"`
+	AssignedCoachName   string         `json:"assignedCoachName,omitempty"`
+	AssignedCoachSlug   string         `json:"assignedCoachSlug,omitempty"`
+	CreatedAt           time.Time      `json:"createdAt"`
 }
 
 type MePhotoDTO struct {
@@ -200,18 +203,28 @@ func (s *meService) GetProfile(ctx context.Context, userID uint) (*MeProfileDTO,
 		photoDTOs = append(photoDTOs, MePhotoDTO{ID: p.ID, URL: p.FilePath, Name: name})
 	}
 
+	var assignedCoachID *uint
+	var assignedCoachName, assignedCoachSlug string
+	if user.AssignedCoachID != nil && *user.AssignedCoachID > 0 {
+		assignedCoachID = user.AssignedCoachID
+		assignedCoachName, assignedCoachSlug = s.resolveCoachInfo(ctx, *user.AssignedCoachID)
+	}
+
 	return &MeProfileDTO{
-		ID:            user.ID,
-		FirstName:     first,
-		LastName:      last,
-		Phone:         user.Phone,
-		Email:         user.Email,
-		HeightCm:      user.HeightCm,
-		WeightKg:      user.WeightKg,
-		Photos:        photoDTOs,
-		ProgramsCount: programsCount,
-		OrdersCount:   ordersCount,
-		CreatedAt:     user.CreatedAt,
+		ID:                user.ID,
+		FirstName:         first,
+		LastName:          last,
+		Phone:             user.Phone,
+		Email:             user.Email,
+		HeightCm:          user.HeightCm,
+		WeightKg:          user.WeightKg,
+		Photos:            photoDTOs,
+		ProgramsCount:     programsCount,
+		OrdersCount:       ordersCount,
+		AssignedCoachID:   assignedCoachID,
+		AssignedCoachName: assignedCoachName,
+		AssignedCoachSlug: assignedCoachSlug,
+		CreatedAt:         user.CreatedAt,
 	}, nil
 }
 

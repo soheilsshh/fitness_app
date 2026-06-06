@@ -9,6 +9,7 @@ import { apiAssetUrl } from "@/lib/api/assets";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { addToCart, selectCartCoach } from "@/store/slices/cartSlice";
 import { toastError, toastSuccess } from "@/app/(site)/auth/_components/helpers";
+import { getAuthSession } from "@/lib/auth/session";
 
 function formatToman(amount) {
   return new Intl.NumberFormat("fa-IR").format(Number(amount)) + " تومان";
@@ -21,19 +22,34 @@ export default function CoachLandingClient({ slug }) {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [assignedCoach, setAssignedCoach] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
       setLoading(true);
       try {
-        const [profileRes, plansRes] = await Promise.all([
+        const requests = [
           api.get(`/coaches/${slug}`),
           api.get(`/coaches/${slug}/plans`),
-        ]);
+        ];
+        if (getAuthSession()?.token) {
+          requests.push(api.get("/me").catch(() => null));
+        }
+        const results = await Promise.all(requests);
         if (cancelled) return;
-        setCoach(profileRes.data);
-        setPlans(plansRes.data?.plans || []);
+        setCoach(results[0].data);
+        setPlans(results[1].data?.plans || []);
+        const meRes = results[2];
+        if (meRes?.data?.assignedCoachId) {
+          setAssignedCoach({
+            id: meRes.data.assignedCoachId,
+            name: meRes.data.assignedCoachName || "",
+            slug: meRes.data.assignedCoachSlug || "",
+          });
+        } else {
+          setAssignedCoach(null);
+        }
       } catch (error) {
         if (!cancelled) {
           if (error?.response?.status === 404) setNotFound(true);
@@ -48,6 +64,10 @@ export default function CoachLandingClient({ slug }) {
       cancelled = true;
     };
   }, [slug]);
+
+  const hasOtherCoach =
+    assignedCoach?.id && coach?.coachId && Number(assignedCoach.id) !== Number(coach.coachId);
+  const canPurchase = !hasOtherCoach;
 
   if (loading) {
     return (
@@ -181,6 +201,21 @@ export default function CoachLandingClient({ slug }) {
 
         <section className="mt-10">
           <h2 className="mb-4 text-lg font-bold text-white">پلن‌های قابل خرید</h2>
+          {hasOtherCoach ? (
+            <div className="mb-4 rounded-2xl border border-amber-400/25 bg-amber-400/10 p-4 text-sm text-amber-100">
+              شما قبلاً زیر نظر مربی{" "}
+              <span className="font-bold text-white">{assignedCoach.name}</span> هستید و
+              نمی‌توانید از مربی دیگر خرید کنید.
+              {assignedCoach.slug ? (
+                <>
+                  {" "}
+                  <Link href={`/coach/${assignedCoach.slug}`} className="underline text-emerald-200">
+                    مشاهده لندینگ مربی شما
+                  </Link>
+                </>
+              ) : null}
+            </div>
+          ) : null}
           {plans.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-white/15 p-6 text-sm text-zinc-400">
               فعلاً پلن فعالی برای این مربی ثبت نشده است.
@@ -219,35 +254,37 @@ export default function CoachLandingClient({ slug }) {
                         {plan.featuresText}
                       </p>
                     )}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (
-                          cartCoach.coachId &&
-                          String(cartCoach.coachId) !== String(coach.coachId)
-                        ) {
-                          return toastError(
-                            "سبد خرید",
-                            "فقط می‌توانید از یک مربی خرید کنید. ابتدا سبد را خالی کنید."
+                    {canPurchase ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (
+                            cartCoach.coachId &&
+                            String(cartCoach.coachId) !== String(coach.coachId)
+                          ) {
+                            return toastError(
+                              "سبد خرید",
+                              "فقط می‌توانید از یک مربی خرید کنید. ابتدا سبد را خالی کنید."
+                            );
+                          }
+                          dispatch(
+                            addToCart({
+                              planId: plan.id,
+                              id: String(plan.id),
+                              title: plan.title,
+                              price: plan.discountPrice > 0 ? plan.discountPrice : plan.price,
+                              coachId: coach.coachId,
+                              coachName: coach.displayName,
+                              coachSlug: slug,
+                            })
                           );
-                        }
-                        dispatch(
-                          addToCart({
-                            planId: plan.id,
-                            id: String(plan.id),
-                            title: plan.title,
-                            price: plan.discountPrice > 0 ? plan.discountPrice : plan.price,
-                            coachId: coach.coachId,
-                            coachName: coach.displayName,
-                            coachSlug: slug,
-                          })
-                        );
-                        toastSuccess("افزوده شد", "پلن به سبد خرید اضافه شد");
-                      }}
-                      className="mt-4 w-full rounded-2xl bg-white px-4 py-2.5 text-sm font-extrabold text-zinc-950 hover:bg-zinc-200"
-                    >
-                      افزودن به سبد خرید
-                    </button>
+                          toastSuccess("افزوده شد", "پلن به سبد خرید اضافه شد");
+                        }}
+                        className="mt-4 w-full rounded-2xl bg-white px-4 py-2.5 text-sm font-extrabold text-zinc-950 hover:bg-zinc-200"
+                      >
+                        افزودن به سبد خرید
+                      </button>
+                    ) : null}
                   </article>
                 );
               })}

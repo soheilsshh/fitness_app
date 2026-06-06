@@ -1,14 +1,14 @@
 "use client";
 
+import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { FiX } from "react-icons/fi";
+import { FiX, FiLogOut } from "react-icons/fi";
 
-export default function MobileDrawer({ open, onClose, items, onItemClick }) {
+export default function MobileDrawer({ open, onClose, items, onItemClick, session, panelHref, onLogout }) {
   return (
     <AnimatePresence>
       {open && (
         <>
-          {/* Backdrop */}
           <motion.div
             className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
             initial={{ opacity: 0 }}
@@ -16,8 +16,6 @@ export default function MobileDrawer({ open, onClose, items, onItemClick }) {
             exit={{ opacity: 0 }}
             onClick={onClose}
           />
-
-          {/* Panel */}
           <motion.aside
             className="fixed right-0 top-0 z-50 h-full w-[86%] max-w-sm border-l border-white/10 bg-zinc-950 p-4"
             initial={{ x: 420 }}
@@ -49,18 +47,33 @@ export default function MobileDrawer({ open, onClose, items, onItemClick }) {
             </div>
 
             <div className="mt-6 border-t border-white/10 pt-4">
-              <a
-                href="#"
-                className="block rounded-xl px-3 py-3 text-sm text-zinc-200 hover:bg-white/5"
-              >
-                وارد شوید
-              </a>
-              <a
-                href="#"
-                className="mt-2 block rounded-xl bg-white px-3 py-3 text-center text-sm font-semibold text-zinc-950 hover:bg-zinc-200"
-              >
-                ثبت نام کنید
-              </a>
+              {session?.token ? (
+                <>
+                  <Link
+                    href={panelHref}
+                    onClick={onClose}
+                    className="block rounded-xl px-3 py-3 text-sm text-zinc-200 hover:bg-white/5"
+                  >
+                    {session.name || "پنل من"}
+                  </Link>
+                  <button
+                    onClick={() => { onClose(); onLogout?.(); }}
+                    className="mt-2 flex w-full items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-zinc-200 hover:bg-white/10"
+                  >
+                    <FiLogOut />
+                    خروج
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link href="/auth/login" onClick={onClose} className="block rounded-xl px-3 py-3 text-sm text-zinc-200 hover:bg-white/5">
+                    وارد شوید
+                  </Link>
+                  <Link href="/auth/register" onClick={onClose} className="mt-2 block rounded-xl bg-white px-3 py-3 text-center text-sm font-semibold text-zinc-950 hover:bg-zinc-200">
+                    ثبت نام کنید
+                  </Link>
+                </>
+              )}
             </div>
           </motion.aside>
         </>

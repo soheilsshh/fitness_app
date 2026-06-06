@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { FiMenu, FiUser } from "react-icons/fi";
+import { FiMenu, FiUser, FiLogOut } from "react-icons/fi";
 import { FaDumbbell } from "react-icons/fa";
 import MobileDrawer from "./MobileDrawer";
 import CartButton from "./CartButton";
+import { getAuthSession, logout } from "@/lib/auth/session";
+import { getDashboardPath } from "@/lib/auth/roles";
 
 const NAV_ITEMS = [
   { id: "programs", label: "برنامه‌ها" },
@@ -18,9 +20,17 @@ const NAV_ITEMS = [
 export default function Navbar() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [session, setSession] = useState(null);
 
   const pathname = usePathname();
   const router = useRouter();
+
+  useEffect(() => {
+    const refresh = () => setSession(getAuthSession());
+    refresh();
+    window.addEventListener("storage", refresh);
+    return () => window.removeEventListener("storage", refresh);
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -39,6 +49,9 @@ export default function Navbar() {
     el.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
+  const panelHref = session?.role ? getDashboardPath(session.role) : "/user/my-programs";
+  const displayName = session?.name || "حساب من";
+
   return (
     <>
       <header
@@ -48,7 +61,6 @@ export default function Navbar() {
         ].join(" ")}
       >
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
-          {/* Right: menu + logo + nav */}
           <div className="flex items-center gap-3">
             <button
               className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 p-2 text-zinc-100 hover:bg-white/10 md:hidden"
@@ -81,37 +93,43 @@ export default function Navbar() {
             </nav>
           </div>
 
-          {/* Left: auth */}
           <div className="flex items-center gap-2">
             <CartButton />
 
-            {/* Desktop */}
-            <div className="hidden items-center gap-2 md:flex">
-              <Link
-                href="/auth/login"
-                className="rounded-xl px-3 py-2 text-sm text-zinc-200 hover:bg-white/5"
-              >
-                وارد شوید
-              </Link>
-              <Link
-                href="/auth/register"
-                className="rounded-xl px-3 py-2 text-sm text-zinc-200 hover:bg-white/5"
-              >
-                ثبت‌نام دانشجو
-              </Link>
-              <Link
-                href="/auth/register/coach"
-                className="rounded-xl bg-white px-3 py-2 text-sm font-semibold text-zinc-950 hover:bg-zinc-200"
-              >
-                ثبت‌نام مربی
-              </Link>
-            </div>
+            {session?.token ? (
+              <div className="hidden items-center gap-2 md:flex">
+                <Link
+                  href={panelHref}
+                  className="rounded-xl px-3 py-2 text-sm text-zinc-200 hover:bg-white/5"
+                >
+                  {displayName}
+                </Link>
+                <button
+                  onClick={() => logout()}
+                  className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-zinc-200 hover:bg-white/10"
+                >
+                  <FiLogOut />
+                  خروج
+                </button>
+              </div>
+            ) : (
+              <div className="hidden items-center gap-2 md:flex">
+                <Link href="/auth/login" className="rounded-xl px-3 py-2 text-sm text-zinc-200 hover:bg-white/5">
+                  وارد شوید
+                </Link>
+                <Link href="/auth/register" className="rounded-xl px-3 py-2 text-sm text-zinc-200 hover:bg-white/5">
+                  ثبت‌نام دانشجو
+                </Link>
+                <Link href="/auth/register/coach" className="rounded-xl bg-white px-3 py-2 text-sm font-semibold text-zinc-950 hover:bg-zinc-200">
+                  ثبت‌نام مربی
+                </Link>
+              </div>
+            )}
 
-            {/* Mobile */}
             <Link
-              href="/auth/login"
+              href={session?.token ? panelHref : "/auth/login"}
               className="md:hidden inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 p-2 text-zinc-100 hover:bg-white/10"
-              aria-label="ورود یا ثبت نام"
+              aria-label="ورود یا پنل"
             >
               <FiUser className="text-xl" />
             </Link>
@@ -119,7 +137,6 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* Spacer so content doesn't go under fixed navbar */}
       <div className="h-[64px]" />
 
       <MobileDrawer
@@ -130,6 +147,9 @@ export default function Navbar() {
           setDrawerOpen(false);
           setTimeout(() => goToSection(id), 60);
         }}
+        session={session}
+        panelHref={panelHref}
+        onLogout={() => logout()}
       />
     </>
   );

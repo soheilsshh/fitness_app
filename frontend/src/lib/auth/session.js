@@ -46,6 +46,21 @@ export function clearAuthSession() {
   clearCookie(TOKEN_COOKIE);
 }
 
+export function getAuthSession() {
+  if (typeof window === "undefined") return null;
+  const token = window.localStorage.getItem("access_token");
+  if (!token) return null;
+  return {
+    token,
+    role: window.localStorage.getItem("user_role") || "",
+    name: window.localStorage.getItem("user_name") || "",
+  };
+}
+
+export function isLoggedIn() {
+  return !!getAuthSession()?.token;
+}
+
 export async function logout() {
   const refreshToken = window.localStorage.getItem("refresh_token");
   try {

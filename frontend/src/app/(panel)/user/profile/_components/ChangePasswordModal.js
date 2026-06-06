@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { FiX, FiLock } from "react-icons/fi";
+import { api } from "@/lib/axios/client";
 
 export default function ChangePasswordModal({ open, onClose, onSuccess, onError }) {
   const [current, setCurrent] = useState("");
@@ -35,15 +36,15 @@ export default function ChangePasswordModal({ open, onClose, onSuccess, onError 
     }
 
     setSubmitting(true);
-
     try {
-      // TODO: Replace with API call
-      await new Promise((r) => setTimeout(r, 600));
-
+      await api.post("/me/change-password", {
+        currentPassword: current,
+        newPassword: next,
+      });
       onSuccess?.("رمز عبور با موفقیت تغییر کرد.");
       onClose?.();
     } catch (e) {
-      onError?.("خطا در تغییر رمز عبور. دوباره تلاش کنید.");
+      onError?.(e?.response?.data?.error || "خطا در تغییر رمز عبور. دوباره تلاش کنید.");
     } finally {
       setSubmitting(false);
     }
@@ -60,7 +61,6 @@ export default function ChangePasswordModal({ open, onClose, onSuccess, onError 
             exit={{ opacity: 0 }}
             onClick={onClose}
           />
-
           <motion.div
             className="fixed left-1/2 top-1/2 z-50 w-[92vw] max-w-md -translate-x-1/2 -translate-y-1/2"
             initial={{ opacity: 0, y: 16, scale: 0.98 }}
@@ -74,56 +74,22 @@ export default function ChangePasswordModal({ open, onClose, onSuccess, onError 
                   <FiLock className="text-emerald-300" />
                   تغییر رمز عبور
                 </div>
-
-                <button
-                  onClick={onClose}
-                  className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 p-2 text-zinc-100 hover:bg-white/10"
-                  aria-label="Close"
-                >
+                <button onClick={onClose} className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 p-2 text-zinc-100 hover:bg-white/10" aria-label="Close">
                   <FiX className="text-xl" />
                 </button>
               </div>
-
               <div className="mt-5 space-y-3">
-                <Field
-                  label="رمز فعلی"
-                  value={current}
-                  onChange={setCurrent}
-                  type="password"
-                />
-                <Field
-                  label="رمز جدید"
-                  value={next}
-                  onChange={setNext}
-                  type="password"
-                />
-                <Field
-                  label="تکرار رمز جدید"
-                  value={confirm}
-                  onChange={setConfirm}
-                  type="password"
-                />
+                <Field label="رمز فعلی" value={current} onChange={setCurrent} type="password" />
+                <Field label="رمز جدید" value={next} onChange={setNext} type="password" />
+                <Field label="تکرار رمز جدید" value={confirm} onChange={setConfirm} type="password" />
               </div>
-
               <div className="mt-5 flex gap-2">
-                <button
-                  onClick={onClose}
-                  className="flex-1 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-bold text-zinc-100 hover:bg-white/10"
-                >
+                <button onClick={onClose} className="flex-1 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-bold text-zinc-100 hover:bg-white/10">
                   انصراف
                 </button>
-
-                <button
-                  onClick={onSubmit}
-                  disabled={submitting}
-                  className="flex-1 rounded-2xl bg-white px-4 py-3 text-sm font-extrabold text-zinc-950 hover:bg-zinc-200 disabled:opacity-60"
-                >
+                <button onClick={onSubmit} disabled={submitting} className="flex-1 rounded-2xl bg-white px-4 py-3 text-sm font-extrabold text-zinc-950 hover:bg-zinc-200 disabled:opacity-60">
                   {submitting ? "در حال ثبت..." : "تایید"}
                 </button>
-              </div>
-
-              <div className="mt-3 text-[11px] text-zinc-500">
-                نکته: این بخش فعلاً دمو است؛ بعداً به API متصل می‌شود.
               </div>
             </div>
           </motion.div>

@@ -52,11 +52,14 @@ func (h *CoachPlanController) GetPlanByID(c *gin.Context) {
 	}
 	resp, err := h.planService.GetPlanByID(c.Request.Context(), coachID, uint(planID))
 	if err != nil {
-		if errors.Is(err, service.ErrCoachPlanNotFound) {
+		switch {
+		case errors.Is(err, service.ErrCoachPlanForbidden):
+			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+		case errors.Is(err, service.ErrCoachPlanNotFound):
 			c.JSON(http.StatusNotFound, gin.H{"error": "plan not found"})
-			return
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, resp)
@@ -99,11 +102,14 @@ func (h *CoachPlanController) UpdatePlan(c *gin.Context) {
 	}
 	resp, err := h.planService.UpdatePlan(c.Request.Context(), coachID, uint(planID), &req)
 	if err != nil {
-		if errors.Is(err, service.ErrCoachPlanNotFound) {
+		switch {
+		case errors.Is(err, service.ErrCoachPlanForbidden):
+			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+		case errors.Is(err, service.ErrCoachPlanNotFound):
 			c.JSON(http.StatusNotFound, gin.H{"error": "plan not found"})
-			return
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, resp)
@@ -121,11 +127,14 @@ func (h *CoachPlanController) DeletePlan(c *gin.Context) {
 		return
 	}
 	if err := h.planService.DeletePlan(c.Request.Context(), coachID, uint(planID)); err != nil {
-		if errors.Is(err, service.ErrCoachPlanNotFound) {
+		switch {
+		case errors.Is(err, service.ErrCoachPlanForbidden):
+			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+		case errors.Is(err, service.ErrCoachPlanNotFound):
 			c.JSON(http.StatusNotFound, gin.H{"error": "plan not found"})
-			return
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "plan deleted"})

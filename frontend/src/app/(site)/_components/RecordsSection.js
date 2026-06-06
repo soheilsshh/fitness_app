@@ -3,14 +3,21 @@
 import { motion } from "framer-motion";
 import { FiTrendingUp, FiUsers, FiStar, FiAward } from "react-icons/fi";
 
-const STATS = [
+const DEFAULT_STATS = [
   { icon: FiUsers, value: "12,500+", label: "کاربر فعال" },
   { icon: FiTrendingUp, value: "87%", label: "رضایت از نتیجه" },
   { icon: FiStar, value: "4.9/5", label: "امتیاز کاربران" },
   { icon: FiAward, value: "320+", label: "نتیجه موفق ثبت‌شده" },
 ];
 
-export default function RecordsSection() {
+const ICONS = [FiUsers, FiTrendingUp, FiStar, FiAward];
+
+export default function RecordsSection({ stats: apiStats }) {
+  const STATS = (apiStats?.length ? apiStats : DEFAULT_STATS).map((s, i) => ({
+    icon: ICONS[i % ICONS.length],
+    value: s.value,
+    label: s.label,
+  }));
   return (
     <section id="records" className="scroll-mt-24 py-20 md:py-24">
       <div className="mx-auto max-w-7xl px-4">

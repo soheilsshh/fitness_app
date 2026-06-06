@@ -10,7 +10,10 @@ import (
 	"github.com/yourusername/fitness-management/internal/repository"
 )
 
-var ErrCoachPlanNotFound = errors.New("plan not found")
+var (
+	ErrCoachPlanNotFound    = errors.New("plan not found")
+	ErrCoachPlanForbidden   = errors.New("plan does not belong to this coach")
+)
 
 type CoachPlanService interface {
 	ListPlans(ctx context.Context, coachID uint, page, pageSize int, query, tag string) (*AdminPlanListResponse, error)
@@ -46,12 +49,15 @@ func (s *coachPlanService) ListPlans(ctx context.Context, coachID uint, page, pa
 }
 
 func (s *coachPlanService) GetPlanByID(ctx context.Context, coachID, planID uint) (*AdminPlanDetail, error) {
-	p, err := s.planRepo.FindByIDAndCoachID(ctx, planID, coachID)
+	p, err := s.planRepo.FindByID(ctx, planID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrCoachPlanNotFound
 		}
 		return nil, err
+	}
+	if p.CoachID != coachID {
+		return nil, ErrCoachPlanForbidden
 	}
 	detail := planToDetail(p)
 	return &detail, nil
@@ -88,12 +94,15 @@ func (s *coachPlanService) CreatePlan(ctx context.Context, coachID uint, req *Ad
 }
 
 func (s *coachPlanService) UpdatePlan(ctx context.Context, coachID, planID uint, req *AdminPlanUpdateRequest) (*AdminPlanDetail, error) {
-	p, err := s.planRepo.FindByIDAndCoachID(ctx, planID, coachID)
+	p, err := s.planRepo.FindByID(ctx, planID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrCoachPlanNotFound
 		}
 		return nil, err
+	}
+	if p.CoachID != coachID {
+		return nil, ErrCoachPlanForbidden
 	}
 	if req.Title != nil {
 		p.Name = *req.Title
@@ -136,11 +145,15 @@ func (s *coachPlanService) UpdatePlan(ctx context.Context, coachID, planID uint,
 }
 
 func (s *coachPlanService) DeletePlan(ctx context.Context, coachID, planID uint) error {
-	if _, err := s.planRepo.FindByIDAndCoachID(ctx, planID, coachID); err != nil {
+	p, err := s.planRepo.FindByID(ctx, planID)
+	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return ErrCoachPlanNotFound
 		}
 		return err
+	}
+	if p.CoachID != coachID {
+		return ErrCoachPlanForbidden
 	}
 	return s.planRepo.Delete(ctx, planID)
 }

@@ -4,16 +4,22 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { FiArrowDownRight, FiCheckCircle } from "react-icons/fi";
 
-export default function Hero() {
-  const newLocal = "relative overflow-hidden rounded-4xl ";
-  const FEATURES = [
-    "برنامه شخصی‌سازی‌شده",
-    "پشتیبانی و پیگیری",
-    "قابل استفاده روی موبایل",
-    "بدون نیاز به تجهیزات خاص",
-    "قابل تنظیم بر اساس سطح",
-    "نتایج قابل اندازه‌گیری",
-  ];
+import { apiAssetUrl } from "@/lib/api/assets";
+
+const DEFAULT_FEATURES = [
+  "برنامه شخصی‌سازی‌شده",
+  "پشتیبانی و پیگیری",
+  "قابل استفاده روی موبایل",
+  "بدون نیاز به تجهیزات خاص",
+  "قابل تنظیم بر اساس سطح",
+  "نتایج قابل اندازه‌گیری",
+];
+
+export default function Hero({ settings }) {
+  const FEATURES = settings?.featureBullets?.items?.length
+    ? settings.featureBullets.items
+    : DEFAULT_FEATURES;
+  const heroImage = settings?.heroImage?.url ? apiAssetUrl(settings.heroImage.url) : "/images/22.png";
 
   return (
     <section className="relative overflow-hidden">
@@ -85,14 +91,15 @@ export default function Hero() {
           transition={{ duration: 0.7, delay: 0.15 }}
           className="relative md:-translate-y-13"
         >
-          <div className={newLocal}>
+          <div className="relative overflow-hidden rounded-4xl">
             <div className="relative aspect-4/5 w-full md:aspect-5/5">
               <Image
-                src="/images/22.png"
+                src={heroImage}
                 alt="Fitness athlete"
                 fill
                 priority
                 className="object-cover"
+                unoptimized={heroImage.startsWith("http")}
               />
               {/* soft overlay */}
             </div>

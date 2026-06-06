@@ -9,7 +9,8 @@ const VALUES = [
   { icon: FiShield, title: "قابل اعتماد", desc: "روش‌های اصولی، برنامه‌ریزی مرحله‌ای و پیگیری." },
 ];
 
-export default function AboutSection() {
+export default function AboutSection({ steps }) {
+  const stepItems = steps?.length ? steps : null;
   return (
     <section id="about" className="scroll-mt-24 py-20 md:py-24">
       <div className="mx-auto max-w-7xl px-4">
@@ -89,9 +90,20 @@ export default function AboutSection() {
                 </div>
               </div>
 
-              <div className="mt-6 rounded-3xl border border-white/10 bg-zinc-950/35 p-4 text-sm text-zinc-300">
-                شروع کن، ۷ روز اول بیشترین تغییر «حس» میشه.
-              </div>
+              {stepItems ? (
+                <div className="mt-6 space-y-2">
+                  {stepItems.map((s) => (
+                    <div key={s.id} className="rounded-3xl border border-white/10 bg-zinc-950/35 p-4 text-sm text-zinc-300">
+                      <div className="font-bold text-white">{s.title}</div>
+                      <div className="mt-1">{s.text}</div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="mt-6 rounded-3xl border border-white/10 bg-zinc-950/35 p-4 text-sm text-zinc-300">
+                  شروع کن، ۷ روز اول بیشترین تغییر «حس» میشه.
+                </div>
+              )}
             </div>
           </motion.div>
         </div>

@@ -1,34 +1,49 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FiZap } from "react-icons/fi";
-import { mockPrograms } from "./mock";
-import { computeTimeline } from "./helpers";
+import { api } from "@/lib/axios/client";
+import { computeTimeline, mapApiProgram } from "./helpers";
 import FilterChips from "./FilterChips";
 import Pagination from "../../_components/Pagination";
 import ProgramCardLink from "./ProgramCardLink";
 
 export default function MyProgramsListClient() {
-  const [filter, setFilter] = useState("all"); // all | active | inactive
+  const [filter, setFilter] = useState("all");
   const [page, setPage] = useState(1);
-
+  const [programs, setPrograms] = useState([]);
+  const [loading, setLoading] = useState(true);
   const pageSize = 6;
 
-  const computed = useMemo(() => {
-    return mockPrograms.map((p) => ({
-      program: p,
-      timeline: computeTimeline(p.startDate, p.durationDays),
-    }));
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      setLoading(true);
+      try {
+        const res = await api.get("/me/programs");
+        if (!cancelled) {
+          setPrograms((res.data?.programs || []).map(mapApiProgram));
+        }
+      } catch {
+        if (!cancelled) setPrograms([]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    load();
+    return () => { cancelled = true; };
   }, []);
+
+  const computed = useMemo(() => {
+    return programs.map((p) => ({
+      program: p,
+      timeline: computeTimeline(p.startDate, p.durationDays, p.status, p.remainingDays),
+    }));
+  }, [programs]);
 
   const filtered = useMemo(() => {
     if (filter === "all") return computed;
-
-    if (filter === "active") {
-      return computed.filter((x) => x.timeline.isActive);
-    }
-
-    // inactive = not active (includes expired + not started)
+    if (filter === "active") return computed.filter((x) => x.timeline.isActive);
     return computed.filter((x) => !x.timeline.isActive);
   }, [computed, filter]);
 
@@ -47,7 +62,6 @@ export default function MyProgramsListClient() {
 
   return (
     <div className="space-y-5">
-      {/* Header */}
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <div className="text-lg font-extrabold text-white">برنامه‌های من</div>
@@ -55,24 +69,24 @@ export default function MyProgramsListClient() {
             برنامه‌های خریداری‌شده را فیلتر کنید و برای جزئیات، روی برنامه کلیک کنید.
           </div>
         </div>
-
         <div className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-zinc-200">
           <FiZap className="text-emerald-300" />
-          پیشنهاد امروز: ۱۰ دقیقه کشش بعد از تمرین
+          تعداد: <span className="font-bold text-white">{filtered.length}</span>
         </div>
       </div>
 
-      {/* Filters */}
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-white/10 bg-white/5 p-4">
         <FilterChips value={filter} onChange={onChangeFilter} />
-
         <div className="text-sm text-zinc-300">
-          تعداد: <span className="text-white font-bold">{filtered.length}</span>
+          تعداد: <span className="font-bold text-white">{filtered.length}</span>
         </div>
       </div>
 
-      {/* List */}
-      {filtered.length === 0 ? (
+      {loading ? (
+        <div className="rounded-[26px] border border-white/10 bg-white/5 p-6 text-sm text-zinc-400">
+          در حال بارگذاری...
+        </div>
+      ) : filtered.length === 0 ? (
         <div className="rounded-[26px] border border-white/10 bg-white/5 p-6 text-sm text-zinc-300">
           برنامه‌ای برای نمایش وجود ندارد.
         </div>
@@ -86,7 +100,6 @@ export default function MyProgramsListClient() {
         </div>
       )}
 
-      {/* Pagination */}
       <Pagination page={page} totalPages={totalPages} onPage={setPage} />
     </div>
   );

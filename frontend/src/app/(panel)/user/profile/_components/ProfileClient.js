@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { api } from "@/lib/axios/client";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FiUser,
@@ -14,8 +15,6 @@ import {
 } from "react-icons/fi";
 
 import ChangePasswordModal from "./ChangePasswordModal";
-import { mockPrograms } from "../../my-programs/_components/mock";
-import { computeTimeline } from "../../my-programs/_components/helpers";
 
 function Toast({ type, text, onClose }) {
   const styles =
@@ -43,15 +42,17 @@ function cn(...xs) {
 }
 
 export default function ProfileClient() {
-  // Demo profile state (later replace with API/Redux)
   const [profile, setProfile] = useState({
-    firstName: "شهاب",
-    lastName: "صفری",
-    phone: "09xxxxxxxxx",
-    heightCm: 178,
-    weightKg: 78,
-    photos: [], // [{id, url, name}]
+    firstName: "",
+    lastName: "",
+    phone: "",
+    heightCm: null,
+    weightKg: null,
+    photos: [],
+    programsCount: 0,
+    ordersCount: 0,
   });
+  const [loading, setLoading] = useState(true);
 
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState({
@@ -67,13 +68,37 @@ export default function ProfileClient() {
 
   const fileRef = useRef(null);
 
-  const stats = useMemo(() => {
-    const total = mockPrograms.length;
-    const active = mockPrograms.filter(
-      (p) => computeTimeline(p.startDate, p.durationDays).isActive
-    ).length;
-    return { total, active };
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      try {
+        const res = await api.get("/me");
+        if (cancelled) return;
+        const data = res.data || {};
+        setProfile({
+          firstName: data.firstName || "",
+          lastName: data.lastName || "",
+          phone: data.phone || "",
+          heightCm: data.heightCm ?? null,
+          weightKg: data.weightKg ?? null,
+          photos: data.photos || [],
+          programsCount: data.programsCount || 0,
+          ordersCount: data.ordersCount || 0,
+        });
+      } catch {
+        if (!cancelled) setToast({ type: "error", text: "بارگذاری پروفایل ناموفق بود." });
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    load();
+    return () => { cancelled = true; };
   }, []);
+
+  const stats = useMemo(() => ({
+    total: profile.programsCount || 0,
+    active: profile.programsCount || 0,
+  }), [profile.programsCount]);
 
   const onStartEdit = () => {
     setDraft({
@@ -93,7 +118,7 @@ export default function ProfileClient() {
     return num;
   };
 
-  const onSave = () => {
+  const onSave = async () => {
     const f = String(draft.firstName || "").trim();
     const l = String(draft.lastName || "").trim();
 
@@ -112,22 +137,27 @@ export default function ProfileClient() {
       setToast({ type: "error", text: "وزن نامعتبر است (بین 20 تا 300 کیلوگرم)." });
       return;
     }
-    if ((draft.photos || []).length > 5) {
-      setToast({ type: "error", text: "حداکثر ۵ عکس می‌توانید آپلود کنید." });
-      return;
+
+    try {
+      const res = await api.patch("/me", {
+        firstName: f,
+        lastName: l,
+        heightCm: h,
+        weightKg: w,
+      });
+      const data = res.data || {};
+      setProfile((prev) => ({
+        ...prev,
+        firstName: data.firstName || f,
+        lastName: data.lastName || l,
+        heightCm: data.heightCm ?? h,
+        weightKg: data.weightKg ?? w,
+      }));
+      setEditing(false);
+      setToast({ type: "success", text: "اطلاعات پروفایل با موفقیت ذخیره شد." });
+    } catch (e) {
+      setToast({ type: "error", text: e?.response?.data?.error || "ذخیره ناموفق بود." });
     }
-
-    setProfile((prev) => ({
-      ...prev,
-      firstName: f,
-      lastName: l,
-      heightCm: h,
-      weightKg: w,
-      photos: draft.photos || [],
-    }));
-
-    setEditing(false);
-    setToast({ type: "success", text: "اطلاعات پروفایل با موفقیت ذخیره شد." });
   };
 
   const addFiles = (files) => {
@@ -166,6 +196,10 @@ export default function ProfileClient() {
     if (!editing) return;
     setDraft((p) => ({ ...p, photos: (p.photos || []).filter((x) => x.id !== id) }));
   };
+
+  if (loading) {
+    return <div className="text-sm text-zinc-400">در حال بارگذاری پروفایل...</div>;
+  }
 
   return (
     <div className="space-y-5">
