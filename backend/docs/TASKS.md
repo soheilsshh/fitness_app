@@ -151,49 +151,49 @@
 
 ---
 
-## فاز ۴ — دانشجویان مربی + تخصیص برنامه
+## فاز ۴ — دانشجویان مربی + تخصیص برنامه ✅
 
 ### TASK-B4-01: Coach Student Service
-- [ ] `ListStudents(coachID)` — فقط `Subscription.CoachID = coachID` یا `User.AssignedCoachID = coachID`
-- [ ] `GetStudent(coachID, studentID)` — با بررسی مالکیت
-- [ ] pagination + فیلتر status
+- [x] `ListStudents(coachID)` — فقط `Subscription.CoachID = coachID` یا `User.AssignedCoachID = coachID`
+- [x] `GetStudent(coachID, studentID)` — با بررسی مالکیت
+- [x] pagination + فیلتر status
 - **فایل جدید:** `internal/service/coach_student_service.go`
 
 ### TASK-B4-02: API دانشجویان مربی
-- [ ] `GET /coach/students`
-- [ ] `GET /coach/students/:id`
+- [x] `GET /coach/students`
+- [x] `GET /coach/students/:id`
 - **فایل جدید:** `internal/controllers/coach_student_controller.go`
 
 ### TASK-B4-03: Program Repository — متدهای Write
-- [ ] `CreateWorkoutProgram`, `UpdateWorkoutProgram`
-- [ ] `CreateNutritionProgram`, `UpdateNutritionProgram`
-- [ ] `UpsertWorkoutItems`, `UpsertNutritionItems`
-- [ ] `DeactivateOldPrograms` هنگام نسخه جدید
+- [x] `CreateWorkoutProgram`, `UpdateWorkoutProgram`
+- [x] `CreateNutritionProgram`, `UpdateNutritionProgram`
+- [x] `UpsertWorkoutItems`, `UpsertNutritionItems`
+- [x] `DeactivateOldPrograms` هنگام نسخه جدید
 - **فایل:** `internal/repository/program_repository.go`
 
 ### TASK-B4-04: Coach Program Service
-- [ ] `AssignWorkoutProgram(coachID, studentID, payload)`
-- [ ] `AssignNutritionProgram(coachID, studentID, payload)`
-- [ ] validation: student متعلق به coach
-- [ ] `CoachID` از JWT ست شود
-- [ ] یافتن `Subscription` فعال student برای `SubscriptionID`
+- [x] `AssignWorkoutProgram(coachID, studentID, payload)`
+- [x] `AssignNutritionProgram(coachID, studentID, payload)`
+- [x] validation: student متعلق به coach
+- [x] `CoachID` از JWT ست شود
+- [x] یافتن `Subscription` فعال student برای `SubscriptionID`
 - **فایل جدید:** `internal/service/coach_program_service.go`
 
 ### TASK-B4-05: API تخصیص برنامه
-- [ ] `POST /coach/students/:id/workout-programs`
-- [ ] `PATCH /coach/students/:id/workout-programs/:programId`
-- [ ] `POST /coach/students/:id/nutrition-programs`
-- [ ] `PATCH /coach/students/:id/nutrition-programs/:programId`
-- [ ] `GET /coach/students/:id/programs` — برنامه‌های فعلی
+- [x] `POST /coach/students/:id/workout-programs`
+- [x] `PATCH /coach/students/:id/workout-programs/:programId`
+- [x] `POST /coach/students/:id/nutrition-programs`
+- [x] `PATCH /coach/students/:id/nutrition-programs/:programId`
+- [x] `GET /coach/students/:id/programs` — برنامه‌های فعلی
 - **فایل جدید:** `internal/controllers/coach_program_controller.go`
 
 ### TASK-B4-06: به‌روزرسانی Me Programs
-- [ ] اضافه کردن `coachId`, `coachName`, `coachSlug` به پاسخ
-- [ ] `GET /me/programs/:id` — شامل `schedule` / `planByDay` از items
+- [x] اضافه کردن `coachId`, `coachName`, `coachSlug` به پاسخ
+- [x] `GET /me/programs/:id` — شامل `schedule` / `planByDay` از items
 - **فایل:** `internal/service/me_service.go`
 
 ### TASK-B4-07: Coach Dashboard Stats
-- [ ] `GET /coach/dashboard/stats` — تعداد دانشجویان، اشتراک‌های فعال، فروش ماه
+- [x] `GET /coach/dashboard/stats` — تعداد دانشجویان، اشتراک‌های فعال، فروش ماه
 - **فایل جدید:** `internal/service/coach_dashboard_service.go`
 
 ---

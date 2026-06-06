@@ -18,6 +18,9 @@ type SubscriptionRepository interface {
 	CountUsersWithActiveSubscription(ctx context.Context, now time.Time) (int64, error)
 	Create(ctx context.Context, sub *models.Subscription) error
 	HasActiveSubscription(ctx context.Context, userID uint, now time.Time) (bool, error)
+	FindCurrentByUserIDAndCoachID(ctx context.Context, userID, coachID uint, now time.Time) (*models.Subscription, error)
+	CountStudentsByCoachID(ctx context.Context, coachID uint) (int64, error)
+	CountActiveSubscriptionsByCoachID(ctx context.Context, coachID uint, now time.Time) (int64, error)
 }
 
 type subscriptionRepository struct {
@@ -102,5 +105,36 @@ func (r *subscriptionRepository) CountUsersWithActiveSubscription(ctx context.Co
 		Where("ends_at IS NULL OR ends_at > ?", now).
 		Select("COUNT(DISTINCT user_id)").
 		Scan(&count).Error
+	return count, err
+}
+
+func (r *subscriptionRepository) FindCurrentByUserIDAndCoachID(ctx context.Context, userID, coachID uint, now time.Time) (*models.Subscription, error) {
+	var sub models.Subscription
+	err := r.db.WithContext(ctx).
+		Where("user_id = ? AND coach_id = ? AND (ends_at IS NULL OR ends_at > ?)", userID, coachID, now).
+		Order("starts_at DESC").
+		First(&sub).Error
+	if err != nil {
+		return nil, err
+	}
+	return &sub, nil
+}
+
+func (r *subscriptionRepository) CountStudentsByCoachID(ctx context.Context, coachID uint) (int64, error) {
+	var count int64
+	err := r.db.WithContext(ctx).
+		Model(&models.User{}).
+		Where("role = ? AND (assigned_coach_id = ? OR id IN (SELECT DISTINCT user_id FROM subscriptions WHERE coach_id = ?))",
+			models.RoleStudent, coachID, coachID).
+		Count(&count).Error
+	return count, err
+}
+
+func (r *subscriptionRepository) CountActiveSubscriptionsByCoachID(ctx context.Context, coachID uint, now time.Time) (int64, error) {
+	var count int64
+	err := r.db.WithContext(ctx).
+		Model(&models.Subscription{}).
+		Where("coach_id = ? AND (ends_at IS NULL OR ends_at > ?)", coachID, now).
+		Count(&count).Error
 	return count, err
 }

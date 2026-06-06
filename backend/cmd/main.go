@@ -92,7 +92,7 @@ func NewServer() *Server {
 	coachPlanService := service.NewCoachPlanService(servicePlanRepo)
 	checkoutService := service.NewCheckoutService(db, userRepo, servicePlanRepo, orderRepo, subscriptionRepo, coachProfileRepo)
 	studentService := service.NewStudentService(userRepo, subscriptionRepo, servicePlanRepo, programRepo)
-	meService := service.NewMeService(db, userRepo, orderRepo, subscriptionRepo, servicePlanRepo)
+	meService := service.NewMeService(db, userRepo, orderRepo, subscriptionRepo, servicePlanRepo, programRepo)
 	adminUserService := service.NewAdminUserService(db, subscriptionRepo, txRepo)
 	adminDashboardService := service.NewAdminDashboardService(db, subscriptionRepo, txRepo)
 	adminStudentService := service.NewAdminStudentService(db, userRepo, subscriptionRepo, servicePlanRepo)
@@ -114,6 +114,12 @@ func NewServer() *Server {
 	coachProfileController := controllers.NewCoachProfileController(coachProfileService)
 	publicCoachController := controllers.NewPublicCoachController(coachProfileService)
 	coachPlanController := controllers.NewCoachPlanController(coachPlanService)
+	coachStudentService := service.NewCoachStudentService(db, subscriptionRepo, servicePlanRepo, programRepo)
+	coachProgramService := service.NewCoachProgramService(db, subscriptionRepo, programRepo, coachStudentService)
+	coachDashboardService := service.NewCoachDashboardService(subscriptionRepo, orderRepo)
+	coachStudentController := controllers.NewCoachStudentController(coachStudentService)
+	coachProgramController := controllers.NewCoachProgramController(coachProgramService)
+	coachDashboardController := controllers.NewCoachDashboardController(coachDashboardService)
 	checkoutController := controllers.NewCheckoutController(checkoutService)
 
 	// Auth routes
@@ -154,6 +160,14 @@ func NewServer() *Server {
 		coachGroup.GET("/plans/:id", coachPlanController.GetPlanByID)
 		coachGroup.PATCH("/plans/:id", coachPlanController.UpdatePlan)
 		coachGroup.DELETE("/plans/:id", coachPlanController.DeletePlan)
+		coachGroup.GET("/students", coachStudentController.ListStudents)
+		coachGroup.GET("/students/:id", coachStudentController.GetStudentByID)
+		coachGroup.GET("/students/:id/programs", coachProgramController.GetStudentPrograms)
+		coachGroup.POST("/students/:id/workout-programs", coachProgramController.AssignWorkoutProgram)
+		coachGroup.PATCH("/students/:id/workout-programs/:programId", coachProgramController.UpdateWorkoutProgram)
+		coachGroup.POST("/students/:id/nutrition-programs", coachProgramController.AssignNutritionProgram)
+		coachGroup.PATCH("/students/:id/nutrition-programs/:programId", coachProgramController.UpdateNutritionProgram)
+		coachGroup.GET("/dashboard/stats", coachDashboardController.GetStats)
 	}
 
 	// Student (user panel) routes - all protected

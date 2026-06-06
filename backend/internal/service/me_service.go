@@ -81,6 +81,9 @@ type MeProgramDTO struct {
 	DurationDays  int       `json:"durationDays"`
 	RemainingDays int       `json:"remainingDays"`
 	Price         int64     `json:"price"`
+	CoachID       uint      `json:"coachId,omitempty"`
+	CoachName     string    `json:"coachName,omitempty"`
+	CoachSlug     string    `json:"coachSlug,omitempty"`
 }
 
 // MeProgramsResponse for GET /me/programs.
@@ -137,11 +140,12 @@ type MeService interface {
 }
 
 type meService struct {
-	db       *gorm.DB
-	userRepo repository.UserRepository
-	orderRepo repository.OrderRepository
-	subRepo  repository.SubscriptionRepository
-	planRepo repository.ServicePlanRepository
+	db          *gorm.DB
+	userRepo    repository.UserRepository
+	orderRepo   repository.OrderRepository
+	subRepo     repository.SubscriptionRepository
+	planRepo    repository.ServicePlanRepository
+	programRepo repository.ProgramRepository
 }
 
 func NewMeService(
@@ -150,8 +154,16 @@ func NewMeService(
 	orderRepo repository.OrderRepository,
 	subRepo repository.SubscriptionRepository,
 	planRepo repository.ServicePlanRepository,
+	programRepo repository.ProgramRepository,
 ) MeService {
-	return &meService{db: db, userRepo: userRepo, orderRepo: orderRepo, subRepo: subRepo, planRepo: planRepo}
+	return &meService{
+		db:          db,
+		userRepo:    userRepo,
+		orderRepo:   orderRepo,
+		subRepo:     subRepo,
+		planRepo:    planRepo,
+		programRepo: programRepo,
+	}
 }
 
 func meSplitName(name string) (first, last string) {
@@ -292,19 +304,29 @@ func (s *meService) GetMyOrderByID(ctx context.Context, userID uint, orderID uin
 	}, nil
 }
 
-func (s *meService) resolveCoachName(ctx context.Context, coachUserID uint) string {
+func (s *meService) resolveCoachInfo(ctx context.Context, coachUserID uint) (name, slug string) {
 	if coachUserID == 0 {
-		return ""
+		return "", ""
 	}
 	var profile models.CoachProfile
-	if err := s.db.WithContext(ctx).Where("user_id = ?", coachUserID).First(&profile).Error; err == nil && profile.DisplayName != "" {
-		return profile.DisplayName
+	if err := s.db.WithContext(ctx).Where("user_id = ?", coachUserID).First(&profile).Error; err == nil {
+		if profile.DisplayName != "" {
+			name = profile.DisplayName
+		}
+		slug = profile.Slug
 	}
-	user, err := s.userRepo.FindByID(ctx, coachUserID)
-	if err == nil {
-		return user.Name
+	if name == "" {
+		user, err := s.userRepo.FindByID(ctx, coachUserID)
+		if err == nil {
+			name = user.Name
+		}
 	}
-	return ""
+	return name, slug
+}
+
+func (s *meService) resolveCoachName(ctx context.Context, coachUserID uint) string {
+	name, _ := s.resolveCoachInfo(ctx, coachUserID)
+	return name
 }
 
 func (s *meService) ListMyPrograms(ctx context.Context, userID uint) (*MeProgramsResponse, error) {
@@ -338,6 +360,7 @@ func (s *meService) ListMyPrograms(ctx context.Context, userID uint) (*MeProgram
 				remaining = duration - daysPassed
 			}
 		}
+		coachName, coachSlug := s.resolveCoachInfo(ctx, sub.CoachID)
 		programs = append(programs, MeProgramDTO{
 			ID:            sub.ID,
 			Title:         plan.Name,
@@ -347,6 +370,9 @@ func (s *meService) ListMyPrograms(ctx context.Context, userID uint) (*MeProgram
 			DurationDays:  duration,
 			RemainingDays: remaining,
 			Price:         plan.PriceCents,
+			CoachID:       sub.CoachID,
+			CoachName:     coachName,
+			CoachSlug:     coachSlug,
 		})
 	}
 	return &MeProgramsResponse{Programs: programs}, nil
@@ -380,6 +406,21 @@ func (s *meService) GetMyProgramByID(ctx context.Context, userID uint, programID
 			remaining = duration - daysPassed
 		}
 	}
+	coachName, coachSlug := s.resolveCoachInfo(ctx, sub.CoachID)
+
+	var workoutItems []models.ProgramItem
+	var nutritionItems []models.NutritionItem
+	if wp, err := s.programRepo.FindActiveWorkoutBySubscriptionID(ctx, sub.ID); err == nil && wp != nil {
+		workoutItems, _ = s.programRepo.FindWorkoutItemsByProgramID(ctx, wp.ID)
+	}
+	if np, err := s.programRepo.FindActiveNutritionBySubscriptionID(ctx, sub.ID); err == nil && np != nil {
+		nutritionItems, _ = s.programRepo.FindNutritionItemsByProgramID(ctx, np.ID)
+	}
+	planByDay, schedule := buildFullPlanByDay(workoutItems, nutritionItems)
+	if schedule == nil {
+		schedule = &MeScheduleDTO{Weekly: []string{}, RestDays: []string{}}
+	}
+
 	detail := &MeProgramDetailDTO{
 		MeProgramDTO: MeProgramDTO{
 			ID:            sub.ID,
@@ -390,13 +431,16 @@ func (s *meService) GetMyProgramByID(ctx context.Context, userID uint, programID
 			DurationDays:  duration,
 			RemainingDays: remaining,
 			Price:         plan.PriceCents,
+			CoachID:       sub.CoachID,
+			CoachName:     coachName,
+			CoachSlug:     coachSlug,
 		},
-		Goal:   plan.Description,
-		Level:  "",
-		Coach:  "",
-		Tags:   nil,
-		Schedule: &MeScheduleDTO{Weekly: []string{}, RestDays: []string{}},
-		PlanByDay: map[string]MeDayPlanDTO{},
+		Goal:      plan.Description,
+		Level:     "",
+		Coach:     coachName,
+		Tags:      nil,
+		Schedule:  schedule,
+		PlanByDay: planByDay,
 	}
 	return detail, nil
 }

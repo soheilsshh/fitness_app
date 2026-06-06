@@ -20,7 +20,7 @@ import { logout } from "@/lib/auth/session";
 
 const NAV = [
   { href: "/admin/dashboard", label: "داشبورد", icon: FiGrid },
-  { href: "/admin/students", label: "شاگردهای من", icon: FiUserCheck },
+  { href: "/admin/students", label: "همه شاگردان", icon: FiUserCheck },
   { href: "/admin/users", label: "کاربران", icon: FiUsers },
   { href: "/admin/plans", label: "پلن‌ها", icon: FiClipboard },
   { href: "/admin/site", label: "سایت", icon: FiGlobe },

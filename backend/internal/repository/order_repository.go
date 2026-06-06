@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/yourusername/fitness-management/internal/models"
 	"gorm.io/gorm"
@@ -14,6 +15,7 @@ type OrderRepository interface {
 	GetOrderItems(ctx context.Context, orderID uint) ([]models.OrderItem, error)
 	Create(ctx context.Context, order *models.Order) error
 	CreateItems(ctx context.Context, items []models.OrderItem) error
+	SumPaidAmountByCoachIDInMonth(ctx context.Context, coachID uint, year, month int) (int64, error)
 }
 
 type orderRepository struct {
@@ -80,4 +82,16 @@ func (r *orderRepository) GetOrderItems(ctx context.Context, orderID uint) ([]mo
 		return nil, err
 	}
 	return items, nil
+}
+
+func (r *orderRepository) SumPaidAmountByCoachIDInMonth(ctx context.Context, coachID uint, year, month int) (int64, error) {
+	start := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.Local)
+	end := start.AddDate(0, 1, 0)
+	var total int64
+	err := r.db.WithContext(ctx).
+		Model(&models.Order{}).
+		Where("coach_id = ? AND status = ? AND paid_at >= ? AND paid_at < ?", coachID, "paid", start, end).
+		Select("COALESCE(SUM(total_amount_cents), 0)").
+		Scan(&total).Error
+	return total, err
 }

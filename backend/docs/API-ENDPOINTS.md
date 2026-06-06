@@ -75,8 +75,8 @@
 | POST | `/me/change-password` | ✅ | تغییر رمز |
 | GET | `/me/orders` | ✅ | لیست سفارش‌ها |
 | GET | `/me/orders/:id` | ✅ | جزئیات سفارش |
-| GET | `/me/programs` | ✅ | لیست برنامه‌ها (+ `coachName` در فاز بعد) |
-| GET | `/me/programs/:id` | ✅ | جزئیات برنامه |
+| GET | `/me/programs` | ✅ | لیست برنامه‌ها (+ `coachId`, `coachName`, `coachSlug`) |
+| GET | `/me/programs/:id` | ✅ | جزئیات برنامه (+ `schedule`, `planByDay`) |
 | GET | `/subscriptions/current` | ✅ | اشتراک فعال |
 | GET | `/subscriptions` | ✅ | تاریخچه اشتراک |
 | GET | `/programs/current` | ✅ | برنامه تمرین/غذای فعلی |
@@ -121,23 +121,23 @@
 | PATCH | `/coach/plans/:id` | ✅ | ویرایش |
 | DELETE | `/coach/plans/:id` | ✅ | حذف |
 
-### دانشجویان
+### دانشجویان ✅
 
-| متد | Endpoint | توضیح |
-|-----|----------|-------|
-| GET | `/coach/students` | دانشجویان این مربی |
-| GET | `/coach/students/:id` | جزئیات دانشجو |
-| GET | `/coach/students/:id/programs` | برنامه‌های فعلی |
-| POST | `/coach/students/:id/workout-programs` | تخصیص برنامه تمرین |
-| PATCH | `/coach/students/:id/workout-programs/:programId` | ویرایش |
-| POST | `/coach/students/:id/nutrition-programs` | تخصیص برنامه غذایی |
-| PATCH | `/coach/students/:id/nutrition-programs/:programId` | ویرایش |
+| متد | Endpoint | وضعیت | توضیح |
+|-----|----------|--------|-------|
+| GET | `/coach/students` | ✅ | دانشجویان این مربی (pagination + status) |
+| GET | `/coach/students/:id` | ✅ | جزئیات دانشجو |
+| GET | `/coach/students/:id/programs` | ✅ | برنامه‌های فعلی (`planByDay`, `schedule`) |
+| POST | `/coach/students/:id/workout-programs` | ✅ | تخصیص برنامه تمرین |
+| PATCH | `/coach/students/:id/workout-programs/:programId` | ✅ | ویرایش |
+| POST | `/coach/students/:id/nutrition-programs` | ✅ | تخصیص برنامه غذایی |
+| PATCH | `/coach/students/:id/nutrition-programs/:programId` | ✅ | ویرایش |
 
-### داشبورد
+### داشبورد ✅
 
-| متد | Endpoint | توضیح |
-|-----|----------|-------|
-| GET | `/coach/dashboard/stats` | آمار دانشجویان و فروش |
+| متد | Endpoint | وضعیت | توضیح |
+|-----|----------|--------|-------|
+| GET | `/coach/dashboard/stats` | ✅ | آمار دانشجویان، اشتراک فعال، فروش ماه |
 
 ---
 
@@ -197,4 +197,4 @@
 
 ---
 
-*به‌روزرسانی: فاز ۳ — پلن مربی + خرید دمو*
+*به‌روزرسانی: فاز ۴ — دانشجویان مربی + تخصیص برنامه*

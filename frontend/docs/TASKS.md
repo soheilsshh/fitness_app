@@ -167,45 +167,45 @@
 
 ---
 
-## فاز ۴ — دانشجویان مربی + تخصیص برنامه
+## فاز ۴ — دانشجویان مربی + تخصیص برنامه ✅
 
 ### TASK-F4-01: لیست دانشجویان مربی
-- [ ] Route: `/coach/students`
-- [ ] `GET /coach/students` — جایگزین mock ادمین
-- [ ] فیلتر status، pagination
+- [x] Route: `/coach/students`
+- [x] `GET /coach/students` — جایگزین mock ادمین
+- [x] فیلتر status، pagination
 - **فایل جدید:** `src/app/(panel)/coach/students/page.js`
 
 ### TASK-F4-02: جزئیات دانشجو
-- [ ] Route: `/coach/students/[id]`
-- [ ] `GET /coach/students/:id`
-- [ ] نمایش: پروفایل، اشتراک، وضعیت بدنی
+- [x] Route: `/coach/students/[id]`
+- [x] `GET /coach/students/:id`
+- [x] نمایش: پروفایل، اشتراک، وضعیت بدنی
 - **فایل:** `coach/students/[id]/page.js`
 
 ### TASK-F4-03: ویرایشگر برنامه تمرین
-- [ ] Route: `/coach/students/[id]/workout`
-- [ ] فرم هفتگی/روزانه با exercises
-- [ ] `POST/PATCH /coach/students/:id/workout-programs`
+- [x] Route: `/coach/students/[id]/workout`
+- [x] فرم هفتگی/روزانه با exercises
+- [x] `POST/PATCH /coach/students/:id/workout-programs`
 - **فایل جدید:** `coach/students/[id]/workout/page.jsx`
 
 ### TASK-F4-04: ویرایشگر برنامه غذایی
-- [ ] Route: `/coach/students/[id]/nutrition`
-- [ ] فرم وعده‌ها و ماکروها
-- [ ] `POST/PATCH /coach/students/:id/nutrition-programs`
+- [x] Route: `/coach/students/[id]/nutrition`
+- [x] فرم وعده‌ها و ماکروها
+- [x] `POST/PATCH /coach/students/:id/nutrition-programs`
 - **فایل جدید:** `coach/students/[id]/nutrition/page.jsx`
 
 ### TASK-F4-05: Sidebar مربی — دانشجویان
-- [ ] `{ href: "/coach/students", label: "دانشجویان من" }`
+- [x] `{ href: "/coach/students", label: "دانشجویان من" }`
 - **فایل:** `CoachSidebar.js`
 
 ### TASK-F4-06: داشبورد مربی
-- [ ] Route: `/coach/dashboard`
-- [ ] `GET /coach/dashboard/stats`
-- [ ] کارت‌ها: تعداد دانشجویان، اشتراک فعال، فروش
+- [x] Route: `/coach/dashboard`
+- [x] `GET /coach/dashboard/stats`
+- [x] کارت‌ها: تعداد دانشجویان، اشتراک فعال، فروش
 - **فایل:** `coach/dashboard/page.jsx`
 
 ### TASK-F4-07: انتقال «شاگردهای من» از ادمین
-- [ ] در `AdminSidebar` برچسب را به «همه شاگردان» تغییر بده
-- [ ] منطق لیست از API ادمین (همه پلتفرم)
+- [x] در `AdminSidebar` برچسب را به «همه شاگردان» تغییر بده
+- [x] منطق لیست از API ادمین (همه پلتفرم)
 - **فایل:** `AdminSidebar.js`, `admin/students/*`
 
 ---
