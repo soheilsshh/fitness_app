@@ -69,6 +69,7 @@ type SlugCheckResponse struct {
 
 // PublicCoachDTO for GET /coaches/:slug.
 type PublicCoachDTO struct {
+	CoachID      uint             `json:"coachId"`
 	Slug         string           `json:"slug"`
 	DisplayName  string           `json:"displayName"`
 	Title        string           `json:"title"`
@@ -291,6 +292,7 @@ func toCoachProfileDTO(p *models.CoachProfile) *CoachProfileDTO {
 
 func toPublicCoachDTO(p *models.CoachProfile) *PublicCoachDTO {
 	return &PublicCoachDTO{
+		CoachID:       p.UserID,
 		Slug:          p.Slug,
 		DisplayName:   p.DisplayName,
 		Title:         p.Title,

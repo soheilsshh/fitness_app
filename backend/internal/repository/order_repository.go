@@ -10,7 +10,10 @@ import (
 type OrderRepository interface {
 	ListByUserID(ctx context.Context, userID uint, page, pageSize int, status string) ([]models.Order, int64, error)
 	GetByIDAndUserID(ctx context.Context, orderID, userID uint) (*models.Order, error)
+	GetByID(ctx context.Context, orderID uint) (*models.Order, error)
 	GetOrderItems(ctx context.Context, orderID uint) ([]models.OrderItem, error)
+	Create(ctx context.Context, order *models.Order) error
+	CreateItems(ctx context.Context, items []models.OrderItem) error
 }
 
 type orderRepository struct {
@@ -50,6 +53,25 @@ func (r *orderRepository) GetByIDAndUserID(ctx context.Context, orderID, userID 
 		return nil, err
 	}
 	return &o, nil
+}
+
+func (r *orderRepository) GetByID(ctx context.Context, orderID uint) (*models.Order, error) {
+	var o models.Order
+	if err := r.db.WithContext(ctx).First(&o, orderID).Error; err != nil {
+		return nil, err
+	}
+	return &o, nil
+}
+
+func (r *orderRepository) Create(ctx context.Context, order *models.Order) error {
+	return r.db.WithContext(ctx).Create(order).Error
+}
+
+func (r *orderRepository) CreateItems(ctx context.Context, items []models.OrderItem) error {
+	if len(items) == 0 {
+		return nil
+	}
+	return r.db.WithContext(ctx).Create(&items).Error
 }
 
 func (r *orderRepository) GetOrderItems(ctx context.Context, orderID uint) ([]models.OrderItem, error) {

@@ -3,10 +3,17 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { useAppSelector } from "@/store/hooks";
-import { selectCartItems, selectCartTotal } from "@/store/slices/cartSlice";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import {
+  clearCart,
+  selectCartCoach,
+  selectCartItems,
+  selectCartTotal,
+} from "@/store/slices/cartSlice";
 import { FiChevronRight, FiShield, FiCheckCircle } from "react-icons/fi";
 import Footer from "./Footer";
+import { api } from "@/lib/axios/client";
+import { toastError } from "../auth/_components/helpers";
 
 function formatToman(n) {
   const num = Number(n) || 0;
@@ -15,22 +22,45 @@ function formatToman(n) {
 
 export default function PaymentClient() {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const items = useAppSelector(selectCartItems);
   const total = useAppSelector(selectCartTotal);
+  const coach = useAppSelector(selectCartCoach);
+  const [paying, setPaying] = useState(false);
 
-  const [form, setForm] = useState({
-    firstName: "شهاب",
-    lastName: "صفری",
-    phone: "09xxxxxxxxx",
-    nationalId: "",
-  });
+  const canPay = useMemo(() => items.length > 0 && !paying, [items.length, paying]);
 
-  const canPay = useMemo(() => {
-    if (items.length === 0) return false;
-    if (!form.firstName.trim() || !form.lastName.trim()) return false;
-    if (!form.phone.trim()) return false;
-    return true;
-  }, [items.length, form]);
+  const handleCheckout = async () => {
+    if (!canPay) return;
+    setPaying(true);
+    try {
+      const payload = {
+        items: items.map((it) => ({
+          planId: Number(it.planId || it.id),
+          qty: it.qty,
+        })),
+      };
+      const res = await api.post("/orders/checkout", payload);
+      const { orderId, paymentGatewayUrl } = res.data || {};
+      dispatch(clearCart());
+      const target =
+        paymentGatewayUrl || (orderId ? `/payment/bank?orderId=${orderId}` : "/payment/bank");
+      router.push(target);
+    } catch (error) {
+      const status = error?.response?.status;
+      const msg = error?.response?.data?.error || "ثبت سفارش ناموفق بود";
+      if (status === 409) {
+        toastError("محدودیت خرید", "شما قبلاً زیر نظر یک مربی هستید و نمی‌توانید دوباره خرید کنید.");
+      } else if (status === 401 || status === 403) {
+        toastError("ورود لازم است", "برای خرید باید به عنوان دانشجو وارد شوید.");
+        router.push("/auth/login?next=/payment");
+      } else {
+        toastError("خطا", msg);
+      }
+    } finally {
+      setPaying(false);
+    }
+  };
 
   return (
     <>
@@ -45,13 +75,18 @@ export default function PaymentClient() {
           </Link>
         </div>
 
-        <div className="grid gap-4 mb-10 lg:grid-cols-[1.2fr_0.8fr]">
-          {/* Items */}
+        <div className="mb-10 grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
           <div className="rounded-[26px] border border-white/10 bg-white/5 p-6">
             <div className="flex items-center gap-2 text-sm font-extrabold text-white">
               <FiCheckCircle className="text-emerald-300" />
               تایید نهایی محصولات
             </div>
+
+            {coach.coachName ? (
+              <div className="mt-3 text-sm text-zinc-400">
+                مربی: <span className="text-emerald-300">{coach.coachName}</span>
+              </div>
+            ) : null}
 
             <div className="mt-4 space-y-3">
               {items.length === 0 ? (
@@ -81,34 +116,10 @@ export default function PaymentClient() {
             </div>
           </div>
 
-          {/* User info + Pay */}
           <div className="rounded-[26px] border border-white/10 bg-white/5 p-6">
             <div className="flex items-center gap-2 text-sm font-extrabold text-white">
               <FiShield className="text-cyan-300" />
-              اطلاعات خریدار
-            </div>
-
-            <div className="mt-4 grid gap-3">
-              <Field
-                label="نام"
-                value={form.firstName}
-                onChange={(v) => setForm((p) => ({ ...p, firstName: v }))}
-              />
-              <Field
-                label="نام خانوادگی"
-                value={form.lastName}
-                onChange={(v) => setForm((p) => ({ ...p, lastName: v }))}
-              />
-              <Field
-                label="شماره تماس"
-                value={form.phone}
-                onChange={(v) => setForm((p) => ({ ...p, phone: v }))}
-              />
-              <Field
-                label="کد ملی (اختیاری)"
-                value={form.nationalId}
-                onChange={(v) => setForm((p) => ({ ...p, nationalId: v }))}
-              />
+              پرداخت
             </div>
 
             <div className="mt-5 rounded-3xl border border-white/10 bg-zinc-950/30 p-4">
@@ -122,36 +133,22 @@ export default function PaymentClient() {
 
             <button
               disabled={!canPay}
-              onClick={() => router.push("/payment/bank")}
+              onClick={handleCheckout}
               className={[
                 "mt-4 w-full rounded-2xl bg-white px-4 py-3 text-sm font-extrabold text-zinc-950 hover:bg-zinc-200",
-                !canPay ? "opacity-50 pointer-events-none" : "",
+                !canPay ? "pointer-events-none opacity-50" : "",
               ].join(" ")}
             >
-              پرداخت
+              {paying ? "در حال ثبت سفارش..." : "ادامه به درگاه (دمو)"}
             </button>
 
             <div className="mt-3 text-[11px] text-zinc-500">
-              در نسخه دمو، با کلیک روی پرداخت به صفحه شبیه‌سازی درگاه بانکی
-              می‌روید.
+              برای خرید باید با حساب دانشجو وارد شده باشید. پرداخت فعلاً به صورت دمو است.
             </div>
           </div>
         </div>
       </div>
       <Footer />
     </>
-  );
-}
-
-function Field({ label, value, onChange }) {
-  return (
-    <label className="block">
-      <div className="mb-2 text-xs font-bold text-zinc-300">{label}</div>
-      <input
-        value={value || ""}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-2xl border border-white/10 bg-zinc-950/30 px-4 py-3 text-sm text-white outline-none placeholder:text-zinc-500 focus:border-white/20"
-      />
-    </label>
   );
 }

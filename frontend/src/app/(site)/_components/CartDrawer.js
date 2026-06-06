@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   removeFromCart,
+  selectCartCoach,
   selectCartItems,
   selectCartTotal,
   setQty,
@@ -20,6 +21,7 @@ export default function CartDrawer({ open, onClose }) {
   const dispatch = useAppDispatch();
   const items = useAppSelector(selectCartItems);
   const total = useAppSelector(selectCartTotal);
+  const coach = useAppSelector(selectCartCoach);
 
   return (
     <AnimatePresence>
@@ -67,6 +69,12 @@ export default function CartDrawer({ open, onClose }) {
                   <FiX className="text-xl" />
                 </button>
               </div>
+
+              {coach.coachName ? (
+                <div className="border-b border-white/10 px-5 py-3 text-[11px] text-zinc-400">
+                  مربی: <span className="font-bold text-emerald-300">{coach.coachName}</span>
+                </div>
+              ) : null}
 
               {/* Body */}
               <div className="flex-1 overflow-auto p-5">

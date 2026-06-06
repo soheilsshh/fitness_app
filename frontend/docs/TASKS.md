@@ -114,55 +114,55 @@
 
 ---
 
-## فاز ۳ — پلن مربی + خرید دمو
+## فاز ۳ — پلن مربی + خرید دمو ✅
 
 ### TASK-F3-01: صفحه لیست پلن‌های مربی
-- [ ] Route: `/coach/plans`
-- [ ] `GET /coach/plans` با pagination
-- [ ] دکمه «پلن جدید»
+- [x] Route: `/coach/plans`
+- [x] `GET /coach/plans` با pagination
+- [x] دکمه «پلن جدید»
 - **فایل جدید:** `src/app/(panel)/coach/plans/page.jsx`
 
 ### TASK-F3-02: ساخت پلن جدید
-- [ ] Route: `/coach/plans/new`
-- [ ] فرم مطابق `PlanForm` ادمین
-- [ ] `POST /coach/plans`
+- [x] Route: `/coach/plans/new`
+- [x] فرم مطابق `PlanForm` ادمین
+- [x] `POST /coach/plans`
 - **فایل:** `coach/plans/new/page.jsx`, `_components/PlanForm.jsx`
 
 ### TASK-F3-03: ویرایش و حذف پلن
-- [ ] Route: `/coach/plans/[id]`
-- [ ] `GET/PATCH/DELETE /coach/plans/:id`
+- [x] Route: `/coach/plans/[id]`
+- [x] `GET/PATCH/DELETE /coach/plans/:id`
 - **فایل:** `coach/plans/[id]/page.jsx`
 
 ### TASK-F3-04: به‌روزرسانی Cart Slice
-- [ ] اضافه: `coachId`, `planId` به آیتم سبد
-- [ ] validation: همه آیتم‌ها از یک coach
-- [ ] جلوگیری از افزودن پلن coach دیگر
+- [x] اضافه: `coachId`, `planId` به آیتم سبد
+- [x] validation: همه آیتم‌ها از یک coach
+- [x] جلوگیری از افزودن پلن coach دیگر
 - **فایل:** `src/store/slices/cartSlice.js`
 
 ### TASK-F3-05: به‌روزرسانی CartDrawer
-- [ ] نمایش نام مربی در سبد
-- [ ] پیام خطا اگر coach متفاوت
+- [x] نمایش نام مربی در سبد
+- [x] پیام خطا اگر coach متفاوت
 - **فایل:** `src/app/(site)/_components/CartDrawer.js`
 
 ### TASK-F3-06: صفحه Payment — اتصال API
-- [ ] `POST /orders/checkout` با items از cart
-- [ ] handle خطای 409 (قبلاً مربی دارد)
-- [ ] redirect به `/payment/bank?orderId=...`
+- [x] `POST /orders/checkout` با items از cart
+- [x] handle خطای 409 (قبلاً مربی دارد)
+- [x] redirect به `/payment/bank?orderId=...`
 - **فایل:** `src/app/(site)/payment/page.js`
 
 ### TASK-F3-07: صفحه Payment Bank (دمو)
-- [ ] نمایش جزئیات سفارش
-- [ ] دکمه «پرداخت موفق (دمو)» — confirm
-- [ ] redirect به `/user/orders/[id]`
+- [x] نمایش جزئیات سفارش
+- [x] دکمه «پرداخت موفق (دمو)» — confirm
+- [x] redirect به `/user/orders/[id]`
 - **فایل:** `src/app/(site)/payment/bank/page.js`
 
 ### TASK-F3-08: Sidebar مربی — آیتم پلن‌ها
-- [ ] اضافه `{ href: "/coach/plans", label: "پلن‌ها" }`
+- [x] اضافه `{ href: "/coach/plans", label: "پلن‌ها" }`
 - **فایل:** `CoachSidebar.js`
 
 ### TASK-F3-09: حذف وابستگی localStorage از admin plans
-- [ ] `plansStore.js` فقط برای coach استفاده نشود — API واقعی
-- [ ] admin plans: فقط مشاهده (فاز ۶)
+- [x] `plansStore.js` فقط برای coach استفاده نشود — API واقعی
+- [x] admin plans: فقط مشاهده (فاز ۶)
 - **فایل:** `(panel)/admin/plans/*`
 
 ---

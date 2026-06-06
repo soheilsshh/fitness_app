@@ -89,6 +89,8 @@ func NewServer() *Server {
 	// Initialize services
 	authService := service.NewAuthService(userRepo, coachProfileRepo, refreshTokenRepo, otpRepo)
 	coachProfileService := service.NewCoachProfileService(coachProfileRepo, servicePlanRepo)
+	coachPlanService := service.NewCoachPlanService(servicePlanRepo)
+	checkoutService := service.NewCheckoutService(db, userRepo, servicePlanRepo, orderRepo, subscriptionRepo, coachProfileRepo)
 	studentService := service.NewStudentService(userRepo, subscriptionRepo, servicePlanRepo, programRepo)
 	meService := service.NewMeService(db, userRepo, orderRepo, subscriptionRepo, servicePlanRepo)
 	adminUserService := service.NewAdminUserService(db, subscriptionRepo, txRepo)
@@ -111,6 +113,8 @@ func NewServer() *Server {
 	adminFeedbackController := controllers.NewAdminFeedbackController(feedbackService)
 	coachProfileController := controllers.NewCoachProfileController(coachProfileService)
 	publicCoachController := controllers.NewPublicCoachController(coachProfileService)
+	coachPlanController := controllers.NewCoachPlanController(coachPlanService)
+	checkoutController := controllers.NewCheckoutController(checkoutService)
 
 	// Auth routes
 	router.POST("/auth/register", authController.Register)
@@ -145,6 +149,11 @@ func NewServer() *Server {
 		coachGroup.GET("/profile/slug/check", coachProfileController.CheckSlug)
 		coachGroup.POST("/profile/avatar", coachProfileController.UploadAvatar)
 		coachGroup.POST("/profile/cover", coachProfileController.UploadCover)
+		coachGroup.GET("/plans", coachPlanController.ListPlans)
+		coachGroup.POST("/plans", coachPlanController.CreatePlan)
+		coachGroup.GET("/plans/:id", coachPlanController.GetPlanByID)
+		coachGroup.PATCH("/plans/:id", coachPlanController.UpdatePlan)
+		coachGroup.DELETE("/plans/:id", coachPlanController.DeletePlan)
 	}
 
 	// Student (user panel) routes - all protected
@@ -161,6 +170,8 @@ func NewServer() *Server {
 		studentGroup.GET("/subscriptions/current", studentController.GetCurrentSubscription)
 		studentGroup.GET("/subscriptions", studentController.ListSubscriptions)
 		studentGroup.GET("/programs/current", studentController.GetCurrentPrograms)
+		studentGroup.POST("/orders/checkout", checkoutController.Checkout)
+		studentGroup.GET("/orders/:id/status", checkoutController.GetOrderStatus)
 	}
 
 	// Admin routes - protected and admin-only
@@ -180,9 +191,6 @@ func NewServer() *Server {
 		adminGroup.PATCH("/students/:id", adminStudentController.UpdateStudent)
 		adminGroup.GET("/plans", adminPlanController.ListPlans)
 		adminGroup.GET("/plans/:id", adminPlanController.GetPlanByID)
-		adminGroup.POST("/plans", adminPlanController.CreatePlan)
-		adminGroup.PATCH("/plans/:id", adminPlanController.UpdatePlan)
-		adminGroup.DELETE("/plans/:id", adminPlanController.DeletePlan)
 		adminGroup.GET("/site-settings", siteSettingsController.GetSiteSettingsAdmin)
 		adminGroup.PUT("/site-settings", siteSettingsController.UpdateSiteSettings)
 		adminGroup.POST("/site-settings/hero-image", siteSettingsController.UploadHeroImage)

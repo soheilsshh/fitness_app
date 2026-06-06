@@ -21,6 +21,7 @@ type AdminPlanItem struct {
 	DiscountPercent int       `json:"discountPercent"`
 	DurationDays    int       `json:"durationDays"`
 	IsPopular       bool      `json:"isPopular"`
+	CoachID         uint      `json:"coachId"`
 	CreatedAt       time.Time `json:"createdAt"`
 	UpdatedAt       time.Time `json:"updatedAt"`
 }
@@ -110,6 +111,7 @@ func planToItem(p *models.ServicePlan) AdminPlanItem {
 		DiscountPercent: p.DiscountPercent,
 		DurationDays:    p.DurationDays,
 		IsPopular:       p.IsPopular,
+		CoachID:         p.CoachID,
 		CreatedAt:       p.CreatedAt,
 		UpdatedAt:       p.UpdatedAt,
 	}

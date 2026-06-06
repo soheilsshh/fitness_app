@@ -1,5 +1,5 @@
-import NewPlanClient from "./_components/NewPlanClient";
+import { redirect } from "next/navigation";
 
 export default function NewPlanPage() {
-  return <NewPlanClient />;
+  redirect("/admin/plans");
 }

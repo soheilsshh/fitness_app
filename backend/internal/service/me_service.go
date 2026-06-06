@@ -60,6 +60,7 @@ type MeOrderDTO struct {
 	Items           []MeOrderItemDTO `json:"items"`
 	DiscountPercent int             `json:"discountPercent"`
 	Note            string          `json:"note"`
+	CoachName       string          `json:"coachName,omitempty"`
 }
 
 // MeOrderListResponse for GET /me/orders.
@@ -244,6 +245,7 @@ func (s *meService) ListMyOrders(ctx context.Context, userID uint, page, pageSiz
 			Items:           itemDTOs,
 			DiscountPercent: o.DiscountPercent,
 			Note:            o.Note,
+			CoachName:       s.resolveCoachName(ctx, o.CoachID),
 		})
 	}
 	return &MeOrderListResponse{Items: items, Page: page, PageSize: pageSize, Total: total}, nil
@@ -286,7 +288,23 @@ func (s *meService) GetMyOrderByID(ctx context.Context, userID uint, orderID uin
 		Items:           itemDTOs,
 		DiscountPercent: o.DiscountPercent,
 		Note:            o.Note,
+		CoachName:       s.resolveCoachName(ctx, o.CoachID),
 	}, nil
+}
+
+func (s *meService) resolveCoachName(ctx context.Context, coachUserID uint) string {
+	if coachUserID == 0 {
+		return ""
+	}
+	var profile models.CoachProfile
+	if err := s.db.WithContext(ctx).Where("user_id = ?", coachUserID).First(&profile).Error; err == nil && profile.DisplayName != "" {
+		return profile.DisplayName
+	}
+	user, err := s.userRepo.FindByID(ctx, coachUserID)
+	if err == nil {
+		return user.Name
+	}
+	return ""
 }
 
 func (s *meService) ListMyPrograms(ctx context.Context, userID uint) (*MeProgramsResponse, error) {

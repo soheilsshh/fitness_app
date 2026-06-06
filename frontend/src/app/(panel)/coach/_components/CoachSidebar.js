@@ -9,6 +9,7 @@ import {
   FiX,
   FiGrid,
   FiUser,
+  FiClipboard,
 } from "react-icons/fi";
 import { FaDumbbell } from "react-icons/fa";
 import CoachNavItem from "./CoachNavItem";
@@ -16,6 +17,7 @@ import { logout } from "@/lib/auth/session";
 
 const NAV = [
   { href: "/coach/dashboard", label: "داشبورد", icon: FiGrid },
+  { href: "/coach/plans", label: "پلن‌ها", icon: FiClipboard },
   { href: "/coach/profile", label: "پروفایل من", icon: FiUser },
 ];
 

@@ -14,7 +14,7 @@ function formatNumber(v) {
   }
 }
 
-export default function PlanRow({ plan }) {
+export default function PlanRow({ plan, basePath = "/admin/plans" }) {
   const hasDiscount = Number(plan.discountPercent || 0) > 0 || Number(plan.discountPrice || 0) > 0;
 
   const price = Number(plan.price || 0);
@@ -22,7 +22,7 @@ export default function PlanRow({ plan }) {
   const finalPrice = discountPrice > 0 ? discountPrice : price;
 
   return (
-    <Link href={`/admin/plans/${plan.id}`} className="block px-4 py-4 hover:bg-white/10">
+    <Link href={`${basePath}/${plan.id}`} className="block px-4 py-4 hover:bg-white/10">
       <div className="grid grid-cols-1 gap-2 md:grid-cols-12 md:gap-2">
         <div className="md:col-span-5">
           <div className="text-sm font-extrabold text-white">{plan.title || "—"}</div>

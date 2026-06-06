@@ -102,51 +102,51 @@
 
 ---
 
-## فاز ۳ — پلن مربی + خرید دمو
+## فاز ۳ — پلن مربی + خرید دمو ✅
 
 ### TASK-B3-01: Coach Plan Service
-- [ ] CRUD پلن با فیلتر `WHERE coach_id = currentCoachID`
-- [ ] جداسازی از `admin_plan_service` یا refactor مشترک
+- [x] CRUD پلن با فیلتر `WHERE coach_id = currentCoachID`
+- [x] جداسازی از `admin_plan_service` یا refactor مشترک
 - **فایل جدید:** `internal/service/coach_plan_service.go`
 
 ### TASK-B3-02: API پلن مربی
-- [ ] `GET /coach/plans` — لیست با pagination
-- [ ] `POST /coach/plans` — ساخت
-- [ ] `GET /coach/plans/:id`
-- [ ] `PATCH /coach/plans/:id`
-- [ ] `DELETE /coach/plans/:id`
-- [ ] همه با CoachOnly + مالکیت
+- [x] `GET /coach/plans` — لیست با pagination
+- [x] `POST /coach/plans` — ساخت
+- [x] `GET /coach/plans/:id`
+- [x] `PATCH /coach/plans/:id`
+- [x] `DELETE /coach/plans/:id`
+- [x] همه با CoachOnly + مالکیت
 - **فایل جدید:** `internal/controllers/coach_plan_controller.go`
 
 ### TASK-B3-03: Refactor Admin Plans
-- [ ] `/admin/plans` — نمایش **همه** پلن‌های پلتفرم (شامل coach_id)
-- [ ] ادمین نمی‌تواند پلن بسازد (یا فقط مشاهده) — طبق تصمیم super-admin
+- [x] `/admin/plans` — نمایش **همه** پلن‌های پلتفرم (شامل coach_id)
+- [x] ادمین نمی‌تواند پلن بسازد (یا فقط مشاهده) — طبق تصمیم super-admin
 - **فایل:** `internal/service/admin_plan_service.go`
 
 ### TASK-B3-04: Checkout Service (دمو)
-- [ ] `POST /orders/checkout` — `{ items: [{ planId, qty }] }`
-- [ ] validation: کاربر `student` باشد
-- [ ] validation: `AssignedCoachID` خالی باشد (یک مربی per دانشجو)
-- [ ] validation: همه planIdها متعلق به **یک** coach باشند
-- [ ] ایجاد `Order` با status=`pending`
-- [ ] **دمو:** بلافاصله status=`paid`, `PaidAt=now`
-- [ ] ایجاد `Subscription` با `CoachID` از پلن
-- [ ] ست کردن `User.AssignedCoachID`
-- [ ] پاسخ: `{ orderId, trackingCode, paymentGatewayUrl: "/payment/bank?orderId=..." }`
+- [x] `POST /orders/checkout` — `{ items: [{ planId, qty }] }`
+- [x] validation: کاربر `student` باشد
+- [x] validation: `AssignedCoachID` خالی باشد (یک مربی per دانشجو)
+- [x] validation: همه planIdها متعلق به **یک** coach باشند
+- [x] ایجاد `Order` با status=`pending`
+- [x] **دمو:** بلافاصله status=`paid`, `PaidAt=now`
+- [x] ایجاد `Subscription` با `CoachID` از پلن
+- [x] ست کردن `User.AssignedCoachID`
+- [x] پاسخ: `{ orderId, trackingCode, paymentGatewayUrl: "/payment/bank?orderId=..." }`
 - **فایل جدید:** `internal/service/checkout_service.go`
 
 ### TASK-B3-05: Checkout Controller
-- [ ] `POST /orders/checkout` — JWT + student
-- [ ] `GET /orders/:id/status` — وضعیت سفارش (اختیاری)
+- [x] `POST /orders/checkout` — JWT + student
+- [x] `GET /orders/:id/status` — وضعیت سفارش (اختیاری)
 - **فایل جدید:** `internal/controllers/checkout_controller.go`
 
 ### TASK-B3-06: Demo Payment Callback
-- [ ] `POST /payments/demo/confirm` — `{ orderId }` — تأیید دستی دمو
-- [ ] یا همان auto-confirm در checkout
+- [x] `POST /payments/demo/confirm` — `{ orderId }` — تأیید دستی دمو
+- [x] یا همان auto-confirm در checkout
 - **فایل:** `internal/service/checkout_service.go`
 
 ### TASK-B3-07: به‌روزرسانی Me Orders
-- [ ] `GET /me/orders` — شامل `coachName` در آیتم‌ها
+- [x] `GET /me/orders` — شامل `coachName` در آیتم‌ها
 - **فایل:** `internal/service/me_service.go`
 
 ---

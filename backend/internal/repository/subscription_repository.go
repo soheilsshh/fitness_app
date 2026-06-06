@@ -16,6 +16,8 @@ type SubscriptionRepository interface {
 	CountCreatedInYear(ctx context.Context, year int) (int64, error)
 	// CountUsersWithActiveSubscription returns count of distinct user_ids that have an active subscription at now.
 	CountUsersWithActiveSubscription(ctx context.Context, now time.Time) (int64, error)
+	Create(ctx context.Context, sub *models.Subscription) error
+	HasActiveSubscription(ctx context.Context, userID uint, now time.Time) (bool, error)
 }
 
 type subscriptionRepository struct {
@@ -78,6 +80,19 @@ func (r *subscriptionRepository) CountCreatedInYear(ctx context.Context, year in
 		Where("created_at >= ? AND created_at < ?", start, end).
 		Count(&count).Error
 	return count, err
+}
+
+func (r *subscriptionRepository) Create(ctx context.Context, sub *models.Subscription) error {
+	return r.db.WithContext(ctx).Create(sub).Error
+}
+
+func (r *subscriptionRepository) HasActiveSubscription(ctx context.Context, userID uint, now time.Time) (bool, error) {
+	var count int64
+	err := r.db.WithContext(ctx).
+		Model(&models.Subscription{}).
+		Where("user_id = ? AND (ends_at IS NULL OR ends_at > ?)", userID, now).
+		Count(&count).Error
+	return count > 0, err
 }
 
 func (r *subscriptionRepository) CountUsersWithActiveSubscription(ctx context.Context, now time.Time) (int64, error) {

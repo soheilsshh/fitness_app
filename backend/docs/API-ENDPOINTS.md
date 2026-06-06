@@ -60,7 +60,7 @@
 |-----|----------|--------|-------|
 | GET | `/site-settings` | ✅ | تنظیمات لندینگ **برند پلتفرم** |
 | POST | `/feedbacks` | ✅ | `{ fullName, email, phone, message }` |
-| GET | `/coaches/:slug` | ✅ | پروفایل عمومی مربی (لندینگ — `IsPublished=true`) |
+| GET | `/coaches/:slug` | ✅ | پروفایل عمومی مربی (لندینگ — `IsPublished=true`) — شامل `coachId` |
 | GET | `/coaches/:slug/plans` | ✅ | پلن‌های فعال یک مربی |
 | GET | `/plans/public` | ❌ | **حذف شده** — جایگزین: `/coaches/:slug/plans` |
 
@@ -87,8 +87,9 @@
 
 | متد | Endpoint | وضعیت | توضیح |
 |-----|----------|--------|-------|
-| POST | `/orders/checkout` | 🔜 | `{ items: [{ planId, qty }] }` — دمو auto-confirm |
-| POST | `/payments/demo/confirm` | 🔜 | تأیید دستی دمو (اختیاری) |
+| POST | `/orders/checkout` | ✅ | JWT — `{ items: [{ planId, qty }] }` — دمو auto-confirm |
+| GET | `/orders/:id/status` | ✅ | JWT — وضعیت سفارش (شامل `coachName`) |
+| POST | `/payments/demo/confirm` | — | حذف شده — auto-confirm در checkout |
 
 **قوانین checkout:**
 - فقط `student`
@@ -110,15 +111,15 @@
 | POST | `/coach/profile/avatar` | ✅ | آپلود آواتار |
 | POST | `/coach/profile/cover` | ✅ | آپلود کاور |
 
-### پلن‌ها
+### پلن‌ها ✅
 
-| متد | Endpoint | توضیح |
-|-----|----------|-------|
-| GET | `/coach/plans` | لیست پلن‌های خود مربی |
-| POST | `/coach/plans` | ساخت پلن |
-| GET | `/coach/plans/:id` | جزئیات |
-| PATCH | `/coach/plans/:id` | ویرایش |
-| DELETE | `/coach/plans/:id` | حذف |
+| متد | Endpoint | وضعیت | توضیح |
+|-----|----------|--------|-------|
+| GET | `/coach/plans` | ✅ | لیست پلن‌های خود مربی (pagination) |
+| POST | `/coach/plans` | ✅ | ساخت پلن |
+| GET | `/coach/plans/:id` | ✅ | جزئیات |
+| PATCH | `/coach/plans/:id` | ✅ | ویرایش |
+| DELETE | `/coach/plans/:id` | ✅ | حذف |
 
 ### دانشجویان
 
@@ -167,22 +168,22 @@
 
 ### User
 - `Role`: `student` | `coach` | `admin`
-- `AssignedCoachID *uint` — مربی فعلی دانشجو (حداکثر یک مربی) 🔜
+- `AssignedCoachID *uint` — مربی فعلی دانشجو (حداکثر یک مربی) ✅
 
-### CoachProfile (گسترش یافته) 🔜
+### CoachProfile (گسترش یافته) ✅
 - `Slug`, `DisplayName`, `Title`, `AvatarURL`, `CoverImageURL`
 - `Bio`, `AboutCoach`, `Specialty`
 - `ContactPhone`, `Instagram`, `Telegram`, `WhatsApp`, `Website`
 - `IsPublished`
 
 ### ServicePlan
-- `CoachID uint` — مالک پلن 🔜
+- `CoachID uint` — مالک پلن ✅
 
 ### Subscription
-- `CoachID uint` — مربی مسئول 🔜
+- `CoachID uint` — مربی مسئول ✅
 
 ### Order
-- `CoachID uint` — برای گزارش فروش 🔜
+- `CoachID uint` — برای گزارش فروش ✅
 
 ---
 
@@ -196,4 +197,4 @@
 
 ---
 
-*به‌روزرسانی: فاز ۰ — آماده‌سازی Multi-Coach*
+*به‌روزرسانی: فاز ۳ — پلن مربی + خرید دمو*

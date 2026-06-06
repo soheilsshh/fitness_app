@@ -6,12 +6,17 @@ import { FiInstagram, FiPhone, FiGlobe } from "react-icons/fi";
 import { FaTelegram, FaWhatsapp } from "react-icons/fa";
 import { api } from "@/lib/axios/client";
 import { apiAssetUrl } from "@/lib/api/assets";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { addToCart, selectCartCoach } from "@/store/slices/cartSlice";
+import { toastError, toastSuccess } from "@/app/(site)/auth/_components/helpers";
 
 function formatToman(amount) {
   return new Intl.NumberFormat("fa-IR").format(Number(amount)) + " تومان";
 }
 
 export default function CoachLandingClient({ slug }) {
+  const dispatch = useAppDispatch();
+  const cartCoach = useAppSelector(selectCartCoach);
   const [coach, setCoach] = useState(null);
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -214,6 +219,35 @@ export default function CoachLandingClient({ slug }) {
                         {plan.featuresText}
                       </p>
                     )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (
+                          cartCoach.coachId &&
+                          String(cartCoach.coachId) !== String(coach.coachId)
+                        ) {
+                          return toastError(
+                            "سبد خرید",
+                            "فقط می‌توانید از یک مربی خرید کنید. ابتدا سبد را خالی کنید."
+                          );
+                        }
+                        dispatch(
+                          addToCart({
+                            planId: plan.id,
+                            id: String(plan.id),
+                            title: plan.title,
+                            price: plan.discountPrice > 0 ? plan.discountPrice : plan.price,
+                            coachId: coach.coachId,
+                            coachName: coach.displayName,
+                            coachSlug: slug,
+                          })
+                        );
+                        toastSuccess("افزوده شد", "پلن به سبد خرید اضافه شد");
+                      }}
+                      className="mt-4 w-full rounded-2xl bg-white px-4 py-2.5 text-sm font-extrabold text-zinc-950 hover:bg-zinc-200"
+                    >
+                      افزودن به سبد خرید
+                    </button>
                   </article>
                 );
               })}
