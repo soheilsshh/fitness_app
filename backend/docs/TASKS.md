@@ -8,14 +8,14 @@
 ## فاز ۰ — آماده‌سازی
 
 ### TASK-B0-01: به‌روزرسانی مستندات API
-- [ ] فایل `API-ENDPOINTS.md` را با endpointهای جدید مربی به‌روز کن
-- [ ] تفاوت مسیرهای فعلی و هدف را مستند کن
+- [x] فایل `API-ENDPOINTS.md` را با endpointهای جدید مربی به‌روز کن
+- [x] تفاوت مسیرهای فعلی و هدف را مستند کن
 - **خروجی:** `backend/docs/API-ENDPOINTS.md` به‌روز
 
 ### TASK-B0-02: تعریف ثابت‌های نقش
-- [ ] در `internal/models` یا `internal/auth` ثابت‌های `RoleStudent`, `RoleCoach`, `RoleAdmin` تعریف کن
-- [ ] جایگزینی رشته‌های hardcode در middleware و سرویس‌ها
-- **فایل‌ها:** `internal/models/user.go`, `internal/middleware/admin.go`
+- [x] در `internal/models` یا `internal/auth` ثابت‌های `RoleStudent`, `RoleCoach`, `RoleAdmin` تعریف کن
+- [x] جایگزینی رشته‌های hardcode در middleware و سرویس‌ها
+- **فایل‌ها:** `internal/models/roles.go`, `internal/middleware/admin.go`
 
 ---
 

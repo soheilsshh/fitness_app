@@ -11,7 +11,15 @@
   - `src/app/(site)/layout.js`: لایوت عمومی سایت، شامل `Navbar` و بک‌گراند تیره.
   - `src/app/(site)/auth/layout.js`: لایوت صفحات احراز هویت، با شِل مخصوص (AuthShell) و فوتر.
   - `src/app/(panel)/user/layout.js`: لایوت پنل کاربر، با `PanelShell`، `Sidebar`، `Topbar` و محتوا.
-  - `src/app/(panel)/admin/_components/AdminShell.js` (از طریق صفحات ادمین استفاده می‌شود): شِل پنل ادمین با `AdminSidebar` و `AdminTopbar`.
+  - `src/app/(panel)/admin/_components/AdminShell.js` (از طریق صفحات ادمین استفاده می‌شود): شِل پنل **سوپرادمین** با `AdminSidebar` و `AdminTopbar`.
+  - `src/app/(panel)/coach/layout.js`: لایوت پنل **مربی** با `CoachShell`، `CoachSidebar` و `CoachTopbar`.
+
+### Auth Helpers
+
+- **`src/lib/auth/roles.js`**:
+  - `ROLES`: `{ ADMIN: "admin", COACH: "coach", STUDENT: "student" }`
+  - `getDashboardPath(role)`: مسیر پس از لاگین — admin → `/admin/dashboard`، coach → `/coach/dashboard`، student → `/user/my-programs`
+  - `PANEL_PREFIXES`: پیشوند مسیر هر پنل
 
 ### Global State & API Layer
 
@@ -36,15 +44,17 @@
 
 - **Axios client** (`src/lib/axios/client.js`):
   - `api = axios.create({ baseURL: process.env.NEXT_PUBLIC_API_BASE_URL, timeout: 15000 })`.
-  - **نکته**: در حال حاضر هیچ تماس واقعی به `api` در کد نیست؛ برای اتصال بکند باید از این کلاینت در صفحات/کامپوننت‌های مربوط استفاده شود.
+  - **وضعیت اتصال**: auth و admin users به API متصل‌اند؛ سایر بخش‌ها در حال اتصال (فازهای بعدی).
 
 ### High-Level Route Map
 
 - **Public site (`(site)`)**:
   - `/` → `src/app/(site)/page.js` (صفحه لندینگ).
   - `/auth/login` → صفحه لاگین.
-  - `/auth/register` → صفحه ثبت‌نام.
+  - `/auth/register` → صفحه ثبت‌نام دانشجو.
+  - `/auth/register/coach` → ثبت‌نام مربی (فاز ۱).
   - `/auth/forgot` → صفحه فراموشی رمز.
+  - `/coach/[slug]` → لندینگ عمومی مربی (فاز ۲).
   - `/payment` → صفحه مرور سبد و تأیید سفارش.
   - `/payment/bank` → صفحه دمو درگاه بانکی.
 
@@ -56,7 +66,14 @@
   - `/user/my-programs` → لیست برنامه‌های فعال/قبلی کاربر.
   - `/user/my-programs/[id]` → جزئیات برنامه انتخاب‌شده (تمرین و تغذیه).
 
-- **Admin Panel (`(panel)/admin`)**:
+- **Coach Panel (`(panel)/coach`)** — جدید (فاز ۰):
+  - `/coach` → ریدایرکت به `/coach/dashboard`.
+  - `/coach/dashboard` → داشبورد مربی (placeholder).
+  - `/coach/profile` → ویرایش پروفایل مربی (فاز ۲).
+  - `/coach/plans` → مدیریت پلن‌ها (فاز ۳).
+  - `/coach/students` → دانشجویان مربی (فاز ۴).
+
+- **Admin Panel (`(panel)/admin`)** — سوپرادمین:
   - `/admin` → ریدایرکت به `/admin/dashboard`.
   - `/admin/dashboard` → داشبورد مدیریتی (آمار و نمودار فروش).
   - `/admin/users` → لیست کاربران.

@@ -12,6 +12,7 @@ import {
   toastSuccess,
 } from "../../_components/helpers";
 import { api } from "@/lib/axios/client";
+import { getDashboardPath } from "@/lib/auth/roles";
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -77,11 +78,7 @@ export default function RegisterForm() {
       window.localStorage.setItem("user_name", user.name);
     }
 
-    const target =
-      user?.role === "admin"
-        ? "/admin/dashboard"
-        : "/user/my-programs";
-    router.replace(target);
+    router.replace(getDashboardPath(user?.role));
   };
 
   const submitRegister = async () => {

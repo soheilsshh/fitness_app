@@ -65,7 +65,7 @@ func NewAuthService(
 		refreshTokenRepo: refreshTokenRepo,
 		otpRepo:          otpRepo,
 		otpTTL:           2 * time.Minute,
-		defaultUserRole:  "student",
+		defaultUserRole:  models.RoleStudent,
 	}
 }
 

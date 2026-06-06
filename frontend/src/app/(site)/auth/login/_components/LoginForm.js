@@ -12,6 +12,7 @@ import {
   toastSuccess,
 } from "../../_components/helpers";
 import { api } from "@/lib/axios/client";
+import { getDashboardPath } from "@/lib/auth/roles";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -49,11 +50,7 @@ export default function LoginForm() {
       window.localStorage.setItem("user_name", user.name);
     }
 
-    const target =
-      user?.role === "admin"
-        ? "/admin/dashboard"
-        : "/user/my-programs";
-    router.replace(target);
+    router.replace(getDashboardPath(user?.role));
   };
 
   const onSendOtp = async () => {

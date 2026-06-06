@@ -83,7 +83,7 @@ func (s *adminStudentService) ListStudents(ctx context.Context, page, pageSize i
 		pageSize = 100
 	}
 
-	db := s.db.WithContext(ctx).Model(&models.User{}).Where("role = ?", "student")
+	db := s.db.WithContext(ctx).Model(&models.User{}).Where("role = ?", models.RoleStudent)
 
 	if q := strings.TrimSpace(query); q != "" {
 		like := "%" + q + "%"

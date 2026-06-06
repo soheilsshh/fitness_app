@@ -119,7 +119,7 @@ func SetupDatabase(db *gorm.DB) error {
 			Email:    adminEmail,
 			Phone:    adminPhone,
 			Password: string(hashed),
-			Role:     "admin",
+			Role:     models.RoleAdmin,
 		}
 
 		if err := db.Create(admin).Error; err != nil {

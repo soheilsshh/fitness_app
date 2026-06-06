@@ -8,18 +8,18 @@
 ## فاز ۰ — آماده‌سازی
 
 ### TASK-F0-01: ساختار پوشه پنل مربی
-- [ ] ایجاد `src/app/(panel)/coach/` با زیرپوشه‌ها
-- [ ] `layout.js`, `page.js` (redirect به dashboard)
-- [ ] `_components/CoachShell.js`, `CoachSidebar.js`, `CoachTopbar.js`
+- [x] ایجاد `src/app/(panel)/coach/` با زیرپوشه‌ها
+- [x] `layout.js`, `page.js` (redirect به dashboard)
+- [x] `_components/CoachShell.js`, `CoachSidebar.js`, `CoachTopbar.js`
 - **الگو:** کپی از `admin/_components/AdminShell.js`
 
 ### TASK-F0-02: ثابت‌های نقش و مسیرها
-- [ ] فایل `src/lib/auth/roles.js` — `ROLES`, `getDashboardPath(role)`
-- [ ] استفاده در LoginForm, RegisterForm
+- [x] فایل `src/lib/auth/roles.js` — `ROLES`, `getDashboardPath(role)`
+- [x] استفاده در LoginForm, RegisterForm
 - **فایل جدید:** `src/lib/auth/roles.js`
 
 ### TASK-F0-03: به‌روزرسانی مستندات فرانت
-- [ ] `frontend-overview.md` — اضافه کردن پنل coach و مسیرهای جدید
+- [x] `frontend-overview.md` — اضافه کردن پنل coach و مسیرهای جدید
 - **فایل:** `frontend/docs/frontend-overview.md`
 
 ---

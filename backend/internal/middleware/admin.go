@@ -4,9 +4,11 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+
+	"github.com/yourusername/fitness-management/internal/models"
 )
 
-// AdminOnly ensures the current user has role "admin".
+// AdminOnly ensures the current user has role admin (super-admin).
 func AdminOnly() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		roleVal, exists := c.Get(ContextRoleKey)
@@ -15,7 +17,7 @@ func AdminOnly() gin.HandlerFunc {
 			return
 		}
 		role, ok := roleVal.(string)
-		if !ok || role != "admin" {
+		if !ok || role != models.RoleAdmin {
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "forbidden"})
 			return
 		}
