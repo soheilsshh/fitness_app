@@ -27,6 +27,15 @@ type registerRequest struct {
 	Password string `json:"password" binding:"required,min=6"`
 }
 
+type registerCoachRequest struct {
+	Name        string `json:"name" binding:"required"`
+	Email       string `json:"email" binding:"required,email"`
+	Phone       string `json:"phone" binding:"required"`
+	Password    string `json:"password" binding:"required,min=6"`
+	DisplayName string `json:"displayName"`
+	Slug        string `json:"slug"`
+}
+
 type loginPasswordRequest struct {
 	Identifier string `json:"identifier" binding:"required"` // email or phone
 	Password   string `json:"password" binding:"required"`
@@ -121,6 +130,44 @@ func (h *AuthController) Register(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
+	}
+
+	c.JSON(http.StatusCreated, authResponse{
+		User: authUserResponse{
+			ID:    result.User.ID,
+			Name:  result.User.Name,
+			Email: result.User.Email,
+			Phone: result.User.Phone,
+			Role:  result.User.Role,
+		},
+		AccessToken:  result.AccessToken,
+		RefreshToken: result.RefreshToken,
+	})
+}
+
+// RegisterCoach registers a new coach account with an initial profile.
+func (h *AuthController) RegisterCoach(c *gin.Context) {
+	var req registerCoachRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	result, err := h.authService.RegisterCoach(
+		c.Request.Context(),
+		req.Name, req.Email, req.Phone, req.Password,
+		req.DisplayName, req.Slug,
+	)
+	if err != nil {
+		switch err {
+		case service.ErrEmailAlreadyExists:
+			c.JSON(http.StatusConflict, gin.H{"error": "email already in use"})
+		case service.ErrPhoneAlreadyExists:
+			c.JSON(http.StatusConflict, gin.H{"error": "phone already in use"})
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
+		return
 	}
 
 	c.JSON(http.StatusCreated, authResponse{

@@ -16,6 +16,7 @@ import {
 } from "react-icons/fi";
 import { FaDumbbell } from "react-icons/fa";
 import AdminNavItem from "./AdminNavItem";
+import { logout } from "@/lib/auth/session";
 
 const NAV = [
   { href: "/admin/dashboard", label: "داشبورد", icon: FiGrid },
@@ -93,7 +94,7 @@ function SidebarContent({ collapsed, isMobile, setMobileOpen, setCollapsed }) {
       {/* Logout pinned to bottom */}
       <div className="px-3 pb-4">
         <button
-          onClick={() => alert("Logout (demo)")}
+          onClick={() => logout()}
           className={[
             "flex w-full items-center rounded-2xl border border-white/10 bg-white/5 text-sm font-bold text-zinc-100 hover:bg-white/10",
             collapsed ? "justify-center px-1 py-1" : "gap-3 px-2 py-2",

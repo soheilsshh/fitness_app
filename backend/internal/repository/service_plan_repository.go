@@ -11,6 +11,7 @@ import (
 type ServicePlanRepository interface {
 	FindByID(ctx context.Context, id uint) (*models.ServicePlan, error)
 	List(ctx context.Context, page, pageSize int, query, tag string) ([]models.ServicePlan, int64, error)
+	ListActiveByCoachID(ctx context.Context, coachID uint) ([]models.ServicePlan, error)
 	Create(ctx context.Context, plan *models.ServicePlan) error
 	Update(ctx context.Context, plan *models.ServicePlan) error
 	Delete(ctx context.Context, id uint) error
@@ -63,6 +64,18 @@ func (r *servicePlanRepository) List(ctx context.Context, page, pageSize int, qu
 		return nil, 0, err
 	}
 	return list, total, nil
+}
+
+func (r *servicePlanRepository) ListActiveByCoachID(ctx context.Context, coachID uint) ([]models.ServicePlan, error) {
+	var list []models.ServicePlan
+	err := r.db.WithContext(ctx).
+		Where("coach_id = ? AND is_active = ?", coachID, true).
+		Order("is_popular DESC, created_at DESC").
+		Find(&list).Error
+	if err != nil {
+		return nil, err
+	}
+	return list, nil
 }
 
 func (r *servicePlanRepository) Create(ctx context.Context, plan *models.ServicePlan) error {

@@ -84,9 +84,11 @@ func NewServer() *Server {
 	siteSettingsRepo := repository.NewSiteSettingsRepository(db)
 	feedbackRepo := repository.NewFeedbackRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
+	coachProfileRepo := repository.NewCoachProfileRepository(db)
 
 	// Initialize services
-	authService := service.NewAuthService(userRepo, refreshTokenRepo, otpRepo)
+	authService := service.NewAuthService(userRepo, coachProfileRepo, refreshTokenRepo, otpRepo)
+	coachProfileService := service.NewCoachProfileService(coachProfileRepo, servicePlanRepo)
 	studentService := service.NewStudentService(userRepo, subscriptionRepo, servicePlanRepo, programRepo)
 	meService := service.NewMeService(db, userRepo, orderRepo, subscriptionRepo, servicePlanRepo)
 	adminUserService := service.NewAdminUserService(db, subscriptionRepo, txRepo)
@@ -107,9 +109,12 @@ func NewServer() *Server {
 	siteSettingsController := controllers.NewSiteSettingsController(siteSettingsService)
 	feedbackController := controllers.NewFeedbackController(feedbackService)
 	adminFeedbackController := controllers.NewAdminFeedbackController(feedbackService)
+	coachProfileController := controllers.NewCoachProfileController(coachProfileService)
+	publicCoachController := controllers.NewPublicCoachController(coachProfileService)
 
 	// Auth routes
 	router.POST("/auth/register", authController.Register)
+	router.POST("/auth/register/coach", authController.RegisterCoach)
 	router.POST("/auth/login/password", authController.LoginWithPassword)
 	router.POST("/auth/otp/request", authController.RequestOTP)
 	router.POST("/auth/otp/verify", authController.VerifyOTP)
@@ -128,6 +133,19 @@ func NewServer() *Server {
 	// Public routes (no auth)
 	router.GET("/site-settings", siteSettingsController.GetSiteSettingsPublic)
 	router.POST("/feedbacks", feedbackController.CreateFeedback)
+	router.GET("/coaches/:slug", publicCoachController.GetCoachBySlug)
+	router.GET("/coaches/:slug/plans", publicCoachController.GetCoachPlans)
+
+	// Coach panel routes
+	coachGroup := router.Group("/coach")
+	coachGroup.Use(middleware.AuthMiddleware(), middleware.CoachOnly())
+	{
+		coachGroup.GET("/profile", coachProfileController.GetProfile)
+		coachGroup.PUT("/profile", coachProfileController.UpdateProfile)
+		coachGroup.GET("/profile/slug/check", coachProfileController.CheckSlug)
+		coachGroup.POST("/profile/avatar", coachProfileController.UploadAvatar)
+		coachGroup.POST("/profile/cover", coachProfileController.UploadCover)
+	}
 
 	// Student (user panel) routes - all protected
 	studentGroup := router.Group("/")

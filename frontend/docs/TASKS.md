@@ -24,92 +24,92 @@
 
 ---
 
-## فاز ۱ — زیرساخت نقش Coach + ریدایرکت
+## فاز ۱ — زیرساخت نقش Coach + ریدایرکت ✅
 
 ### TASK-F1-01: Middleware محافظت مسیر
-- [ ] ایجاد `src/middleware.js`
-- [ ] `/admin/*` → فقط `role=admin`
-- [ ] `/coach/*` → فقط `role=coach`
-- [ ] `/user/*` → فقط `role=student`
-- [ ] بدون token → redirect `/auth/login`
-- [ ] نقش اشتباه → redirect به dashboard نقش خودش
+- [x] ایجاد `src/middleware.js`
+- [x] `/admin/*` → فقط `role=admin`
+- [x] `/coach/*` → فقط `role=coach` (فقط پنل، نه لندینگ عمومی)
+- [x] `/user/*` → فقط `role=student`
+- [x] بدون token → redirect `/auth/login`
+- [x] نقش اشتباه → redirect به dashboard نقش خودش
 - **نکته:** خواندن role از cookie یا decode JWT (یا endpoint `/auth/me`)
 
 ### TASK-F1-02: ذخیره نقش در Cookie
-- [ ] پس از login، `user_role` در cookie هم ست شود (برای middleware)
-- [ ] یا استفاده از `access_token` decode در edge
+- [x] پس از login، `user_role` در cookie هم ست شود (برای middleware)
+- [x] یا استفاده از `access_token` decode در edge
 - **فایل:** `auth/login/_components/LoginForm.js`, `auth/register/_components/RegisterForm.js`
 
 ### TASK-F1-03: ریدایرکت لاگین بر اساس نقش
-- [ ] `admin` → `/admin/dashboard`
-- [ ] `coach` → `/coach/dashboard`
-- [ ] `student` → `/user/my-programs`
+- [x] `admin` → `/admin/dashboard`
+- [x] `coach` → `/coach/dashboard`
+- [x] `student` → `/user/my-programs`
 - **فایل:** `LoginForm.js`, `RegisterForm.js`
 
 ### TASK-F1-04: صفحه ثبت‌نام مربی
-- [ ] Route: `/auth/register/coach`
-- [ ] فرم: name, phone, email, password, displayName, slug (اختیاری)
-- [ ] `POST /auth/register/coach`
-- [ ] پس از موفقیت → `/coach/profile` (تکمیل پروفایل)
+- [x] Route: `/auth/register/coach`
+- [x] فرم: name, phone, email, password, displayName, slug (اختیاری)
+- [x] `POST /auth/register/coach`
+- [x] پس از موفقیت → `/coach/profile` (تکمیل پروفایل)
 - **فایل جدید:** `src/app/(site)/auth/register/coach/page.js`
 
 ### TASK-F1-05: لینک ثبت‌نام مربی در Navbar
-- [ ] دکمه «ثبت‌نام مربی» در Navbar یا Footer
+- [x] دکمه «ثبت‌نام مربی» در Navbar یا Footer
 - **فایل:** `src/app/(site)/_components/Navbar.js`
 
 ### TASK-F1-06: Layout پنل مربی (خالی)
-- [ ] `CoachShell` با Sidebar و Topbar
-- [ ] آیتم‌های nav اولیه: داشبورد، پروفایل
-- [ ] صفحه placeholder `/coach/dashboard`
+- [x] `CoachShell` با Sidebar و Topbar
+- [x] آیتم‌های nav اولیه: داشبورد، پروفایل
+- [x] صفحه placeholder `/coach/dashboard`
 - **فایل‌ها:** `(panel)/coach/layout.js`, `_components/*`
 
 ### TASK-F1-07: Logout واقعی
-- [ ] `POST /auth/logout` + پاک کردن localStorage و cookie
-- [ ] redirect به `/auth/login`
-- [ ] در هر سه پنل: user, coach, admin
+- [x] `POST /auth/logout` + پاک کردن localStorage و cookie
+- [x] redirect به `/auth/login`
+- [x] در هر سه پنل: user, coach, admin
 - **فایل‌ها:** `Sidebar.js`, `AdminSidebar.js`, `CoachSidebar.js`
 
 ---
 
-## فاز ۲ — پروفایل مربی + لندینگ عمومی
+## فاز ۲ — پروفایل مربی + لندینگ عمومی ✅
 
 ### TASK-F2-01: صفحه ویرایش پروفایل مربی
-- [ ] Route: `/coach/profile`
-- [ ] فرم: displayName, slug, title, bio, about, specialty, phone, instagram, telegram, whatsapp, website
-- [ ] toggle `isPublished`
-- [ ] `GET /coach/profile` + `PUT /coach/profile`
-- [ ] نمایش لینک عمومی: `/coach/{slug}` با دکمه کپی
+- [x] Route: `/coach/profile`
+- [x] فرم: displayName, slug, title, bio, about, specialty, phone, instagram, telegram, whatsapp, website
+- [x] toggle `isPublished`
+- [x] `GET /coach/profile` + `PUT /coach/profile`
+- [x] نمایش لینک عمومی: `/coach/{slug}` با دکمه کپی
 - **فایل جدید:** `src/app/(panel)/coach/profile/page.jsx`
 
 ### TASK-F2-02: آپلود آواتار و کاور
-- [ ] کامپوننت `ImageUploader` — avatar + cover
-- [ ] `POST /coach/profile/avatar`, `POST /coach/profile/cover`
-- [ ] پیش‌نمایش تصویر
+- [x] کامپوننت `ImageUploader` — avatar + cover
+- [x] `POST /coach/profile/avatar`, `POST /coach/profile/cover`
+- [x] پیش‌نمایش تصویر
 - **فایل:** `coach/profile/_components/ProfileForm.jsx`
 
 ### TASK-F2-03: بررسی یکتا بودن Slug
-- [ ] debounced call به `GET /coach/profile/slug/check?slug=`
-- [ ] نمایش tick/error کنار input
+- [x] debounced call به `GET /coach/profile/slug/check?slug=`
+- [x] نمایش tick/error کنار input
 - **فایل:** `ProfileForm.jsx`
 
 ### TASK-F2-04: لندینگ عمومی مربی
-- [ ] Route: `/coach/[slug]` در `(site)` — **بدون** layout پنل
-- [ ] `GET /coaches/:slug` + `GET /coaches/:slug/plans`
-- [ ] سکشن‌ها: Hero (cover+avatar), About, Plans, Contact/Social
-- [ ] دکمه «خرید» روی هر پلن → addToCart
+- [x] Route: `/coach/[slug]` در `(site)` — **بدون** layout پنل
+- [x] `GET /coaches/:slug` + `GET /coaches/:slug/plans`
+- [x] سکشن‌ها: Hero (cover+avatar), About, Plans, Contact/Social
+- [ ] دکمه «خرید» روی هر پلن → addToCart (فاز ۳)
 - **فایل جدید:** `src/app/(site)/coach/[slug]/page.js`
 
 ### TASK-F2-05: کامپوننت‌های لندینگ مربی
-- [ ] `CoachHero.js`, `CoachAbout.js`, `CoachPlans.js`, `CoachContact.js`
-- [ ] طراحی هماهنگ با تم تیره FitPro
+- [x] لندینگ یکپارچه در `CoachLandingClient.jsx`
+- [x] طراحی هماهنگ با تم تیره FitPro
 - **فایل:** `src/app/(site)/coach/[slug]/_components/*`
 
 ### TASK-F2-06: حالت 404 لندینگ مربی
-- [ ] slug نامعتبر یا unpublished → صفحه «مربی یافت نشد»
+- [x] slug نامعتبر یا unpublished → صفحه «مربی یافت نشد»
 - **فایل:** `coach/[slug]/page.js`
 
 ### TASK-F2-07: پیش‌نمایش پروفایل از پنل مربی
-- [ ] دکمه «پیش‌نمایش» → باز کردن `/coach/{slug}` در تب جدید
+- [x] دکمه «پیش‌نمایش» → باز کردن `/coach/{slug}` در تب جدید
 - **فایل:** `coach/profile/page.jsx`
 
 ---

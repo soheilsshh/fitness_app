@@ -95,9 +95,15 @@ export default function Navbar() {
               </Link>
               <Link
                 href="/auth/register"
+                className="rounded-xl px-3 py-2 text-sm text-zinc-200 hover:bg-white/5"
+              >
+                ثبت‌نام دانشجو
+              </Link>
+              <Link
+                href="/auth/register/coach"
                 className="rounded-xl bg-white px-3 py-2 text-sm font-semibold text-zinc-950 hover:bg-zinc-200"
               >
-                ثبت نام کنید
+                ثبت‌نام مربی
               </Link>
             </div>
 

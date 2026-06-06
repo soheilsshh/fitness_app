@@ -15,6 +15,7 @@ import (
 
 	"github.com/yourusername/fitness-management/internal/auth"
 	"github.com/yourusername/fitness-management/internal/models"
+	"github.com/yourusername/fitness-management/internal/pkg/slug"
 	"github.com/yourusername/fitness-management/internal/repository"
 )
 
@@ -28,6 +29,7 @@ type AuthResult struct {
 // AuthService defines authentication use cases.
 type AuthService interface {
 	Register(ctx context.Context, name, email, phone, password string) (*AuthResult, error)
+	RegisterCoach(ctx context.Context, name, email, phone, password, displayName, slugInput string) (*AuthResult, error)
 	LoginWithPassword(ctx context.Context, identifier, password string) (*AuthResult, error)
 	RequestOTP(ctx context.Context, phone string) error
 	VerifyOTP(ctx context.Context, phone, code string) (*AuthResult, error)
@@ -39,11 +41,12 @@ type AuthService interface {
 }
 
 type authService struct {
-	userRepo          repository.UserRepository
-	refreshTokenRepo  repository.RefreshTokenRepository
-	otpRepo           repository.OtpRepository
-	otpTTL            time.Duration
-	defaultUserRole   string
+	userRepo         repository.UserRepository
+	coachProfileRepo repository.CoachProfileRepository
+	refreshTokenRepo repository.RefreshTokenRepository
+	otpRepo          repository.OtpRepository
+	otpTTL           time.Duration
+	defaultUserRole  string
 }
 
 var (
@@ -52,16 +55,19 @@ var (
 	ErrInvalidCredentials = errors.New("invalid credentials")
 	ErrInvalidOTP         = errors.New("invalid or expired otp code")
 	ErrInvalidPassword    = errors.New("current password is incorrect")
+	ErrSlugAlreadyExists  = errors.New("slug already in use")
 )
 
 // NewAuthService constructs a new AuthService.
 func NewAuthService(
 	userRepo repository.UserRepository,
+	coachProfileRepo repository.CoachProfileRepository,
 	refreshTokenRepo repository.RefreshTokenRepository,
 	otpRepo repository.OtpRepository,
 ) AuthService {
 	return &authService{
 		userRepo:         userRepo,
+		coachProfileRepo: coachProfileRepo,
 		refreshTokenRepo: refreshTokenRepo,
 		otpRepo:          otpRepo,
 		otpTTL:           2 * time.Minute,
@@ -104,6 +110,73 @@ func (s *authService) Register(ctx context.Context, name, email, phone, password
 	}
 
 	if err := s.userRepo.Create(ctx, user); err != nil {
+		return nil, err
+	}
+
+	return s.generateTokens(ctx, user)
+}
+
+func (s *authService) RegisterCoach(ctx context.Context, name, email, phone, password, displayName, slugInput string) (*AuthResult, error) {
+	name = strings.TrimSpace(name)
+	email = strings.TrimSpace(strings.ToLower(email))
+	phone = strings.TrimSpace(phone)
+	displayName = strings.TrimSpace(displayName)
+	if displayName == "" {
+		displayName = name
+	}
+
+	if name == "" || email == "" || phone == "" || password == "" {
+		return nil, errors.New("name, email, phone and password are required")
+	}
+
+	if _, err := s.userRepo.FindByEmail(ctx, email); err == nil {
+		return nil, ErrEmailAlreadyExists
+	} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, err
+	}
+	if _, err := s.userRepo.FindByPhone(ctx, phone); err == nil {
+		return nil, ErrPhoneAlreadyExists
+	} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, err
+	}
+
+	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
+
+	user := &models.User{
+		Name:     name,
+		Email:    email,
+		Phone:    phone,
+		Password: string(hashed),
+		Role:     models.RoleCoach,
+	}
+
+	if err := s.userRepo.Create(ctx, user); err != nil {
+		return nil, err
+	}
+
+	coachSlug := slug.Normalize(slugInput)
+	if coachSlug == "" {
+		coachSlug = slug.Fallback(user.ID)
+	}
+	exists, err := s.coachProfileRepo.SlugExists(ctx, coachSlug, 0)
+	if err != nil {
+		return nil, err
+	}
+	if exists {
+		coachSlug = slug.Fallback(user.ID)
+	}
+
+	profile := &models.CoachProfile{
+		UserID:      user.ID,
+		Slug:        coachSlug,
+		DisplayName: displayName,
+		ContactPhone: phone,
+		IsPublished: false,
+	}
+	if err := s.coachProfileRepo.Create(ctx, profile); err != nil {
 		return nil, err
 	}
 

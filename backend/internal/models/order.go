@@ -12,7 +12,8 @@ import (
 type Order struct {
 	gorm.Model
 
-	UserID uint `gorm:"index;not null"`
+	UserID  uint `gorm:"index;not null"`
+	CoachID uint `gorm:"index;not null;default:0"`
 
 	// Status: pending | paid | failed | refunded
 	Status string `gorm:"size:20;not null"`

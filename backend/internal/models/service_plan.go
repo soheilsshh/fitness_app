@@ -8,6 +8,8 @@ import "gorm.io/gorm"
 type ServicePlan struct {
 	gorm.Model
 
+	CoachID uint `gorm:"index;not null;default:0"` // owner coach (0 = legacy/platform)
+
 	// Core naming / presentation
 	Name         string `gorm:"size:255;uniqueIndex;not null"` // main title (maps to frontend title)
 	Subtitle     string `gorm:"size:255"`                      // optional subtitle

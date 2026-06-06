@@ -13,6 +13,7 @@ import {
 } from "../../_components/helpers";
 import { api } from "@/lib/axios/client";
 import { getDashboardPath } from "@/lib/auth/roles";
+import { persistAuthSession } from "@/lib/auth/session";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -36,21 +37,8 @@ export default function LoginForm() {
   };
 
   const handleAuthSuccess = (data) => {
-    const { access_token, refresh_token, user } = data || {};
-    if (access_token) {
-      window.localStorage.setItem("access_token", access_token);
-    }
-    if (refresh_token) {
-      window.localStorage.setItem("refresh_token", refresh_token);
-    }
-    if (user?.role) {
-      window.localStorage.setItem("user_role", user.role);
-    }
-    if (user?.name) {
-      window.localStorage.setItem("user_name", user.name);
-    }
-
-    router.replace(getDashboardPath(user?.role));
+    persistAuthSession(data);
+    router.replace(getDashboardPath(data?.user?.role));
   };
 
   const onSendOtp = async () => {

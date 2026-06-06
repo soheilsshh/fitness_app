@@ -16,6 +16,7 @@ type User struct {
 	LastActiveAt *time.Time `gorm:"index"`
 	HeightCm     *float64   `gorm:"column:height_cm"`     // optional body height for profile
 	WeightKg     *float64   `gorm:"column:weight_kg"`     // optional body weight for profile
-	CoachStatus  string     `gorm:"column:coach_status;size:20"` // admin: "pending" | "active" for student list
+	CoachStatus       string `gorm:"column:coach_status;size:20"` // admin: "pending" | "active" for student list
+	AssignedCoachID   *uint  `gorm:"column:assigned_coach_id;index"` // student's current coach (max one)
 }
 

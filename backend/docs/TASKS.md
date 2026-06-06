@@ -19,85 +19,85 @@
 
 ---
 
-## فاز ۱ — زیرساخت نقش Coach + دیتابیس
+## فاز ۱ — زیرساخت نقش Coach + دیتابیس ✅
 
 ### TASK-B1-01: Migration — فیلد AssignedCoachID روی User
-- [ ] فیلد `AssignedCoachID *uint` با index به `User` اضافه کن
-- [ ] در `config/database.go` migrate شود
+- [x] فیلد `AssignedCoachID *uint` با index به `User` اضافه کن
+- [x] در `config/database.go` migrate شود
 - **فایل:** `internal/models/user.go`
 
 ### TASK-B1-02: Migration — گسترش CoachProfile
-- [ ] فیلدهای جدید: `Slug`, `DisplayName`, `Title`, `AvatarURL`, `CoverImageURL`, `Instagram`, `WhatsApp`, `Website`, `IsPublished`
-- [ ] `Slug` unique index
-- [ ] `TelegramID` → `Telegram` (rename یا alias)
+- [x] فیلدهای جدید: `Slug`, `DisplayName`, `Title`, `AvatarURL`, `CoverImageURL`, `Instagram`, `WhatsApp`, `Website`, `IsPublished`
+- [x] `Slug` unique index
+- [x] `TelegramID` → `Telegram` (rename یا alias)
 - **فایل:** `internal/models/coach_profile.go`
 
 ### TASK-B1-03: Migration — CoachID روی ServicePlan
-- [ ] فیلد `CoachID uint` با index و NOT NULL (پلن‌های موجود: assign به admin یا migration script)
+- [x] فیلد `CoachID uint` با index و NOT NULL (پلن‌های موجود: assign به admin یا migration script)
 - **فایل:** `internal/models/service_plan.go`
 
 ### TASK-B1-04: Migration — CoachID روی Subscription
-- [ ] فیلد `CoachID uint` با index
+- [x] فیلد `CoachID uint` با index
 - **فایل:** `internal/models/subscription.go`
 
 ### TASK-B1-05: Migration — CoachID روی Order (اختیاری)
-- [ ] فیلد `CoachID uint` برای گزارش فروش
+- [x] فیلد `CoachID uint` برای گزارش فروش
 - **فایل:** `internal/models/order.go`
 
 ### TASK-B1-06: CoachProfile Repository
-- [ ] `CoachProfileRepository` با متدهای: `FindByUserID`, `FindBySlug`, `Create`, `Update`, `SlugExists`
+- [x] `CoachProfileRepository` با متدهای: `FindByUserID`, `FindBySlug`, `Create`, `Update`, `SlugExists`
 - **فایل جدید:** `internal/repository/coach_profile_repository.go`
 
 ### TASK-B1-07: Middleware CoachOnly
-- [ ] `CoachOnly()` مشابه `AdminOnly` — بررسی `role == "coach"`
-- [ ] ترکیب با `AuthMiddleware`
+- [x] `CoachOnly()` مشابه `AdminOnly` — بررسی `role == "coach"`
+- [x] ترکیب با `AuthMiddleware`
 - **فایل جدید:** `internal/middleware/coach.go`
 
 ### TASK-B1-08: ثبت‌نام مربی
-- [ ] `POST /auth/register/coach` — `{ name, email, phone, password, displayName?, slug? }`
-- [ ] ایجاد `User` با `role=coach`
-- [ ] ایجاد `CoachProfile` خالی یا با slug پیش‌فرض
-- [ ] برگرداندن JWT
+- [x] `POST /auth/register/coach` — `{ name, email, phone, password, displayName?, slug? }`
+- [x] ایجاد `User` با `role=coach`
+- [x] ایجاد `CoachProfile` خالی یا با slug پیش‌فرض
+- [x] برگرداندن JWT
 - **فایل‌ها:** `internal/service/auth_service.go`, `internal/controllers/auth_controller.go`, `cmd/main.go`
 
 ### TASK-B1-09: به‌روزرسانی seed و validation نقش
-- [ ] اطمینان از seed admin بدون تغییر
-- [ ] validation نقش در JWT claims
+- [x] اطمینان از seed admin بدون تغییر
+- [x] validation نقش در JWT claims
 - **فایل:** `config/database.go`, `internal/auth/jwt.go`
 
 ---
 
-## فاز ۲ — پروفایل مربی + API عمومی
+## فاز ۲ — پروفایل مربی + API عمومی ✅
 
 ### TASK-B2-01: CoachProfile Service
-- [ ] `GetProfile(ctx, coachUserID)`
-- [ ] `UpdateProfile(ctx, coachUserID, req)`
-- [ ] `CheckSlugAvailable(ctx, slug, excludeUserID)`
-- [ ] تولید slug خودکار از نام در صورت خالی بودن
+- [x] `GetProfile(ctx, coachUserID)`
+- [x] `UpdateProfile(ctx, coachUserID, req)`
+- [x] `CheckSlugAvailable(ctx, slug, excludeUserID)`
+- [x] تولید slug خودکار از نام در صورت خالی بودن
 - **فایل جدید:** `internal/service/coach_profile_service.go`
 
 ### TASK-B2-02: آپلود آواتار و کاور
-- [ ] `POST /coach/profile/avatar` — multipart
-- [ ] `POST /coach/profile/cover` — multipart
-- [ ] ذخیره در `./uploads/coaches/{userId}/`
-- [ ] برگرداندن URL
+- [x] `POST /coach/profile/avatar` — multipart
+- [x] `POST /coach/profile/cover` — multipart
+- [x] ذخیره در `./uploads/coaches/{userId}/`
+- [x] برگرداندن URL
 - **فایل:** `internal/controllers/coach_profile_controller.go`
 
 ### TASK-B2-03: API پروفایل مربی (محافظت‌شده)
-- [ ] `GET /coach/profile` — JWT + CoachOnly
-- [ ] `PUT /coach/profile` — ویرایش همه فیلدها + slug
-- [ ] `GET /coach/profile/slug/check?slug=` — بررسی یکتا بودن
+- [x] `GET /coach/profile` — JWT + CoachOnly
+- [x] `PUT /coach/profile` — ویرایش همه فیلدها + slug
+- [x] `GET /coach/profile/slug/check?slug=` — بررسی یکتا بودن
 - **فایل:** `internal/controllers/coach_profile_controller.go`, `cmd/main.go`
 
 ### TASK-B2-04: API عمومی لندینگ مربی
-- [ ] `GET /coaches/:slug` — پروفایل منتشرشده (`IsPublished=true`)
-- [ ] `GET /coaches/:slug/plans` — پلن‌های فعال آن مربی
-- [ ] 404 اگر slug نامعتبر یا unpublished
+- [x] `GET /coaches/:slug` — پروفایل منتشرشده (`IsPublished=true`)
+- [x] `GET /coaches/:slug/plans` — پلن‌های فعال آن مربی
+- [x] 404 اگر slug نامعتبر یا unpublished
 - **فایل جدید:** `internal/controllers/public_coach_controller.go`
 
 ### TASK-B2-05: DTOهای پاسخ عمومی
-- [ ] `PublicCoachDTO`: displayName, title, bio, about, specialty, avatar, cover, social, plans[]
-- [ ] `PublicPlanDTO`: id, name, subtitle, type, price, discount, durationDays, isPopular
+- [x] `PublicCoachDTO`: displayName, title, bio, about, specialty, avatar, cover, social, plans[]
+- [x] `PublicPlanDTO`: id, name, subtitle, type, price, discount, durationDays, isPopular
 - **فایل:** `internal/service/coach_profile_service.go`
 
 ---

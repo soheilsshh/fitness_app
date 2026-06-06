@@ -37,7 +37,7 @@
 | متد | Endpoint | وضعیت | توضیح |
 |-----|----------|--------|-------|
 | POST | `/auth/register` | ✅ | ثبت‌نام دانشجو — `{ name, email, phone, password }` |
-| POST | `/auth/register/coach` | 🔜 | ثبت‌نام مربی — `{ name, email, phone, password, displayName?, slug? }` |
+| POST | `/auth/register/coach` | ✅ | ثبت‌نام مربی — `{ name, email, phone, password, displayName?, slug? }` |
 | POST | `/auth/login/password` | ✅ | `{ identifier, password }` |
 | POST | `/auth/otp/request` | ✅ | ارسال OTP |
 | POST | `/auth/otp/verify` | ✅ | `{ phone, code }` |
@@ -60,8 +60,8 @@
 |-----|----------|--------|-------|
 | GET | `/site-settings` | ✅ | تنظیمات لندینگ **برند پلتفرم** |
 | POST | `/feedbacks` | ✅ | `{ fullName, email, phone, message }` |
-| GET | `/coaches/:slug` | 🔜 | پروفایل عمومی مربی (لندینگ) |
-| GET | `/coaches/:slug/plans` | 🔜 | پلن‌های فعال یک مربی |
+| GET | `/coaches/:slug` | ✅ | پروفایل عمومی مربی (لندینگ — `IsPublished=true`) |
+| GET | `/coaches/:slug/plans` | ✅ | پلن‌های فعال یک مربی |
 | GET | `/plans/public` | ❌ | **حذف شده** — جایگزین: `/coaches/:slug/plans` |
 
 ---
@@ -98,17 +98,17 @@
 
 ---
 
-## ۵. پنل مربی (`/coach/*` — JWT + coach) 🔜
+## ۵. پنل مربی (`/coach/*` — JWT + coach) ✅ (پروفایل)
 
 ### پروفایل
 
-| متد | Endpoint | توضیح |
-|-----|----------|-------|
-| GET | `/coach/profile` | خواندن پروفایل مربی |
-| PUT | `/coach/profile` | ویرایش پروفایل + slug |
-| GET | `/coach/profile/slug/check?slug=` | بررسی یکتا بودن slug |
-| POST | `/coach/profile/avatar` | آپلود آواتار |
-| POST | `/coach/profile/cover` | آپلود کاور |
+| متد | Endpoint | وضعیت | توضیح |
+|-----|----------|--------|-------|
+| GET | `/coach/profile` | ✅ | خواندن پروفایل مربی |
+| PUT | `/coach/profile` | ✅ | ویرایش پروفایل + slug |
+| GET | `/coach/profile/slug/check?slug=` | ✅ | بررسی یکتا بودن slug |
+| POST | `/coach/profile/avatar` | ✅ | آپلود آواتار |
+| POST | `/coach/profile/cover` | ✅ | آپلود کاور |
 
 ### پلن‌ها
 
