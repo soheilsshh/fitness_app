@@ -11,10 +11,11 @@ import { getAuthSession, logout } from "@/lib/auth/session";
 import { getDashboardPath } from "@/lib/auth/roles";
 
 const NAV_ITEMS = [
-  { id: "programs", label: "برنامه‌ها" },
-  { id: "about", label: "درباره ما" },
-  { id: "contact", label: "تماس با ما" },
-  { id: "records", label: "سوابق" },
+  { id: "programs", label: "برنامه‌ها", type: "section" },
+  { id: "about", label: "درباره ما", type: "section" },
+  { id: "records", label: "سوابق", type: "section" },
+  { href: "/coaches", label: "مربی‌ها", type: "link" },
+  { id: "contact", label: "تماس با ما", type: "section" },
 ];
 
 export default function Navbar() {
@@ -33,7 +34,7 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 10);
+    const onScroll = () => setScrolled(window.scrollY > 12);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -49,86 +50,121 @@ export default function Navbar() {
     el.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
+  const onNavClick = (item) => {
+    if (item.type === "link" && item.href) {
+      router.push(item.href);
+      return;
+    }
+    goToSection(item.id);
+  };
+
   const panelHref = session?.role ? getDashboardPath(session.role) : "/user/my-programs";
   const displayName = session?.name || "حساب من";
 
   return (
     <>
-      <header
-        className={[
-          "fixed top-0 left-0 right-0 z-50 w-full border-b border-white/10 backdrop-blur",
-          scrolled ? "bg-zinc-950/70" : "bg-zinc-950/40",
-        ].join(" ")}
-      >
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-3">
+      <header className="fixed top-0 left-0 right-0 z-[100] px-3 pt-3 sm:px-4 sm:pt-4">
+        <div
+          className={[
+            "mx-auto flex max-w-7xl items-center justify-between gap-3 rounded-[22px] border px-3 py-2.5 sm:px-4 sm:py-3",
+            "border-white/15 bg-white/[0.07] backdrop-blur-2xl backdrop-saturate-150",
+            "shadow-[0_12px_40px_-12px_rgba(0,0,0,0.65)]",
+            "transition-all duration-300",
+            scrolled
+              ? "bg-zinc-950/55 ring-1 ring-white/10"
+              : "bg-zinc-950/35",
+          ].join(" ")}
+        >
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <button
-              className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 p-2 text-zinc-100 hover:bg-white/10 md:hidden"
+              type="button"
+              className="inline-flex shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 p-2 text-zinc-100 hover:bg-white/10 md:hidden"
               onClick={() => setDrawerOpen(true)}
               aria-label="باز کردن منو"
             >
               <FiMenu className="text-xl" />
             </button>
 
-            <Link href="/" className="flex items-center gap-2">
-              <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400/20 to-cyan-400/10 ring-1 ring-white/10">
+            <Link href="/" className="flex min-w-0 items-center gap-2">
+              <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400/25 to-cyan-400/15 ring-1 ring-white/15">
                 <FaDumbbell className="text-emerald-300" />
               </span>
-              <div className="leading-tight">
-                <div className="text-sm font-semibold text-white">FitPro</div>
+              <div className="hidden leading-tight sm:block">
+                <div className="text-sm font-extrabold text-white">FitPro</div>
                 <div className="text-[11px] text-zinc-400">Fitness Programs</div>
               </div>
             </Link>
 
-            <nav className="hidden md:flex md:items-center md:gap-1">
-              {NAV_ITEMS.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => goToSection(item.id)}
-                  className="rounded-xl px-3 py-2 text-sm text-zinc-200 hover:bg-white/5 hover:text-white"
-                >
-                  {item.label}
-                </button>
-              ))}
+            <nav className="hidden md:flex md:items-center md:gap-0.5">
+              {NAV_ITEMS.map((item) =>
+                item.type === "link" ? (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="rounded-xl px-3 py-2 text-sm font-medium text-zinc-200 transition hover:bg-white/8 hover:text-white"
+                  >
+                    {item.label}
+                  </Link>
+                ) : (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => goToSection(item.id)}
+                    className="rounded-xl px-3 py-2 text-sm font-medium text-zinc-200 transition hover:bg-white/8 hover:text-white"
+                  >
+                    {item.label}
+                  </button>
+                )
+              )}
             </nav>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
             <CartButton />
 
             {session?.token ? (
-              <div className="hidden items-center gap-2 md:flex">
+              <div className="hidden items-center gap-1.5 md:flex">
                 <Link
                   href={panelHref}
-                  className="rounded-xl px-3 py-2 text-sm text-zinc-200 hover:bg-white/5"
+                  className="rounded-xl px-3 py-2 text-sm font-medium text-zinc-200 transition hover:bg-white/8"
                 >
                   {displayName}
                 </Link>
                 <button
+                  type="button"
                   onClick={() => logout()}
-                  className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-zinc-200 hover:bg-white/10"
+                  className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-zinc-200 transition hover:bg-white/10"
                 >
                   <FiLogOut />
                   خروج
                 </button>
               </div>
             ) : (
-              <div className="hidden items-center gap-2 md:flex">
-                <Link href="/auth/login" className="rounded-xl px-3 py-2 text-sm text-zinc-200 hover:bg-white/5">
-                  وارد شوید
+              <div className="hidden items-center gap-1.5 md:flex">
+                <Link
+                  href="/auth/login"
+                  className="rounded-xl px-3 py-2 text-sm font-medium text-zinc-200 transition hover:bg-white/8"
+                >
+                  ورود
                 </Link>
-                <Link href="/auth/register" className="rounded-xl px-3 py-2 text-sm text-zinc-200 hover:bg-white/5">
-                  ثبت‌نام دانشجو
+                <Link
+                  href="/auth/register"
+                  className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-zinc-100 transition hover:bg-white/10"
+                >
+                  ثبت‌نام
                 </Link>
-                <Link href="/auth/register/coach" className="rounded-xl bg-white px-3 py-2 text-sm font-semibold text-zinc-950 hover:bg-zinc-200">
-                  ثبت‌نام مربی
+                <Link
+                  href="/auth/register/coach"
+                  className="rounded-xl bg-gradient-to-l from-emerald-400 to-cyan-400 px-3 py-2 text-sm font-extrabold text-zinc-950 transition hover:opacity-90"
+                >
+                  مربی شو
                 </Link>
               </div>
             )}
 
             <Link
               href={session?.token ? panelHref : "/auth/login"}
-              className="md:hidden inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 p-2 text-zinc-100 hover:bg-white/10"
+              className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 p-2 text-zinc-100 transition hover:bg-white/10 md:hidden"
               aria-label="ورود یا پنل"
             >
               <FiUser className="text-xl" />
@@ -137,15 +173,15 @@ export default function Navbar() {
         </div>
       </header>
 
-      <div className="h-[64px]" />
+      <div className="h-[76px] sm:h-[84px]" aria-hidden />
 
       <MobileDrawer
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         items={NAV_ITEMS}
-        onItemClick={(id) => {
+        onItemClick={(item) => {
           setDrawerOpen(false);
-          setTimeout(() => goToSection(id), 60);
+          setTimeout(() => onNavClick(item), 60);
         }}
         session={session}
         panelHref={panelHref}

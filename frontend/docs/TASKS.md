@@ -255,7 +255,7 @@
 
 ---
 
-## فاز ۶ — سوپرادمین + پولیش
+## فاز ۶ — سوپرادمین + پولیش ✅
 
 ### TASK-F6-01: صفحه مدیریت مربی‌ها (ادمین)
 - [x] Route: `/admin/coaches`
@@ -311,14 +311,16 @@
 
 ## چک‌لیست نهایی فرانت
 
-- [ ] همه پنل‌ها با middleware محافظت می‌شوند
-- [ ] Logout در همه پنل‌ها کار می‌کند
-- [ ] پنل coach کامل و مستقل از admin است
-- [ ] لندینگ `/coach/[slug]` بدون نیاز به لاگین کار می‌کند
-- [ ] جریان خرید دمو end-to-end تست شده
-- [ ] پنل student به API متصل است
-- [ ] لندینگ برند `/` از site-settings می‌خواند
-- [ ] مستندات `frontend-overview.md` به‌روز است
+- [x] همه پنل‌ها با middleware محافظت می‌شوند — `/admin/*`، `/user/*`، `/coach/{dashboard,profile,plans,students}`
+- [x] Logout در همه پنل‌ها کار می‌کند — `AdminSidebar`، `CoachSidebar`، `Sidebar` (user)، `Navbar`
+- [x] پنل coach کامل و مستقل از admin است — layout، sidebar و API جدا (`/coach/*`)
+- [x] لندینگ `/coach/[slug]` بدون نیاز به لاگین کار می‌کند — `GET /coaches/:slug` + plans
+- [ ] جریان خرید دمو end-to-end تست شده — کد موجود (`checkout` → `bank` → `status`)؛ تست دستی/خودکار انجام نشده
+- [x] پنل student به API متصل است — `/me`، `/me/orders`، `/me/programs`، change-password
+- [x] لندینگ برند `/` از site-settings می‌خواند — `HomeClient` → `GET /site-settings`
+- [ ] مستندات `frontend-overview.md` به‌روز است — هنوز به mockها و `app/page.js` قدیمی اشاره دارد
+
+> **پاکسازی پیشنهادی:** فایل‌های mock بلااستفاده `plansMock.js`، `studentsMock.js`؛ مسیر `/admin/plans/new` هنوز در build وجود دارد (readonly در UI اصلی)
 
 ---
 

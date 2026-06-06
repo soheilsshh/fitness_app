@@ -224,7 +224,7 @@
 
 ---
 
-## فاز ۶ — سوپرادمین + پولیش
+## فاز ۶ — سوپرادمین + پولیش ✅
 
 ### TASK-B6-01: Admin Coaches API
 - [x] `GET /admin/coaches` — لیست مربی‌ها با pagination
@@ -250,12 +250,14 @@
 
 ## چک‌لیست نهایی بکند
 
-- [ ] همه routeها در `cmd/main.go` ثبت شده
-- [ ] Migration بدون خطا اجرا می‌شود
-- [ ] CORS برای فرانت فعال است
-- [ ] فایل‌های upload در `/uploads` سرو می‌شوند
-- [ ] `API-ENDPOINTS.md` کامل است
-- [ ] Swagger به‌روز است
+- [x] همه routeها در `cmd/main.go` ثبت شده — auth، public (`/coaches*`)، coach، student، admin (شامل `/admin/coaches*`)
+- [x] Migration بدون خطا اجرا می‌شود — `SetupDatabase` + `AutoMigrate` شامل `CoachProfile.IsActive`؛ نیاز به اتصال MySQL در runtime
+- [x] CORS برای فرانت فعال است — `FRONTEND_ORIGIN` / پیش‌فرض `localhost:3000`
+- [x] فایل‌های upload در `/uploads` سرو می‌شوند — `router.Static("/uploads", "./uploads")`
+- [x] `API-ENDPOINTS.md` کامل است — فاز ۶ (coaches، coachName، dashboard stats) مستند شده
+- [ ] Swagger به‌روز است — `swagger.yaml` هنوز endpointهای `/coaches` و `/admin/coaches` را ندارد؛ نیاز به `swag init`
+
+> **باقی‌مانده:** B6-04 (تست integration اختیاری)، به‌روزرسانی Swagger
 
 ---
 
