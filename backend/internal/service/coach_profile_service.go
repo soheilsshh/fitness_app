@@ -95,6 +95,24 @@ type PublicPlanDTO struct {
 	FeaturesText    string `json:"featuresText"`
 }
 
+// PublicCoachListItem for GET /coaches.
+type PublicCoachListItem struct {
+	CoachID     uint   `json:"coachId"`
+	Slug        string `json:"slug"`
+	DisplayName string `json:"displayName"`
+	Title       string `json:"title"`
+	Specialty   string `json:"specialty"`
+	AvatarURL   string `json:"avatarUrl"`
+}
+
+// PublicCoachListResponse for paginated public coach list.
+type PublicCoachListResponse struct {
+	Items    []PublicCoachListItem `json:"items"`
+	Page     int                   `json:"page"`
+	PageSize int                   `json:"pageSize"`
+	Total    int64                 `json:"total"`
+}
+
 type CoachProfileService interface {
 	GetProfile(ctx context.Context, coachUserID uint) (*CoachProfileDTO, error)
 	UpdateProfile(ctx context.Context, coachUserID uint, req *CoachProfileUpdateRequest) (*CoachProfileDTO, error)
@@ -103,6 +121,7 @@ type CoachProfileService interface {
 	UpdateCoverURL(ctx context.Context, coachUserID uint, url string) (*CoachProfileDTO, error)
 	GetPublicProfile(ctx context.Context, slug string) (*PublicCoachDTO, error)
 	ListPublicPlans(ctx context.Context, slug string) ([]PublicPlanDTO, error)
+	ListPublishedCoaches(ctx context.Context, page, pageSize int) (*PublicCoachListResponse, error)
 }
 
 type coachProfileService struct {
@@ -245,6 +264,40 @@ func (s *coachProfileService) GetPublicProfile(ctx context.Context, slugParam st
 		return nil, err
 	}
 	return toPublicCoachDTO(profile), nil
+}
+
+func (s *coachProfileService) ListPublishedCoaches(ctx context.Context, page, pageSize int) (*PublicCoachListResponse, error) {
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 20
+	}
+	if pageSize > 100 {
+		pageSize = 100
+	}
+	profiles, total, err := s.coachRepo.ListPublished(ctx, page, pageSize)
+	if err != nil {
+		return nil, err
+	}
+	items := make([]PublicCoachListItem, 0, len(profiles))
+	for i := range profiles {
+		p := &profiles[i]
+		items = append(items, PublicCoachListItem{
+			CoachID:     p.UserID,
+			Slug:        p.Slug,
+			DisplayName: p.DisplayName,
+			Title:       p.Title,
+			Specialty:   p.Specialty,
+			AvatarURL:   p.AvatarURL,
+		})
+	}
+	return &PublicCoachListResponse{
+		Items:    items,
+		Page:     page,
+		PageSize: pageSize,
+		Total:    total,
+	}, nil
 }
 
 func (s *coachProfileService) ListPublicPlans(ctx context.Context, slugParam string) ([]PublicPlanDTO, error) {

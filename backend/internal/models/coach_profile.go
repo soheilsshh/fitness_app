@@ -23,4 +23,5 @@ type CoachProfile struct {
 	Website      string `gorm:"size:255"`
 
 	IsPublished bool `gorm:"not null;default:false"`
+	IsActive    bool `gorm:"not null;default:true"`
 }

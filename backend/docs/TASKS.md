@@ -227,18 +227,18 @@
 ## فاز ۶ — سوپرادمین + پولیش
 
 ### TASK-B6-01: Admin Coaches API
-- [ ] `GET /admin/coaches` — لیست مربی‌ها با pagination
-- [ ] `GET /admin/coaches/:id` — جزئیات + تعداد دانشجویان
-- [ ] `PATCH /admin/coaches/:id` — `{ isPublished?, isActive? }`
+- [x] `GET /admin/coaches` — لیست مربی‌ها با pagination
+- [x] `GET /admin/coaches/:id` — جزئیات + تعداد دانشجویان
+- [x] `PATCH /admin/coaches/:id` — `{ isPublished?, isActive? }`
 - **فایل جدید:** `internal/controllers/admin_coach_controller.go`
 
 ### TASK-B6-02: جداسازی Admin Students
-- [ ] `/admin/students` — همه دانشجویان پلتفرم (نه فقط یک مربی)
-- [ ] اضافه کردن `coachName` به پاسخ
+- [x] `/admin/students` — همه دانشجویان پلتفرم (نه فقط یک مربی)
+- [x] اضافه کردن `coachName` به پاسخ
 - **فایل:** `internal/service/admin_student_service.go`
 
 ### TASK-B6-03: Admin Dashboard — آمار مربی‌ها
-- [ ] `totalCoaches`, `activeCoaches` به stats
+- [x] `totalCoaches`, `activeCoaches` به stats
 - **فایل:** `internal/service/admin_dashboard_service.go`
 
 ### TASK-B6-04: تست‌های Integration (اختیاری)

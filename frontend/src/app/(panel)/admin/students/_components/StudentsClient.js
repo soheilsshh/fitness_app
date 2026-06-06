@@ -94,6 +94,9 @@ export default function StudentsClient() {
                 <div className="truncate text-sm font-extrabold text-white">{s.fullName}</div>
                 <div className="mt-1 text-[11px] text-zinc-400">{s.phone}</div>
                 <div className="mt-2 text-[11px] text-zinc-300">
+                  مربی: <span className="font-bold text-white">{s.coachName || "—"}</span>
+                </div>
+                <div className="mt-1 text-[11px] text-zinc-300">
                   پلن: <span className="font-bold text-white">{s.planTitle || "—"}</span>
                 </div>
               </div>

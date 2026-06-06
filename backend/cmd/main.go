@@ -94,9 +94,10 @@ func NewServer() *Server {
 	studentService := service.NewStudentService(userRepo, subscriptionRepo, servicePlanRepo, programRepo)
 	meService := service.NewMeService(db, userRepo, orderRepo, subscriptionRepo, servicePlanRepo, programRepo)
 	adminUserService := service.NewAdminUserService(db, subscriptionRepo, txRepo)
-	adminDashboardService := service.NewAdminDashboardService(db, subscriptionRepo, txRepo)
-	adminStudentService := service.NewAdminStudentService(db, userRepo, subscriptionRepo, servicePlanRepo)
-	adminPlanService := service.NewAdminPlanService(servicePlanRepo)
+	adminDashboardService := service.NewAdminDashboardService(db, subscriptionRepo, txRepo, coachProfileRepo)
+	adminStudentService := service.NewAdminStudentService(db, userRepo, subscriptionRepo, servicePlanRepo, coachProfileRepo)
+	adminPlanService := service.NewAdminPlanService(servicePlanRepo, coachProfileRepo)
+	adminCoachService := service.NewAdminCoachService(coachProfileRepo)
 	siteSettingsService := service.NewSiteSettingsService(siteSettingsRepo)
 	feedbackService := service.NewFeedbackService(feedbackRepo)
 
@@ -111,6 +112,7 @@ func NewServer() *Server {
 	siteSettingsController := controllers.NewSiteSettingsController(siteSettingsService)
 	feedbackController := controllers.NewFeedbackController(feedbackService)
 	adminFeedbackController := controllers.NewAdminFeedbackController(feedbackService)
+	adminCoachController := controllers.NewAdminCoachController(adminCoachService)
 	coachProfileController := controllers.NewCoachProfileController(coachProfileService)
 	publicCoachController := controllers.NewPublicCoachController(coachProfileService)
 	coachPlanController := controllers.NewCoachPlanController(coachPlanService)
@@ -144,6 +146,7 @@ func NewServer() *Server {
 	// Public routes (no auth)
 	router.GET("/site-settings", siteSettingsController.GetSiteSettingsPublic)
 	router.POST("/feedbacks", feedbackController.CreateFeedback)
+	router.GET("/coaches", publicCoachController.ListCoaches)
 	router.GET("/coaches/:slug", publicCoachController.GetCoachBySlug)
 	router.GET("/coaches/:slug/plans", publicCoachController.GetCoachPlans)
 
@@ -210,6 +213,9 @@ func NewServer() *Server {
 		adminGroup.PUT("/site-settings", siteSettingsController.UpdateSiteSettings)
 		adminGroup.POST("/site-settings/hero-image", siteSettingsController.UploadHeroImage)
 		adminGroup.GET("/feedbacks", adminFeedbackController.ListFeedbacks)
+		adminGroup.GET("/coaches", adminCoachController.ListCoaches)
+		adminGroup.GET("/coaches/:id", adminCoachController.GetCoachByID)
+		adminGroup.PATCH("/coaches/:id", adminCoachController.PatchCoach)
 	}
 
 	// Serve uploaded files (e.g. user body photos) at /uploads/*

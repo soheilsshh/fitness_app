@@ -22,6 +22,7 @@ type AdminPlanItem struct {
 	DurationDays    int       `json:"durationDays"`
 	IsPopular       bool      `json:"isPopular"`
 	CoachID         uint      `json:"coachId"`
+	CoachName       string    `json:"coachName"`
 	CreatedAt       time.Time `json:"createdAt"`
 	UpdatedAt       time.Time `json:"updatedAt"`
 }
@@ -40,6 +41,8 @@ type AdminPlanDetail struct {
 	DiscountPercent int       `json:"discountPercent"`
 	DurationDays    int       `json:"durationDays"`
 	IsPopular       bool      `json:"isPopular"`
+	CoachID         uint      `json:"coachId"`
+	CoachName       string    `json:"coachName"`
 	CreatedAt       time.Time `json:"createdAt"`
 	UpdatedAt       time.Time `json:"updatedAt"`
 }
@@ -91,11 +94,12 @@ type AdminPlanService interface {
 }
 
 type adminPlanService struct {
-	planRepo repository.ServicePlanRepository
+	planRepo  repository.ServicePlanRepository
+	coachRepo repository.CoachProfileRepository
 }
 
-func NewAdminPlanService(planRepo repository.ServicePlanRepository) AdminPlanService {
-	return &adminPlanService{planRepo: planRepo}
+func NewAdminPlanService(planRepo repository.ServicePlanRepository, coachRepo repository.CoachProfileRepository) AdminPlanService {
+	return &adminPlanService{planRepo: planRepo, coachRepo: coachRepo}
 }
 
 func planToItem(p *models.ServicePlan) AdminPlanItem {
@@ -136,6 +140,17 @@ func planToDetail(p *models.ServicePlan) AdminPlanDetail {
 	}
 }
 
+func (s *adminPlanService) resolveCoachName(ctx context.Context, coachID uint) string {
+	if coachID == 0 {
+		return ""
+	}
+	profile, err := s.coachRepo.FindByUserID(ctx, coachID)
+	if err != nil || profile == nil {
+		return ""
+	}
+	return profile.DisplayName
+}
+
 func (s *adminPlanService) ListPlans(ctx context.Context, page, pageSize int, query, tag string) (*AdminPlanListResponse, error) {
 	plans, total, err := s.planRepo.List(ctx, page, pageSize, query, tag)
 	if err != nil {
@@ -143,7 +158,9 @@ func (s *adminPlanService) ListPlans(ctx context.Context, page, pageSize int, qu
 	}
 	items := make([]AdminPlanItem, 0, len(plans))
 	for i := range plans {
-		items = append(items, planToItem(&plans[i]))
+		item := planToItem(&plans[i])
+		item.CoachName = s.resolveCoachName(ctx, plans[i].CoachID)
+		items = append(items, item)
 	}
 	return &AdminPlanListResponse{
 		Items:    items,
@@ -159,6 +176,8 @@ func (s *adminPlanService) GetPlanByID(ctx context.Context, id uint) (*AdminPlan
 		return nil, err
 	}
 	detail := planToDetail(p)
+	detail.CoachID = p.CoachID
+	detail.CoachName = s.resolveCoachName(ctx, p.CoachID)
 	return &detail, nil
 }
 

@@ -17,6 +17,7 @@ type AdminStudentItem struct {
 	FullName  string   `json:"fullName"`
 	Phone     string   `json:"phone"`
 	Status    string   `json:"status"`    // "pending" | "active"
+	CoachName string   `json:"coachName"`
 	PlanTitle string   `json:"planTitle"`
 	PlanType  string   `json:"planType"` // "workout" | "nutrition" | "both"
 	Weekly    []string `json:"weekly"`
@@ -52,10 +53,11 @@ type AdminStudentService interface {
 }
 
 type adminStudentService struct {
-	db       *gorm.DB
-	userRepo repository.UserRepository
-	subRepo  repository.SubscriptionRepository
-	planRepo repository.ServicePlanRepository
+	db        *gorm.DB
+	userRepo  repository.UserRepository
+	subRepo   repository.SubscriptionRepository
+	planRepo  repository.ServicePlanRepository
+	coachRepo repository.CoachProfileRepository
 }
 
 func NewAdminStudentService(
@@ -63,12 +65,14 @@ func NewAdminStudentService(
 	userRepo repository.UserRepository,
 	subRepo repository.SubscriptionRepository,
 	planRepo repository.ServicePlanRepository,
+	coachRepo repository.CoachProfileRepository,
 ) AdminStudentService {
 	return &adminStudentService{
-		db:       db,
-		userRepo: userRepo,
-		subRepo:  subRepo,
-		planRepo: planRepo,
+		db:        db,
+		userRepo:  userRepo,
+		subRepo:   subRepo,
+		planRepo:  planRepo,
+		coachRepo: coachRepo,
 	}
 }
 
@@ -139,6 +143,7 @@ func (s *adminStudentService) userToStudentItem(ctx context.Context, u *models.U
 
 	planTitle := ""
 	planType := "both"
+	coachName := ""
 	sub, err := s.subRepo.FindCurrentByUserID(ctx, u.ID, now)
 	if err == nil && sub != nil {
 		plan, err := s.planRepo.FindByID(ctx, sub.ServicePlanID)
@@ -151,11 +156,24 @@ func (s *adminStudentService) userToStudentItem(ctx context.Context, u *models.U
 		}
 	}
 
+	coachUserID := uint(0)
+	if u.AssignedCoachID != nil && *u.AssignedCoachID > 0 {
+		coachUserID = *u.AssignedCoachID
+	} else if sub != nil && sub.CoachID > 0 {
+		coachUserID = sub.CoachID
+	}
+	if coachUserID > 0 {
+		if profile, err := s.coachRepo.FindByUserID(ctx, coachUserID); err == nil && profile != nil {
+			coachName = profile.DisplayName
+		}
+	}
+
 	return &AdminStudentItem{
 		ID:        u.ID,
 		FullName:  strings.TrimSpace(u.Name),
 		Phone:     u.Phone,
 		Status:    status,
+		CoachName: coachName,
 		PlanTitle: planTitle,
 		PlanType:  planType,
 		Weekly:    []string{},

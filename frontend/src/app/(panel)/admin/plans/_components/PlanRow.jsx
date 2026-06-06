@@ -31,6 +31,9 @@ export default function PlanRow({ plan, basePath = "/admin/plans" }) {
 
         <div className="md:col-span-3">
           <div className="text-sm text-zinc-200">{plan.courseName || "—"}</div>
+          {plan.coachName ? (
+            <div className="mt-1 text-[11px] text-zinc-400">مربی: {plan.coachName}</div>
+          ) : null}
         </div>
 
         <div className="md:col-span-2">

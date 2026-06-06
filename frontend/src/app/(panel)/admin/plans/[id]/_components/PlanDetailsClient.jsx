@@ -87,7 +87,12 @@ export default function PlanDetailsClient({ id }) {
 
           <div className="rounded-3xl border border-white/10 bg-zinc-950/30 p-4 text-[11px] text-zinc-400">
             <div>شناسه پلن: <span className="font-bold text-zinc-200">{plan.id}</span></div>
-            <div className="mt-2">مربی (coachId): <span className="font-bold text-zinc-200">{plan.coachId}</span></div>
+            <div className="mt-2">
+              مربی:{" "}
+              <span className="font-bold text-zinc-200">
+                {plan.coachName || (plan.coachId ? `#${plan.coachId}` : "—")}
+              </span>
+            </div>
             <div className="mt-2">قیمت: <span className="font-bold text-white">{formatNumber(finalPrice)} تومان</span></div>
             {plan.updatedAt ? (
               <div className="mt-2">

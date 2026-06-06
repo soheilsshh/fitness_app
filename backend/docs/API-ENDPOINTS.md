@@ -60,7 +60,8 @@
 |-----|----------|--------|-------|
 | GET | `/site-settings` | ✅ | تنظیمات لندینگ **برند پلتفرم** |
 | POST | `/feedbacks` | ✅ | `{ fullName, email, phone, message }` |
-| GET | `/coaches/:slug` | ✅ | پروفایل عمومی مربی (لندینگ — `IsPublished=true`) — شامل `coachId` |
+| GET | `/coaches` | ✅ | لیست مربی‌های منتشرشده و فعال (pagination) |
+| GET | `/coaches/:slug` | ✅ | پروفایل عمومی مربی (لندینگ — `IsPublished=true`, `IsActive=true`) — شامل `coachId` |
 | GET | `/coaches/:slug/plans` | ✅ | پلن‌های فعال یک مربی |
 | GET | `/plans/public` | ❌ | **حذف شده** — جایگزین: `/coaches/:slug/plans` |
 
@@ -145,13 +146,13 @@
 
 | بخش | Endpointها | وضعیت |
 |-----|------------|--------|
-| داشبورد | `GET /admin/dashboard/stats`, `GET /admin/dashboard/monthly-sales` | ✅ |
+| داشبورد | `GET /admin/dashboard/stats` (+ `totalCoaches`, `activeCoaches`), `GET /admin/dashboard/monthly-sales` | ✅ |
 | کاربران | `GET /admin/users`, `GET /admin/users/:id`, programs, body, photos | ✅ |
-| شاگردان (همه پلتفرم) | `GET /admin/students`, `GET /admin/students/:id`, `PATCH` | ✅ |
-| پلن‌ها (مشاهده) | `GET /admin/plans`, `GET /admin/plans/:id` | ✅ (ساخت/ویرایش → مربی) |
+| شاگردان (همه پلتفرم) | `GET /admin/students` (+ `coachName`), `GET /admin/students/:id`, `PATCH` | ✅ |
+| پلن‌ها (مشاهده) | `GET /admin/plans` (+ `coachName`), `GET /admin/plans/:id` | ✅ (ساخت/ویرایش → مربی) |
 | تنظیمات سایت | `GET/PUT /admin/site-settings`, `POST /admin/site-settings/hero-image` | ✅ |
 | فیدبک | `GET /admin/feedbacks` | ✅ |
-| مربی‌ها | `GET /admin/coaches`, `GET /admin/coaches/:id`, `PATCH` | 🔜 |
+| مربی‌ها | `GET /admin/coaches`, `GET /admin/coaches/:id`, `PATCH { isPublished?, isActive? }` | ✅ |
 
 ---
 
@@ -174,7 +175,7 @@
 - `Slug`, `DisplayName`, `Title`, `AvatarURL`, `CoverImageURL`
 - `Bio`, `AboutCoach`, `Specialty`
 - `ContactPhone`, `Instagram`, `Telegram`, `WhatsApp`, `Website`
-- `IsPublished`
+- `IsPublished`, `IsActive`
 
 ### ServicePlan
 - `CoachID uint` — مالک پلن ✅
@@ -193,8 +194,8 @@
 2. همه `/coach/*` → JWT + `CoachOnly` middleware
 3. همه `/admin/*` → JWT + `AdminOnly` middleware
 4. مربی فقط به دانشجویان و پلن‌های خودش دسترسی دارد
-5. لندینگ عمومی مربی: فقط `IsPublished=true`
+5. لندینگ عمومی مربی: فقط `IsPublished=true` و `IsActive=true`
 
 ---
 
-*به‌روزرسانی: فاز ۵ — اتصال پنل دانشجو + امنیت*
+*به‌روزرسانی: فاز ۶ — سوپرادمین + پولیش*

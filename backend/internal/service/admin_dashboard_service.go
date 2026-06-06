@@ -15,6 +15,8 @@ type DashboardStatsResponse struct {
 	TotalUsers        int64 `json:"totalUsers"`
 	ActiveUsers       int64 `json:"activeUsers"`
 	PurchasedCourses  int64 `json:"purchasedCourses"`
+	TotalCoaches      int64 `json:"totalCoaches"`
+	ActiveCoaches     int64 `json:"activeCoaches"`
 }
 
 // MonthlySaleItem matches frontend SalesChart data: month (Persian name), courses, sales.
@@ -35,17 +37,19 @@ type AdminDashboardService interface {
 }
 
 type adminDashboardService struct {
-	db    *gorm.DB
-	subRepo repository.SubscriptionRepository
-	txRepo  repository.TransactionRepository
+	db        *gorm.DB
+	subRepo   repository.SubscriptionRepository
+	txRepo    repository.TransactionRepository
+	coachRepo repository.CoachProfileRepository
 }
 
 func NewAdminDashboardService(
 	db *gorm.DB,
 	subRepo repository.SubscriptionRepository,
 	txRepo repository.TransactionRepository,
+	coachRepo repository.CoachProfileRepository,
 ) AdminDashboardService {
-	return &adminDashboardService{db: db, subRepo: subRepo, txRepo: txRepo}
+	return &adminDashboardService{db: db, subRepo: subRepo, txRepo: txRepo, coachRepo: coachRepo}
 }
 
 func (s *adminDashboardService) GetStats(ctx context.Context, year int) (*DashboardStatsResponse, error) {
@@ -64,11 +68,23 @@ func (s *adminDashboardService) GetStats(ctx context.Context, year int) (*Dashbo
 		return nil, err
 	}
 
+	totalCoaches, err := s.coachRepo.CountCoaches(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	activeCoaches, err := s.coachRepo.CountActiveCoaches(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	return &DashboardStatsResponse{
 		Year:             year,
 		TotalUsers:       totalUsers,
 		ActiveUsers:      activeUsers,
 		PurchasedCourses: purchasedCourses,
+		TotalCoaches:     totalCoaches,
+		ActiveCoaches:    activeCoaches,
 	}, nil
 }
 

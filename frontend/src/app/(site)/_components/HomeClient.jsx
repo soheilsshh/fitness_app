@@ -8,7 +8,6 @@ import RecordsSection from "./RecordsSection";
 import AboutSection from "./AboutSection";
 import ContactSection from "./ContactSection";
 import Footer from "./Footer";
-import Navbar from "./Navbar";
 
 export default function HomeClient() {
   const [settings, setSettings] = useState(null);
@@ -29,7 +28,6 @@ export default function HomeClient() {
 
   return (
     <main className="relative overflow-x-hidden bg-black text-white">
-      <Navbar />
       <section id="home" className="scroll-mt-24">
         <Hero settings={settings} />
       </section>

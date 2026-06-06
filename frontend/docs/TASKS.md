@@ -258,53 +258,53 @@
 ## فاز ۶ — سوپرادمین + پولیش
 
 ### TASK-F6-01: صفحه مدیریت مربی‌ها (ادمین)
-- [ ] Route: `/admin/coaches`
-- [ ] `GET /admin/coaches`
-- [ ] لیست با جستجو و pagination
+- [x] Route: `/admin/coaches`
+- [x] `GET /admin/coaches`
+- [x] لیست با جستجو و pagination
 - **فایل جدید:** `src/app/(panel)/admin/coaches/page.js`
 
 ### TASK-F6-02: جزئیات مربی در ادمین
-- [ ] Route: `/admin/coaches/[id]`
-- [ ] `GET /admin/coaches/:id`
-- [ ] toggle فعال/غیرفعال
+- [x] Route: `/admin/coaches/[id]`
+- [x] `GET /admin/coaches/:id`
+- [x] toggle فعال/غیرفعال
 - **فایل:** `admin/coaches/[id]/page.js`
 
 ### TASK-F6-03: Sidebar ادمین — مربی‌ها
-- [ ] `{ href: "/admin/coaches", label: "مربی‌ها" }`
+- [x] `{ href: "/admin/coaches", label: "مربی‌ها" }`
 - **فایل:** `AdminSidebar.js`
 
 ### TASK-F6-04: Admin Dashboard — API
-- [ ] اتصال `GET /admin/dashboard/stats` و `monthly-sales`
-- [ ] حذف `dashboardData.js` mock
+- [x] اتصال `GET /admin/dashboard/stats` و `monthly-sales`
+- [x] حذف `dashboardData.js` mock
 - **فایل:** `admin/dashboard/_components/AdminDashboardClient.jsx`
 
 ### TASK-F6-05: Admin Plans — فقط مشاهده
-- [ ] `GET /admin/plans` — نمایش همه پلن‌ها با نام مربی
-- [ ] حذف/create/edit از UI ادمین (یا readonly)
+- [x] `GET /admin/plans` — نمایش همه پلن‌ها با نام مربی
+- [x] حذف/create/edit از UI ادمین (یا readonly)
 - **فایل:** `admin/plans/*`
 
 ### TASK-F6-06: Admin Site Settings — API
-- [ ] `GET/PUT /admin/site-settings`
-- [ ] آپلود hero image
+- [x] `GET/PUT /admin/site-settings`
+- [x] آپلود hero image
 - **فایل:** `admin/site/*`
 
 ### TASK-F6-07: Admin Feedback — API
-- [ ] `GET /admin/feedbacks`
-- [ ] حذف `feedbackMock.js`
+- [x] `GET /admin/feedbacks`
+- [x] حذف `feedbackMock.js`
 - **فایل:** `admin/feedback/*`
 
 ### TASK-F6-08: رفع Navbar دوبل در لندینگ
-- [ ] حذف Navbar تکراری از `(site)/page.js`
-- **فایل:** `(site)/page.js`
+- [x] حذف Navbar تکراری از `HomeClient.jsx` (layout یک Navbar دارد)
+- **فایل:** `(site)/_components/HomeClient.jsx`
 
 ### TASK-F6-09: لندینگ برند — بدون پلن سراسری
-- [ ] `ProgramsSection`: یا حذف پلن‌ها یا «مربی‌های برتر» با لینک به `/coach/[slug]`
-- [ ] تمرکز روی معرفی برند، نه فروش مستقیم
+- [x] `ProgramsSection`: «مربی‌های منتخب» با لینک به `/coach/[slug]`
+- [x] تمرکز روی معرفی برند، نه فروش مستقیم
 - **فایل:** `ProgramsSection.js`
 
 ### TASK-F6-10: صفحه لیست مربی‌ها (اختیاری)
-- [ ] Route: `/coaches` — لیست مربی‌های published
-- [ ] نیاز: `GET /coaches` در بکند (تسک اضافی)
+- [x] Route: `/coaches` — لیست مربی‌های published
+- [x] نیاز: `GET /coaches` در بکند
 - **فایل جدید:** `src/app/(site)/coaches/page.js`
 
 ---
