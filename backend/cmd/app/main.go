@@ -85,6 +85,7 @@ func NewServer() *Server {
 	feedbackRepo := repository.NewFeedbackRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
 	coachProfileRepo := repository.NewCoachProfileRepository(db)
+	exerciseRepo := repository.NewExerciseRepository(db)
 
 	// Initialize services
 	authService := service.NewAuthService(userRepo, coachProfileRepo, refreshTokenRepo, otpRepo)
@@ -98,6 +99,7 @@ func NewServer() *Server {
 	adminStudentService := service.NewAdminStudentService(db, userRepo, subscriptionRepo, servicePlanRepo, coachProfileRepo)
 	adminPlanService := service.NewAdminPlanService(servicePlanRepo, coachProfileRepo)
 	adminCoachService := service.NewAdminCoachService(coachProfileRepo)
+	adminExerciseService := service.NewAdminExerciseService(exerciseRepo)
 	siteSettingsService := service.NewSiteSettingsService(siteSettingsRepo)
 	feedbackService := service.NewFeedbackService(feedbackRepo)
 
@@ -113,6 +115,7 @@ func NewServer() *Server {
 	feedbackController := controllers.NewFeedbackController(feedbackService)
 	adminFeedbackController := controllers.NewAdminFeedbackController(feedbackService)
 	adminCoachController := controllers.NewAdminCoachController(adminCoachService)
+	adminExerciseController := controllers.NewAdminExerciseController(adminExerciseService)
 	coachProfileController := controllers.NewCoachProfileController(coachProfileService)
 	publicCoachController := controllers.NewPublicCoachController(coachProfileService)
 	coachPlanController := controllers.NewCoachPlanController(coachPlanService)
@@ -216,10 +219,16 @@ func NewServer() *Server {
 		adminGroup.GET("/coaches", adminCoachController.ListCoaches)
 		adminGroup.GET("/coaches/:id", adminCoachController.GetCoachByID)
 		adminGroup.PATCH("/coaches/:id", adminCoachController.PatchCoach)
+		adminGroup.GET("/exercises", adminExerciseController.ListExercises)
+		adminGroup.POST("/exercises", adminExerciseController.CreateExercise)
+		adminGroup.GET("/exercises/:id", adminExerciseController.GetExerciseByID)
+		adminGroup.PATCH("/exercises/:id", adminExerciseController.UpdateExercise)
+		adminGroup.DELETE("/exercises/:id", adminExerciseController.DeleteExercise)
 	}
 
 	// Serve uploaded files (e.g. user body photos) at /uploads/*
 	router.Static("/uploads", "./uploads")
+	router.Static("/exercises-media", "./exercises-dataset-main")
 
 	// Swagger endpoint
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

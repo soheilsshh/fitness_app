@@ -86,6 +86,7 @@ func SetupDatabase(db *gorm.DB) error {
 		&models.SiteSettings{},
 		&models.Feedback{},
 		&models.OtpCode{},
+		&models.Exercise{},
 	)
 	if err != nil {
 		log.Printf("AutoMigrate encountered an error: %v\n", err)
