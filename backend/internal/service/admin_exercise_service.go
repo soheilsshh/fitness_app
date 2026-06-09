@@ -2,8 +2,11 @@ package service
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strings"
 
 	"gorm.io/gorm"
@@ -36,6 +39,17 @@ type AdminExerciseListResponse struct {
 	Page     int                 `json:"page"`
 	PageSize int                 `json:"pageSize"`
 	Total    int64               `json:"total"`
+}
+
+type CoachExerciseCreateRequest struct {
+	Name        string `json:"name"`
+	Category    string `json:"category"`
+	BodyPart    string `json:"bodyPart"`
+	Equipment   string `json:"equipment"`
+	Target      string `json:"target"`
+	Description string `json:"description"`
+	ImagePath   string `json:"imagePath"`
+	GifPath     string `json:"gifPath"`
 }
 
 type AdminExerciseCreateRequest struct {
@@ -74,6 +88,7 @@ type AdminExerciseService interface {
 	ListCategories(ctx context.Context) ([]string, error)
 	GetExerciseByID(ctx context.Context, id uint) (*AdminExerciseItem, error)
 	CreateExercise(ctx context.Context, req *AdminExerciseCreateRequest) (*AdminExerciseItem, error)
+	CreateCoachExercise(ctx context.Context, req *CoachExerciseCreateRequest) (*AdminExerciseItem, error)
 	UpdateExercise(ctx context.Context, id uint, req *AdminExerciseUpdateRequest) (*AdminExerciseItem, error)
 	DeleteExercise(ctx context.Context, id uint) error
 }
@@ -184,6 +199,57 @@ func (s *adminExerciseService) GetExerciseByID(ctx context.Context, id uint) (*A
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrExerciseNotFound
 		}
+		return nil, err
+	}
+	item := exerciseToItem(e)
+	return &item, nil
+}
+
+func (s *adminExerciseService) generateUniqueExternalID(ctx context.Context) (string, error) {
+	for i := 0; i < 8; i++ {
+		b := make([]byte, 4)
+		if _, err := rand.Read(b); err != nil {
+			return "", err
+		}
+		id := fmt.Sprintf("mc%s", hex.EncodeToString(b))
+		_, err := s.repo.FindByExternalID(ctx, id)
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return id, nil
+		}
+		if err != nil {
+			return "", err
+		}
+	}
+	return "", errors.New("failed to generate external id")
+}
+
+func (s *adminExerciseService) CreateCoachExercise(ctx context.Context, req *CoachExerciseCreateRequest) (*AdminExerciseItem, error) {
+	name := strings.TrimSpace(req.Name)
+	if name == "" {
+		return nil, errors.New("name is required")
+	}
+
+	externalID, err := s.generateUniqueExternalID(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	e := &models.Exercise{
+		ExternalID:       externalID,
+		Name:             name,
+		Category:         strings.TrimSpace(req.Category),
+		BodyPart:         strings.TrimSpace(req.BodyPart),
+		Equipment:        strings.TrimSpace(req.Equipment),
+		Target:           strings.TrimSpace(req.Target),
+		Description:      strings.TrimSpace(req.Description),
+		InstructionSteps: encodeStringSlice(nil),
+		SecondaryMuscles: encodeStringSlice(nil),
+		ImagePath:        strings.TrimSpace(req.ImagePath),
+		GifPath:          strings.TrimSpace(req.GifPath),
+		IsActive:         true,
+	}
+
+	if err := s.repo.Create(ctx, e); err != nil {
 		return nil, err
 	}
 	item := exerciseToItem(e)

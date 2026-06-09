@@ -178,6 +178,7 @@ func NewServer() *Server {
 		coachGroup.GET("/dashboard/stats", coachDashboardController.GetStats)
 		coachGroup.GET("/exercises/categories", coachExerciseController.ListCategories)
 		coachGroup.GET("/exercises", coachExerciseController.ListExercises)
+		coachGroup.POST("/exercises", coachExerciseController.CreateExercise)
 		coachGroup.GET("/exercises/:id", coachExerciseController.GetExerciseByID)
 	}
 

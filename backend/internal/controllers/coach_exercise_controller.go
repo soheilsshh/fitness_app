@@ -2,12 +2,18 @@ package controllers
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
+	"github.com/yourusername/fitness-management/internal/middleware"
 	"github.com/yourusername/fitness-management/internal/service"
 )
 
@@ -75,4 +81,86 @@ func (h *CoachExerciseController) GetExerciseByID(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, item)
+}
+
+var allowedExerciseMediaExts = map[string]bool{
+	".jpg": true, ".jpeg": true, ".png": true, ".webp": true,
+	".gif": true, ".mp4": true, ".webm": true, ".mov": true,
+}
+
+func isAnimatedExerciseMedia(ext string) bool {
+	switch strings.ToLower(ext) {
+	case ".gif", ".mp4", ".webm", ".mov":
+		return true
+	default:
+		return false
+	}
+}
+
+func exercisesDatasetDir() string {
+	if dir := os.Getenv("EXERCISES_DATASET_DIR"); dir != "" {
+		return dir
+	}
+	return "exercises-dataset-main"
+}
+
+func (h *CoachExerciseController) CreateExercise(c *gin.Context) {
+	if _, err := middleware.GetUserID(c); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	req := service.CoachExerciseCreateRequest{
+		Name:        c.PostForm("name"),
+		Category:    c.PostForm("category"),
+		BodyPart:    c.PostForm("bodyPart"),
+		Equipment:   c.PostForm("equipment"),
+		Target:      c.PostForm("target"),
+		Description: c.PostForm("description"),
+	}
+
+	file, fileErr := c.FormFile("media")
+	if fileErr == nil && file != nil {
+		ext := strings.ToLower(filepath.Ext(file.Filename))
+		if ext == "" {
+			ext = ".jpg"
+		}
+		if !allowedExerciseMediaExts[ext] {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "unsupported media type"})
+			return
+		}
+
+		subDir := "images"
+		if isAnimatedExerciseMedia(ext) {
+			subDir = "videos"
+		}
+
+		dir := filepath.Join(exercisesDatasetDir(), subDir)
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create media dir"})
+			return
+		}
+
+		name := fmt.Sprintf("coach-%d%s", time.Now().UnixNano(), ext)
+		fullPath := filepath.Join(dir, name)
+		if err := c.SaveUploadedFile(file, fullPath); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		// Relative path like dataset seed (e.g. videos/coach-123.gif) → served at /exercises-media/videos/...
+		relPath := filepath.ToSlash(filepath.Join(subDir, name))
+		if isAnimatedExerciseMedia(ext) {
+			req.GifPath = relPath
+		} else {
+			req.ImagePath = relPath
+		}
+	}
+
+	item, err := h.exerciseService.CreateCoachExercise(c.Request.Context(), &req)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, item)
 }

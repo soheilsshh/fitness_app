@@ -14,6 +14,7 @@ import {
   planByDayToDayExercises,
 } from "../../../_components/exerciseHelpers";
 import ExercisePickerModal from "./ExercisePickerModal";
+import ManualExerciseModal from "./ManualExerciseModal";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
@@ -37,8 +38,8 @@ export default function WorkoutEditorClient({ studentId, embedded = false, onSav
   const [selectedDay, setSelectedDay] = useState("sat");
   const [restDays, setRestDays] = useState([]);
   const [dayExercises, setDayExercises] = useState(emptyDayExercises());
-  const [manualText, setManualText] = useState("");
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [manualOpen, setManualOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -81,13 +82,6 @@ export default function WorkoutEditorClient({ studentId, embedded = false, onSav
     if (restDays.includes(selectedDay)) {
       setRestDays((prev) => prev.filter((d) => d !== selectedDay));
     }
-  };
-
-  const addManualExercise = () => {
-    const text = manualText.trim();
-    if (!text) return;
-    addExercise({ name: text, sets: "", reps: "", imageUrl: "", manual: true });
-    setManualText("");
   };
 
   const removeExercise = (exerciseUid) => {
@@ -318,25 +312,14 @@ export default function WorkoutEditorClient({ studentId, embedded = false, onSav
               </div>
             )}
 
-            <div className="border-t border-white/10 pt-4">
-              <div className="mb-2 text-xs text-zinc-400">یا به‌صورت دستی بنویسید:</div>
-              <div className="flex gap-2">
-                <input
-                  value={manualText}
-                  onChange={(e) => setManualText(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addManualExercise())}
-                  placeholder="مثلاً: پرس سینه با دمبل"
-                  className="flex-1 rounded-2xl border border-white/10 bg-zinc-950/30 px-4 py-2.5 text-sm text-white outline-none focus:border-emerald-400/40"
-                />
-                <button
-                  type="button"
-                  onClick={addManualExercise}
-                  className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-bold text-zinc-200 hover:bg-white/10"
-                >
-                  افزودن
-                </button>
-              </div>
-            </div>
+            <button
+              type="button"
+              onClick={() => setManualOpen(true)}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-zinc-950/30 px-4 py-3 text-sm font-bold text-zinc-200 hover:bg-white/10"
+            >
+              <FiPlus />
+              افزودن حرکت دستی (جدید)
+            </button>
           </>
         )}
       </div>
@@ -344,6 +327,13 @@ export default function WorkoutEditorClient({ studentId, embedded = false, onSav
       <ExercisePickerModal
         open={pickerOpen}
         onClose={() => setPickerOpen(false)}
+        dayLabel={DAY_LABELS[selectedDay]}
+        onAdd={(entry) => addExercise(entry)}
+      />
+
+      <ManualExerciseModal
+        open={manualOpen}
+        onClose={() => setManualOpen(false)}
         dayLabel={DAY_LABELS[selectedDay]}
         onAdd={(entry) => addExercise(entry)}
       />
