@@ -29,6 +29,8 @@ type AdminExerciseItem struct {
 	MuscleGroup      string   `json:"muscleGroup"`
 	Target           string   `json:"target"`
 	SecondaryMuscles []string `json:"secondaryMuscles"`
+	ImagePath        string   `json:"imagePath"`
+	GifPath          string   `json:"gifPath"`
 	ImageURL         string   `json:"imageUrl"`
 	GifURL           string   `json:"gifUrl"`
 	IsActive         bool     `json:"isActive"`
@@ -147,6 +149,8 @@ func exerciseToItem(e *models.Exercise) AdminExerciseItem {
 		MuscleGroup:      e.MuscleGroup,
 		Target:           e.Target,
 		SecondaryMuscles: decodeStringSlice(e.SecondaryMuscles),
+		ImagePath:        e.ImagePath,
+		GifPath:          e.GifPath,
 		ImageURL:         exerciseMediaURL(e.ImagePath),
 		GifURL:           exerciseMediaURL(e.GifPath),
 		IsActive:         e.IsActive,
