@@ -15,6 +15,7 @@ type ExerciseRepository interface {
 	FindByID(ctx context.Context, id uint) (*models.Exercise, error)
 	FindByExternalID(ctx context.Context, externalID string) (*models.Exercise, error)
 	List(ctx context.Context, page, pageSize int, query, category, bodyPart, equipment string) ([]models.Exercise, int64, error)
+	ListCategories(ctx context.Context) ([]string, error)
 	UpsertByExternalID(ctx context.Context, e *models.Exercise) error
 }
 
@@ -51,7 +52,10 @@ func (r *exerciseRepository) List(ctx context.Context, page, pageSize int, query
 	if pageSize <= 0 {
 		pageSize = 20
 	}
-	db := r.applyFilters(r.db.WithContext(ctx).Model(&models.Exercise{}), query, category, bodyPart, equipment)
+	db := r.applyFilters(
+		r.db.WithContext(ctx).Model(&models.Exercise{}).Where("is_active = ?", true),
+		query, category, bodyPart, equipment,
+	)
 
 	var total int64
 	if err := db.Count(&total).Error; err != nil {
@@ -64,6 +68,16 @@ func (r *exerciseRepository) List(ctx context.Context, page, pageSize int, query
 		return nil, 0, err
 	}
 	return list, total, nil
+}
+
+func (r *exerciseRepository) ListCategories(ctx context.Context) ([]string, error) {
+	var categories []string
+	err := r.db.WithContext(ctx).Model(&models.Exercise{}).
+		Where("is_active = ? AND category != ''", true).
+		Distinct("category").
+		Order("category ASC").
+		Pluck("category", &categories).Error
+	return categories, err
 }
 
 func (r *exerciseRepository) FindByID(ctx context.Context, id uint) (*models.Exercise, error) {

@@ -19,6 +19,15 @@ func NewCoachExerciseController(s service.AdminExerciseService) *CoachExerciseCo
 	return &CoachExerciseController{exerciseService: s}
 }
 
+func (h *CoachExerciseController) ListCategories(c *gin.Context) {
+	cats, err := h.exerciseService.ListCategories(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"categories": cats})
+}
+
 func (h *CoachExerciseController) ListExercises(c *gin.Context) {
 	page := 1
 	if p := c.Query("page"); p != "" {

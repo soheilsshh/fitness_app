@@ -71,6 +71,7 @@ type AdminExerciseUpdateRequest struct {
 
 type AdminExerciseService interface {
 	ListExercises(ctx context.Context, page, pageSize int, query, category, bodyPart, equipment string) (*AdminExerciseListResponse, error)
+	ListCategories(ctx context.Context) ([]string, error)
 	GetExerciseByID(ctx context.Context, id uint) (*AdminExerciseItem, error)
 	CreateExercise(ctx context.Context, req *AdminExerciseCreateRequest) (*AdminExerciseItem, error)
 	UpdateExercise(ctx context.Context, id uint, req *AdminExerciseUpdateRequest) (*AdminExerciseItem, error)
@@ -164,6 +165,17 @@ func (s *adminExerciseService) ListExercises(ctx context.Context, page, pageSize
 		PageSize: pageSize,
 		Total:    total,
 	}, nil
+}
+
+func (s *adminExerciseService) ListCategories(ctx context.Context) ([]string, error) {
+	cats, err := s.repo.ListCategories(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if cats == nil {
+		return []string{}, nil
+	}
+	return cats, nil
 }
 
 func (s *adminExerciseService) GetExerciseByID(ctx context.Context, id uint) (*AdminExerciseItem, error) {

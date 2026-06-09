@@ -26,6 +26,10 @@ func dayKeyToNum(key string) int {
 
 func workoutItemsToPlanByDay(items []models.ProgramItem) (map[string]MeDayPlanDTO, *MeScheduleDTO) {
 	planByDay := make(map[string]MeDayPlanDTO)
+	if len(items) == 0 {
+		return planByDay, &MeScheduleDTO{Weekly: append([]string{}, allDayKeys...), RestDays: []string{}}
+	}
+
 	weeklySet := map[string]bool{}
 
 	for _, it := range items {

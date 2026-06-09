@@ -81,6 +81,9 @@ func (s *coachProgramService) resolveActiveSubscription(ctx context.Context, coa
 func (s *coachProgramService) GetStudentPrograms(ctx context.Context, coachID, studentID uint) (*CoachStudentProgramsResponse, error) {
 	sub, err := s.resolveActiveSubscription(ctx, coachID, studentID)
 	if err != nil {
+		if errors.Is(err, ErrCoachNoActiveSubscription) {
+			return &CoachStudentProgramsResponse{PlanByDay: map[string]MeDayPlanDTO{}}, nil
+		}
 		return nil, err
 	}
 
