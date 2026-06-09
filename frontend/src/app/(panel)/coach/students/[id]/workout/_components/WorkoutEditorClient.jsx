@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { FiChevronLeft, FiPlus, FiSave, FiX } from "react-icons/fi";
+import { FiChevronLeft, FiDatabase, FiPlus, FiSave, FiX } from "react-icons/fi";
 import { api } from "@/lib/axios/client";
 import { toastError } from "@/app/(site)/auth/_components/helpers";
 import { DAY_KEYS, DAY_LABELS, emptyPlanByDay } from "../../../_components/programDays";
+import ExercisePickerModal from "./ExercisePickerModal";
 
 export default function WorkoutEditorClient({ studentId }) {
   const [loading, setLoading] = useState(true);
@@ -16,6 +17,7 @@ export default function WorkoutEditorClient({ studentId }) {
   const [restDays, setRestDays] = useState([]);
   const [planByDay, setPlanByDay] = useState(emptyPlanByDay());
   const [stepInput, setStepInput] = useState("");
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -171,12 +173,19 @@ export default function WorkoutEditorClient({ studentId }) {
           <div className="text-sm font-extrabold text-white">
             حرکات {DAY_LABELS[selectedDay]}
           </div>
+          <button
+            onClick={() => setPickerOpen(true)}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm font-extrabold text-emerald-100 hover:bg-emerald-400/15"
+          >
+            <FiDatabase />
+            انتخاب از دیتاست حرکات
+          </button>
           <div className="flex gap-2">
             <input
               value={stepInput}
               onChange={(e) => setStepInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addStep())}
-              placeholder="مثلاً: پرس سینه — ۴ ست — ۱۰ تکرار"
+              placeholder="یا دستی وارد کنید: پرس سینه — ۴ ست — ۱۰ تکرار"
               className="flex-1 rounded-2xl border border-white/10 bg-zinc-950/30 px-4 py-2.5 text-sm text-white outline-none focus:border-emerald-400/40"
             />
             <button
@@ -206,6 +215,22 @@ export default function WorkoutEditorClient({ studentId }) {
           روز استراحت
         </div>
       )}
+
+      <ExercisePickerModal
+        open={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        onSelect={(step) => {
+          setPlanByDay((prev) => {
+            const next = { ...prev };
+            const day = { ...next[selectedDay] };
+            const workout = { ...(day.workout || { steps: [] }) };
+            workout.steps = [...(workout.steps || []), step];
+            day.workout = workout;
+            next[selectedDay] = day;
+            return next;
+          });
+        }}
+      />
     </div>
   );
 }

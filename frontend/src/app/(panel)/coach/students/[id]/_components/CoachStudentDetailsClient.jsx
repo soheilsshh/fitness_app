@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { FiChevronLeft, FiPhone, FiClipboard, FiActivity, FiCoffee } from "react-icons/fi";
+import { FiChevronLeft, FiPhone, FiClipboard, FiActivity, FiCoffee, FiAlertCircle } from "react-icons/fi";
 import { api } from "@/lib/axios/client";
+import WorkoutProgramPreview from "./WorkoutProgramPreview";
 
 export default function CoachStudentDetailsClient({ id }) {
   const [student, setStudent] = useState(null);
+  const [programs, setPrograms] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -15,7 +17,19 @@ export default function CoachStudentDetailsClient({ id }) {
       setLoading(true);
       try {
         const res = await api.get(`/coach/students/${id}`);
-        if (!cancelled) setStudent(res.data);
+        if (cancelled) return;
+        setStudent(res.data);
+
+        if (res.data?.hasWorkoutProgram) {
+          try {
+            const progRes = await api.get(`/coach/students/${id}/programs`);
+            if (!cancelled) setPrograms(progRes.data);
+          } catch {
+            if (!cancelled) setPrograms(null);
+          }
+        } else {
+          setPrograms(null);
+        }
       } catch {
         if (!cancelled) setStudent(null);
       } finally {
@@ -38,6 +52,8 @@ export default function CoachStudentDetailsClient({ id }) {
     );
   }
 
+  const isPending = student.status === "pending";
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
@@ -49,13 +65,22 @@ export default function CoachStudentDetailsClient({ id }) {
           بازگشت
         </Link>
         <div className="text-lg font-extrabold text-white">{student.fullName}</div>
+        <span
+          className={[
+            "rounded-full border px-3 py-1 text-[11px] font-bold",
+            isPending
+              ? "border-amber-400/25 bg-amber-400/10 text-amber-200"
+              : "border-emerald-400/25 bg-emerald-400/10 text-emerald-200",
+          ].join(" ")}
+        >
+          {isPending ? "در انتظار" : "فعال"}
+        </span>
       </div>
 
       <div className="rounded-[26px] border border-white/10 bg-white/5 p-5 md:p-6">
         <div className="grid gap-4 md:grid-cols-2">
           <InfoRow icon={FiPhone} label="موبایل" value={student.phone} />
           <InfoRow icon={FiClipboard} label="پلن" value={student.planTitle || "—"} />
-          <InfoRow label="وضعیت" value={student.status === "active" ? "فعال" : "در انتظار"} />
           <InfoRow label="نوع پلن" value={
             student.planType === "both" ? "تمرین + تغذیه" : student.planType === "workout" ? "تمرین" : "تغذیه"
           } />
@@ -66,6 +91,30 @@ export default function CoachStudentDetailsClient({ id }) {
           ) : null}
         </div>
       </div>
+
+      {isPending ? (
+        <div className="rounded-[26px] border border-amber-400/20 bg-amber-400/5 p-5">
+          <div className="flex items-start gap-3">
+            <FiAlertCircle className="mt-0.5 shrink-0 text-xl text-amber-300" />
+            <div>
+              <div className="text-sm font-extrabold text-white">در انتظار تخصیص برنامه</div>
+              <div className="mt-1 text-sm text-zinc-300">
+                این دانشجو پلن را خریداری کرده اما هنوز برنامه تمرینی دریافت نکرده است.
+                با کلیک روی دکمه زیر، از دیتاست حرکات ورزشی برنامه تمرین را برای او انتخاب کنید.
+              </div>
+              <Link
+                href={`/coach/students/${id}/workout`}
+                className="mt-4 inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-2.5 text-sm font-extrabold text-zinc-950 hover:bg-zinc-200"
+              >
+                <FiActivity />
+                تخصیص برنامه تمرین
+              </Link>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <WorkoutProgramPreview studentId={id} programs={programs} />
+      )}
 
       <div className="grid gap-3 md:grid-cols-2">
         <Link

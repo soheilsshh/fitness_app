@@ -126,6 +126,7 @@ func NewServer() *Server {
 	coachStudentController := controllers.NewCoachStudentController(coachStudentService)
 	coachProgramController := controllers.NewCoachProgramController(coachProgramService)
 	coachDashboardController := controllers.NewCoachDashboardController(coachDashboardService)
+	coachExerciseController := controllers.NewCoachExerciseController(adminExerciseService)
 	checkoutController := controllers.NewCheckoutController(checkoutService)
 
 	// Auth routes
@@ -175,6 +176,8 @@ func NewServer() *Server {
 		coachGroup.POST("/students/:id/nutrition-programs", coachProgramController.AssignNutritionProgram)
 		coachGroup.PATCH("/students/:id/nutrition-programs/:programId", coachProgramController.UpdateNutritionProgram)
 		coachGroup.GET("/dashboard/stats", coachDashboardController.GetStats)
+		coachGroup.GET("/exercises", coachExerciseController.ListExercises)
+		coachGroup.GET("/exercises/:id", coachExerciseController.GetExerciseByID)
 	}
 
 	// Student (user panel) routes - all protected
