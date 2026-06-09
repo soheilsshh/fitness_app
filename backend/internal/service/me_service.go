@@ -115,11 +115,27 @@ type MeDayPlanDTO struct {
 	Nutrition *MeNutritionDTO `json:"nutrition,omitempty"`
 }
 
+type MeWorkoutExerciseDTO struct {
+	ExerciseID       uint     `json:"exerciseId,omitempty"`
+	Name             string   `json:"name"`
+	Sets             int      `json:"sets,omitempty"`
+	Reps             string   `json:"reps,omitempty"`
+	ImageURL         string   `json:"imageUrl,omitempty"`
+	GifURL           string   `json:"gifUrl,omitempty"`
+	Category         string   `json:"category,omitempty"`
+	BodyPart         string   `json:"bodyPart,omitempty"`
+	Equipment        string   `json:"equipment,omitempty"`
+	Target           string   `json:"target,omitempty"`
+	Description      string   `json:"description,omitempty"`
+	InstructionSteps []string `json:"instructionSteps,omitempty"`
+}
+
 type MeWorkoutDTO struct {
-	Title       string   `json:"title"`
-	DurationMin int      `json:"durationMin"`
-	Calories    int      `json:"calories"`
-	Steps       []string `json:"steps"`
+	Title       string                 `json:"title"`
+	DurationMin int                    `json:"durationMin"`
+	Calories    int                    `json:"calories"`
+	Steps       []string               `json:"steps"`
+	Exercises   []MeWorkoutExerciseDTO `json:"exercises,omitempty"`
 }
 
 type MeNutritionDTO struct {
@@ -143,12 +159,13 @@ type MeService interface {
 }
 
 type meService struct {
-	db          *gorm.DB
-	userRepo    repository.UserRepository
-	orderRepo   repository.OrderRepository
-	subRepo     repository.SubscriptionRepository
-	planRepo    repository.ServicePlanRepository
-	programRepo repository.ProgramRepository
+	db           *gorm.DB
+	userRepo     repository.UserRepository
+	orderRepo    repository.OrderRepository
+	subRepo      repository.SubscriptionRepository
+	planRepo     repository.ServicePlanRepository
+	programRepo  repository.ProgramRepository
+	exerciseRepo repository.ExerciseRepository
 }
 
 func NewMeService(
@@ -158,14 +175,16 @@ func NewMeService(
 	subRepo repository.SubscriptionRepository,
 	planRepo repository.ServicePlanRepository,
 	programRepo repository.ProgramRepository,
+	exerciseRepo repository.ExerciseRepository,
 ) MeService {
 	return &meService{
-		db:          db,
-		userRepo:    userRepo,
-		orderRepo:   orderRepo,
-		subRepo:     subRepo,
-		planRepo:    planRepo,
-		programRepo: programRepo,
+		db:           db,
+		userRepo:     userRepo,
+		orderRepo:    orderRepo,
+		subRepo:      subRepo,
+		planRepo:     planRepo,
+		programRepo:  programRepo,
+		exerciseRepo: exerciseRepo,
 	}
 }
 
@@ -430,6 +449,7 @@ func (s *meService) GetMyProgramByID(ctx context.Context, userID uint, programID
 		nutritionItems, _ = s.programRepo.FindNutritionItemsByProgramID(ctx, np.ID)
 	}
 	planByDay, schedule := buildFullPlanByDay(workoutItems, nutritionItems)
+	planByDay = enrichWorkoutPlan(ctx, s.exerciseRepo, planByDay)
 	if schedule == nil {
 		schedule = &MeScheduleDTO{Weekly: []string{}, RestDays: []string{}}
 	}

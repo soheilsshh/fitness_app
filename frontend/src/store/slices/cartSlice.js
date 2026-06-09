@@ -1,4 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSelector, createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   coachId: null,
@@ -78,11 +78,16 @@ const cartSlice = createSlice({
 export const { addToCart, removeFromCart, setQty, clearCart } = cartSlice.actions;
 
 export const selectCartItems = (s) => s.cart.items;
-export const selectCartCoach = (s) => ({
-  coachId: s.cart.coachId,
-  coachName: s.cart.coachName,
-  coachSlug: s.cart.coachSlug,
-});
+
+const selectCartCoachId = (s) => s.cart.coachId;
+const selectCartCoachName = (s) => s.cart.coachName;
+const selectCartCoachSlug = (s) => s.cart.coachSlug;
+
+export const selectCartCoach = createSelector(
+  [selectCartCoachId, selectCartCoachName, selectCartCoachSlug],
+  (coachId, coachName, coachSlug) => ({ coachId, coachName, coachSlug })
+);
+
 export const selectCartCount = (s) => calcQty(s.cart.items);
 export const selectCartTotal = (s) => calcTotal(s.cart.items);
 

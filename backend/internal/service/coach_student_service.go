@@ -81,9 +81,22 @@ func (s *coachStudentService) ListStudents(ctx context.Context, coachID uint, pa
 
 	switch status {
 	case "active":
-		db = db.Where("id IN (SELECT DISTINCT user_id FROM subscriptions WHERE coach_id = ? AND (ends_at IS NULL OR ends_at > ?))", coachID, now)
+		db = db.Where(`id IN (
+			SELECT s.user_id FROM subscriptions s
+			INNER JOIN workout_programs wp ON wp.subscription_id = s.id AND wp.is_active = true
+			WHERE s.coach_id = ? AND (s.ends_at IS NULL OR s.ends_at > ?)
+		)`, coachID, now)
 	case "pending":
-		db = db.Where("id NOT IN (SELECT DISTINCT user_id FROM subscriptions WHERE coach_id = ? AND (ends_at IS NULL OR ends_at > ?))", coachID, now)
+		db = db.Where(`id IN (
+			SELECT s.user_id FROM subscriptions s
+			WHERE s.coach_id = ? AND (s.ends_at IS NULL OR s.ends_at > ?)
+			AND NOT EXISTS (
+				SELECT 1 FROM workout_programs wp
+				WHERE wp.subscription_id = s.id AND wp.is_active = true
+			)
+		)`, coachID, now)
+	default:
+		db = db.Where("id IN (SELECT DISTINCT user_id FROM subscriptions WHERE coach_id = ? AND (ends_at IS NULL OR ends_at > ?))", coachID, now)
 	}
 
 	var total int64
@@ -118,9 +131,9 @@ func (s *coachStudentService) userToStudentItem(ctx context.Context, coachID uin
 	status := "pending"
 	sub, err := s.subRepo.FindCurrentByUserIDAndCoachID(ctx, u.ID, coachID, now)
 	if err == nil && sub != nil {
-		status = "active"
-	} else if u.CoachStatus != "" {
-		status = u.CoachStatus
+		if wp, wpErr := s.programRepo.FindActiveWorkoutBySubscriptionID(ctx, sub.ID); wpErr == nil && wp != nil {
+			status = "active"
+		}
 	}
 
 	planTitle := ""
