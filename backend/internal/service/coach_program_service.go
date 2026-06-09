@@ -43,6 +43,7 @@ type coachProgramService struct {
 	db              *gorm.DB
 	subRepo         repository.SubscriptionRepository
 	programRepo     repository.ProgramRepository
+	exerciseRepo    repository.ExerciseRepository
 	coachStudentSvc CoachStudentService
 }
 
@@ -50,14 +51,21 @@ func NewCoachProgramService(
 	db *gorm.DB,
 	subRepo repository.SubscriptionRepository,
 	programRepo repository.ProgramRepository,
+	exerciseRepo repository.ExerciseRepository,
 	coachStudentSvc CoachStudentService,
 ) CoachProgramService {
 	return &coachProgramService{
 		db:              db,
 		subRepo:         subRepo,
 		programRepo:     programRepo,
+		exerciseRepo:    exerciseRepo,
 		coachStudentSvc: coachStudentSvc,
 	}
+}
+
+func (s *coachProgramService) finalizePlan(ctx context.Context, planByDay map[string]MeDayPlanDTO, schedule *MeScheduleDTO) (map[string]MeDayPlanDTO, *MeScheduleDTO) {
+	planByDay = enrichWorkoutPlan(ctx, s.exerciseRepo, planByDay)
+	return planByDay, schedule
 }
 
 func (s *coachProgramService) resolveActiveSubscription(ctx context.Context, coachID, studentID uint) (*models.Subscription, error) {
@@ -102,6 +110,7 @@ func (s *coachProgramService) GetStudentPrograms(ctx context.Context, coachID, s
 	}
 
 	planByDay, schedule := buildFullPlanByDay(workoutItems, nutritionItems)
+	planByDay, schedule = s.finalizePlan(ctx, planByDay, schedule)
 	resp.PlanByDay = planByDay
 	resp.Schedule = schedule
 	return resp, nil
@@ -176,6 +185,7 @@ func (s *coachProgramService) createWorkoutProgram(ctx context.Context, coachID,
 
 	items, _ := s.programRepo.FindWorkoutItemsByProgramID(ctx, createdID)
 	planByDay, schedule := workoutItemsToPlanByDay(items)
+	planByDay, schedule = s.finalizePlan(ctx, planByDay, schedule)
 	return &CoachStudentProgramsResponse{
 		WorkoutProgramID: createdID,
 		Schedule:         schedule,
@@ -225,6 +235,7 @@ func (s *coachProgramService) UpdateWorkoutProgram(ctx context.Context, coachID,
 
 	loaded, _ := s.programRepo.FindWorkoutItemsByProgramID(ctx, program.ID)
 	planByDay, schedule := workoutItemsToPlanByDay(loaded)
+	planByDay, schedule = s.finalizePlan(ctx, planByDay, schedule)
 	return &CoachStudentProgramsResponse{
 		WorkoutProgramID: program.ID,
 		Schedule:         schedule,

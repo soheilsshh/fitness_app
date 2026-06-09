@@ -16,6 +16,8 @@ type ExerciseRepository interface {
 	FindByExternalID(ctx context.Context, externalID string) (*models.Exercise, error)
 	List(ctx context.Context, page, pageSize int, query, category, bodyPart, equipment string) ([]models.Exercise, int64, error)
 	ListCategories(ctx context.Context) ([]string, error)
+	FindByIDs(ctx context.Context, ids []uint) ([]models.Exercise, error)
+	FindByNames(ctx context.Context, names []string) ([]models.Exercise, error)
 	UpsertByExternalID(ctx context.Context, e *models.Exercise) error
 }
 
@@ -78,6 +80,24 @@ func (r *exerciseRepository) ListCategories(ctx context.Context) ([]string, erro
 		Order("category ASC").
 		Pluck("category", &categories).Error
 	return categories, err
+}
+
+func (r *exerciseRepository) FindByIDs(ctx context.Context, ids []uint) ([]models.Exercise, error) {
+	if len(ids) == 0 {
+		return []models.Exercise{}, nil
+	}
+	var list []models.Exercise
+	err := r.db.WithContext(ctx).Where("id IN ? AND is_active = ?", ids, true).Find(&list).Error
+	return list, err
+}
+
+func (r *exerciseRepository) FindByNames(ctx context.Context, names []string) ([]models.Exercise, error) {
+	if len(names) == 0 {
+		return []models.Exercise{}, nil
+	}
+	var list []models.Exercise
+	err := r.db.WithContext(ctx).Where("name IN ? AND is_active = ?", names, true).Find(&list).Error
+	return list, err
 }
 
 func (r *exerciseRepository) FindByID(ctx context.Context, id uint) (*models.Exercise, error) {

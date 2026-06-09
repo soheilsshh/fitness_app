@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/yourusername/fitness-management/internal/models"
@@ -24,6 +25,42 @@ func dayKeyToNum(key string) int {
 	return 0
 }
 
+func parseWorkoutStep(step string) (name string, sets int, reps string) {
+	step = strings.TrimSpace(step)
+	if step == "" {
+		return "", 0, ""
+	}
+	parts := strings.Split(step, " — ")
+	name = strings.TrimSpace(parts[0])
+	for i := 1; i < len(parts); i++ {
+		p := strings.TrimSpace(parts[i])
+		if strings.Contains(p, "ست") {
+			numStr := strings.TrimSpace(strings.ReplaceAll(p, "ست", ""))
+			if n, err := strconv.Atoi(numStr); err == nil {
+				sets = n
+			}
+		} else if strings.Contains(p, "تکرار") {
+			reps = strings.TrimSpace(strings.ReplaceAll(p, "تکرار", ""))
+		}
+	}
+	return name, sets, reps
+}
+
+func formatWorkoutStep(name string, sets int, reps string) string {
+	name = strings.TrimSpace(name)
+	if name == "" {
+		return ""
+	}
+	parts := []string{name}
+	if sets > 0 {
+		parts = append(parts, fmt.Sprintf("%d ست", sets))
+	}
+	if strings.TrimSpace(reps) != "" {
+		parts = append(parts, fmt.Sprintf("%s تکرار", strings.TrimSpace(reps)))
+	}
+	return strings.Join(parts, " — ")
+}
+
 func workoutItemsToPlanByDay(items []models.ProgramItem) (map[string]MeDayPlanDTO, *MeScheduleDTO) {
 	planByDay := make(map[string]MeDayPlanDTO)
 	if len(items) == 0 {
@@ -40,22 +77,30 @@ func workoutItemsToPlanByDay(items []models.ProgramItem) (map[string]MeDayPlanDT
 		weeklySet[key] = true
 		day := planByDay[key]
 		if day.Workout == nil {
-			day.Workout = &MeWorkoutDTO{Steps: []string{}}
+			day.Workout = &MeWorkoutDTO{Steps: []string{}, Exercises: []MeWorkoutExerciseDTO{}}
 		}
-		step := strings.TrimSpace(it.Exercise)
-		if it.Sets > 0 || it.Reps != "" {
-			parts := []string{it.Exercise}
-			if it.Sets > 0 {
-				parts = append(parts, fmt.Sprintf("%d ست", it.Sets))
-			}
-			if it.Reps != "" {
-				parts = append(parts, it.Reps)
-			}
-			step = strings.Join(parts, " — ")
+
+		name := strings.TrimSpace(it.Exercise)
+		sets := it.Sets
+		reps := strings.TrimSpace(it.Reps)
+		if name == "" {
+			name, sets, reps = parseWorkoutStep(it.Exercise)
 		}
+
+		step := formatWorkoutStep(name, sets, reps)
 		if step != "" {
 			day.Workout.Steps = append(day.Workout.Steps, step)
 		}
+
+		exDTO := MeWorkoutExerciseDTO{
+			Name: name,
+			Sets: sets,
+			Reps: reps,
+		}
+		if it.ExerciseID != nil && *it.ExerciseID > 0 {
+			exDTO.ExerciseID = *it.ExerciseID
+		}
+		day.Workout.Exercises = append(day.Workout.Exercises, exDTO)
 		planByDay[key] = day
 	}
 
@@ -129,16 +174,46 @@ func planByDayToWorkoutItems(planByDay map[string]MeDayPlanDTO) []models.Program
 		if dayNum == 0 {
 			continue
 		}
+
+		if len(day.Workout.Exercises) > 0 {
+			for i, ex := range day.Workout.Exercises {
+				name := strings.TrimSpace(ex.Name)
+				if name == "" {
+					continue
+				}
+				item := models.ProgramItem{
+					WeekNumber: 1,
+					DayNumber:  dayNum,
+					OrderIndex: i + 1,
+					Exercise:   name,
+					Sets:       ex.Sets,
+					Reps:       strings.TrimSpace(ex.Reps),
+				}
+				if ex.ExerciseID > 0 {
+					id := ex.ExerciseID
+					item.ExerciseID = &id
+				}
+				items = append(items, item)
+			}
+			continue
+		}
+
 		for i, step := range day.Workout.Steps {
 			step = strings.TrimSpace(step)
 			if step == "" {
 				continue
 			}
+			name, sets, reps := parseWorkoutStep(step)
+			if name == "" {
+				name = step
+			}
 			items = append(items, models.ProgramItem{
 				WeekNumber: 1,
 				DayNumber:  dayNum,
 				OrderIndex: i + 1,
-				Exercise:   step,
+				Exercise:   name,
+				Sets:       sets,
+				Reps:       reps,
 			})
 		}
 	}

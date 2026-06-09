@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { FiActivity, FiCheckCircle, FiEdit2 } from "react-icons/fi";
+import { FiActivity, FiEdit2 } from "react-icons/fi";
+import WorkoutExerciseCards from "@/components/workout/WorkoutExerciseCards";
 import { DAY_KEYS, DAY_LABELS } from "../../_components/programDays";
 
 export default function WorkoutProgramPreview({ studentId, programs }) {
@@ -13,7 +14,7 @@ export default function WorkoutProgramPreview({ studentId, programs }) {
   if (!programs?.workoutProgramId) return null;
 
   const restDays = new Set(programs?.schedule?.restDays || []);
-  const steps = programs?.planByDay?.[selectedDay]?.workout?.steps || [];
+  const workout = programs?.planByDay?.[selectedDay]?.workout;
 
   return (
     <div className="rounded-[26px] border border-white/10 bg-white/5 p-5 md:p-6">
@@ -39,11 +40,14 @@ export default function WorkoutProgramPreview({ studentId, programs }) {
       <div className="mt-4 flex flex-wrap gap-2">
         {DAY_KEYS.map((key) => {
           const isRest = restDays.has(key);
-          const hasSteps = (programs?.planByDay?.[key]?.workout?.steps || []).length > 0;
-          if (isRest && !hasSteps) return null;
+          const hasExercises =
+            (programs?.planByDay?.[key]?.workout?.exercises?.length || 0) > 0 ||
+            (programs?.planByDay?.[key]?.workout?.steps?.length || 0) > 0;
+          if (isRest && !hasExercises) return null;
           return (
             <button
               key={key}
+              type="button"
               onClick={() => setSelectedDay(key)}
               className={[
                 "rounded-2xl border px-3 py-2 text-xs font-bold transition",
@@ -59,25 +63,13 @@ export default function WorkoutProgramPreview({ studentId, programs }) {
         })}
       </div>
 
-      <div className="mt-4 space-y-2">
+      <div className="mt-4">
         {restDays.has(selectedDay) ? (
           <div className="rounded-2xl border border-white/10 bg-zinc-950/30 p-4 text-sm text-zinc-400">
             روز استراحت
           </div>
-        ) : steps.length === 0 ? (
-          <div className="rounded-2xl border border-white/10 bg-zinc-950/30 p-4 text-sm text-zinc-400">
-            حرکتی برای این روز ثبت نشده
-          </div>
         ) : (
-          steps.map((step, i) => (
-            <div
-              key={i}
-              className="flex items-start gap-2 rounded-2xl border border-white/10 bg-zinc-950/30 px-4 py-2.5 text-sm text-zinc-200"
-            >
-              <FiCheckCircle className="mt-0.5 shrink-0 text-emerald-300" />
-              <span>{step}</span>
-            </div>
-          ))
+          <WorkoutExerciseCards workout={workout} dayKey={selectedDay} />
         )}
       </div>
     </div>

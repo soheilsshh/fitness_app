@@ -42,6 +42,13 @@ export function dayExercisesToPlanByDay(dayExercises) {
       workout: {
         title: "",
         steps: list.map((e) => formatExerciseEntry(e)),
+        exercises: list.map((e) => ({
+          exerciseId: e.exerciseId ? Number(e.exerciseId) : undefined,
+          name: e.name,
+          sets: parseInt(e.sets, 10) || 0,
+          reps: String(e.reps || "").trim(),
+          imageUrl: e.imageUrl || "",
+        })),
       },
       nutrition: { caloriesTarget: 0, proteinTarget: "", meals: [] },
     };
@@ -53,7 +60,20 @@ export function planByDayToDayExercises(planByDay) {
   const map = emptyDayExercises();
   if (!planByDay) return map;
   for (const key of Object.keys(map)) {
-    const steps = planByDay[key]?.workout?.steps || [];
+    const workout = planByDay[key]?.workout;
+    const exercises = workout?.exercises;
+    if (exercises?.length) {
+      map[key] = exercises.map((ex, i) => ({
+        uid: `${key}-${i}-${ex.exerciseId || ex.name}`,
+        exerciseId: ex.exerciseId,
+        name: ex.name,
+        sets: ex.sets != null ? String(ex.sets) : "",
+        reps: ex.reps || "",
+        imageUrl: ex.imageUrl || "",
+      }));
+      continue;
+    }
+    const steps = workout?.steps || [];
     map[key] = steps.map((step, i) => ({
       uid: `${key}-${i}-${Date.now()}`,
       ...parseExerciseStep(step),
