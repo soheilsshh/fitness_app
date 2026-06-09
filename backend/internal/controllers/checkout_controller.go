@@ -50,7 +50,9 @@ func (h *CheckoutController) Checkout(c *gin.Context) {
 		case errors.Is(err, service.ErrCheckoutEmptyCart),
 			errors.Is(err, service.ErrCheckoutInvalidPlan),
 			errors.Is(err, service.ErrCheckoutMixedCoaches),
-			errors.Is(err, service.ErrCheckoutPlanInactive):
+			errors.Is(err, service.ErrCheckoutPlanInactive),
+			errors.Is(err, service.ErrCheckoutMultipleItems),
+			errors.Is(err, service.ErrCheckoutInvalidQty):
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		default:
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

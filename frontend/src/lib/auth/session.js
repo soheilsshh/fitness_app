@@ -33,6 +33,12 @@ export function persistAuthSession(data) {
   if (user?.name) {
     window.localStorage.setItem("user_name", user.name);
   }
+  if (user?.isProfileComplete !== undefined) {
+    window.localStorage.setItem(
+      "profile_complete",
+      user.isProfileComplete ? "1" : "0"
+    );
+  }
 }
 
 export function clearAuthSession() {
@@ -42,6 +48,7 @@ export function clearAuthSession() {
   window.localStorage.removeItem("refresh_token");
   window.localStorage.removeItem("user_role");
   window.localStorage.removeItem("user_name");
+  window.localStorage.removeItem("profile_complete");
   clearCookie(ROLE_COOKIE);
   clearCookie(TOKEN_COOKIE);
 }

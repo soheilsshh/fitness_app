@@ -7,15 +7,17 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/yourusername/fitness-management/internal/middleware"
+	"github.com/yourusername/fitness-management/internal/models"
 	"github.com/yourusername/fitness-management/internal/service"
 )
 
 type AuthController struct {
 	authService service.AuthService
+	meService   service.MeService
 }
 
-func NewAuthController(authService service.AuthService) *AuthController {
-	return &AuthController{authService: authService}
+func NewAuthController(authService service.AuthService, meService service.MeService) *AuthController {
+	return &AuthController{authService: authService, meService: meService}
 }
 
 // DTOs
@@ -61,11 +63,12 @@ type resetPasswordWithOTPRequest struct {
 }
 
 type authUserResponse struct {
-	ID    uint   `json:"id"`
-	Name  string `json:"name"`
-	Email string `json:"email,omitempty"`
-	Phone string `json:"phone,omitempty"`
-	Role  string `json:"role"`
+	ID                uint   `json:"id"`
+	Name              string `json:"name"`
+	Email             string `json:"email,omitempty"`
+	Phone             string `json:"phone,omitempty"`
+	Role              string `json:"role"`
+	IsProfileComplete bool   `json:"isProfileComplete"`
 }
 
 type authResponse struct {
@@ -83,12 +86,13 @@ type logoutRequest struct {
 }
 
 type meResponse struct {
-	ID        uint      `json:"id"`
-	Name      string    `json:"name"`
-	Email     string    `json:"email"`
-	Phone     string    `json:"phone"`
-	Role      string    `json:"role"`
-	CreatedAt time.Time `json:"created_at"`
+	ID                uint      `json:"id"`
+	Name              string    `json:"name"`
+	Email             string    `json:"email"`
+	Phone             string    `json:"phone"`
+	Role              string    `json:"role"`
+	IsProfileComplete bool      `json:"isProfileComplete"`
+	CreatedAt         time.Time `json:"created_at"`
 }
 
 type changePasswordRequest struct {
@@ -97,6 +101,21 @@ type changePasswordRequest struct {
 }
 
 // Handlers
+
+func (h *AuthController) buildAuthUserResponse(c *gin.Context, user *models.User) (authUserResponse, error) {
+	complete, err := h.meService.IsProfileComplete(c.Request.Context(), user)
+	if err != nil {
+		return authUserResponse{}, err
+	}
+	return authUserResponse{
+		ID:                user.ID,
+		Name:              user.Name,
+		Email:             user.Email,
+		Phone:             user.Phone,
+		Role:              user.Role,
+		IsProfileComplete: complete,
+	}, nil
+}
 
 // Register godoc
 // @Summary Register new user
@@ -132,14 +151,14 @@ func (h *AuthController) Register(c *gin.Context) {
 		}
 	}
 
+	userResp, err := h.buildAuthUserResponse(c, result.User)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	c.JSON(http.StatusCreated, authResponse{
-		User: authUserResponse{
-			ID:    result.User.ID,
-			Name:  result.User.Name,
-			Email: result.User.Email,
-			Phone: result.User.Phone,
-			Role:  result.User.Role,
-		},
+		User:         userResp,
 		AccessToken:  result.AccessToken,
 		RefreshToken: result.RefreshToken,
 	})
@@ -170,14 +189,14 @@ func (h *AuthController) RegisterCoach(c *gin.Context) {
 		return
 	}
 
+	userResp, err := h.buildAuthUserResponse(c, result.User)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	c.JSON(http.StatusCreated, authResponse{
-		User: authUserResponse{
-			ID:    result.User.ID,
-			Name:  result.User.Name,
-			Email: result.User.Email,
-			Phone: result.User.Phone,
-			Role:  result.User.Role,
-		},
+		User:         userResp,
 		AccessToken:  result.AccessToken,
 		RefreshToken: result.RefreshToken,
 	})
@@ -212,14 +231,14 @@ func (h *AuthController) LoginWithPassword(c *gin.Context) {
 		return
 	}
 
+	userResp, err := h.buildAuthUserResponse(c, result.User)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	c.JSON(http.StatusOK, authResponse{
-		User: authUserResponse{
-			ID:    result.User.ID,
-			Name:  result.User.Name,
-			Email: result.User.Email,
-			Phone: result.User.Phone,
-			Role:  result.User.Role,
-		},
+		User:         userResp,
 		AccessToken:  result.AccessToken,
 		RefreshToken: result.RefreshToken,
 	})
@@ -280,14 +299,14 @@ func (h *AuthController) VerifyOTP(c *gin.Context) {
 		return
 	}
 
+	userResp, err := h.buildAuthUserResponse(c, result.User)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	c.JSON(http.StatusOK, authResponse{
-		User: authUserResponse{
-			ID:    result.User.ID,
-			Name:  result.User.Name,
-			Email: result.User.Email,
-			Phone: result.User.Phone,
-			Role:  result.User.Role,
-		},
+		User:         userResp,
 		AccessToken:  result.AccessToken,
 		RefreshToken: result.RefreshToken,
 	})
@@ -400,13 +419,20 @@ func (h *AuthController) Me(c *gin.Context) {
 		return
 	}
 
+	complete, err := h.meService.IsProfileComplete(c.Request.Context(), user)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	resp := meResponse{
-		ID:        user.ID,
-		Name:      user.Name,
-		Email:     user.Email,
-		Phone:     user.Phone,
-		Role:      user.Role,
-		CreatedAt: user.CreatedAt,
+		ID:                user.ID,
+		Name:              user.Name,
+		Email:             user.Email,
+		Phone:             user.Phone,
+		Role:              user.Role,
+		IsProfileComplete: complete,
+		CreatedAt:         user.CreatedAt,
 	}
 
 	c.JSON(http.StatusOK, resp)

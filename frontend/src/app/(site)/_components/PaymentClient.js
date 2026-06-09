@@ -37,7 +37,7 @@ export default function PaymentClient() {
       const payload = {
         items: items.map((it) => ({
           planId: Number(it.planId || it.id),
-          qty: it.qty,
+          qty: 1,
         })),
       };
       const res = await api.post("/orders/checkout", payload);
@@ -104,11 +104,11 @@ export default function PaymentClient() {
                         {it.title}
                       </div>
                       <div className="mt-1 text-[11px] text-zinc-400">
-                        {it.qty} × {formatToman(it.price)}
+                        اشتراک تمرینی
                       </div>
                     </div>
                     <div className="text-sm font-extrabold text-white">
-                      {formatToman(it.price * it.qty)}
+                      {formatToman(it.price)}
                     </div>
                   </div>
                 ))

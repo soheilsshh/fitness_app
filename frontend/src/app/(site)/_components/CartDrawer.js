@@ -8,9 +8,8 @@ import {
   selectCartCoach,
   selectCartItems,
   selectCartTotal,
-  setQty,
 } from "@/store/slices/cartSlice";
-import { FiMinus, FiPlus, FiTrash2, FiX } from "react-icons/fi";
+import { FiTrash2, FiX } from "react-icons/fi";
 
 function formatToman(n) {
   const num = Number(n) || 0;
@@ -95,7 +94,7 @@ export default function CartDrawer({ open, onClose }) {
                               {it.title}
                             </div>
                             <div className="mt-1 text-[11px] text-zinc-400">
-                              قیمت واحد: {formatToman(it.price)}
+                              اشتراک تمرینی — یک پلن
                             </div>
                           </div>
 
@@ -108,37 +107,9 @@ export default function CartDrawer({ open, onClose }) {
                           </button>
                         </div>
 
-                        <div className="mt-4 flex items-center justify-between gap-3">
-                          <div className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-zinc-950/30 px-2 py-2">
-                            <button
-                              onClick={() =>
-                                dispatch(setQty({ id: it.id, qty: it.qty - 1 }))
-                              }
-                              className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-zinc-100 hover:bg-white/10"
-                            >
-                              <FiMinus />
-                            </button>
-
-                            <input
-                              value={it.qty}
-                              onChange={(e) =>
-                                dispatch(setQty({ id: it.id, qty: e.target.value }))
-                              }
-                              className="w-10 bg-transparent text-center text-sm font-extrabold text-white outline-none"
-                            />
-
-                            <button
-                              onClick={() =>
-                                dispatch(setQty({ id: it.id, qty: it.qty + 1 }))
-                              }
-                              className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-zinc-100 hover:bg-white/10"
-                            >
-                              <FiPlus />
-                            </button>
-                          </div>
-
+                        <div className="mt-4 flex items-center justify-end">
                           <div className="text-sm font-extrabold text-white">
-                            {formatToman(it.price * it.qty)}
+                            {formatToman(it.price)}
                           </div>
                         </div>
                       </div>

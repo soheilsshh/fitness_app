@@ -94,6 +94,12 @@ func SetupDatabase(db *gorm.DB) error {
 	}
 	log.Println("GORM AutoMigrate completed successfully")
 
+	// Backfill invalid empty JSON values for existing users.
+	if err := db.Exec("UPDATE users SET goals = '[]' WHERE goals IS NULL OR goals = ''").Error; err != nil {
+		log.Printf("failed backfilling users.goals: %v\n", err)
+		return err
+	}
+
 	// Seed default admin user (hard‑coded for initial setup).
 	const (
 		adminName     = "admin"

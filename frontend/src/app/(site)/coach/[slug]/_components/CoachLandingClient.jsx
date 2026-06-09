@@ -7,7 +7,7 @@ import { FaTelegram, FaWhatsapp } from "react-icons/fa";
 import { api } from "@/lib/axios/client";
 import { apiAssetUrl } from "@/lib/api/assets";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { addToCart, selectCartCoach } from "@/store/slices/cartSlice";
+import { addToCart, selectCartCoach, selectCartItems } from "@/store/slices/cartSlice";
 import { toastError, toastSuccess } from "@/app/(site)/auth/_components/helpers";
 import { getAuthSession } from "@/lib/auth/session";
 
@@ -18,6 +18,7 @@ function formatToman(amount) {
 export default function CoachLandingClient({ slug }) {
   const dispatch = useAppDispatch();
   const cartCoach = useAppSelector(selectCartCoach);
+  const cartItems = useAppSelector(selectCartItems);
   const [coach, setCoach] = useState(null);
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -254,37 +255,58 @@ export default function CoachLandingClient({ slug }) {
                         {plan.featuresText}
                       </p>
                     )}
-                    {canPurchase ? (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (
-                            cartCoach.coachId &&
-                            String(cartCoach.coachId) !== String(coach.coachId)
-                          ) {
-                            return toastError(
-                              "سبد خرید",
-                              "فقط می‌توانید از یک مربی خرید کنید. ابتدا سبد را خالی کنید."
+                    {canPurchase ? (() => {
+                      const inCart = cartItems.some(
+                        (it) => String(it.planId) === String(plan.id)
+                      );
+                      const hasOtherPlan =
+                        cartItems.length > 0 && !inCart;
+                      return (
+                        <button
+                          type="button"
+                          disabled={inCart}
+                          onClick={() => {
+                            if (
+                              cartCoach.coachId &&
+                              String(cartCoach.coachId) !== String(coach.coachId)
+                            ) {
+                              return toastError(
+                                "سبد خرید",
+                                "فقط می‌توانید از یک مربی خرید کنید. ابتدا سبد را خالی کنید."
+                              );
+                            }
+                            if (inCart) {
+                              return toastError("سبد خرید", "این پلن قبلاً در سبد است.");
+                            }
+                            dispatch(
+                              addToCart({
+                                planId: plan.id,
+                                id: String(plan.id),
+                                title: plan.title,
+                                price: plan.discountPrice > 0 ? plan.discountPrice : plan.price,
+                                coachId: coach.coachId,
+                                coachName: coach.displayName,
+                                coachSlug: slug,
+                              })
                             );
-                          }
-                          dispatch(
-                            addToCart({
-                              planId: plan.id,
-                              id: String(plan.id),
-                              title: plan.title,
-                              price: plan.discountPrice > 0 ? plan.discountPrice : plan.price,
-                              coachId: coach.coachId,
-                              coachName: coach.displayName,
-                              coachSlug: slug,
-                            })
-                          );
-                          toastSuccess("افزوده شد", "پلن به سبد خرید اضافه شد");
-                        }}
-                        className="mt-4 w-full rounded-2xl bg-white px-4 py-2.5 text-sm font-extrabold text-zinc-950 hover:bg-zinc-200"
-                      >
-                        افزودن به سبد خرید
-                      </button>
-                    ) : null}
+                            toastSuccess(
+                              hasOtherPlan ? "جایگزین شد" : "افزوده شد",
+                              hasOtherPlan
+                                ? "پلن قبلی از سبد حذف و این پلن انتخاب شد."
+                                : "پلن به سبد خرید اضافه شد."
+                            );
+                          }}
+                          className={[
+                            "mt-4 w-full rounded-2xl px-4 py-2.5 text-sm font-extrabold",
+                            inCart
+                              ? "cursor-not-allowed border border-emerald-400/30 bg-emerald-400/10 text-emerald-200"
+                              : "bg-white text-zinc-950 hover:bg-zinc-200",
+                          ].join(" ")}
+                        >
+                          {inCart ? "در سبد خرید است" : "انتخاب این پلن"}
+                        </button>
+                      );
+                    })() : null}
                   </article>
                 );
               })}

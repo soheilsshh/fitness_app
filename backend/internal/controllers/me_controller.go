@@ -1,8 +1,10 @@
 package controllers
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 
@@ -71,10 +73,67 @@ func (h *MeController) UpdateProfile(c *gin.Context) {
 
 	profile, err := h.meService.UpdateProfile(c.Request.Context(), userID, &req)
 	if err != nil {
+		if errors.Is(err, service.ErrInvalidProfileField) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, profile)
+}
+
+// UploadBodyPhoto godoc
+// @Summary Upload onboarding body photo
+// @Description Upload a body photo (front, right, back, left) for the current user
+// @Tags me
+// @Accept multipart/form-data
+// @Produce json
+// @Security BearerAuth
+// @Param file formData file true "Image file"
+// @Param type formData string true "Photo type: front, right, back, left"
+// @Success 201 {object} service.MePhotoDTO
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /me/body-photos [post]
+func (h *MeController) UploadBodyPhoto(c *gin.Context) {
+	userID, err := middleware.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	file, err := c.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "file is required"})
+		return
+	}
+
+	photoType := strings.TrimSpace(c.PostForm("type"))
+	if photoType == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "type is required"})
+		return
+	}
+
+	opened, err := file.Open()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to read file"})
+		return
+	}
+	defer opened.Close()
+
+	photo, err := h.meService.UploadBodyPhoto(c.Request.Context(), userID, opened, file.Filename, photoType)
+	if err != nil {
+		if errors.Is(err, service.ErrInvalidPhotoType) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "type must be front, right, back, or left"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, photo)
 }
 
 // ListMyOrders godoc

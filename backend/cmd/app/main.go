@@ -104,7 +104,7 @@ func NewServer() *Server {
 	feedbackService := service.NewFeedbackService(feedbackRepo)
 
 	// Initialize handlers
-	authController := controllers.NewAuthController(authService)
+	authController := controllers.NewAuthController(authService, meService)
 	studentController := controllers.NewStudentController(studentService)
 	meController := controllers.NewMeController(meService)
 	adminUserController := controllers.NewAdminUserController(adminUserService)
@@ -188,6 +188,7 @@ func NewServer() *Server {
 	{
 		studentGroup.GET("/me", meController.GetProfile)
 		studentGroup.PATCH("/me", meController.UpdateProfile)
+		studentGroup.POST("/me/body-photos", meController.UploadBodyPhoto)
 		studentGroup.POST("/me/change-password", authController.ChangePassword)
 		studentGroup.GET("/me/orders", meController.ListMyOrders)
 		studentGroup.GET("/me/orders/:id", meController.GetMyOrderByID)
