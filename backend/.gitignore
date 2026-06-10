@@ -47,3 +47,5 @@ coverage.out
 task.txt
 exercises-dataset-main/videos/*
 exercises-dataset-main/images/*
+
+uploads/
