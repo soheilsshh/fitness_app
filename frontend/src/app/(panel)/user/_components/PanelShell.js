@@ -1,12 +1,47 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { api } from "@/lib/axios/client";
+import { ROLES } from "@/lib/auth/roles";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 
 export default function PanelShell({ children }) {
+  const router = useRouter();
+  const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    if (!pathname?.startsWith("/user")) return;
+    if (pathname.startsWith("/user/onboarding")) return;
+
+    const role =
+      typeof window !== "undefined"
+        ? window.localStorage.getItem("user_role")
+        : "";
+    if (role !== ROLES.STUDENT) return;
+
+    let cancelled = false;
+    async function ensureProfileComplete() {
+      try {
+        const res = await api.get("/me");
+        if (cancelled) return;
+        if (!res.data?.isProfileComplete) {
+          router.replace("/user/onboarding");
+        } else {
+          window.localStorage.setItem("profile_complete", "1");
+        }
+      } catch {
+        // ignore; auth errors handled elsewhere
+      }
+    }
+    ensureProfileComplete();
+    return () => {
+      cancelled = true;
+    };
+  }, [pathname, router]);
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-50">
