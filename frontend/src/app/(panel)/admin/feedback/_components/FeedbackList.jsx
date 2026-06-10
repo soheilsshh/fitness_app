@@ -39,15 +39,19 @@ export default function FeedbackList({ items, onSelect }) {
                       {x.fullName}
                     </span>
 
-                    <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-zinc-950/30 px-3 py-1 text-[11px] text-zinc-200">
-                      <FiPhone />
-                      {x.phone}
-                    </span>
+                    {x.phone ? (
+                      <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-zinc-950/30 px-3 py-1 text-[11px] text-zinc-200">
+                        <FiPhone />
+                        {x.phone}
+                      </span>
+                    ) : null}
 
-                    <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-zinc-950/30 px-3 py-1 text-[11px] text-zinc-200">
-                      <FiMail />
-                      <span className="max-w-[220px] truncate">{x.email}</span>
-                    </span>
+                    {x.email ? (
+                      <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-zinc-950/30 px-3 py-1 text-[11px] text-zinc-200">
+                        <FiMail />
+                        <span className="max-w-[220px] truncate">{x.email}</span>
+                      </span>
+                    ) : null}
                   </div>
 
                   <div className="mt-2 line-clamp-2 text-sm text-zinc-200">
