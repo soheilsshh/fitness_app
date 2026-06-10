@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Exercise dataset media (large files)
+public/exercises-media/videos/
+public/exercises-media/images/
