@@ -4,12 +4,11 @@ import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
   FiCalendar,
-  FiCheckCircle,
   FiClipboard,
   FiCoffee,
-  FiInfo,
 } from "react-icons/fi";
 import { FaDumbbell } from "react-icons/fa";
+import WorkoutExerciseCards from "@/components/workout/WorkoutExerciseCards";
 import ProgressBar from "./ProgressBar";
 import { formatDateFa, shortRemaining } from "./helpers";
 
@@ -228,21 +227,18 @@ export default function ProgramDetailsPanel({ program, timeline }) {
             </div>
           ) : (
             <>
-              <div className="mt-2 text-sm text-zinc-200">{workout.title}</div>
+              {workout.title ? (
+                <div className="mt-2 text-sm text-zinc-200">{workout.title}</div>
+              ) : null}
               <div className="mt-1 text-[11px] text-zinc-400">
-                {workout.durationMin} دقیقه • {workout.calories} کالری
+                برای مشاهده انیمیشن و طرز انجام، روی هر حرکت کلیک کنید
               </div>
-
-              <div className="mt-4 space-y-2">
-                {(workout.steps || []).map((s) => (
-                  <div
-                    key={s}
-                    className="flex items-start gap-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-zinc-200"
-                  >
-                    <FiCheckCircle className="mt-0.5 text-emerald-300" />
-                    <span>{s}</span>
-                  </div>
-                ))}
+              <div className="mt-4">
+                <WorkoutExerciseCards
+                  workout={workout}
+                  dayKey={selectedDay}
+                  clickable
+                />
               </div>
             </>
           )}
@@ -283,9 +279,9 @@ export default function ProgramDetailsPanel({ program, timeline }) {
               </div>
 
               <div className="mt-4 space-y-2">
-                {(nutrition.meals || []).map((m) => (
+                {(nutrition.meals || []).map((m, i) => (
                   <div
-                    key={m.title}
+                    key={`${selectedDay}-meal-${i}`}
                     className="rounded-2xl border border-white/10 bg-white/5 px-3 py-2"
                   >
                     <div className="flex items-center gap-2 text-sm font-bold text-white">

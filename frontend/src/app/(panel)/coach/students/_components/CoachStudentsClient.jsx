@@ -10,7 +10,7 @@ function cn(...xs) {
 }
 
 export default function CoachStudentsClient() {
-  const [filter, setFilter] = useState("active");
+  const [filter, setFilter] = useState("all");
   const [q, setQ] = useState("");
   const [items, setItems] = useState([]);
   const [total, setTotal] = useState(0);
@@ -23,9 +23,9 @@ export default function CoachStudentsClient() {
     async function load() {
       setLoading(true);
       try {
-        const res = await api.get("/coach/students", {
-          params: { page, pageSize, status: filter, query: q },
-        });
+        const params = { page, pageSize, query: q };
+        if (filter !== "all") params.status = filter;
+        const res = await api.get("/coach/students", { params });
         if (cancelled) return;
         setItems(res.data?.items || []);
         setTotal(res.data?.total || 0);
@@ -61,6 +61,9 @@ export default function CoachStudentsClient() {
 
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <div className="flex flex-wrap gap-2 rounded-3xl border border-white/10 bg-white/5 p-2">
+          <Tab active={filter === "all"} onClick={() => { setFilter("all"); setPage(1); }}>
+            همه
+          </Tab>
           <Tab active={filter === "active"} onClick={() => { setFilter("active"); setPage(1); }}>
             فعال
           </Tab>

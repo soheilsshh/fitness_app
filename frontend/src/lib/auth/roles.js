@@ -15,6 +15,14 @@ export function getDashboardPath(role) {
   return DASHBOARD_PATHS[role] ?? DASHBOARD_PATHS[ROLES.STUDENT];
 }
 
+/** Returns where to send the user right after login/register. */
+export function getPostLoginPath(role, isProfileComplete = true) {
+  if (role === ROLES.STUDENT && !isProfileComplete) {
+    return "/user/onboarding";
+  }
+  return getDashboardPath(role);
+}
+
 /** Panel route prefixes guarded by role. */
 export const PANEL_PREFIXES = {
   [ROLES.ADMIN]: "/admin",

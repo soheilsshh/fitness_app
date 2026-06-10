@@ -111,8 +111,8 @@ step "Checking project layout"
 if [[ ! -f go.mod ]]; then
   die "go.mod not found. Run this script from the backend/ directory."
 fi
-if [[ ! -f cmd/main.go ]]; then
-  die "cmd/main.go not found."
+if [[ ! -f cmd/app/main.go ]]; then
+  die "cmd/app/main.go not found."
 fi
 ok "backend module layout looks correct"
 
@@ -154,10 +154,10 @@ fi
 
 # 7. Verify module builds
 step "Verifying backend compiles"
-if go build -o /dev/null ./cmd; then
+if go build -o /dev/null ./cmd/app; then
   ok "Build check passed"
 else
-  die "go build ./cmd failed"
+  die "go build ./cmd/app failed"
 fi
 
 # 8. Uploads directory
@@ -185,4 +185,4 @@ echo ""
 echo "Press Ctrl+C to stop."
 echo ""
 
-exec go run ./cmd
+exec go run ./cmd/app

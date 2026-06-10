@@ -1,18 +1,14 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSelector, createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   coachId: null,
   coachName: "",
   coachSlug: "",
-  items: [], // { id, planId, title, price, qty, coachId, coachName, coachSlug }
+  items: [], // max 1 plan: { id, planId, title, price, coachId, coachName, coachSlug }
 };
 
-function calcQty(items) {
-  return items.reduce((acc, it) => acc + (it.qty || 0), 0);
-}
-
 function calcTotal(items) {
-  return items.reduce((acc, it) => acc + (it.price || 0) * (it.qty || 0), 0);
+  return items.reduce((acc, it) => acc + (it.price || 0), 0);
 }
 
 const cartSlice = createSlice({
@@ -21,7 +17,6 @@ const cartSlice = createSlice({
   reducers: {
     addToCart(state, action) {
       const p = action.payload;
-      // { id, planId, title, price, coachId, coachName?, coachSlug? }
       const planId = String(p.planId ?? p.id);
       const coachId = p.coachId ? String(p.coachId) : null;
 
@@ -29,27 +24,26 @@ const cartSlice = createSlice({
         return;
       }
 
+      const existing = state.items.find((x) => x.id === planId);
+      if (existing) return;
+
       if (coachId) {
         state.coachId = coachId;
         state.coachName = p.coachName || state.coachName || "";
         state.coachSlug = p.coachSlug || state.coachSlug || "";
       }
 
-      const cartKey = planId;
-      const found = state.items.find((x) => x.id === cartKey);
-      if (found) found.qty += 1;
-      else {
-        state.items.push({
-          id: cartKey,
+      state.items = [
+        {
+          id: planId,
           planId: Number(p.planId ?? p.id),
           title: p.title,
           price: p.price,
-          qty: 1,
           coachId: coachId || state.coachId,
           coachName: p.coachName || state.coachName,
           coachSlug: p.coachSlug || state.coachSlug,
-        });
-      }
+        },
+      ];
     },
     removeFromCart(state, action) {
       const id = action.payload;
@@ -60,12 +54,6 @@ const cartSlice = createSlice({
         state.coachSlug = "";
       }
     },
-    setQty(state, action) {
-      const { id, qty } = action.payload;
-      const found = state.items.find((x) => x.id === id);
-      if (!found) return;
-      found.qty = Math.max(1, Number(qty) || 1);
-    },
     clearCart(state) {
       state.items = [];
       state.coachId = null;
@@ -75,15 +63,20 @@ const cartSlice = createSlice({
   },
 });
 
-export const { addToCart, removeFromCart, setQty, clearCart } = cartSlice.actions;
+export const { addToCart, removeFromCart, clearCart } = cartSlice.actions;
 
 export const selectCartItems = (s) => s.cart.items;
-export const selectCartCoach = (s) => ({
-  coachId: s.cart.coachId,
-  coachName: s.cart.coachName,
-  coachSlug: s.cart.coachSlug,
-});
-export const selectCartCount = (s) => calcQty(s.cart.items);
+
+const selectCartCoachId = (s) => s.cart.coachId;
+const selectCartCoachName = (s) => s.cart.coachName;
+const selectCartCoachSlug = (s) => s.cart.coachSlug;
+
+export const selectCartCoach = createSelector(
+  [selectCartCoachId, selectCartCoachName, selectCartCoachSlug],
+  (coachId, coachName, coachSlug) => ({ coachId, coachName, coachSlug })
+);
+
+export const selectCartCount = (s) => s.cart.items.length;
 export const selectCartTotal = (s) => calcTotal(s.cart.items);
 
 export default cartSlice.reducer;

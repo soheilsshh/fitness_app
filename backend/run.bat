@@ -33,7 +33,7 @@ call :ok "Go version satisfies requirement"
 
 call :step "Checking project layout"
 if not exist "go.mod" call :die "go.mod not found. Run this script from the backend\ directory."
-if not exist "cmd\main.go" call :die "cmd\main.go not found."
+if not exist "cmd\app\main.go" call :die "cmd\app\main.go not found."
 call :ok "backend module layout looks correct"
 
 call :step "Checking environment file (.env)"
@@ -66,8 +66,8 @@ if errorlevel 1 call :die "go mod download failed"
 call :ok "Dependencies ready"
 
 call :step "Verifying backend compiles"
-go build -o nul ./cmd
-if errorlevel 1 call :die "go build ./cmd failed"
+go build -o nul ./cmd/app
+if errorlevel 1 call :die "go build ./cmd/app failed"
 call :ok "Build check passed"
 
 call :step "Preparing upload directory"
@@ -93,7 +93,7 @@ echo.
 echo   Press Ctrl+C to stop.
 echo.
 
-go run ./cmd
+go run ./cmd/app
 exit /b %ERRORLEVEL%
 
 :step

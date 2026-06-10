@@ -12,7 +12,7 @@ import {
   toastSuccess,
 } from "../../_components/helpers";
 import { api } from "@/lib/axios/client";
-import { getDashboardPath } from "@/lib/auth/roles";
+import { getPostLoginPath } from "@/lib/auth/roles";
 import { persistAuthSession } from "@/lib/auth/session";
 
 export default function RegisterForm() {
@@ -66,7 +66,7 @@ export default function RegisterForm() {
 
   const handleAuthSuccess = (data) => {
     persistAuthSession(data);
-    router.replace(getDashboardPath(data?.user?.role));
+    router.replace(getPostLoginPath(data?.user?.role, data?.user?.isProfileComplete));
   };
 
   const submitRegister = async () => {
