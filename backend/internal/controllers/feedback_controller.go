@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -34,6 +35,10 @@ func (h *FeedbackController) CreateFeedback(c *gin.Context) {
 		return
 	}
 	if err := h.feedbackService.Create(c.Request.Context(), &req); err != nil {
+		if errors.Is(err, service.ErrFeedbackContactRequired) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "email or phone is required"})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
