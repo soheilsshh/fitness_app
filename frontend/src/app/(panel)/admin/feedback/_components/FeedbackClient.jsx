@@ -13,6 +13,7 @@ export default function FeedbackClient() {
   const [items, setItems] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [page, setPage] = useState(1);
   const pageSize = 8;
 
@@ -20,15 +21,17 @@ export default function FeedbackClient() {
     let cancelled = false;
     async function load() {
       setLoading(true);
+      setError("");
       try {
         const res = await api.get("/admin/feedbacks", { params: { page, pageSize } });
         if (cancelled) return;
         setItems(res.data?.items || []);
         setTotal(res.data?.total || 0);
-      } catch {
+      } catch (err) {
         if (!cancelled) {
           setItems([]);
           setTotal(0);
+          setError(err?.response?.data?.error || "بارگذاری فیدبک‌ها ناموفق بود.");
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -68,6 +71,12 @@ export default function FeedbackClient() {
           تعداد پیام‌ها: <span className="font-bold text-white">{total}</span>
         </div>
       </div>
+
+      {error ? (
+        <div className="rounded-[26px] border border-rose-400/30 bg-rose-400/10 p-6 text-sm text-rose-100">
+          {error}
+        </div>
+      ) : null}
 
       {loading ? (
         <div className="rounded-[26px] border border-white/10 bg-white/5 p-6 text-sm text-zinc-400">
