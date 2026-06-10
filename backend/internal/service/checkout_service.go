@@ -22,6 +22,8 @@ var (
 	ErrCheckoutInvalidPlan     = errors.New("invalid plan in cart")
 	ErrCheckoutMixedCoaches    = errors.New("all plans must belong to the same coach")
 	ErrCheckoutPlanInactive    = errors.New("plan is not available")
+	ErrCheckoutMultipleItems   = errors.New("only one plan can be purchased at a time")
+	ErrCheckoutInvalidQty      = errors.New("plan quantity must be 1")
 )
 
 type CheckoutItemRequest struct {
@@ -77,6 +79,9 @@ func (s *checkoutService) Checkout(ctx context.Context, userID uint, req *Checko
 	if req == nil || len(req.Items) == 0 {
 		return nil, ErrCheckoutEmptyCart
 	}
+	if len(req.Items) > 1 {
+		return nil, ErrCheckoutMultipleItems
+	}
 
 	user, err := s.userRepo.FindByID(ctx, userID)
 	if err != nil {
@@ -113,6 +118,9 @@ func (s *checkoutService) Checkout(ctx context.Context, userID uint, req *Checko
 		if qty <= 0 {
 			qty = 1
 		}
+		if qty != 1 {
+			return nil, ErrCheckoutInvalidQty
+		}
 		plan, err := s.planRepo.FindByID(ctx, item.PlanID)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -139,7 +147,7 @@ func (s *checkoutService) Checkout(ctx context.Context, userID uint, req *Checko
 		if ln.plan.DiscountPriceCents > 0 {
 			unit = ln.plan.DiscountPriceCents
 		}
-		lineTotal := unit * int64(ln.qty)
+		lineTotal := unit
 		total += lineTotal
 		if ln.plan.DurationDays > maxDurationDays {
 			maxDurationDays = ln.plan.DurationDays

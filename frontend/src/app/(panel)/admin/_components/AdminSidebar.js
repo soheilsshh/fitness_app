@@ -14,6 +14,7 @@ import {
   FiGlobe,
   FiMessageCircle,
   FiAward,
+  FiActivity,
 } from "react-icons/fi";
 import { FaDumbbell } from "react-icons/fa";
 import AdminNavItem from "./AdminNavItem";
@@ -25,6 +26,7 @@ const NAV = [
   { href: "/admin/coaches", label: "مربی‌ها", icon: FiAward },
   { href: "/admin/users", label: "کاربران", icon: FiUsers },
   { href: "/admin/plans", label: "پلن‌ها", icon: FiClipboard },
+  { href: "/admin/exercises", label: "تمرین‌ها", icon: FiActivity },
   { href: "/admin/site", label: "سایت", icon: FiGlobe },
   { href: "/admin/feedback", label: "فیدبک", icon: FiMessageCircle },
 ];

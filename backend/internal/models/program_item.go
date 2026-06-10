@@ -9,6 +9,7 @@ type ProgramItem struct {
 	DayNumber        int    `gorm:"not null"`
 	OrderIndex       int    `gorm:"not null"`
 	Exercise         string `gorm:"size:255;not null"`
+	ExerciseID       *uint  `gorm:"index"`
 	Sets             int
 	Reps             string `gorm:"size:100"`
 	RestTime         string `gorm:"size:100"`

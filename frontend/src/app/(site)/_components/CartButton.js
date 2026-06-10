@@ -70,11 +70,11 @@ export default function CartButton() {
                         <div className="min-w-0">
                           <div className="truncate text-sm font-bold text-white">{it.title}</div>
                           <div className="mt-1 text-[11px] text-zinc-400">
-                            {it.qty} × {formatToman(it.price)}
+                            {formatToman(it.price)}
                           </div>
                         </div>
                         <div className="text-sm font-extrabold text-zinc-200">
-                          {formatToman(it.price * it.qty)}
+                          {formatToman(it.price)}
                         </div>
                       </div>
                     ))}

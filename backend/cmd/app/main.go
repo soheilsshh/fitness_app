@@ -72,6 +72,7 @@ func NewServer() *Server {
 	feedbackRepo := repository.NewFeedbackRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
 	coachProfileRepo := repository.NewCoachProfileRepository(db)
+	exerciseRepo := repository.NewExerciseRepository(db)
 
 	// Initialize services
 	authService := service.NewAuthService(userRepo, coachProfileRepo, refreshTokenRepo, otpRepo)
@@ -79,17 +80,18 @@ func NewServer() *Server {
 	coachPlanService := service.NewCoachPlanService(servicePlanRepo)
 	checkoutService := service.NewCheckoutService(db, userRepo, servicePlanRepo, orderRepo, subscriptionRepo, coachProfileRepo)
 	studentService := service.NewStudentService(userRepo, subscriptionRepo, servicePlanRepo, programRepo)
-	meService := service.NewMeService(db, userRepo, orderRepo, subscriptionRepo, servicePlanRepo, programRepo)
+	meService := service.NewMeService(db, userRepo, orderRepo, subscriptionRepo, servicePlanRepo, programRepo, exerciseRepo)
 	adminUserService := service.NewAdminUserService(db, subscriptionRepo, txRepo)
 	adminDashboardService := service.NewAdminDashboardService(db, subscriptionRepo, txRepo, coachProfileRepo)
 	adminStudentService := service.NewAdminStudentService(db, userRepo, subscriptionRepo, servicePlanRepo, coachProfileRepo)
 	adminPlanService := service.NewAdminPlanService(servicePlanRepo, coachProfileRepo)
 	adminCoachService := service.NewAdminCoachService(coachProfileRepo)
+	adminExerciseService := service.NewAdminExerciseService(exerciseRepo)
 	siteSettingsService := service.NewSiteSettingsService(siteSettingsRepo)
 	feedbackService := service.NewFeedbackService(feedbackRepo)
 
 	// Initialize handlers
-	authController := controllers.NewAuthController(authService)
+	authController := controllers.NewAuthController(authService, meService)
 	studentController := controllers.NewStudentController(studentService)
 	meController := controllers.NewMeController(meService)
 	adminUserController := controllers.NewAdminUserController(adminUserService)
@@ -100,16 +102,18 @@ func NewServer() *Server {
 	feedbackController := controllers.NewFeedbackController(feedbackService)
 	adminFeedbackController := controllers.NewAdminFeedbackController(feedbackService)
 	adminCoachController := controllers.NewAdminCoachController(adminCoachService)
+	adminExerciseController := controllers.NewAdminExerciseController(adminExerciseService)
 	coachProfileController := controllers.NewCoachProfileController(coachProfileService)
 	publicCoachController := controllers.NewPublicCoachController(coachProfileService)
 	coachPlanController := controllers.NewCoachPlanController(coachPlanService)
 	authzService := service.NewAuthorizationService(db, servicePlanRepo)
 	coachStudentService := service.NewCoachStudentService(db, subscriptionRepo, servicePlanRepo, programRepo, authzService)
-	coachProgramService := service.NewCoachProgramService(db, subscriptionRepo, programRepo, coachStudentService)
+	coachProgramService := service.NewCoachProgramService(db, subscriptionRepo, programRepo, exerciseRepo, coachStudentService)
 	coachDashboardService := service.NewCoachDashboardService(subscriptionRepo, orderRepo)
 	coachStudentController := controllers.NewCoachStudentController(coachStudentService)
 	coachProgramController := controllers.NewCoachProgramController(coachProgramService)
 	coachDashboardController := controllers.NewCoachDashboardController(coachDashboardService)
+	coachExerciseController := controllers.NewCoachExerciseController(adminExerciseService)
 	checkoutController := controllers.NewCheckoutController(checkoutService)
 
 	// Auth routes
@@ -159,6 +163,10 @@ func NewServer() *Server {
 		coachGroup.POST("/students/:id/nutrition-programs", coachProgramController.AssignNutritionProgram)
 		coachGroup.PATCH("/students/:id/nutrition-programs/:programId", coachProgramController.UpdateNutritionProgram)
 		coachGroup.GET("/dashboard/stats", coachDashboardController.GetStats)
+		coachGroup.GET("/exercises/categories", coachExerciseController.ListCategories)
+		coachGroup.GET("/exercises", coachExerciseController.ListExercises)
+		coachGroup.POST("/exercises", coachExerciseController.CreateExercise)
+		coachGroup.GET("/exercises/:id", coachExerciseController.GetExerciseByID)
 	}
 
 	// Student (user panel) routes - all protected
@@ -167,6 +175,7 @@ func NewServer() *Server {
 	{
 		studentGroup.GET("/me", meController.GetProfile)
 		studentGroup.PATCH("/me", meController.UpdateProfile)
+		studentGroup.POST("/me/body-photos", meController.UploadBodyPhoto)
 		studentGroup.POST("/me/change-password", authController.ChangePassword)
 		studentGroup.GET("/me/orders", meController.ListMyOrders)
 		studentGroup.GET("/me/orders/:id", meController.GetMyOrderByID)
@@ -203,10 +212,16 @@ func NewServer() *Server {
 		adminGroup.GET("/coaches", adminCoachController.ListCoaches)
 		adminGroup.GET("/coaches/:id", adminCoachController.GetCoachByID)
 		adminGroup.PATCH("/coaches/:id", adminCoachController.PatchCoach)
+		adminGroup.GET("/exercises", adminExerciseController.ListExercises)
+		adminGroup.POST("/exercises", adminExerciseController.CreateExercise)
+		adminGroup.GET("/exercises/:id", adminExerciseController.GetExerciseByID)
+		adminGroup.PATCH("/exercises/:id", adminExerciseController.UpdateExercise)
+		adminGroup.DELETE("/exercises/:id", adminExerciseController.DeleteExercise)
 	}
 
 	// Serve uploaded files (e.g. user body photos) at /uploads/*
 	router.Static("/uploads", "./uploads")
+	router.Static("/exercises-media", "./exercises-dataset-main")
 
 	// Swagger endpoint
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
