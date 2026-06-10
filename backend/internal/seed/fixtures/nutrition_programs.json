@@ -1,0 +1,24 @@
+[
+  {
+    "ID": 1,
+    "SubscriptionID": 1,
+    "CoachID": 2,
+    "Version": 1,
+    "Title": "رژیم کاهش وزن — هفته ۱",
+    "Notes": "کالری هدف: ۱۹۰۰",
+    "DurationWeeks": 4,
+    "IsActive": true,
+    "LastUpdatedAt": "2026-05-01T10:00:00Z"
+  },
+  {
+    "ID": 2,
+    "SubscriptionID": 3,
+    "CoachID": 3,
+    "Version": 1,
+    "Title": "رژیم حجم — surplus کنترل‌شده",
+    "Notes": "پروتئین ۲g/kg",
+    "DurationWeeks": 4,
+    "IsActive": true,
+    "LastUpdatedAt": "2026-02-05T08:00:00Z"
+  }
+]

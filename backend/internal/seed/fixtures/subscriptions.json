@@ -1,0 +1,35 @@
+[
+  {
+    "ID": 1,
+    "UserID": 4,
+    "CoachID": 2,
+    "ServicePlanID": 1,
+    "StartsAt": "2025-12-01T08:00:00Z",
+    "EndsAt": "2026-03-01T08:00:00Z",
+    "LastCheckInDate": "2026-05-20T10:00:00Z",
+    "NextCheckInDueDate": "2026-05-27T10:00:00Z",
+    "CheckinFrequencyDays": 7
+  },
+  {
+    "ID": 2,
+    "UserID": 5,
+    "CoachID": 2,
+    "ServicePlanID": 2,
+    "StartsAt": "2026-01-15T08:00:00Z",
+    "EndsAt": "2026-03-12T08:00:00Z",
+    "LastCheckInDate": "2026-05-18T09:30:00Z",
+    "NextCheckInDueDate": "2026-05-25T09:30:00Z",
+    "CheckinFrequencyDays": 7
+  },
+  {
+    "ID": 3,
+    "UserID": 6,
+    "CoachID": 3,
+    "ServicePlanID": 4,
+    "StartsAt": "2026-02-01T08:00:00Z",
+    "EndsAt": "2026-04-12T08:00:00Z",
+    "LastCheckInDate": "2026-05-15T11:00:00Z",
+    "NextCheckInDueDate": "2026-05-29T11:00:00Z",
+    "CheckinFrequencyDays": 14
+  }
+]

@@ -59,6 +59,9 @@ func NewServer() *Server {
 	if err := config.SetupDatabase(db); err != nil {
 		log.Fatalf("failed to migrate database: %v", err)
 	}
+	if err := config.MaybeSeedDevData(db); err != nil {
+		log.Fatalf("failed to seed development data: %v", err)
+	}
 
 	// Initialize repositories
 	userRepo := repository.NewUserRepository(db)
