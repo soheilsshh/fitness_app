@@ -78,27 +78,7 @@ func NewMySQLGORM() (*gorm.DB, error) {
 // SetupDatabase applies database migrations for all core models.
 func SetupDatabase(db *gorm.DB) error {
 	log.Println("starting GORM AutoMigrate for core models")
-	err := db.AutoMigrate(
-		&models.User{},
-		&models.CoachProfile{},
-		&models.ServicePlan{},
-		&models.Subscription{},
-		&models.Transaction{},
-		&models.RefreshToken{},
-		&models.UserPhoto{},
-		&models.WorkoutProgram{},
-		&models.NutritionProgram{},
-		&models.ProgramItem{},
-		&models.NutritionItem{},
-		&models.CheckIn{},
-		&models.Notification{},
-		&models.Order{},
-		&models.OrderItem{},
-		&models.SiteSettings{},
-		&models.Feedback{},
-		&models.OtpCode{},
-		&models.Exercise{},
-	)
+	err := db.AutoMigrate(models.AllModels()...)
 	if err != nil {
 		log.Printf("AutoMigrate encountered an error: %v\n", err)
 		return err

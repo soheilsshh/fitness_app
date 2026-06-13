@@ -1,0 +1,29 @@
+[
+  {
+    "ID": 1,
+    "SubscriptionID": 1,
+    "UserID": 4,
+    "AmountCents": 3990000,
+    "Status": "completed",
+    "Reference": "TXN-DEV-001",
+    "Date": "2025-11-28T14:30:00Z"
+  },
+  {
+    "ID": 2,
+    "SubscriptionID": 2,
+    "UserID": 5,
+    "AmountCents": 2500000,
+    "Status": "completed",
+    "Reference": "TXN-DEV-002",
+    "Date": "2026-01-10T16:00:00Z"
+  },
+  {
+    "ID": 3,
+    "SubscriptionID": 3,
+    "UserID": 6,
+    "AmountCents": 2880000,
+    "Status": "completed",
+    "Reference": "TXN-DEV-003",
+    "Date": "2026-01-28T12:00:00Z"
+  }
+]

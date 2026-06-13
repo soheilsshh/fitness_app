@@ -10,10 +10,12 @@ import (
 	"strings"
 
 	"github.com/joho/godotenv"
+	"gorm.io/gorm"
 
 	"github.com/yourusername/fitness-management/config"
 	"github.com/yourusername/fitness-management/internal/models"
 	"github.com/yourusername/fitness-management/internal/repository"
+	"github.com/yourusername/fitness-management/internal/seed"
 )
 
 type datasetExercise struct {
@@ -32,7 +34,8 @@ type datasetExercise struct {
 }
 
 func main() {
-	fileFlag := flag.String("file", "exercises-dataset-main/data/exercises.fa.json", "path to exercises JSON")
+	devFlag := flag.Bool("dev", false, "load development/UI test fixtures (coaches, students, orders, programs)")
+	fileFlag := flag.String("file", "exercises-dataset-main/data/exercises.fa.json", "path to exercises JSON (ignored when -dev is set)")
 	flag.Parse()
 
 	if err := godotenv.Load(); err != nil {
@@ -45,6 +48,13 @@ func main() {
 	}
 	if err := config.SetupDatabase(db); err != nil {
 		log.Fatalf("database migration failed: %v", err)
+	}
+
+	if *devFlag {
+		if err := seedDevData(db); err != nil {
+			log.Fatalf("dev seed failed: %v", err)
+		}
+		return
 	}
 
 	filePath := *fileFlag
@@ -90,6 +100,17 @@ func main() {
 	}
 
 	log.Printf("seed complete: total=%d created=%d updated=%d failed=%d", len(items), created, updated, failed)
+}
+
+func seedDevData(db *gorm.DB) error {
+	_, err := seed.RunDev(context.Background(), db, seed.RunDevOptions{ForceCLI: true})
+	if err != nil {
+		return err
+	}
+	log.Println("dev accounts (password: 12345678):")
+	log.Println("  coaches:  coach.ali@fitness.dev, coach.sara@fitness.dev")
+	log.Println("  students: student.reza@fitness.dev, student.maryam@fitness.dev, student.amir@fitness.dev, student.neda@fitness.dev")
+	return nil
 }
 
 func mapDatasetExercise(item datasetExercise) (*models.Exercise, error) {
