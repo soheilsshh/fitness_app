@@ -1,0 +1,35 @@
+[
+  {
+    "ID": 1,
+    "SubscriptionID": 1,
+    "CoachID": 2,
+    "Version": 1,
+    "Title": "برنامه کاهش وزن — فاز ۱",
+    "Notes": "تمرکز روی compound movements و کاردیو متوسط.",
+    "DurationWeeks": 4,
+    "IsActive": true,
+    "LastUpdatedAt": "2026-05-01T10:00:00Z"
+  },
+  {
+    "ID": 2,
+    "SubscriptionID": 2,
+    "CoachID": 2,
+    "Version": 1,
+    "Title": "برنامه فرم‌دهی بانوان",
+    "Notes": "ترکیب وزنه و تمرینات functional.",
+    "DurationWeeks": 8,
+    "IsActive": true,
+    "LastUpdatedAt": "2026-01-20T09:00:00Z"
+  },
+  {
+    "ID": 3,
+    "SubscriptionID": 3,
+    "CoachID": 3,
+    "Version": 1,
+    "Title": "حجم — هفته ۱ تا ۴",
+    "Notes": "افزایش تدریجی حجم تمرین.",
+    "DurationWeeks": 4,
+    "IsActive": true,
+    "LastUpdatedAt": "2026-02-05T08:00:00Z"
+  }
+]

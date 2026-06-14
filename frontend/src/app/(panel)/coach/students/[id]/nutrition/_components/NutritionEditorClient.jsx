@@ -2,12 +2,30 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { FiChevronLeft, FiPlus, FiSave, FiX } from "react-icons/fi";
 import { api } from "@/lib/axios/client";
 import { toastError } from "@/app/(site)/auth/_components/helpers";
 import { DAY_KEYS, DAY_LABELS, emptyPlanByDay } from "../../../_components/programDays";
 
+function applyCaloriesToPlan(planByDay, calories) {
+  const value = Math.round(Number(calories));
+  if (!value) return planByDay;
+  const next = { ...planByDay };
+  for (const key of DAY_KEYS) {
+    const day = { ...next[key] };
+    day.nutrition = {
+      ...(day.nutrition || { meals: [] }),
+      caloriesTarget: value,
+    };
+    next[key] = day;
+  }
+  return next;
+}
+
 export default function NutritionEditorClient({ studentId }) {
+  const searchParams = useSearchParams();
+  const caloriesFromQuery = searchParams.get("calories");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [programId, setProgramId] = useState(null);
@@ -35,7 +53,11 @@ export default function NutritionEditorClient({ studentId }) {
               merged[key].nutrition = { ...data.planByDay[key].nutrition };
             }
           }
-          setPlanByDay(merged);
+          setPlanByDay(
+            caloriesFromQuery ? applyCaloriesToPlan(merged, caloriesFromQuery) : merged,
+          );
+        } else if (caloriesFromQuery) {
+          setPlanByDay((prev) => applyCaloriesToPlan(prev, caloriesFromQuery));
         }
       } catch {
         if (!cancelled) toastError("خطا", "بارگذاری برنامه ناموفق بود");
@@ -45,7 +67,7 @@ export default function NutritionEditorClient({ studentId }) {
     }
     load();
     return () => { cancelled = true; };
-  }, [studentId]);
+  }, [studentId, caloriesFromQuery]);
 
   useEffect(() => {
     const n = planByDay[selectedDay]?.nutrition;

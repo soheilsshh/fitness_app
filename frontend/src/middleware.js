@@ -6,6 +6,7 @@ const COACH_PANEL_SEGMENTS = new Set([
   "profile",
   "plans",
   "students",
+  "tools",
 ]);
 
 function isCoachPanelPath(pathname) {
@@ -60,5 +61,7 @@ export const config = {
     "/coach/plans/:path*",
     "/coach/students",
     "/coach/students/:path*",
+    "/coach/tools",
+    "/coach/tools/:path*",
   ],
 };
