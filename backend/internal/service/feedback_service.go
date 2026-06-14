@@ -2,15 +2,11 @@ package service
 
 import (
 	"context"
-	"errors"
-	"strings"
 	"time"
 
 	"github.com/yourusername/fitness-management/internal/models"
 	"github.com/yourusername/fitness-management/internal/repository"
 )
-
-var ErrFeedbackContactRequired = errors.New("email or phone is required")
 
 // FeedbackItemDTO matches frontend FeedbackList / FeedbackDetails (id, fullName, email, phone, message, createdAt).
 type FeedbackItemDTO struct {
@@ -31,10 +27,9 @@ type FeedbackListResponse struct {
 }
 
 // FeedbackCreateRequest for POST /feedbacks (public).
-// ContactSection sends either email or phone (not both); at least one is required.
 type FeedbackCreateRequest struct {
 	FullName string `json:"fullName" binding:"required"`
-	Email    string `json:"email"`
+	Email    string `json:"email" binding:"required"`
 	Phone    string `json:"phone"`
 	Message  string `json:"message" binding:"required"`
 }
@@ -53,16 +48,11 @@ func NewFeedbackService(repo repository.FeedbackRepository) FeedbackService {
 }
 
 func (s *feedbackService) Create(ctx context.Context, req *FeedbackCreateRequest) error {
-	email := strings.TrimSpace(req.Email)
-	phone := strings.TrimSpace(req.Phone)
-	if email == "" && phone == "" {
-		return ErrFeedbackContactRequired
-	}
 	f := &models.Feedback{
-		FullName: strings.TrimSpace(req.FullName),
-		Email:    email,
-		Phone:    phone,
-		Message:  strings.TrimSpace(req.Message),
+		FullName: req.FullName,
+		Email:    req.Email,
+		Phone:    req.Phone,
+		Message:  req.Message,
 	}
 	return s.repo.Create(ctx, f)
 }

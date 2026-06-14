@@ -14,7 +14,6 @@ import {
 } from "react-icons/fi";
 import { FaDumbbell } from "react-icons/fa";
 import CoachNavItem from "./CoachNavItem";
-import CoachToolsNav from "./CoachToolsNav";
 import { logout } from "@/lib/auth/session";
 
 const NAV = [
@@ -79,10 +78,6 @@ function SidebarContent({ collapsed, isMobile, setMobileOpen, setCollapsed }) {
               onClick={() => setMobileOpen(false)}
             />
           ))}
-          <CoachToolsNav
-            collapsed={collapsed && !isMobile}
-            onNavigate={() => setMobileOpen(false)}
-          />
         </div>
       </div>
 
