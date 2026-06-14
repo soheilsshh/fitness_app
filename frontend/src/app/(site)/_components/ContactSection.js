@@ -104,7 +104,7 @@ export default function ContactSection({ contactInfo }) {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.25 }}
             transition={{ duration: 0.6, delay: 0.06 }}
-            className="rounded-[32px] border border-white/10 bg-linear-to-b from-white/10 to-white/5 p-6 md:p-7"
+            className="rounded-[32px] border border-white/10 bg-gradient-to-b from-white/10 to-white/5 p-6 md:p-7"
           >
             <div className="text-sm font-extrabold text-white">فرم تماس</div>
             <div className="mt-1 text-sm text-zinc-300">
