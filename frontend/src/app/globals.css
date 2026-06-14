@@ -79,7 +79,11 @@
 }
 
 body {
-  @apply font-iranianSansXRegular
+  @apply font-iranianSansXRegular;
+  /* Plain fallbacks so text stays light-on-dark even before the
+     @theme CSS variables apply (avoids a dark-text flash on first paint). */
+  background-color: #131313;
+  color: #e2e2e2;
 }
 
 html {
