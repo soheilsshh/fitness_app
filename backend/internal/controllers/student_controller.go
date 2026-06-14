@@ -58,8 +58,7 @@ type currentSubscriptionResponse struct {
 type subscriptionsListResponse struct {
 	Subscriptions []subscriptionResponse `json:"subscriptions"`
 	Page          int                    `json:"page"`
-	PageSize      int                    `json:"pageSize"`
-	Total         int64                  `json:"total"`
+	Limit         int                    `json:"limit"`
 }
 
 type workoutItemResponse struct {
@@ -213,19 +212,19 @@ func (h *StudentController) ListSubscriptions(c *gin.Context) {
 	}
 
 	page := 1
-	pageSize := 10
+	limit := 10
 	if pStr := c.Query("page"); pStr != "" {
 		if p, err := strconv.Atoi(pStr); err == nil && p > 0 {
 			page = p
 		}
 	}
-	if psStr := c.Query("pageSize"); psStr != "" {
-		if ps, err := strconv.Atoi(psStr); err == nil && ps > 0 && ps <= 100 {
-			pageSize = ps
+	if lStr := c.Query("limit"); lStr != "" {
+		if l, err := strconv.Atoi(lStr); err == nil && l > 0 && l <= 100 {
+			limit = l
 		}
 	}
 
-	data, total, err := h.studentService.ListSubscriptions(c.Request.Context(), userID, page, pageSize)
+	data, err := h.studentService.ListSubscriptions(c.Request.Context(), userID, page, limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -257,8 +256,7 @@ func (h *StudentController) ListSubscriptions(c *gin.Context) {
 	c.JSON(http.StatusOK, subscriptionsListResponse{
 		Subscriptions: subs,
 		Page:          page,
-		PageSize:      pageSize,
-		Total:         total,
+		Limit:         limit,
 	})
 }
 

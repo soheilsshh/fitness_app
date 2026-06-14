@@ -10,7 +10,7 @@ import (
 
 type SubscriptionRepository interface {
 	FindCurrentByUserID(ctx context.Context, userID uint, now time.Time) (*models.Subscription, error)
-	FindByUserIDPaginated(ctx context.Context, userID uint, page, pageSize int) ([]models.Subscription, int64, error)
+	FindByUserIDPaginated(ctx context.Context, userID uint, page, limit int) ([]models.Subscription, error)
 	CountByUserID(ctx context.Context, userID uint) (int64, error)
 	// CountCreatedInYear returns number of subscriptions created in the given calendar year.
 	CountCreatedInYear(ctx context.Context, year int) (int64, error)
@@ -43,31 +43,26 @@ func (r *subscriptionRepository) FindCurrentByUserID(ctx context.Context, userID
 	return &sub, nil
 }
 
-func (r *subscriptionRepository) FindByUserIDPaginated(ctx context.Context, userID uint, page, pageSize int) ([]models.Subscription, int64, error) {
-	db := r.db.WithContext(ctx).Model(&models.Subscription{}).Where("user_id = ?", userID)
-
-	var total int64
-	if err := db.Count(&total).Error; err != nil {
-		return nil, 0, err
-	}
-
+func (r *subscriptionRepository) FindByUserIDPaginated(ctx context.Context, userID uint, page, limit int) ([]models.Subscription, error) {
 	if page <= 0 {
 		page = 1
 	}
-	if pageSize <= 0 {
-		pageSize = 10
+	if limit <= 0 {
+		limit = 10
 	}
-	if pageSize > 100 {
-		pageSize = 100
-	}
-	offset := (page - 1) * pageSize
+	offset := (page - 1) * limit
 
 	var subs []models.Subscription
-	err := db.Order("starts_at DESC").Offset(offset).Limit(pageSize).Find(&subs).Error
+	err := r.db.WithContext(ctx).
+		Where("user_id = ?", userID).
+		Order("starts_at DESC").
+		Offset(offset).
+		Limit(limit).
+		Find(&subs).Error
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
-	return subs, total, nil
+	return subs, nil
 }
 
 func (r *subscriptionRepository) CountByUserID(ctx context.Context, userID uint) (int64, error) {

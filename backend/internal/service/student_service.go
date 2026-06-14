@@ -38,7 +38,7 @@ type ProgramsCurrent struct {
 type StudentService interface {
 	GetMe(ctx context.Context, userID uint) (*models.User, error)
 	GetCurrentSubscription(ctx context.Context, userID uint) (*SubscriptionWithPlan, error)
-	ListSubscriptions(ctx context.Context, userID uint, page, pageSize int) ([]SubscriptionWithPlan, int64, error)
+	ListSubscriptions(ctx context.Context, userID uint, page, limit int) ([]SubscriptionWithPlan, error)
 	GetCurrentPrograms(ctx context.Context, userID uint) (*ProgramsCurrent, error)
 }
 
@@ -88,10 +88,10 @@ func (s *studentService) GetCurrentSubscription(ctx context.Context, userID uint
 	}, nil
 }
 
-func (s *studentService) ListSubscriptions(ctx context.Context, userID uint, page, pageSize int) ([]SubscriptionWithPlan, int64, error) {
-	subs, total, err := s.subRepo.FindByUserIDPaginated(ctx, userID, page, pageSize)
+func (s *studentService) ListSubscriptions(ctx context.Context, userID uint, page, limit int) ([]SubscriptionWithPlan, error) {
+	subs, err := s.subRepo.FindByUserIDPaginated(ctx, userID, page, limit)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 
 	result := make([]SubscriptionWithPlan, 0, len(subs))
@@ -103,14 +103,14 @@ func (s *studentService) ListSubscriptions(ctx context.Context, userID uint, pag
 				// Skip subscriptions pointing to missing plans
 				continue
 			}
-			return nil, 0, err
+			return nil, err
 		}
 		result = append(result, SubscriptionWithPlan{
 			Subscription: &sub,
 			Plan:         plan,
 		})
 	}
-	return result, total, nil
+	return result, nil
 }
 
 func (s *studentService) GetCurrentPrograms(ctx context.Context, userID uint) (*ProgramsCurrent, error) {
