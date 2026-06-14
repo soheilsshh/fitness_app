@@ -8,6 +8,7 @@ import RecordsSection from "./RecordsSection";
 import AboutSection from "./AboutSection";
 import ContactSection from "./ContactSection";
 import Footer from "./Footer";
+import { ScrollProgress } from "./landingEffects";
 
 export default function HomeClient() {
   const [settings, setSettings] = useState(null);
@@ -27,7 +28,8 @@ export default function HomeClient() {
   }, []);
 
   return (
-    <main className="relative overflow-x-hidden bg-black text-white">
+    <main className="relative overflow-x-hidden bg-surface text-on-surface">
+      <ScrollProgress />
       <section id="home" className="scroll-mt-24">
         <Hero settings={settings} />
       </section>

@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { FiArrowDownRight, FiUsers } from "react-icons/fi";
+import { FiUsers } from "react-icons/fi";
 import { api } from "@/lib/axios/client";
 import { apiAssetUrl } from "@/lib/api/assets";
+import coachStatue from "@/assets/landing-page/coach_section_statue.png";
 
 export default function ProgramsSection() {
   const [coaches, setCoaches] = useState([]);
@@ -30,39 +32,42 @@ export default function ProgramsSection() {
   }, []);
 
   return (
-    <section id="programs" className="scroll-mt-24 py-20 md:py-24">
-      <div className="mx-auto max-w-7xl px-4">
-        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-zinc-200">
-              مربی‌های منتخب
-              <span className="h-1 w-1 rounded-full bg-white/30" />
-              برنامه اختصاصی برای هر هدف
-            </div>
-            <h2 className="mt-3 text-2xl font-extrabold md:text-3xl">
-              با <span className="text-emerald-300">مربی خودت</span> شروع کن
-            </h2>
-            <p className="mt-2 max-w-2xl text-sm leading-7 text-zinc-300 md:text-base">
-              FitPro پلتفرم چندمربی است؛ هر مربی صفحه اختصاصی و پلن‌های خودش را دارد.
-              مربی مناسب را انتخاب کن و از همان‌جا خرید را انجام بده.
-            </p>
+    <section id="programs" className="relative scroll-mt-24 overflow-hidden py-12 md:py-16">
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-surface via-surface-tint/5 to-surface" />
+
+      <div className="relative z-10 mx-auto max-w-7xl px-6">
+        {/* Header */}
+        <div className="mb-16 flex flex-col items-center space-y-8 text-center">
+          <div className="glass inline-flex items-center gap-2 rounded-full border border-surface-tint/20 px-4 py-1 text-xs tracking-widest text-surface-tint">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-surface-tint" />
+            مربیان تراز اول
           </div>
 
-          <Link
-            href="/coaches"
-            className="inline-flex w-fit items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-zinc-100 hover:bg-white/10"
-          >
-            همه مربی‌ها <FiArrowDownRight />
-          </Link>
+          <h2 className="text-4xl font-extrabold leading-tight text-primary md:text-6xl">
+            با مربی <span className="gradient-text">خودت</span> شروع کن
+          </h2>
+
+          <p className="mx-auto max-w-2xl text-base leading-8 text-on-surface-variant md:text-lg">
+            فیت‌پرو پلتفرم چندمربی است. ما بهترین مربیان ایران را در یک‌جا جمع
+            کرده‌ایم تا شما بر اساس سلیقه و نیاز خود، راهبر مسیرتان را انتخاب کنید.
+          </p>
+
+          <div className="glass mx-auto mt-4 max-w-xl rounded-[2rem] border border-surface-tint/20 p-6">
+            <h3 className="text-center text-2xl font-semibold text-primary">استاندارد طلایی تناسب</h3>
+            <p className="mt-1 text-center text-on-surface-variant">
+              ترکیبی از آناتومی کلاسیک و متدهای مدرن بیومکانیک برای دستیابی به تقارن مطلق.
+            </p>
+          </div>
         </div>
 
-        <div className="mt-10 grid gap-5 md:grid-cols-3">
+        {/* Coaches grid */}
+        <div className="grid gap-6 md:grid-cols-3">
           {loading ? (
-            <div className="col-span-full rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-zinc-400">
+            <div className="glass col-span-full rounded-[2rem] border border-white/5 p-6 text-sm text-on-surface-variant">
               در حال بارگذاری مربی‌ها...
             </div>
           ) : coaches.length === 0 ? (
-            <div className="col-span-full rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-zinc-300">
+            <div className="glass col-span-full rounded-[2rem] border border-white/5 p-6 text-sm text-on-surface-variant">
               هنوز مربی منتشرشده‌ای وجود ندارد. به‌زودی مربی‌های جدید اضافه می‌شوند.
             </div>
           ) : (
@@ -73,55 +78,76 @@ export default function ProgramsSection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.2 }}
                 transition={{ duration: 0.6, delay: idx * 0.06 }}
-                className="relative h-full overflow-hidden rounded-[28px] border border-white/10 bg-white/5 shadow-[0_20px_60px_-30px_rgba(0,0,0,0.8)]"
+                className="glow-card flex h-full flex-col rounded-[2rem] p-6 text-right"
               >
-                <div className="pointer-events-none absolute -top-10 left-1/2 h-40 w-40 -translate-x-1/2 rounded-full bg-emerald-400/10 blur-3xl" />
-                <div className="flex h-full flex-col p-5 md:p-6">
-                  <div className="flex items-start gap-3">
-                    <div className="inline-flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-zinc-950/40">
-                      {coach.avatarUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={apiAssetUrl(coach.avatarUrl)}
-                          alt={coach.displayName}
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <FiUsers className="text-emerald-300" />
-                      )}
-                    </div>
-                    <div className="min-w-0">
-                      <div className="truncate text-lg font-extrabold text-white">
-                        {coach.displayName}
-                      </div>
-                      <div className="mt-1 text-xs text-zinc-400">{coach.title || coach.specialty || "مربی تناسب اندام"}</div>
+                <div className="flex flex-row-reverse items-start gap-3">
+                  <div className="inline-flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-surface-container">
+                    {coach.avatarUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={apiAssetUrl(coach.avatarUrl)}
+                        alt={coach.displayName}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <FiUsers className="text-surface-tint" />
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="truncate text-lg font-bold text-primary">{coach.displayName}</div>
+                    <div className="mt-1 text-xs text-on-surface-variant">
+                      {coach.title || coach.specialty || "مربی تناسب اندام"}
                     </div>
                   </div>
-
-                  <p className="mt-4 flex-1 text-sm leading-7 text-zinc-300">
-                    {coach.specialty
-                      ? `تخصص: ${coach.specialty}`
-                      : "برنامه تمرین و تغذیه اختصاصی با پشتیبانی مربی."}
-                  </p>
-
-                  <Link
-                    href={`/coach/${coach.slug}`}
-                    className="mt-4 w-full rounded-2xl bg-white px-4 py-3 text-center text-sm font-extrabold text-zinc-950 hover:bg-zinc-200"
-                  >
-                    مشاهده صفحه و پلن‌ها
-                  </Link>
                 </div>
+
+                <p className="mt-4 flex-1 text-sm leading-7 text-on-surface-variant">
+                  {coach.specialty
+                    ? `تخصص: ${coach.specialty}`
+                    : "برنامه تمرین و تغذیه اختصاصی با پشتیبانی مربی."}
+                </p>
+
+                <Link
+                  href={`/coach/${coach.slug}`}
+                  className="mt-4 w-full rounded-full bg-surface-tint px-4 py-3 text-center text-sm font-bold text-on-primary transition-transform hover:scale-[1.02]"
+                >
+                  مشاهده صفحه و پلن‌ها
+                </Link>
               </motion.div>
             ))
           )}
         </div>
 
-        <div className="mt-8 rounded-3xl border border-white/10 bg-white/5 p-5 text-sm text-zinc-300">
-          اگر مطمئن نیستی کدام مربی مناسب است، از بخش{" "}
-          <a href="#contact" className="font-semibold text-emerald-200">
-            تماس با ما
-          </a>{" "}
-          پیام بده تا راهنماییت کنیم.
+        {/* Big CTA card with sculptor statue */}
+        <div className="group relative mt-16">
+          <div className="absolute -inset-4 rounded-full bg-surface-tint/10 opacity-0 blur-3xl transition-opacity duration-1000 group-hover:opacity-100" />
+          <div className="glass relative grid overflow-hidden rounded-[2rem] border border-surface-tint/20 shadow-[0_0_30px_rgba(0,225,171,0.2)] md:grid-cols-2">
+            {/* Statue side */}
+            <div className="relative h-72 md:h-auto md:min-h-[480px]">
+              <Image
+                src={coachStatue}
+                alt="پیکرتراش در حال تراشیدن مجسمه"
+                fill
+                className="rounded-[2rem] object-cover object-top transition-transform duration-700 group-hover:scale-105"
+              />
+              {/* fade into the content panel (bottom on mobile, side on desktop) */}
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-surface/10 to-surface md:bg-gradient-to-l md:from-transparent md:via-surface/20 md:to-surface" />
+            </div>
+
+            {/* Content side */}
+            <div className="relative z-10 flex flex-col items-center justify-center space-y-6 p-8 text-center md:p-14">
+              <h3 className="text-3xl font-extrabold text-primary md:text-4xl">آماده تغییر هستی؟</h3>
+              <p className="max-w-md text-base leading-8 text-on-surface-variant md:text-lg">
+                همین حالا برنامه اختصاصی خود را از مربی مورد علاقه‌تان دریافت کنید.
+              </p>
+              <Link
+                href="/coaches"
+                className="rounded-full bg-surface-tint px-12 py-5 text-xl font-bold text-on-primary shadow-2xl transition-transform hover:scale-105"
+              >
+                انتخاب مربی و شروع
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </section>
