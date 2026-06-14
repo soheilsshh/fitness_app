@@ -1,0 +1,45 @@
+[
+  {
+    "ID": 1,
+    "UserID": 4,
+    "SubscriptionID": 1,
+    "CheckInDate": "2026-05-06T10:00:00Z",
+    "Weight": 84,
+    "Waist": 92,
+    "Chest": 102,
+    "Hip": 98,
+    "Notes": "احساس انرژی خوبی دارم."
+  },
+  {
+    "ID": 2,
+    "UserID": 4,
+    "SubscriptionID": 1,
+    "CheckInDate": "2026-05-20T10:00:00Z",
+    "Weight": 82,
+    "Waist": 90,
+    "Chest": 101,
+    "Hip": 96,
+    "Notes": "۲ کیلو کاهش وزن — ادامه رژیم."
+  },
+  {
+    "ID": 3,
+    "UserID": 5,
+    "SubscriptionID": 2,
+    "CheckInDate": "2026-05-18T09:30:00Z",
+    "Weight": 67,
+    "Waist": 72,
+    "Chest": 88,
+    "Hip": 94
+  },
+  {
+    "ID": 4,
+    "UserID": 6,
+    "SubscriptionID": 3,
+    "CheckInDate": "2026-05-15T11:00:00Z",
+    "Weight": 89,
+    "Waist": 95,
+    "Chest": 110,
+    "Hip": 100,
+    "Notes": "افزایش ۱kg — مطابق برنامه حجم."
+  }
+]

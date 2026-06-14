@@ -101,29 +101,46 @@ func (s *adminUserService) ListUsers(ctx context.Context, page, pageSize int, qu
 	if pageSize <= 0 {
 		pageSize = 8
 	}
+	if pageSize > 100 {
+		pageSize = 100
+	}
 
-	var users []models.User
+	now := time.Now()
 	dbq := s.db.WithContext(ctx).Model(&models.User{})
 
-	// Optional search on name or phone
 	if q := strings.TrimSpace(query); q != "" {
 		like := "%" + q + "%"
 		dbq = dbq.Where("name LIKE ? OR phone LIKE ?", like, like)
 	}
 
-	if err := dbq.Order("created_at DESC").Find(&users).Error; err != nil {
+	activeSubSQL := "SELECT DISTINCT user_id FROM subscriptions WHERE ends_at IS NULL OR ends_at > ?"
+	switch status {
+	case "active":
+		dbq = dbq.Where("id IN ("+activeSubSQL+")", now)
+	case "inactive":
+		dbq = dbq.Where("id NOT IN ("+activeSubSQL+")", now)
+	}
+
+	var total int64
+	if err := dbq.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
 
-	now := time.Now()
-	filtered := make([]AdminUserSummary, 0, len(users))
+	var users []models.User
+	offset := (page - 1) * pageSize
+	if err := dbq.Order("created_at DESC").Offset(offset).Limit(pageSize).Find(&users).Error; err != nil {
+		return nil, 0, err
+	}
 
+	items := make([]AdminUserSummary, 0, len(users))
 	for i := range users {
 		u := users[i]
 
-		// compute activeProgram and programsCount from subscriptions
-		activeSub, err := s.subRepo.FindCurrentByUserID(ctx, u.ID, now)
-		active := err == nil && activeSub != nil
+		active := status == "active"
+		if status != "active" && status != "inactive" {
+			activeSub, err := s.subRepo.FindCurrentByUserID(ctx, u.ID, now)
+			active = err == nil && activeSub != nil
+		}
 
 		progCount, err := s.subRepo.CountByUserID(ctx, u.ID)
 		if err != nil {
@@ -144,34 +161,10 @@ func (s *adminUserService) ListUsers(ctx context.Context, page, pageSize int, qu
 			CreatedAt:     u.CreatedAt,
 		}
 		summary.FirstName, summary.LastName = splitName(u.Name)
-
-		// status filter: all | active | inactive
-		switch status {
-		case "active":
-			if !summary.ActiveProgram {
-				continue
-			}
-		case "inactive":
-			if summary.ActiveProgram {
-				continue
-			}
-		}
-
-		filtered = append(filtered, summary)
+		items = append(items, summary)
 	}
 
-	total := int64(len(filtered))
-
-	// apply pagination in memory
-	start := (page - 1) * pageSize
-	if start >= len(filtered) {
-		return []AdminUserSummary{}, total, nil
-	}
-	end := start + pageSize
-	if end > len(filtered) {
-		end = len(filtered)
-	}
-	return filtered[start:end], total, nil
+	return items, total, nil
 }
 
 func (s *adminUserService) GetUserDetails(ctx context.Context, id uint) (*AdminUserDetails, error) {
