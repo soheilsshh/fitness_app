@@ -1,5 +1,5 @@
-import CoachShell from "./_components/CoachShell";
+import CoachPanelLayout from "./_components/CoachPanelLayout";
 
 export default function CoachLayout({ children }) {
-  return <CoachShell>{children}</CoachShell>;
+  return <CoachPanelLayout>{children}</CoachPanelLayout>;
 }

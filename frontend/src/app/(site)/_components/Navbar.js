@@ -7,6 +7,7 @@ import { FiMenu, FiUser, FiLogOut } from "react-icons/fi";
 import { FaDumbbell } from "react-icons/fa";
 import MobileDrawer from "./MobileDrawer";
 import CartButton from "./CartButton";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { getAuthSession, logout } from "@/lib/auth/session";
 import { getDashboardPath } from "@/lib/auth/roles";
 
@@ -120,6 +121,9 @@ export default function Navbar() {
           </div>
 
           <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+            <ThemeToggle
+              buttonClassName="border-white/10 bg-white/5 text-zinc-100 hover:bg-white/10 hover:text-white"
+            />
             <CartButton />
 
             {session?.token ? (

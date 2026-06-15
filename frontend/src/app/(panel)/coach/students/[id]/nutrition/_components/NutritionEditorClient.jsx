@@ -3,9 +3,20 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { FiChevronLeft, FiPlus, FiSave, FiX } from "react-icons/fi";
+import { ChevronLeft, Plus, Save, X } from "lucide-react";
 import { api } from "@/lib/axios/client";
 import { toastError } from "@/app/(site)/auth/_components/helpers";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { DAY_KEYS, DAY_LABELS, emptyPlanByDay } from "../../../_components/programDays";
 
 function applyCaloriesToPlan(planByDay, calories) {
@@ -54,7 +65,7 @@ export default function NutritionEditorClient({ studentId }) {
             }
           }
           setPlanByDay(
-            caloriesFromQuery ? applyCaloriesToPlan(merged, caloriesFromQuery) : merged,
+            caloriesFromQuery ? applyCaloriesToPlan(merged, caloriesFromQuery) : merged
           );
         } else if (caloriesFromQuery) {
           setPlanByDay((prev) => applyCaloriesToPlan(prev, caloriesFromQuery));
@@ -66,7 +77,9 @@ export default function NutritionEditorClient({ studentId }) {
       }
     }
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [studentId, caloriesFromQuery]);
 
   useEffect(() => {
@@ -136,110 +149,125 @@ export default function NutritionEditorClient({ studentId }) {
   const meals = planByDay[selectedDay]?.nutrition?.meals || [];
 
   if (loading) {
-    return <div className="text-sm text-zinc-400">در حال بارگذاری...</div>;
+    return (
+      <div className="space-y-4" dir="rtl">
+        <Skeleton className="h-9 w-48" />
+        <Skeleton className="h-64 w-full rounded-xl" />
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4 md:gap-6" dir="rtl">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <Link
-          href={`/coach/students/${studentId}`}
-          className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-bold text-zinc-100 hover:bg-white/10"
-        >
-          <FiChevronLeft />
-          بازگشت
-        </Link>
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-2 text-sm font-extrabold text-zinc-950 hover:bg-zinc-200 disabled:opacity-50"
-        >
-          <FiSave />
+        <Button variant="outline" size="sm" asChild>
+          <Link href={`/coach/students/${studentId}`}>
+            <ChevronLeft data-icon="inline-start" />
+            بازگشت
+          </Link>
+        </Button>
+        <Button type="button" onClick={handleSave} disabled={saving}>
+          <Save data-icon="inline-start" />
           {saving ? "در حال ذخیره..." : "ذخیره برنامه"}
-        </button>
+        </Button>
       </div>
 
-      <div className="rounded-[26px] border border-white/10 bg-white/5 p-5">
-        <label className="text-sm text-zinc-400">عنوان برنامه</label>
-        <input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="mt-2 w-full rounded-2xl border border-white/10 bg-zinc-950/30 px-4 py-2.5 text-sm text-white outline-none focus:border-cyan-400/40"
-        />
-      </div>
+      <Card>
+        <CardContent className="space-y-2 pt-6">
+          <Label htmlFor="nutrition-title">عنوان برنامه</Label>
+          <Input
+            id="nutrition-title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+        </CardContent>
+      </Card>
 
-      <div className="flex flex-wrap gap-2">
+      <ToggleGroup
+        type="single"
+        value={selectedDay}
+        onValueChange={(v) => v && setSelectedDay(v)}
+        variant="outline"
+        size="sm"
+        className="flex flex-wrap justify-start gap-2"
+      >
         {DAY_KEYS.map((key) => (
-          <button
-            key={key}
-            onClick={() => setSelectedDay(key)}
-            className={[
-              "rounded-2xl border px-3 py-2 text-sm font-bold",
-              selectedDay === key
-                ? "border-cyan-400/40 bg-cyan-400/10 text-cyan-100"
-                : "border-white/10 bg-zinc-950/30 text-zinc-200",
-            ].join(" ")}
-          >
+          <ToggleGroupItem key={key} value={key}>
             {DAY_LABELS[key]}
-          </button>
+          </ToggleGroupItem>
         ))}
-      </div>
+      </ToggleGroup>
 
       <div className="grid gap-3 md:grid-cols-2">
-        <input
-          value={caloriesTarget}
-          onChange={(e) => setCaloriesTarget(e.target.value)}
-          placeholder="هدف کالری روزانه"
-          className="rounded-2xl border border-white/10 bg-zinc-950/30 px-4 py-2.5 text-sm text-white outline-none"
-        />
-        <input
-          value={proteinTarget}
-          onChange={(e) => setProteinTarget(e.target.value)}
-          placeholder="هدف پروتئین (مثلاً ۱۸۰g)"
-          className="rounded-2xl border border-white/10 bg-zinc-950/30 px-4 py-2.5 text-sm text-white outline-none"
-        />
+        <div className="space-y-2">
+          <Label>هدف کالری روزانه</Label>
+          <Input
+            value={caloriesTarget}
+            onChange={(e) => setCaloriesTarget(e.target.value)}
+            placeholder="مثلاً ۲۲۰۰"
+            className="tabular-nums"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label>هدف پروتئین</Label>
+          <Input
+            value={proteinTarget}
+            onChange={(e) => setProteinTarget(e.target.value)}
+            placeholder="مثلاً ۱۸۰g"
+          />
+        </div>
       </div>
 
-      <div className="rounded-[26px] border border-white/10 bg-white/5 p-5 space-y-3">
-        <div className="text-sm font-extrabold text-white">وعده‌های {DAY_LABELS[selectedDay]}</div>
-        <div className="grid gap-2 md:grid-cols-2">
-          <input
-            value={mealTitle}
-            onChange={(e) => setMealTitle(e.target.value)}
-            placeholder="نام وعده (صبحانه)"
-            className="rounded-2xl border border-white/10 bg-zinc-950/30 px-4 py-2.5 text-sm text-white outline-none"
-          />
-          <input
-            value={mealDetail}
-            onChange={(e) => setMealDetail(e.target.value)}
-            placeholder="جزئیات"
-            className="rounded-2xl border border-white/10 bg-zinc-950/30 px-4 py-2.5 text-sm text-white outline-none"
-          />
-        </div>
-        <button
-          onClick={addMeal}
-          className="inline-flex items-center gap-1 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-bold text-zinc-100"
-        >
-          <FiPlus />
-          افزودن وعده
-        </button>
-        <div className="space-y-2">
-          {meals.map((meal, i) => (
-            <div key={i} className="flex items-center justify-between gap-2 rounded-2xl border border-white/10 bg-zinc-950/30 px-4 py-2 text-sm text-zinc-200">
-              <div>
-                <div className="font-bold text-white">{meal.title}</div>
-                {meal.detail ? <div className="text-[11px] text-zinc-400">{meal.detail}</div> : null}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">وعده‌های {DAY_LABELS[selectedDay]}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid gap-2 md:grid-cols-2">
+            <Input
+              value={mealTitle}
+              onChange={(e) => setMealTitle(e.target.value)}
+              placeholder="نام وعده (صبحانه)"
+            />
+            <Input
+              value={mealDetail}
+              onChange={(e) => setMealDetail(e.target.value)}
+              placeholder="جزئیات"
+            />
+          </div>
+          <Button type="button" variant="outline" size="sm" onClick={addMeal}>
+            <Plus data-icon="inline-start" />
+            افزودن وعده
+          </Button>
+          <div className="space-y-2">
+            {meals.map((meal, index) => (
+              <div
+                key={index}
+                className="flex items-center justify-between gap-2 rounded-lg border px-4 py-2"
+              >
+                <div className="text-start">
+                  <p className="text-sm font-medium">{meal.title}</p>
+                  {meal.detail ? (
+                    <p className="text-xs text-muted-foreground">{meal.detail}</p>
+                  ) : null}
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={() => removeMeal(index)}
+                  className="text-muted-foreground hover:text-destructive"
+                >
+                  <X />
+                </Button>
               </div>
-              <button onClick={() => removeMeal(i)} className="text-zinc-400 hover:text-rose-300">
-                <FiX />
-              </button>
-            </div>
-          ))}
-          {meals.length === 0 ? (
-            <div className="text-sm text-zinc-500">وعده‌ای ثبت نشده</div>
-          ) : null}
-        </div>
-      </div>
+            ))}
+            {meals.length === 0 ? (
+              <p className="text-sm text-muted-foreground">وعده‌ای ثبت نشده</p>
+            ) : null}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

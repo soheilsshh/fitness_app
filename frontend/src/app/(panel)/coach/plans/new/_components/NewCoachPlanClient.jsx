@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { FiChevronLeft } from "react-icons/fi";
 import PlanForm from "@/app/(panel)/admin/plans/_components/PlanForm";
 import { buildEmptyPlan } from "@/app/(panel)/admin/plans/_components/planModel";
 import { api } from "@/lib/axios/client";
 import { toastError, toastSuccess } from "@/app/(site)/auth/_components/helpers";
+import { Button } from "@/components/ui/button";
 
 export default function NewCoachPlanClient() {
   const router = useRouter();
@@ -22,18 +23,15 @@ export default function NewCoachPlanClient() {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <Link
-            href="/coach/plans"
-            className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-bold text-zinc-100 hover:bg-white/10"
-          >
-            <FiChevronLeft />
+    <div className="flex flex-col gap-4 md:gap-6" dir="rtl">
+      <div className="flex items-center gap-2">
+        <Button variant="outline" size="sm" asChild>
+          <Link href="/coach/plans">
+            <ChevronLeft data-icon="inline-start" />
             بازگشت
           </Link>
-          <div className="text-lg font-extrabold text-white">ساخت پلن جدید</div>
-        </div>
+        </Button>
+        <h2 className="text-lg font-semibold">ساخت پلن جدید</h2>
       </div>
       <PlanForm mode="create" initialValue={buildEmptyPlan()} onSubmit={onSubmit} />
     </div>

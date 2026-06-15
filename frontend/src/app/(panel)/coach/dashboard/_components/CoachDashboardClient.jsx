@@ -1,11 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/axios/client";
-import StatCard from "@/app/(panel)/admin/dashboard/_components/StatCard";
+import { SectionCards } from "@/components/section-cards";
 
-function formatToman(n) {
-  return `${Number(n || 0).toLocaleString("fa-IR")} تومان`;
+function formatToman(value) {
+  try {
+    return `${new Intl.NumberFormat("fa-IR").format(Number(value) || 0)} تومان`;
+  } catch {
+    return `${value ?? 0} تومان`;
+  }
 }
 
 export default function CoachDashboardClient() {
@@ -14,7 +18,9 @@ export default function CoachDashboardClient() {
 
   useEffect(() => {
     let cancelled = false;
+
     async function load() {
+      setLoading(true);
       try {
         const res = await api.get("/coach/dashboard/stats");
         if (!cancelled) setStats(res.data);
@@ -24,37 +30,42 @@ export default function CoachDashboardClient() {
         if (!cancelled) setLoading(false);
       }
     }
+
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  if (loading) {
-    return <div className="text-sm text-zinc-400">در حال بارگذاری آمار...</div>;
-  }
+  const statItems = useMemo(
+    () => [
+      {
+        title: "تعداد دانشجویان",
+        value: stats?.totalStudents ?? 0,
+        hint: "همه دانشجویان مرتبط با شما",
+      },
+      {
+        title: "اشتراک فعال",
+        value: stats?.activeSubscriptions ?? 0,
+        hint: "اشتراک‌های جاری",
+      },
+      {
+        title: "فروش این ماه",
+        value: stats?.monthlySales ?? 0,
+        displayValue: formatToman(stats?.monthlySales),
+        hint: "سفارش‌های پرداخت‌شده",
+      },
+    ],
+    [stats]
+  );
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-extrabold text-white">داشبورد مربی</h1>
-        <p className="mt-1 text-sm text-zinc-400">خلاصه وضعیت دانشجویان و فروش</p>
-      </div>
-      <div className="grid gap-4 md:grid-cols-3">
-        <StatCard
-          title="تعداد دانشجویان"
-          value={stats?.totalStudents ?? 0}
-          hint="همه دانشجویان مرتبط با شما"
-        />
-        <StatCard
-          title="اشتراک فعال"
-          value={stats?.activeSubscriptions ?? 0}
-          hint="اشتراک‌های جاری"
-        />
-        <StatCard
-          title="فروش این ماه"
-          value={formatToman(stats?.monthlySales)}
-          hint="سفارش‌های پرداخت‌شده"
-        />
-      </div>
+    <div className="flex flex-col gap-4 md:gap-6">
+      <SectionCards
+        items={statItems}
+        loading={loading}
+        className="@3xl/main:grid-cols-3"
+      />
     </div>
   );
 }

@@ -2,9 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/axios/client";
-import DashboardShell from "./DashboardShell";
-import StatsGrid from "./StatsGrid";
-import SalesChart from "./SalesChart";
+import { SectionCards } from "@/components/section-cards";
+import { ChartAreaInteractive } from "@/components/chart-area-interactive";
 
 const CURRENT_YEAR = new Date().getFullYear();
 
@@ -21,6 +20,7 @@ export default function AdminDashboardClient() {
 
   useEffect(() => {
     let cancelled = false;
+
     async function load() {
       setLoading(true);
       try {
@@ -40,36 +40,55 @@ export default function AdminDashboardClient() {
         if (!cancelled) setLoading(false);
       }
     }
+
     load();
     return () => {
       cancelled = true;
     };
   }, [year]);
 
-  const statItems = [
-    { title: "تعداد دوره‌های خریداری شده", value: stats?.purchasedCourses ?? 0, hint: `سال ${year}` },
-    { title: "تعداد کاربران", value: stats?.totalUsers ?? 0, hint: "ثبت‌شده" },
-    { title: "کاربران فعال", value: stats?.activeUsers ?? 0, hint: "اشتراک فعال" },
-    { title: "تعداد مربی‌ها", value: stats?.totalCoaches ?? 0, hint: "کل مربی‌ها" },
-    { title: "مربی‌های فعال", value: stats?.activeCoaches ?? 0, hint: "وضعیت فعال" },
-  ];
+  const statItems = useMemo(
+    () => [
+      {
+        title: "تعداد دوره‌های خریداری شده",
+        value: stats?.purchasedCourses ?? 0,
+        hint: `سال ${year}`,
+      },
+      {
+        title: "تعداد کاربران",
+        value: stats?.totalUsers ?? 0,
+        hint: "ثبت‌شده",
+      },
+      {
+        title: "کاربران فعال",
+        value: stats?.activeUsers ?? 0,
+        hint: "اشتراک فعال",
+      },
+      {
+        title: "تعداد مربی‌ها",
+        value: stats?.totalCoaches ?? 0,
+        hint: "کل مربی‌ها",
+      },
+      {
+        title: "مربی‌های فعال",
+        value: stats?.activeCoaches ?? 0,
+        hint: "وضعیت فعال",
+      },
+    ],
+    [stats, year]
+  );
 
   return (
-    <DashboardShell>
-      {loading ? (
-        <div className="rounded-[26px] border border-white/10 bg-white/5 p-6 text-sm text-zinc-400">
-          در حال بارگذاری آمار...
-        </div>
-      ) : (
-        <StatsGrid items={statItems} />
-      )}
+    <div className="flex flex-col gap-4 md:gap-6">
+      <SectionCards items={statItems} loading={loading} />
 
-      <SalesChart
+      <ChartAreaInteractive
+        data={monthly}
+        loading={loading}
         year={year}
         years={years}
         onYearChange={setYear}
-        data={monthly}
       />
-    </DashboardShell>
+    </div>
   );
 }

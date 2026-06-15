@@ -1,306 +1,257 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { FiSave, FiPercent, FiTag } from "react-icons/fi";
-
-function cn(...xs) {
-    return xs.filter(Boolean).join(" ");
-}
+import { Percent, Save, Tag } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 function formatNumber(v) {
-    try {
-        return new Intl.NumberFormat("fa-IR").format(Number(v) || 0);
-    } catch {
-        return String(v ?? 0);
-    }
+  try {
+    return new Intl.NumberFormat("fa-IR").format(Number(v) || 0);
+  } catch {
+    return String(v ?? 0);
+  }
 }
 
 function formatWithSeparator(v) {
-    const num = Number(String(v).replace(/,/g, ""));
-    if (isNaN(num)) return "";
-    return num.toLocaleString("en-US");
+  const num = Number(String(v).replace(/,/g, ""));
+  if (Number.isNaN(num)) return "";
+  return num.toLocaleString("en-US");
 }
 
 function removeSeparator(v) {
-    return String(v).replace(/,/g, "");
+  return String(v).replace(/,/g, "");
 }
 
 function PriceField({ label, value, onChange }) {
-    const [display, setDisplay] = useState(formatWithSeparator(value || ""));
+  const [display, setDisplay] = useState(formatWithSeparator(value || ""));
 
-    const handleChange = (e) => {
-        const raw = removeSeparator(e.target.value);
-        if (!/^\d*$/.test(raw)) return; // فقط عدد
+  const handleChange = (e) => {
+    const raw = removeSeparator(e.target.value);
+    if (!/^\d*$/.test(raw)) return;
+    setDisplay(formatWithSeparator(raw));
+    onChange(Number(raw));
+  };
 
-        setDisplay(formatWithSeparator(raw));
-        onChange(Number(raw));
-    };
-
-    return (
-        <label className="block">
-            <div className="mb-2 text-[11px] font-bold text-zinc-400">{label}</div>
-            <input
-                value={display}
-                onChange={handleChange}
-                inputMode="numeric"
-                className="w-full rounded-2xl border border-white/10 bg-zinc-950/30 px-4 py-2.5 text-sm text-white placeholder:text-zinc-500 outline-none focus:border-emerald-400/40"
-                placeholder="مثال: 2,400,000"
-            />
-        </label>
-    );
+  return (
+    <div className="space-y-2">
+      <Label>{label}</Label>
+      <Input
+        value={display}
+        onChange={handleChange}
+        inputMode="numeric"
+        placeholder="مثال: 2,400,000"
+        className="tabular-nums"
+      />
+    </div>
+  );
 }
-
-
-
 
 export default function PlanForm({ mode = "create", initialValue, onSubmit, submitText }) {
-    const [value, setValue] = useState(initialValue);
+  const [value, setValue] = useState(initialValue);
 
-    const price = Number(value.price || 0);
-    const discountPrice = Number(value.discountPrice || 0);
-    const discountPercent = Number(value.discountPercent || 0);
-    const durationDays = Number(value.durationDays || 0);
+  const price = Number(value.price || 0);
+  const discountPrice = Number(value.discountPrice || 0);
+  const discountPercent = Number(value.discountPercent || 0);
 
+  const computed = useMemo(() => {
+    const finalPrice = discountPrice > 0 ? discountPrice : price;
+    const hasDiscount = discountPercent > 0 || discountPrice > 0;
+    return { finalPrice, hasDiscount };
+  }, [price, discountPrice, discountPercent]);
 
-    const computed = useMemo(() => {
-        const finalPrice = discountPrice > 0 ? discountPrice : price;
-        const hasDiscount = discountPercent > 0 || discountPrice > 0;
-        return { finalPrice, hasDiscount };
-    }, [price, discountPrice, discountPercent]);
+  const setField = (k, v) => setValue((p) => ({ ...p, [k]: v }));
 
-    const setField = (k, v) => setValue((p) => ({ ...p, [k]: v }));
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSubmit({
+      ...value,
+      price: Number(value.price || 0),
+      discountPrice: Number(value.discountPrice || 0),
+      discountPercent: Number(value.discountPercent || 0),
+      durationDays: Number(value.durationDays || 0),
+    });
+  };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-
-        const payload = {
-            ...value,
-            price: Number(value.price || 0),
-            discountPrice: Number(value.discountPrice || 0),
-            discountPercent: Number(value.discountPercent || 0),
-            durationDays: Number(value.durationDays || 0), // NEW
-        };
-
-
-        onSubmit(payload);
-    };
-
-    return (
-        <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Header card */}
-            <div className="rounded-[26px] border border-white/10 bg-white/5 p-5 md:p-6">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div>
-                        <div className="text-base font-extrabold text-white">اطلاعات پلن</div>
-                        <div className="mt-1 text-sm text-zinc-300">
-                            عنوان، توضیحات و اطلاعات قیمت‌گذاری
-                        </div>
-                    </div>
-
-                    <div className="flex flex-wrap gap-3">
-                        {/* Price box */}
-                        <div className="rounded-3xl border border-white/10 bg-zinc-950/30 p-4 text-[11px] text-zinc-300">
-                            <div className="flex items-center gap-2">
-                                <FiTag className="text-emerald-200" />
-                                قیمت نهایی:{" "}
-                                <span className="font-extrabold text-white">
-                                    {formatNumber(computed.finalPrice)}
-                                </span>
-                            </div>
-                            <div className="mt-2 text-zinc-400">
-                                {computed.hasDiscount ? "دارای تخفیف" : "بدون تخفیف"}
-                            </div>
-                        </div>
-
-                        {/* ✅ Plan type box */}
-                        <div className="rounded-3xl border border-white/10 bg-zinc-950/30 p-4 text-[11px] text-zinc-300">
-                            <div className="mb-2 text-zinc-400">نوع پلن</div>
-
-                            <div className="inline-flex overflow-hidden rounded-2xl border border-white/10 bg-white/5">
-                                <PlanTypeBtn
-                                    active={value.planType === "workout"}
-                                    onClick={() => setField("planType", "workout")}
-                                >
-                                    تمرین
-                                </PlanTypeBtn>
-
-                                <PlanTypeBtn
-                                    active={value.planType === "nutrition"}
-                                    onClick={() => setField("planType", "nutrition")}
-                                >
-                                    تغذیه
-                                </PlanTypeBtn>
-
-                                <PlanTypeBtn
-                                    active={value.planType === "both"}
-                                    onClick={() => setField("planType", "both")}
-                                >
-                                    هر دو
-                                </PlanTypeBtn>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-
-
-                {/* Fields */}
-                <div className="mt-5 grid gap-4 lg:grid-cols-3">
-                    <div className="lg:col-span-2 grid gap-3 md:grid-cols-2">
-                        <Field
-                            label="عنوان"
-                            value={value.title}
-                            onChange={(v) => setField("title", v)}
-                            placeholder="مثال: پلن حرفه‌ای"
-                            required
-                        />
-
-                        <Field
-                            label="اسم دوره"
-                            value={value.courseName}
-                            onChange={(v) => setField("courseName", v)}
-                            placeholder="مثال: دوره بدنسازی ۸ هفته‌ای"
-                        />
-
-
-                        <div className="md:col-span-2">
-                            <TextArea
-                                label="توضیحات"
-                                value={value.description}
-                                onChange={(v) => setField("description", v)}
-                                placeholder="توضیحات دوره را بنویسید..."
-                                rows={5}
-                            />
-                        </div>
-
-
-                        <div className="md:col-span-2">
-                            <TextArea
-                                label="ویژگی‌های دوره / متن توضیحی"
-                                value={value.featuresText}
-                                onChange={(v) => setField("featuresText", v)}
-                                placeholder={"هر خط یک ویژگی...\n• دسترسی کامل\n• پشتیبانی\n• ..."}
-                                rows={6}
-                            />
-                        </div>
-                    </div>
-
-
-                    <div className="rounded-3xl border border-white/10 bg-zinc-950/30 p-4 space-y-3">
-                        <div className="text-sm font-extrabold text-white">قیمت‌گذاری</div>
-
-
-                        <Field
-                            label="مدت زمان دوره (روز)"
-                            value={String(value.durationDays ?? "")}
-                            onChange={(v) => setField("durationDays", v.replace(/[^\d]/g, ""))}
-                            type="text"
-                            placeholder="مثال: 30"
-                        />
-
-                        <PriceField
-                            label="قیمت اصلی"
-                            value={value.price}
-                            onChange={(num) => setField("price", num)}
-                        />
-
-                        <PriceField
-                            label="قیمت با تخفیف"
-                            value={value.discountPrice}
-                            onChange={(num) => setField("discountPrice", num)}
-                        />
-
-
-
-
-                        <Field
-                            label="درصد تخفیف"
-                            icon={<FiPercent />}
-                            value={String(value.discountPercent ?? "")}
-                            onChange={(v) => setField("discountPercent", v)}
-                            type="number"
-                            placeholder="مثال: 20"
-                        />
-
-                        <label className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-zinc-200">
-                            <input
-                                type="checkbox"
-                                checked={Boolean(value.isPopular)}
-                                onChange={(e) => setField("isPopular", e.target.checked)}
-                                className="h-4 w-4"
-                            />
-                            <span className="font-bold">پلن محبوب (Popular)</span>
-                        </label>
-                    </div>
-                </div>
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4" dir="rtl">
+      <Card>
+        <CardHeader>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="text-start">
+              <CardTitle className="text-base">اطلاعات پلن</CardTitle>
+              <CardDescription>
+                عنوان، توضیحات و اطلاعات قیمت‌گذاری
+              </CardDescription>
             </div>
-
-            {/* Submit */}
-            <div className="flex items-center justify-end">
-                <button
-                    type="submit"
-                    className="inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-extrabold text-zinc-950 hover:bg-zinc-200"
-                >
-                    <FiSave />
-                    {submitText || (mode === "create" ? "ساخت پلن" : "ذخیره تغییرات")}
-                </button>
-            </div>
-        </form>
-    );
-}
-
-function Field({ label, value, onChange, placeholder, type = "text", required, icon }) {
-    return (
-        <label className="block">
-            <div className="mb-2 text-[11px] font-bold text-zinc-400">{label}</div>
-            <div className="relative">
-                {icon ? (
-                    <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500">
-                        {icon}
+            <div className="flex flex-wrap gap-3">
+              <Card size="sm">
+                <CardContent className="pt-4 text-xs">
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Tag className="size-3.5 text-primary" />
+                    قیمت نهایی:
+                    <span className="font-semibold tabular-nums text-foreground">
+                      {formatNumber(computed.finalPrice)}
                     </span>
-                ) : null}
-                <input
-                    value={value ?? ""}
-                    onChange={(e) => onChange(e.target.value)}
-                    placeholder={placeholder}
-                    type={type}
-                    required={required}
-                    className={cn(
-                        "w-full rounded-2xl border border-white/10 bg-zinc-950/30 px-4 py-2.5 text-sm text-white placeholder:text-zinc-500 outline-none focus:border-emerald-400/40",
-                        icon ? "pr-10" : ""
-                    )}
-                />
+                  </div>
+                  <Badge variant="outline" className="mt-2">
+                    {computed.hasDiscount ? "دارای تخفیف" : "بدون تخفیف"}
+                  </Badge>
+                </CardContent>
+              </Card>
+              <Card size="sm">
+                <CardContent className="space-y-2 pt-4">
+                  <Label className="text-xs text-muted-foreground">نوع پلن</Label>
+                  <ToggleGroup
+                    type="single"
+                    value={value.planType}
+                    onValueChange={(v) => v && setField("planType", v)}
+                    variant="outline"
+                    size="sm"
+                    className="flex flex-wrap"
+                  >
+                    <ToggleGroupItem value="workout">تمرین</ToggleGroupItem>
+                    <ToggleGroupItem value="nutrition">تغذیه</ToggleGroupItem>
+                    <ToggleGroupItem value="both">هر دو</ToggleGroupItem>
+                  </ToggleGroup>
+                </CardContent>
+              </Card>
             </div>
-        </label>
-    );
+          </div>
+        </CardHeader>
+
+        <CardContent>
+          <div className="grid gap-4 lg:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2 lg:col-span-2">
+              <FormField
+                label="عنوان"
+                value={value.title}
+                onChange={(v) => setField("title", v)}
+                placeholder="مثال: پلن حرفه‌ای"
+                required
+              />
+              <FormField
+                label="اسم دوره"
+                value={value.courseName}
+                onChange={(v) => setField("courseName", v)}
+                placeholder="مثال: دوره بدنسازی ۸ هفته‌ای"
+              />
+              <div className="md:col-span-2">
+                <TextFormField
+                  label="توضیحات"
+                  value={value.description}
+                  onChange={(v) => setField("description", v)}
+                  placeholder="توضیحات دوره را بنویسید..."
+                  rows={5}
+                />
+              </div>
+              <div className="md:col-span-2">
+                <TextFormField
+                  label="ویژگی‌های دوره / متن توضیحی"
+                  value={value.featuresText}
+                  onChange={(v) => setField("featuresText", v)}
+                  placeholder={"هر خط یک ویژگی...\n• دسترسی کامل\n• پشتیبانی"}
+                  rows={6}
+                />
+              </div>
+            </div>
+
+            <Card size="sm" className="h-fit">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm">قیمت‌گذاری</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <FormField
+                  label="مدت زمان دوره (روز)"
+                  value={String(value.durationDays ?? "")}
+                  onChange={(v) => setField("durationDays", v.replace(/[^\d]/g, ""))}
+                  placeholder="مثال: 30"
+                />
+                <PriceField
+                  label="قیمت اصلی"
+                  value={value.price}
+                  onChange={(num) => setField("price", num)}
+                />
+                <PriceField
+                  label="قیمت با تخفیف"
+                  value={value.discountPrice}
+                  onChange={(num) => setField("discountPrice", num)}
+                />
+                <div className="space-y-2">
+                  <Label>درصد تخفیف</Label>
+                  <div className="relative">
+                    <Input
+                      value={String(value.discountPercent ?? "")}
+                      onChange={(e) => setField("discountPercent", e.target.value)}
+                      type="number"
+                      placeholder="مثال: 20"
+                      className="pe-9 tabular-nums"
+                    />
+                    <Percent className="pointer-events-none absolute end-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 rounded-lg border p-3">
+                  <Checkbox
+                    id="plan-popular"
+                    checked={Boolean(value.isPopular)}
+                    onCheckedChange={(checked) => setField("isPopular", !!checked)}
+                  />
+                  <Label htmlFor="plan-popular" className="font-medium">
+                    پلن محبوب (Popular)
+                  </Label>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="flex justify-end">
+        <Button type="submit">
+          <Save data-icon="inline-start" />
+          {submitText || (mode === "create" ? "ساخت پلن" : "ذخیره تغییرات")}
+        </Button>
+      </div>
+    </form>
+  );
 }
 
-function TextArea({ label, value, onChange, placeholder, rows = 5 }) {
-    return (
-        <label className="block">
-            <div className="mb-2 text-[11px] font-bold text-zinc-400">{label}</div>
-            <textarea
-                value={value ?? ""}
-                onChange={(e) => onChange(e.target.value)}
-                placeholder={placeholder}
-                rows={rows}
-                className="w-full resize-none rounded-2xl border border-white/10 bg-zinc-950/30 px-4 py-3 text-sm text-white placeholder:text-zinc-500 outline-none focus:border-emerald-400/40"
-            />
-        </label>
-    );
+function FormField({ label, value, onChange, placeholder, required }) {
+  return (
+    <div className="space-y-2">
+      <Label>{label}</Label>
+      <Input
+        value={value ?? ""}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        required={required}
+      />
+    </div>
+  );
 }
 
-function PlanTypeBtn({ active, onClick, children }) {
-    return (
-        <button
-            type="button"
-            onClick={onClick}
-            className={[
-                "px-3 py-2 text-xs font-extrabold transition",
-                active ? "bg-white text-zinc-950" : "text-zinc-200 hover:bg-white/10",
-            ].join(" ")}
-        >
-            {children}
-        </button>
-    );
+function TextFormField({ label, value, onChange, placeholder, rows = 5 }) {
+  return (
+    <div className="space-y-2">
+      <Label>{label}</Label>
+      <Textarea
+        value={value ?? ""}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        rows={rows}
+      />
+    </div>
+  );
 }

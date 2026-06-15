@@ -2,11 +2,18 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { FiSearch, FiClipboard, FiPlus } from "react-icons/fi";
+import { ClipboardList, Plus, Search } from "lucide-react";
 import { api } from "@/lib/axios/client";
 import PlanRow from "@/app/(panel)/admin/plans/_components/PlanRow";
 import FilterChip from "@/app/(panel)/admin/plans/_components/FilterChip";
 import Pagination from "@/app/(panel)/admin/plans/_components/Pagination";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const PAGE_SIZE = 8;
 
 export default function CoachPlansClient() {
   const [items, setItems] = useState([]);
@@ -15,7 +22,6 @@ export default function CoachPlansClient() {
   const [query, setQuery] = useState("");
   const [tag, setTag] = useState("all");
   const [page, setPage] = useState(1);
-  const pageSize = 8;
 
   useEffect(() => {
     let cancelled = false;
@@ -23,7 +29,7 @@ export default function CoachPlansClient() {
       setLoading(true);
       try {
         const res = await api.get("/coach/plans", {
-          params: { page, pageSize, query, tag },
+          params: { page, pageSize: PAGE_SIZE, query, tag },
         });
         if (cancelled) return;
         setItems(res.data?.items || []);
@@ -41,63 +47,87 @@ export default function CoachPlansClient() {
     return () => {
       cancelled = true;
     };
-  }, [page, pageSize, query, tag]);
+  }, [page, query, tag]);
 
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4 md:gap-6" dir="rtl">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <div className="text-lg font-extrabold text-white">پلن‌های من</div>
-          <div className="mt-1 text-sm text-zinc-300">
+        <div className="text-start">
+          <h2 className="text-lg font-semibold tracking-tight">پلن‌های من</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
             پلن‌های فروش خود را مدیریت کنید
-          </div>
+          </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <div className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-zinc-950/30 px-4 py-3 text-sm text-zinc-200">
-            <FiClipboard className="text-emerald-200" />
-            تعداد: <span className="font-bold text-white">{total}</span>
+          <Badge variant="outline" className="gap-1.5 px-3 py-1.5 text-sm">
+            <ClipboardList className="size-3.5 text-primary" />
+            تعداد:
+            <span className="font-semibold tabular-nums text-foreground">
+              {total.toLocaleString("fa-IR")}
+            </span>
+          </Badge>
+          <Button asChild>
+            <Link href="/coach/plans/new">
+              <Plus data-icon="inline-start" />
+              ساخت پلن
+            </Link>
+          </Button>
+        </div>
+      </div>
+
+      <Card>
+        <CardContent className="flex flex-col gap-3 pt-6 md:flex-row md:items-center md:justify-between">
+          <div className="relative w-full md:max-w-md">
+            <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setPage(1);
+              }}
+              placeholder="جستجو..."
+              className="ps-9"
+            />
           </div>
-          <Link
-            href="/coach/plans/new"
-            className="inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-extrabold text-zinc-950 hover:bg-zinc-200"
-          >
-            <FiPlus />
-            ساخت پلن
-          </Link>
-        </div>
-      </div>
+          <div className="flex flex-wrap gap-2">
+            <FilterChip active={tag === "all"} onClick={() => { setTag("all"); setPage(1); }}>
+              همه
+            </FilterChip>
+            <FilterChip
+              active={tag === "discounted"}
+              onClick={() => { setTag("discounted"); setPage(1); }}
+            >
+              تخفیف‌دار
+            </FilterChip>
+            <FilterChip
+              active={tag === "popular"}
+              onClick={() => { setTag("popular"); setPage(1); }}
+            >
+              محبوب
+            </FilterChip>
+          </div>
+        </CardContent>
+      </Card>
 
-      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-        <div className="relative w-full md:max-w-md">
-          <FiSearch className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400" />
-          <input
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              setPage(1);
-            }}
-            placeholder="جستجو..."
-            className="w-full rounded-2xl border border-white/10 bg-white/5 py-2.5 pl-3 pr-9 text-sm text-white placeholder:text-zinc-500 outline-none focus:border-emerald-400/40"
-          />
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <FilterChip active={tag === "all"} onClick={() => { setTag("all"); setPage(1); }}>همه</FilterChip>
-          <FilterChip active={tag === "discounted"} onClick={() => { setTag("discounted"); setPage(1); }}>تخفیف‌دار</FilterChip>
-          <FilterChip active={tag === "popular"} onClick={() => { setTag("popular"); setPage(1); }}>محبوب</FilterChip>
-        </div>
-      </div>
-
-      <div className="rounded-[26px] border border-white/10 bg-white/5">
+      <Card>
         {loading ? (
-          <div className="p-6 text-sm text-zinc-400">در حال بارگذاری...</div>
+          <CardContent className="space-y-3 py-6">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-16 w-full rounded-lg" />
+            ))}
+          </CardContent>
         ) : items.length === 0 ? (
-          <div className="p-6 text-sm text-zinc-400">پلنی یافت نشد.</div>
+          <CardContent className="py-10 text-center text-sm text-muted-foreground">
+            پلنی یافت نشد.
+          </CardContent>
         ) : (
-          items.map((plan) => <PlanRow key={plan.id} plan={plan} basePath="/coach/plans" />)
+          items.map((plan) => (
+            <PlanRow key={plan.id} plan={plan} basePath="/coach/plans" />
+          ))
         )}
-      </div>
+      </Card>
 
       <Pagination page={page} totalPages={totalPages} onChange={setPage} />
     </div>

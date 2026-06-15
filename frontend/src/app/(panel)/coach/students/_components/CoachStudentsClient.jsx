@@ -2,11 +2,30 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { FiUserCheck } from "react-icons/fi";
+import { ChevronLeft, UserCheck } from "lucide-react";
 import { api } from "@/lib/axios/client";
+import PanelPagination from "@/app/(panel)/_shared/Pagination";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { cn } from "@/lib/utils";
 
-function cn(...xs) {
-  return xs.filter(Boolean).join(" ");
+const PAGE_SIZE = 20;
+
+function StudentRowSkeleton() {
+  return (
+    <Card size="sm">
+      <CardContent className="flex items-center justify-between gap-3 pt-4">
+        <div className="flex-1 space-y-2">
+          <Skeleton className="h-4 w-40" />
+          <Skeleton className="h-3 w-28" />
+        </div>
+        <Skeleton className="h-5 w-16 rounded-full" />
+      </CardContent>
+    </Card>
+  );
 }
 
 export default function CoachStudentsClient() {
@@ -16,14 +35,13 @@ export default function CoachStudentsClient() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
-  const pageSize = 20;
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
       setLoading(true);
       try {
-        const params = { page, pageSize, query: q };
+        const params = { page, pageSize: PAGE_SIZE, query: q };
         if (filter !== "all") params.status = filter;
         const res = await api.get("/coach/students", { params });
         if (cancelled) return;
@@ -44,117 +62,109 @@ export default function CoachStudentsClient() {
     };
   }, [filter, q, page]);
 
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4 md:gap-6" dir="rtl">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <div className="text-lg font-extrabold text-white">دانشجویان من</div>
-          <div className="mt-1 text-sm text-zinc-300">
+        <div className="text-start">
+          <h2 className="text-lg font-semibold tracking-tight">دانشجویان من</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
             دانشجویانی که از شما پلن خریده‌اند
-          </div>
+          </p>
         </div>
-        <div className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-zinc-950/30 px-4 py-3 text-sm text-zinc-200">
-          <FiUserCheck className="text-emerald-200" />
-          تعداد: <span className="font-bold text-white">{total}</span>
-        </div>
+        <Badge variant="outline" className="gap-1.5 px-3 py-1.5 text-sm">
+          <UserCheck className="size-3.5 text-primary" />
+          تعداد:
+          <span className="font-semibold tabular-nums text-foreground">
+            {total.toLocaleString("fa-IR")}
+          </span>
+        </Badge>
       </div>
 
-      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-        <div className="flex flex-wrap gap-2 rounded-3xl border border-white/10 bg-white/5 p-2">
-          <Tab active={filter === "all"} onClick={() => { setFilter("all"); setPage(1); }}>
-            همه
-          </Tab>
-          <Tab active={filter === "active"} onClick={() => { setFilter("active"); setPage(1); }}>
-            فعال
-          </Tab>
-          <Tab active={filter === "pending"} onClick={() => { setFilter("pending"); setPage(1); }}>
-            در انتظار
-          </Tab>
-        </div>
-        <input
-          value={q}
-          onChange={(e) => { setQ(e.target.value); setPage(1); }}
-          placeholder="جستجو (نام/موبایل)..."
-          className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-zinc-500 outline-none focus:border-emerald-400/40 md:max-w-md"
-        />
-      </div>
+      <Card>
+        <CardContent className="flex flex-col gap-3 pt-6 md:flex-row md:items-center md:justify-between">
+          <ToggleGroup
+            type="single"
+            value={filter}
+            onValueChange={(next) => {
+              if (next) {
+                setFilter(next);
+                setPage(1);
+              }
+            }}
+            variant="outline"
+            size="sm"
+            spacing={2}
+          >
+            <ToggleGroupItem value="all">همه</ToggleGroupItem>
+            <ToggleGroupItem value="active">فعال</ToggleGroupItem>
+            <ToggleGroupItem value="pending">در انتظار</ToggleGroupItem>
+          </ToggleGroup>
+          <Input
+            value={q}
+            onChange={(e) => {
+              setQ(e.target.value);
+              setPage(1);
+            }}
+            placeholder="جستجو (نام/موبایل)..."
+            className="md:max-w-md"
+          />
+        </CardContent>
+      </Card>
 
       <div className="space-y-2">
         {loading ? (
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-5 text-sm text-zinc-400">
-            در حال بارگذاری...
-          </div>
+          Array.from({ length: 5 }).map((_, i) => <StudentRowSkeleton key={i} />)
         ) : items.length === 0 ? (
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-5 text-sm text-zinc-300">
-            موردی یافت نشد.
-          </div>
+          <Card>
+            <CardContent className="py-10 text-center text-sm text-muted-foreground">
+              موردی یافت نشد.
+            </CardContent>
+          </Card>
         ) : (
-          items.map((s) => (
-            <Link
-              key={s.id}
-              href={`/coach/students/${s.id}`}
-              className="flex items-center justify-between gap-3 rounded-3xl border border-white/10 bg-white/5 p-4 hover:bg-white/10"
-            >
-              <div className="min-w-0">
-                <div className="truncate text-sm font-extrabold text-white">{s.fullName}</div>
-                <div className="mt-1 text-[11px] text-zinc-400">{s.phone}</div>
-                <div className="mt-2 text-[11px] text-zinc-300">
-                  پلن: <span className="font-bold text-white">{s.planTitle || "—"}</span>
-                </div>
-              </div>
-              <div className="flex flex-col items-end gap-2">
-                <span
-                  className={cn(
-                    "rounded-full border px-3 py-1 text-[11px] font-bold",
-                    s.status === "active"
-                      ? "border-emerald-400/25 bg-emerald-400/10 text-emerald-200"
-                      : "border-white/10 bg-zinc-950/30 text-zinc-200"
-                  )}
-                >
-                  {s.status === "active" ? "فعال" : "در انتظار"}
-                </span>
-                <span className="rounded-full border border-white/10 bg-zinc-950/30 px-3 py-1 text-[11px] text-zinc-200">
-                  {s.planType === "both" ? "تمرین + تغذیه" : s.planType === "workout" ? "تمرین" : "تغذیه"}
-                </span>
-              </div>
+          items.map((student) => (
+            <Link key={student.id} href={`/coach/students/${student.id}`} className="block">
+              <Card className="transition-colors hover:bg-muted/40">
+                <CardContent className="flex items-center justify-between gap-3 pt-4">
+                  <div className="min-w-0 text-start">
+                    <p className="truncate text-sm font-semibold">{student.fullName}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{student.phone}</p>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      پلن:{" "}
+                      <span className="font-medium text-foreground">
+                        {student.planTitle || "—"}
+                      </span>
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 flex-col items-end gap-2">
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        student.status === "active"
+                          ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                          : undefined
+                      )}
+                    >
+                      {student.status === "active" ? "فعال" : "در انتظار"}
+                    </Badge>
+                    <Badge variant="secondary">
+                      {student.planType === "both"
+                        ? "تمرین + تغذیه"
+                        : student.planType === "workout"
+                          ? "تمرین"
+                          : "تغذیه"}
+                    </Badge>
+                  </div>
+                  <ChevronLeft className="size-4 shrink-0 text-muted-foreground" />
+                </CardContent>
+              </Card>
             </Link>
           ))
         )}
       </div>
 
-      {total > pageSize ? (
-        <div className="flex justify-center gap-2">
-          <button
-            disabled={page <= 1}
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-zinc-200 disabled:opacity-40"
-          >
-            قبلی
-          </button>
-          <span className="px-3 py-2 text-sm text-zinc-400">صفحه {page}</span>
-          <button
-            disabled={page * pageSize >= total}
-            onClick={() => setPage((p) => p + 1)}
-            className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-zinc-200 disabled:opacity-40"
-          >
-            بعدی
-          </button>
-        </div>
-      ) : null}
+      <PanelPagination page={page} totalPages={totalPages} onPage={setPage} />
     </div>
-  );
-}
-
-function Tab({ active, children, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        "rounded-2xl px-4 py-2 text-sm font-extrabold transition",
-        active ? "bg-white text-zinc-950" : "border border-white/10 bg-zinc-950/30 text-zinc-200 hover:bg-white/10"
-      )}
-    >
-      {children}
-    </button>
   );
 }

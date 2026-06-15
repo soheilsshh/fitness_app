@@ -1,11 +1,39 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FiShoppingBag } from "react-icons/fi";
+import { ShoppingBag } from "lucide-react";
 import { api } from "@/lib/axios/client";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import OrdersFilterChips from "./OrdersFilterChips";
 import Pagination from "../../_components/Pagination";
 import OrderCardLink from "./OrderCardLink";
+
+const PAGE_SIZE = 6;
+
+function OrderCardSkeleton() {
+  return (
+    <Card className="h-full bg-gradient-to-t from-primary/5 to-card shadow-xs dark:bg-card">
+      <div className="flex flex-col gap-4 px-(--card-spacing) py-(--card-spacing)">
+        <div className="flex flex-wrap gap-2">
+          <Skeleton className="h-5 w-24 rounded-full" />
+          <Skeleton className="h-5 w-20 rounded-full" />
+        </div>
+        <Skeleton className="h-4 w-2/3" />
+        <Skeleton className="h-5 w-1/2" />
+        <Skeleton className="h-3 w-full" />
+        <div className="rounded-lg border border-border bg-muted/30 p-4">
+          <Skeleton className="h-3 w-12" />
+          <div className="mt-2 flex flex-wrap gap-2">
+            <Skeleton className="h-5 w-24 rounded-full" />
+            <Skeleton className="h-5 w-20 rounded-full" />
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+}
 
 export default function OrdersListClient() {
   const [filter, setFilter] = useState("all");
@@ -13,7 +41,6 @@ export default function OrdersListClient() {
   const [items, setItems] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
-  const pageSize = 6;
 
   useEffect(() => {
     let cancelled = false;
@@ -21,7 +48,7 @@ export default function OrdersListClient() {
       setLoading(true);
       try {
         const res = await api.get("/me/orders", {
-          params: { page, pageSize, status: filter },
+          params: { page, pageSize: PAGE_SIZE, status: filter },
         });
         if (cancelled) return;
         setItems(res.data?.items || []);
@@ -36,10 +63,12 @@ export default function OrdersListClient() {
       }
     }
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [filter, page]);
 
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   const onChangeFilter = (next) => {
     setFilter(next);
@@ -47,37 +76,47 @@ export default function OrdersListClient() {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="flex flex-col gap-4 md:gap-6" dir="rtl">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <div className="text-lg font-extrabold text-white">سفارش‌های من</div>
-          <div className="mt-1 text-sm text-zinc-300">
+        <div className="text-start">
+          <h2 className="text-lg font-semibold tracking-tight">سفارش‌های من</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
             وضعیت پرداخت‌ها و جزئیات هر سفارش را اینجا ببینید.
-          </div>
+          </p>
         </div>
-        <div className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-zinc-200">
-          <FiShoppingBag className="text-emerald-300" />
-          تعداد کل: <span className="text-white font-bold">{total}</span>
-        </div>
+
+        <Badge variant="outline" className="gap-1.5 px-3 py-1.5 text-sm">
+          <ShoppingBag className="size-3.5 text-primary" />
+          تعداد کل:
+          <span className="font-semibold tabular-nums text-foreground">
+            {total.toLocaleString("fa-IR")}
+          </span>
+        </Badge>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-white/10 bg-white/5 p-4">
-        <OrdersFilterChips value={filter} onChange={onChangeFilter} />
-      </div>
+      <Card>
+        <CardContent className="flex flex-wrap items-center justify-between gap-3 pt-6">
+          <OrdersFilterChips value={filter} onChange={onChangeFilter} />
+        </CardContent>
+      </Card>
 
       {loading ? (
-        <div className="rounded-[26px] border border-white/10 bg-white/5 p-6 text-sm text-zinc-400">
-          در حال بارگذاری...
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {Array.from({ length: PAGE_SIZE }).map((_, index) => (
+            <OrderCardSkeleton key={index} />
+          ))}
         </div>
       ) : items.length === 0 ? (
-        <div className="rounded-[26px] border border-white/10 bg-white/5 p-6 text-sm text-zinc-300">
-          سفارشی برای نمایش وجود ندارد.
-        </div>
+        <Card>
+          <CardContent className="py-10 text-center text-sm text-muted-foreground">
+            سفارشی برای نمایش وجود ندارد.
+          </CardContent>
+        </Card>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {items.map((o) => (
-            <div key={o.id} className="h-full">
-              <OrderCardLink order={o} />
+          {items.map((order) => (
+            <div key={order.id} className="h-full">
+              <OrderCardLink order={order} />
             </div>
           ))}
         </div>

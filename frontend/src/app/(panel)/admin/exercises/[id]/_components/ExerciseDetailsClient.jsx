@@ -10,6 +10,15 @@ import ExerciseForm, {
   exerciseToForm,
   formToPayload,
 } from "../../_components/ExerciseForm";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ExerciseDetailsClient({ id }) {
   const router = useRouter();
@@ -106,45 +115,51 @@ export default function ExerciseDetailsClient({ id }) {
 
   if (loading) {
     return (
-      <div className="rounded-[26px] border border-white/10 bg-white/5 p-6 text-sm text-zinc-400">
-        در حال بارگذاری...
+      <div dir="rtl" className="space-y-3">
+        <Skeleton className="h-10 w-56" />
+        <Skeleton className="h-72 w-full" />
       </div>
     );
   }
 
   if (!form) {
     return (
-      <div className="rounded-[26px] border border-white/10 bg-white/5 p-6 text-sm text-zinc-300">
+      <Card dir="rtl">
+        <CardContent className="pt-4 text-sm text-muted-foreground">
         تمرین پیدا نشد.
-      </div>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div dir="rtl" className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <Link
-            href="/admin/exercises"
-            className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-bold text-zinc-100 hover:bg-white/10"
-          >
-            <FiChevronLeft />
-            بازگشت
-          </Link>
-          <div className="text-lg font-extrabold text-white">{form.name}</div>
+          <Button asChild variant="outline">
+            <Link href="/admin/exercises">
+              <FiChevronLeft />
+              بازگشت
+            </Link>
+          </Button>
         </div>
-        <button
+        <Button
           type="button"
+          variant="destructive"
           disabled={deleting}
           onClick={onDelete}
-          className="inline-flex items-center gap-2 rounded-2xl border border-rose-400/25 bg-rose-400/10 px-4 py-2 text-sm font-bold text-rose-200 hover:bg-rose-400/15 disabled:opacity-50"
         >
           <FiTrash2 />
           {deleting ? "در حال حذف..." : "حذف"}
-        </button>
+        </Button>
       </div>
 
-      <div className="rounded-[26px] border border-white/10 bg-white/5 p-5 md:p-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>{form.name}</CardTitle>
+          <CardDescription>ویرایش جزئیات تمرین</CardDescription>
+        </CardHeader>
+        <CardContent>
         <ExerciseForm
           form={form}
           setForm={setForm}
@@ -153,7 +168,8 @@ export default function ExerciseDetailsClient({ id }) {
           submitLabel="ذخیره تغییرات"
           isEdit
         />
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

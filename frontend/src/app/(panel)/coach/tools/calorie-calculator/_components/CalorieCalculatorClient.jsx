@@ -3,29 +3,32 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FiCopy, FiSend } from "react-icons/fi";
+import { Copy, Send } from "lucide-react";
 import { api } from "@/lib/axios/client";
 import {
   ACTIVITY_LEVELS,
   CALORIE_GOALS,
   calculateCaloriePlan,
 } from "@/lib/tools/calorieCalculator";
-
-function cn(...xs) {
-  return xs.filter(Boolean).join(" ");
-}
-
-function Field({ label, children }) {
-  return (
-    <label className="block space-y-2">
-      <span className="text-sm font-bold text-zinc-300">{label}</span>
-      {children}
-    </label>
-  );
-}
-
-const inputClass =
-  "w-full rounded-2xl border border-white/10 bg-zinc-950/30 px-4 py-2.5 text-sm text-white outline-none focus:border-emerald-400/40";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 export default function CalorieCalculatorClient() {
   const router = useRouter();
@@ -90,7 +93,7 @@ export default function CalorieCalculatorClient() {
   const handleApplyToNutrition = () => {
     if (!selectedStudentId || !result?.recommended) return;
     router.push(
-      `/coach/students/${selectedStudentId}/nutrition?calories=${result.recommended}`,
+      `/coach/students/${selectedStudentId}/nutrition?calories=${result.recommended}`
     );
   };
 
@@ -98,198 +101,217 @@ export default function CalorieCalculatorClient() {
   const selectedGoal = CALORIE_GOALS.find((g) => g.id === goal);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-extrabold text-white">محاسبه‌گر کالری</h1>
-        <p className="mt-1 text-sm text-zinc-400">
+    <div className="flex flex-col gap-4 md:gap-6" dir="rtl">
+      <div className="text-start">
+        <h1 className="text-xl font-semibold tracking-tight">محاسبه‌گر کالری</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
           تخمین BMR و TDEE با فرمول Mifflin–St Jeor برای برنامه‌ریزی تغذیه شاگرد
         </p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <div className="space-y-4 rounded-[26px] border border-white/10 bg-white/5 p-5">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="سن (سال)">
-              <input
-                type="number"
-                min={10}
-                max={100}
-                value={age}
-                onChange={(e) => setAge(e.target.value)}
-                placeholder="مثلاً ۲۸"
-                className={inputClass}
-              />
-            </Field>
-
-            <Field label="جنسیت">
-              <select
-                value={gender}
-                onChange={(e) => setGender(e.target.value)}
-                className={inputClass}
-              >
-                <option value="male">مرد</option>
-                <option value="female">زن</option>
-              </select>
-            </Field>
-
-            <Field label="قد (سانتی‌متر)">
-              <input
-                type="number"
-                min={100}
-                max={250}
-                value={heightCm}
-                onChange={(e) => setHeightCm(e.target.value)}
-                placeholder="مثلاً ۱۷۵"
-                className={inputClass}
-              />
-            </Field>
-
-            <Field label="وزن (کیلوگرم)">
-              <input
-                type="number"
-                min={30}
-                max={300}
-                value={weightKg}
-                onChange={(e) => setWeightKg(e.target.value)}
-                placeholder="مثلاً ۷۵"
-                className={inputClass}
-              />
-            </Field>
-          </div>
-
-          <Field label="سطح فعالیت">
-            <select
-              value={activityLevel}
-              onChange={(e) => setActivityLevel(e.target.value)}
-              className={inputClass}
-            >
-              {ACTIVITY_LEVELS.map((level) => (
-                <option key={level.id} value={level.id}>
-                  {level.label}
-                </option>
-              ))}
-            </select>
-            {selectedActivity ? (
-              <p className="text-[11px] text-zinc-500">{selectedActivity.hint}</p>
-            ) : null}
-          </Field>
-
-          <Field label="هدف">
-            <div className="flex flex-wrap gap-2">
-              {CALORIE_GOALS.map((g) => (
-                <button
-                  key={g.id}
-                  type="button"
-                  onClick={() => setGoal(g.id)}
-                  className={cn(
-                    "rounded-2xl border px-4 py-2 text-sm font-bold transition",
-                    goal === g.id
-                      ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-100"
-                      : "border-white/10 bg-zinc-950/30 text-zinc-300 hover:bg-white/5",
-                  )}
-                >
-                  {g.label}
-                </button>
-              ))}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">ورودی‌ها</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <FormField label="سن (سال)">
+                <Input
+                  type="number"
+                  min={10}
+                  max={100}
+                  value={age}
+                  onChange={(e) => setAge(e.target.value)}
+                  placeholder="مثلاً ۲۸"
+                  className="tabular-nums"
+                />
+              </FormField>
+              <FormField label="جنسیت">
+                <Select value={gender} onValueChange={setGender}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="male">مرد</SelectItem>
+                    <SelectItem value="female">زن</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormField>
+              <FormField label="قد (سانتی‌متر)">
+                <Input
+                  type="number"
+                  min={100}
+                  max={250}
+                  value={heightCm}
+                  onChange={(e) => setHeightCm(e.target.value)}
+                  placeholder="مثلاً ۱۷۵"
+                  className="tabular-nums"
+                />
+              </FormField>
+              <FormField label="وزن (کیلوگرم)">
+                <Input
+                  type="number"
+                  min={30}
+                  max={300}
+                  value={weightKg}
+                  onChange={(e) => setWeightKg(e.target.value)}
+                  placeholder="مثلاً ۷۵"
+                  className="tabular-nums"
+                />
+              </FormField>
             </div>
-            {selectedGoal && selectedGoal.adjustment !== 0 ? (
-              <p className="text-[11px] text-zinc-500">
-                {selectedGoal.adjustment > 0
-                  ? `+${selectedGoal.adjustment} kcal نسبت به TDEE`
-                  : `${selectedGoal.adjustment} kcal نسبت به TDEE`}
-              </p>
-            ) : null}
-          </Field>
-        </div>
 
-        <div className="space-y-4">
-          <div className="rounded-[26px] border border-white/10 bg-linear-to-br from-emerald-400/10 to-cyan-400/5 p-5">
-            <div className="text-sm font-bold text-zinc-400">نتیجه محاسبه</div>
+            <FormField label="سطح فعالیت">
+              <Select value={activityLevel} onValueChange={setActivityLevel}>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {ACTIVITY_LEVELS.map((level) => (
+                    <SelectItem key={level.id} value={level.id}>
+                      {level.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {selectedActivity ? (
+                <p className="text-xs text-muted-foreground">{selectedActivity.hint}</p>
+              ) : null}
+            </FormField>
 
-            {result ? (
-              <div className="mt-4 space-y-4">
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-2xl border border-white/10 bg-zinc-950/40 p-4">
-                    <div className="text-[11px] text-zinc-500">BMR (متابولیسم پایه)</div>
-                    <div className="mt-1 text-2xl font-extrabold text-white">
-                      {result.bmr?.toLocaleString("fa-IR")}
-                      <span className="mr-1 text-sm font-normal text-zinc-400">kcal</span>
-                    </div>
-                  </div>
-                  <div className="rounded-2xl border border-white/10 bg-zinc-950/40 p-4">
-                    <div className="text-[11px] text-zinc-500">TDEE (مصرف روزانه)</div>
-                    <div className="mt-1 text-2xl font-extrabold text-white">
-                      {result.tdee?.toLocaleString("fa-IR")}
-                      <span className="mr-1 text-sm font-normal text-zinc-400">kcal</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="rounded-2xl border border-emerald-400/30 bg-emerald-400/10 p-5">
-                  <div className="text-sm font-bold text-emerald-200/80">کالری پیشنهادی روزانه</div>
-                  <div className="mt-2 text-4xl font-extrabold text-emerald-100">
-                    {result.recommended.toLocaleString("fa-IR")}
-                    <span className="mr-2 text-lg font-normal text-emerald-200/70">kcal</span>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={handleCopy}
-                    className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-bold text-zinc-100 hover:bg-white/10"
-                  >
-                    <FiCopy />
-                    {copyDone ? "کپی شد" : "کپی نتیجه"}
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <p className="mt-4 text-sm text-zinc-500">
-                سن، قد و وزن را وارد کنید تا نتیجه نمایش داده شود.
-              </p>
-            )}
-          </div>
-
-          {result?.recommended ? (
-            <div className="rounded-[26px] border border-white/10 bg-white/5 p-5 space-y-3">
-              <div className="text-sm font-extrabold text-white">اعمال به برنامه غذایی شاگرد</div>
-              <p className="text-[11px] text-zinc-500">
-                کالری پیشنهادی در ویرایشگر برنامه غذایی شاگرد پیش‌پر می‌شود.
-              </p>
-              <select
-                value={selectedStudentId}
-                onChange={(e) => setSelectedStudentId(e.target.value)}
-                className={inputClass}
+            <FormField label="هدف">
+              <ToggleGroup
+                type="single"
+                value={goal}
+                onValueChange={(v) => v && setGoal(v)}
+                variant="outline"
+                size="sm"
+                className="flex flex-wrap justify-start gap-2"
               >
-                <option value="">انتخاب شاگرد...</option>
-                {students.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.fullName || s.name || `شاگرد #${s.id}`}
-                  </option>
+                {CALORIE_GOALS.map((g) => (
+                  <ToggleGroupItem key={g.id} value={g.id}>
+                    {g.label}
+                  </ToggleGroupItem>
                 ))}
-              </select>
-              <button
-                type="button"
-                onClick={handleApplyToNutrition}
-                disabled={!selectedStudentId}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-4 py-2.5 text-sm font-extrabold text-zinc-950 hover:bg-zinc-200 disabled:opacity-40"
-              >
-                <FiSend />
-                باز کردن ویرایشگر غذا با این کالری
-              </button>
-              {students.length === 0 ? (
-                <p className="text-[11px] text-zinc-500">
-                  شاگرد فعالی یافت نشد.{" "}
-                  <Link href="/coach/students" className="text-emerald-300 hover:underline">
-                    مشاهده دانشجویان
-                  </Link>
+              </ToggleGroup>
+              {selectedGoal && selectedGoal.adjustment !== 0 ? (
+                <p className="text-xs text-muted-foreground">
+                  {selectedGoal.adjustment > 0
+                    ? `+${selectedGoal.adjustment} kcal نسبت به TDEE`
+                    : `${selectedGoal.adjustment} kcal نسبت به TDEE`}
                 </p>
               ) : null}
-            </div>
+            </FormField>
+          </CardContent>
+        </Card>
+
+        <div className="space-y-4">
+          <Card className="bg-gradient-to-t from-primary/5 to-card dark:bg-card">
+            <CardHeader>
+              <CardTitle className="text-base">نتیجه محاسبه</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {result ? (
+                <div className="space-y-4">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <StatCard
+                      label="BMR (متابولیسم پایه)"
+                      value={result.bmr}
+                      unit="kcal"
+                    />
+                    <StatCard label="TDEE (مصرف روزانه)" value={result.tdee} unit="kcal" />
+                  </div>
+                  <Card size="sm" className="border-emerald-500/30 bg-emerald-500/10">
+                    <CardContent className="pt-4">
+                      <p className="text-sm font-medium text-emerald-800 dark:text-emerald-200">
+                        کالری پیشنهادی روزانه
+                      </p>
+                      <p className="mt-2 text-3xl font-semibold tabular-nums text-emerald-900 dark:text-emerald-100">
+                        {result.recommended.toLocaleString("fa-IR")}
+                        <span className="ms-2 text-base font-normal">kcal</span>
+                      </p>
+                    </CardContent>
+                  </Card>
+                  <Button type="button" variant="outline" size="sm" onClick={handleCopy}>
+                    <Copy data-icon="inline-start" />
+                    {copyDone ? "کپی شد" : "کپی نتیجه"}
+                  </Button>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  سن، قد و وزن را وارد کنید تا نتیجه نمایش داده شود.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
+          {result?.recommended ? (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">اعمال به برنامه غذایی شاگرد</CardTitle>
+                <CardDescription>
+                  کالری پیشنهادی در ویرایشگر برنامه غذایی شاگرد پیش‌پر می‌شود.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="انتخاب شاگرد..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {students.map((s) => (
+                      <SelectItem key={s.id} value={String(s.id)}>
+                        {s.fullName || s.name || `شاگرد #${s.id}`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  type="button"
+                  className="w-full"
+                  disabled={!selectedStudentId}
+                  onClick={handleApplyToNutrition}
+                >
+                  <Send data-icon="inline-start" />
+                  باز کردن ویرایشگر غذا با این کالری
+                </Button>
+                {students.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">
+                    شاگرد فعالی یافت نشد.{" "}
+                    <Link href="/coach/students" className="text-primary hover:underline">
+                      مشاهده دانشجویان
+                    </Link>
+                  </p>
+                ) : null}
+              </CardContent>
+            </Card>
           ) : null}
         </div>
       </div>
     </div>
+  );
+}
+
+function FormField({ label, children }) {
+  return (
+    <div className="space-y-2">
+      <Label>{label}</Label>
+      {children}
+    </div>
+  );
+}
+
+function StatCard({ label, value, unit }) {
+  return (
+    <Card size="sm">
+      <CardContent className="pt-4">
+        <p className="text-xs text-muted-foreground">{label}</p>
+        <p className="mt-1 text-2xl font-semibold tabular-nums">
+          {value?.toLocaleString("fa-IR")}
+          <span className="ms-1 text-sm font-normal text-muted-foreground">{unit}</span>
+        </p>
+      </CardContent>
+    </Card>
   );
 }

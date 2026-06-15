@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { FiArrowDownRight, FiUsers } from "react-icons/fi";
 import { api } from "@/lib/axios/client";
 import { apiAssetUrl } from "@/lib/api/assets";
+import { getCoachPublicPath } from "@/lib/routes/coach-public";
 
 export default function ProgramsSection() {
   const [coaches, setCoaches] = useState([]);
@@ -105,7 +106,7 @@ export default function ProgramsSection() {
                   </p>
 
                   <Link
-                    href={`/coach/${coach.slug}`}
+                    href={getCoachPublicPath(coach.slug)}
                     className="mt-4 w-full rounded-2xl bg-white px-4 py-3 text-center text-sm font-extrabold text-zinc-950 hover:bg-zinc-200"
                   >
                     مشاهده صفحه و پلن‌ها

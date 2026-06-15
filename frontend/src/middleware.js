@@ -26,9 +26,19 @@ function redirectToRoleDashboard(request, role) {
   return NextResponse.redirect(new URL(getDashboardPath(role), request.url));
 }
 
+function redirectLegacyCoachLanding(request, pathname) {
+  if (!pathname.startsWith("/coach/")) return null;
+  const segment = pathname.split("/")[2];
+  if (!segment || COACH_PANEL_SEGMENTS.has(segment)) return null;
+  return NextResponse.redirect(new URL(`/${segment}`, request.url));
+}
+
 export function middleware(request) {
   const { pathname } = request.nextUrl;
   const role = request.cookies.get("user_role")?.value;
+
+  const legacyCoachRedirect = redirectLegacyCoachLanding(request, pathname);
+  if (legacyCoachRedirect) return legacyCoachRedirect;
 
   if (pathname.startsWith("/admin")) {
     if (!role) return redirectToLogin(request);
@@ -52,6 +62,7 @@ export const config = {
   matcher: [
     "/admin/:path*",
     "/user/:path*",
+    "/coach/:path*",
     "/coach",
     "/coach/dashboard",
     "/coach/dashboard/:path*",
