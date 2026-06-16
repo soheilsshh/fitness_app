@@ -155,7 +155,7 @@ export default function CoachDetailsClient({ id }) {
             inactiveText="غیرفعال"
           />
           </div>
-        </div>
+        </CardContent>
       </Card>
     </div>
   );
