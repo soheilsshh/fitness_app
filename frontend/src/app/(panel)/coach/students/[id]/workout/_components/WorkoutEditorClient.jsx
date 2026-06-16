@@ -3,14 +3,28 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Plus, Save, Trash2 } from "lucide-react";
+import {
+  ChevronLeft,
+  Dumbbell,
+  Moon,
+  Plus,
+  Save,
+  Trash2,
+} from "lucide-react";
 import { api } from "@/lib/axios/client";
 import { toastError, toastSuccess } from "@/app/(site)/auth/_components/helpers";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
@@ -153,6 +167,8 @@ export default function WorkoutEditorClient({ studentId, embedded = false, onSav
     return (
       <div className="space-y-4" dir="rtl">
         <Skeleton className="h-9 w-48" />
+        <Skeleton className="h-12 w-full rounded-xl" />
+        <Skeleton className="h-10 w-full max-w-xl rounded-xl" />
         <Skeleton className="h-64 w-full rounded-xl" />
       </div>
     );
@@ -160,17 +176,24 @@ export default function WorkoutEditorClient({ studentId, embedded = false, onSav
 
   return (
     <div className="flex flex-col gap-4 md:gap-6" dir="rtl">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        {!embedded ? (
-          <Button variant="outline" size="sm" asChild>
-            <Link href={`/coach/students/${studentId}`}>
-              <ChevronLeft data-icon="inline-start" />
-              بازگشت
-            </Link>
-          </Button>
-        ) : (
-          <p className="text-sm font-medium">ساخت برنامه تمرین</p>
-        )}
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="space-y-1 text-start">
+          {!embedded ? (
+            <Button variant="outline" size="sm" asChild className="mb-2">
+              <Link href={`/coach/students/${studentId}`}>
+                <ChevronLeft data-icon="inline-start" />
+                بازگشت
+              </Link>
+            </Button>
+          ) : null}
+          <h1 className="flex items-center gap-2 text-lg font-semibold tracking-tight">
+            <Dumbbell className="size-5 text-primary" />
+            {embedded ? "ساخت برنامه تمرین" : "ویرایش برنامه تمرین"}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            حرکات هر روز را انتخاب کنید و برنامه را برای دانشجو ارسال نمایید.
+          </p>
+        </div>
         <Button type="button" onClick={handleSave} disabled={saving}>
           <Save data-icon="inline-start" />
           {saving ? "در حال ارسال..." : "ارسال برنامه به دانشجو"}
@@ -178,68 +201,89 @@ export default function WorkoutEditorClient({ studentId, embedded = false, onSav
       </div>
 
       <Card>
-        <CardContent className="space-y-2 pt-6">
-          <Label htmlFor="workout-title">عنوان برنامه</Label>
-          <Input
-            id="workout-title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">اطلاعات برنامه</CardTitle>
+          <CardDescription>عنوانی که دانشجو در پنل خود می‌بیند</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <Label htmlFor="workout-title">عنوان برنامه</Label>
+            <Input
+              id="workout-title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+          </div>
         </CardContent>
       </Card>
 
-      <ToggleGroup
-        type="single"
-        value={selectedDay}
-        onValueChange={(v) => v && setSelectedDay(v)}
-        variant="outline"
-        size="sm"
-        className="flex flex-wrap justify-start gap-2"
-      >
-        {DAY_KEYS.map((key) => {
-          const count = (dayExercises[key] || []).length;
-          const isRest = restDays.includes(key);
-          return (
-            <ToggleGroupItem key={key} value={key} className={cn(isRest && "opacity-60")}>
-              {DAY_LABELS[key]}
-              {count > 0 ? (
-                <Badge variant="secondary" className="ms-1.5 h-5 min-w-5 px-1 tabular-nums">
-                  {count.toLocaleString("fa-IR")}
-                </Badge>
-              ) : null}
-            </ToggleGroupItem>
-          );
-        })}
-      </ToggleGroup>
+      <div className="space-y-2">
+        <Label className="text-muted-foreground">انتخاب روز</Label>
+        <ToggleGroup
+          type="single"
+          value={selectedDay}
+          onValueChange={(v) => v && setSelectedDay(v)}
+          variant="outline"
+          size="sm"
+          className="flex flex-wrap justify-start gap-2"
+        >
+          {DAY_KEYS.map((key) => {
+            const count = (dayExercises[key] || []).length;
+            const isRest = restDays.includes(key);
+            return (
+              <ToggleGroupItem key={key} value={key} className={cn(isRest && "opacity-60")}>
+                {DAY_LABELS[key]}
+                {isRest ? (
+                  <Moon className="ms-1 size-3 text-muted-foreground" />
+                ) : null}
+                {count > 0 ? (
+                  <Badge variant="secondary" className="ms-1.5 h-5 min-w-5 px-1 tabular-nums">
+                    {count.toLocaleString("fa-IR")}
+                  </Badge>
+                ) : null}
+              </ToggleGroupItem>
+            );
+          })}
+        </ToggleGroup>
+      </div>
 
       <Card>
         <CardHeader className="pb-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <CardTitle className="text-base">برنامه {DAY_LABELS[selectedDay]}</CardTitle>
-            <Button type="button" variant="ghost" size="sm" onClick={toggleRestDay}>
-              {isRestDay ? "لغو روز استراحت" : "علامت‌گذاری به‌عنوان روز استراحت"}
+            <div className="space-y-1 text-start">
+              <CardTitle className="text-base">برنامه {DAY_LABELS[selectedDay]}</CardTitle>
+              <CardDescription>
+                {isRestDay
+                  ? "این روز به‌عنوان استراحت علامت‌گذاری شده"
+                  : `${currentExercises.length.toLocaleString("fa-IR")} حرکت ثبت شده`}
+              </CardDescription>
+            </div>
+            <Button type="button" variant="outline" size="sm" onClick={toggleRestDay}>
+              {isRestDay ? "لغو روز استراحت" : "روز استراحت"}
             </Button>
           </div>
         </CardHeader>
+
         <CardContent className="space-y-4">
           {isRestDay ? (
-            <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
-              این روز به‌عنوان روز استراحت تنظیم شده است.
-              <Button
-                type="button"
-                variant="link"
-                className="mt-2 block w-full"
-                onClick={toggleRestDay}
-              >
-                فعال‌سازی و افزودن حرکت
-              </Button>
-            </div>
+            <Card className="border-dashed bg-muted/20">
+              <CardContent className="flex flex-col items-center gap-3 py-8 text-center">
+                <div className="flex size-12 items-center justify-center rounded-full bg-muted">
+                  <Moon className="size-5 text-muted-foreground" />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  این روز به‌عنوان روز استراحت تنظیم شده است.
+                </p>
+                <Button type="button" variant="secondary" size="sm" onClick={toggleRestDay}>
+                  فعال‌سازی و افزودن حرکت
+                </Button>
+              </CardContent>
+            </Card>
           ) : (
             <>
               <Button
                 type="button"
-                variant="outline"
-                className="w-full border-emerald-500/30 bg-emerald-500/5 hover:bg-emerald-500/10"
+                className="w-full"
                 onClick={() => setPickerOpen(true)}
               >
                 <Plus data-icon="inline-start" />
@@ -249,71 +293,24 @@ export default function WorkoutEditorClient({ studentId, embedded = false, onSav
               {currentExercises.length > 0 ? (
                 <div className="space-y-3">
                   {currentExercises.map((ex, index) => (
-                    <Card key={ex.uid} size="sm">
-                      <CardContent className="flex gap-3 pt-4">
-                        {ex.imageUrl ? (
-                          <img
-                            src={mediaUrl(ex.imageUrl)}
-                            alt={ex.name}
-                            className="size-16 shrink-0 rounded-lg object-cover"
-                            onError={(e) => {
-                              e.target.style.display = "none";
-                            }}
-                          />
-                        ) : (
-                          <div className="flex size-16 shrink-0 items-center justify-center rounded-lg border bg-muted text-xs text-muted-foreground">
-                            {(index + 1).toLocaleString("fa-IR")}
-                          </div>
-                        )}
-                        <div className="min-w-0 flex-1 space-y-2">
-                          <p className="text-sm font-medium">{ex.name}</p>
-                          <div className="flex flex-wrap gap-2">
-                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                              <Label className="text-xs">ست</Label>
-                              <Input
-                                type="number"
-                                min="1"
-                                value={ex.sets}
-                                onChange={(e) =>
-                                  updateExercise(ex.uid, "sets", e.target.value)
-                                }
-                                className="h-7 w-14 tabular-nums"
-                              />
-                            </div>
-                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                              <Label className="text-xs">تکرار</Label>
-                              <Input
-                                value={ex.reps}
-                                onChange={(e) =>
-                                  updateExercise(ex.uid, "reps", e.target.value)
-                                }
-                                placeholder="۱۲"
-                                className="h-7 w-16"
-                              />
-                            </div>
-                            <span className="self-center text-[11px] text-muted-foreground">
-                              {formatExerciseEntry(ex)}
-                            </span>
-                          </div>
-                        </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon-sm"
-                          onClick={() => removeExercise(ex.uid)}
-                          className="text-muted-foreground hover:text-destructive"
-                        >
-                          <Trash2 />
-                        </Button>
-                      </CardContent>
-                    </Card>
+                    <ExerciseRow
+                      key={ex.uid}
+                      ex={ex}
+                      index={index}
+                      onRemove={() => removeExercise(ex.uid)}
+                      onUpdate={(field, value) => updateExercise(ex.uid, field, value)}
+                    />
                   ))}
                 </div>
               ) : (
-                <p className="rounded-lg border border-dashed p-5 text-center text-sm text-muted-foreground">
-                  هنوز حرکتی برای {DAY_LABELS[selectedDay]} اضافه نشده
-                </p>
+                <Card className="border-dashed">
+                  <CardContent className="py-8 text-center text-sm text-muted-foreground">
+                    هنوز حرکتی برای {DAY_LABELS[selectedDay]} اضافه نشده
+                  </CardContent>
+                </Card>
               )}
+
+              <Separator />
 
               <Button
                 type="button"
@@ -342,6 +339,88 @@ export default function WorkoutEditorClient({ studentId, embedded = false, onSav
         dayLabel={DAY_LABELS[selectedDay]}
         onAdd={(entry) => addExercise(entry)}
       />
+    </div>
+  );
+}
+
+function ExerciseRow({ ex, index, onRemove, onUpdate }) {
+  return (
+    <Card size="sm">
+      <CardContent className="flex gap-3 pt-4">
+        <ExerciseThumb ex={ex} index={index} />
+        <div className="min-w-0 flex-1 space-y-3">
+          <div className="flex items-start justify-between gap-2">
+            <p className="text-sm font-medium leading-snug">{ex.name}</p>
+            <Badge variant="outline" className="shrink-0 tabular-nums">
+              {formatExerciseEntry(ex)}
+            </Badge>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor={`sets-${ex.uid}`} className="text-xs text-muted-foreground">
+                ست
+              </Label>
+              <Input
+                id={`sets-${ex.uid}`}
+                type="number"
+                min="1"
+                value={ex.sets}
+                onChange={(e) => onUpdate("sets", e.target.value)}
+                className="h-8 w-16 tabular-nums"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={`reps-${ex.uid}`} className="text-xs text-muted-foreground">
+                تکرار
+              </Label>
+              <Input
+                id={`reps-${ex.uid}`}
+                value={ex.reps}
+                onChange={(e) => onUpdate("reps", e.target.value)}
+                placeholder="۱۲"
+                className="h-8 w-20"
+              />
+            </div>
+          </div>
+        </div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          onClick={onRemove}
+          className="shrink-0 text-muted-foreground hover:text-destructive"
+          aria-label="حذف حرکت"
+        >
+          <Trash2 />
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+function ExerciseThumb({ ex, index }) {
+  const img = mediaUrl(ex.imageUrl);
+
+  return (
+    <div className="relative size-16 shrink-0 overflow-hidden rounded-lg border bg-muted">
+      {img ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={img}
+          alt={ex.name}
+          className="size-full object-cover"
+          onError={(e) => {
+            e.target.style.display = "none";
+          }}
+        />
+      ) : (
+        <div className="flex size-full items-center justify-center text-sm font-semibold text-muted-foreground">
+          {(index + 1).toLocaleString("fa-IR")}
+        </div>
+      )}
+      <span className="absolute bottom-1 end-1 rounded bg-background/80 px-1.5 py-0.5 text-[10px] font-medium tabular-nums">
+        {(index + 1).toLocaleString("fa-IR")}
+      </span>
     </div>
   );
 }

@@ -11,7 +11,7 @@ export function PanelHeader({ title, subtitle }) {
         <SidebarTrigger className="-ms-1" />
         <Separator
           orientation="vertical"
-          className="mx-2 data-[orientation=vertical]:h-4"
+          className="mx-2 data-[orientation=vertical]:h-full"
         />
         <div className="min-w-0 flex-1 text-start">
           <h1 className="truncate text-base font-semibold">{title}</h1>

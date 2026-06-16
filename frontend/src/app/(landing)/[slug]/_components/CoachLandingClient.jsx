@@ -188,6 +188,7 @@ export default function CoachLandingClient({ slug }) {
 
   return (
     <div dir="rtl" className="pb-16 text-foreground">
+      
       <div className="relative h-56 overflow-hidden md:h-72">
         {cover ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -232,7 +233,7 @@ export default function CoachLandingClient({ slug }) {
               </Button>
             ) : null}
             {coach.social?.instagram ? (
-              <SocialButton href={coach.social.instagram} label="Instagram">
+              <SocialButton href={`https://Instagram.com/${coach.social.instagram}`} label="Instagram">
                 <Inbox />
               </SocialButton>
             ) : null}
@@ -257,7 +258,7 @@ export default function CoachLandingClient({ slug }) {
               </SocialButton>
             ) : null}
             {coach.social?.website ? (
-              <SocialButton href={coach.social.website} label="Website">
+              <SocialButton href={`https://${coach.social.website}`} label="Website">
                 <Globe />
               </SocialButton>
             ) : null}

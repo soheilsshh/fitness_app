@@ -14,8 +14,8 @@ export function toastSuccess(title, text) {
     title,
     text,
     confirmButtonText: "باشه",
-    background: "#0b0b0f",
-    color: "#fff",
+    background: "#fff",
+    color: "#000",
     confirmButtonColor: "#15173D",
   });
 }
@@ -26,8 +26,8 @@ export function toastError(title, text) {
     title,
     text,
     confirmButtonText: "متوجه شدم",
-    background: "#0b0b0f",
-    color: "#fff",
+    background: "#fff",
+    color: "#000",
     confirmButtonColor: "#15173D",
   });
 }

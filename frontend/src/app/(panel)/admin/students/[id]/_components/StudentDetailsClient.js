@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ClipboardList, Phone } from "lucide-react";
+import { ChevronLeft, ChevronRight, ClipboardList, Phone } from "lucide-react";
 import { api } from "@/lib/axios/client";
 import { Button } from "@/components/ui/button";
 import {
@@ -62,7 +62,7 @@ export default function StudentDetailsClient({ id }) {
       <div className="flex flex-wrap items-center gap-2">
         <Button asChild variant="outline">
           <Link href="/admin/students" className="inline-flex items-center gap-2">
-            <ChevronLeft className="size-4" />
+            <ChevronRight className="size-4" />
             بازگشت
           </Link>
         </Button>
