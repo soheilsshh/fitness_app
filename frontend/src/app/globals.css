@@ -244,3 +244,30 @@ html {
   width: 0%;
   transition: width 0.1s;
 }
+
+/* Visible keyboard focus for all interactive elements.
+   Uses :focus-visible so mouse clicks don't show the ring, only keyboard nav. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--color-surface-tint);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Respect the user's reduced-motion preference.
+   Neutralises decorative loops (float/shimmer/bounce/pulse) and shortens
+   transitions so framer-motion and CSS effects don't trigger motion sickness. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

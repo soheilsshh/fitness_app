@@ -38,7 +38,7 @@ export default function ProgramsSection() {
       <div className="relative z-10 mx-auto max-w-7xl px-6">
         {/* Header */}
         <div className="mb-16 flex flex-col items-center space-y-8 text-center">
-          <div className="glass inline-flex items-center gap-2 rounded-full border border-surface-tint/20 px-4 py-1 text-xs tracking-widest text-surface-tint">
+          <div className="glass inline-flex items-center gap-2 rounded-full border border-surface-tint/20 px-4 py-1 text-xstext-surface-tint">
             <span className="h-2 w-2 animate-pulse rounded-full bg-surface-tint" />
             مربیان تراز اول
           </div>
@@ -123,15 +123,32 @@ export default function ProgramsSection() {
           <div className="absolute -inset-4 rounded-full bg-surface-tint/10 opacity-0 blur-3xl transition-opacity duration-1000 group-hover:opacity-100" />
           <div className="glass relative grid overflow-hidden rounded-[2rem] border border-surface-tint/20 shadow-[0_0_30px_rgba(0,225,171,0.2)] md:grid-cols-2">
             {/* Statue side */}
-            <div className="relative h-72 md:h-auto md:min-h-[480px]">
+            <div className="relative h-80 sm:h-96 md:h-auto md:min-h-[480px]">
               <Image
                 src={coachStatue}
                 alt="پیکرتراش در حال تراشیدن مجسمه"
                 fill
-                className="rounded-[2rem] object-cover object-top transition-transform duration-700 group-hover:scale-105"
+                sizes="(min-width: 768px) 50vw, 100vw"
+                className="object-cover object-top"
               />
-              {/* fade into the content panel (bottom on mobile, side on desktop) */}
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-surface/10 to-surface md:bg-gradient-to-l md:from-transparent md:via-surface/20 md:to-surface" />
+              {/* Smooth fade into the content panel.
+                  Mobile: fade downward. Desktop: fade leftward toward the text. */}
+              <div
+                aria-hidden
+                className="absolute inset-0 md:hidden"
+                style={{
+                  background:
+                    "linear-gradient(to bottom, transparent 0%, transparent 50%, rgba(19,19,19,0.55) 78%, #131313 100%)",
+                }}
+              />
+              <div
+                aria-hidden
+                className="absolute inset-0 hidden md:block"
+                style={{
+                  background:
+                    "linear-gradient(to left, transparent 0%, transparent 42%, rgba(19,19,19,0.65) 80%, #131313 100%)",
+                }}
+              />
             </div>
 
             {/* Content side */}

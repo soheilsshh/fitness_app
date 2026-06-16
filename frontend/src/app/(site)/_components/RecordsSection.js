@@ -110,7 +110,7 @@ export default function RecordsSection({ stats: apiStats }) {
                   <TiltCard key={s.label} delay={idx * 0.06} className="glow-card h-full rounded-[2rem] p-6 text-center">
                     <Icon className={`mx-auto mb-4 text-4xl ${s.color}`} />
                     <div className="text-3xl font-bold text-primary">{s.value}</div>
-                    <div className="mt-1 text-xs tracking-widest text-on-surface-variant">{s.label}</div>
+                    <div className="mt-1 text-xstext-on-surface-variant">{s.label}</div>
                   </TiltCard>
                 );
               })}

@@ -28,7 +28,7 @@ export default function Hero({ settings }) {
         transition={{ duration: 0.7 }}
         className="z-10 flex-1 space-y-8 text-right"
       >
-        <div className="glass inline-flex items-center gap-2 rounded-full border border-surface-tint/20 px-4 py-1 text-xs tracking-widest text-surface-tint">
+        <div className="glass inline-flex items-center gap-2 rounded-full border border-surface-tint/20 px-4 py-1 text-xstext-surface-tint">
           <span className="h-2 w-2 animate-pulse rounded-full bg-surface-tint" />
           آکادمی اختصاصی تناسب اندام
         </div>
@@ -97,11 +97,11 @@ export default function Hero({ settings }) {
 
           {/* Floating badges */}
           <div className="glass absolute top-6 right-6 z-20 animate-bounce rounded-2xl border border-surface-tint/30 p-3 [animation-duration:4s]">
-            <span className="mb-1 block text-xs tracking-widest text-surface-tint">هدف</span>
+            <span className="mb-1 block text-xstext-surface-tint">هدف</span>
             <span className="text-lg font-bold text-primary">عضله‌سازی</span>
           </div>
           <div className="glass absolute bottom-6 left-6 z-20 animate-bounce rounded-2xl border border-secondary-container/30 p-3 [animation-duration:5s]">
-            <span className="mb-1 block text-xs tracking-widest text-secondary-container">سطح</span>
+            <span className="mb-1 block text-xstext-secondary-container">سطح</span>
             <span className="text-lg font-bold text-primary">متوسط تا حرفه‌ای</span>
           </div>
         </div>

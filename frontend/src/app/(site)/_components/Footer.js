@@ -37,7 +37,7 @@ export default function Footer() {
                 key={label}
                 href="#"
                 aria-label={label}
-                className="glass flex h-10 w-10 items-center justify-center rounded-full border border-white/10 transition-all hover:border-surface-tint"
+                className="glass flex h-11 w-11 items-center justify-center rounded-full border border-white/10 text-on-surface-variant transition-all hover:border-surface-tint hover:text-surface-tint"
               >
                 <Icon className="text-sm" />
               </Link>
@@ -79,7 +79,7 @@ export default function Footer() {
       </div>
 
       <div className="mx-auto mt-20 max-w-7xl border-t border-outline-variant/5 pt-20 text-center">
-        <p className="text-on-surface-variant/50">
+        <p className="text-sm text-on-surface-variant/80">
           © {new Date().getFullYear()} فیت‌پرو. تمامی حقوق برای آکادمی مجسمه‌سازی بدن محفوظ است.
         </p>
       </div>

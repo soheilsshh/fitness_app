@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { FiMail, FiPhone, FiMapPin } from "react-icons/fi";
 import InlineSocialIcons from "./InlineSocialIcons";
@@ -25,17 +25,41 @@ export default function ContactSection({ contactInfo }) {
     whatsapp: info.whatsapp,
   };
 
+  const fieldId = useId();
+  const nameId = `${fieldId}-name`;
+  const contactId = `${fieldId}-contact`;
+  const messageId = `${fieldId}-message`;
+
+  const nameRef = useRef(null);
+  const contactRef = useRef(null);
+  const messageRef = useRef(null);
+
   const [fullName, setFullName] = useState("");
   const [contact, setContact] = useState("");
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  const validate = () => {
+    const next = {};
+    if (!fullName.trim()) next.fullName = "نام و نام خانوادگی را وارد کنید.";
+    if (!contact.trim()) next.contact = "شماره موبایل یا ایمیل را وارد کنید.";
+    if (!message.trim()) next.message = "متن پیام نمی‌تواند خالی باشد.";
+    return next;
+  };
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    if (!fullName.trim() || !contact.trim() || !message.trim()) {
-      toastError("خطا", "همه فیلدها الزامی هستند.");
+    const found = validate();
+    if (Object.keys(found).length > 0) {
+      setErrors(found);
+      // Move focus to the first invalid field so keyboard/screen-reader users land on it.
+      if (found.fullName) nameRef.current?.focus();
+      else if (found.contact) contactRef.current?.focus();
+      else messageRef.current?.focus();
       return;
     }
+    setErrors({});
     setSubmitting(true);
     try {
       const isEmail = contact.includes("@");
@@ -58,6 +82,8 @@ export default function ContactSection({ contactInfo }) {
 
   const inputClass =
     "w-full rounded-lg border border-white/10 bg-white/5 p-4 text-right outline-none transition-all focus:border-surface-tint focus:ring-2 focus:ring-surface-tint/20";
+  const inputErrorClass = "border-red-400/70 focus:border-red-400 focus:ring-red-400/20";
+  const labelClass = "block text-xs text-on-surface-variant";
 
   return (
     <section id="contact" className="mx-auto max-w-7xl scroll-mt-24 px-6 py-12 md:py-16">
@@ -102,44 +128,86 @@ export default function ContactSection({ contactInfo }) {
         {/* Form card */}
         <TiltCard className="glow-card relative h-full overflow-hidden rounded-[2rem] p-10">
           <div className="gradient-bg absolute top-0 right-0 h-32 w-32 opacity-5 blur-3xl" />
-          <form className="relative z-10 space-y-6 text-right" onSubmit={onSubmit}>
+          <form className="relative z-10 space-y-6 text-right" onSubmit={onSubmit} noValidate>
             <div className="space-y-2">
-              <label className="block text-xs tracking-widest text-on-surface-variant">
-                نام و نام خانوادگی
+              <label htmlFor={nameId} className={labelClass}>
+                نام و نام خانوادگی <span className="text-red-400">*</span>
               </label>
               <input
+                id={nameId}
+                ref={nameRef}
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className={inputClass}
+                className={`${inputClass} ${errors.fullName ? inputErrorClass : ""}`}
                 placeholder="مثلا: علی محمدی"
                 type="text"
+                name="name"
+                autoComplete="name"
+                required
+                aria-required="true"
+                aria-invalid={errors.fullName ? "true" : undefined}
+                aria-describedby={errors.fullName ? `${nameId}-error` : undefined}
               />
+              {errors.fullName && (
+                <p id={`${nameId}-error`} role="alert" className="text-xs text-red-400">
+                  {errors.fullName}
+                </p>
+              )}
             </div>
             <div className="space-y-2">
-              <label className="block text-xs tracking-widest text-on-surface-variant">
-                شماره موبایل یا ایمیل
+              <label htmlFor={contactId} className={labelClass}>
+                شماره موبایل یا ایمیل <span className="text-red-400">*</span>
               </label>
               <input
+                id={contactId}
+                ref={contactRef}
                 value={contact}
                 onChange={(e) => setContact(e.target.value)}
-                className={inputClass}
+                className={`${inputClass} ${errors.contact ? inputErrorClass : ""}`}
                 placeholder="۰۹۱۲۳۴۵۶۷۸۹"
+                name="contact"
+                inputMode="email"
+                autoComplete="email"
+                dir="ltr"
+                required
+                aria-required="true"
+                aria-invalid={errors.contact ? "true" : undefined}
+                aria-describedby={errors.contact ? `${contactId}-error` : undefined}
               />
+              {errors.contact && (
+                <p id={`${contactId}-error`} role="alert" className="text-xs text-red-400">
+                  {errors.contact}
+                </p>
+              )}
             </div>
             <div className="space-y-2">
-              <label className="block text-xs tracking-widest text-on-surface-variant">پیغام شما</label>
+              <label htmlFor={messageId} className={labelClass}>
+                پیغام شما <span className="text-red-400">*</span>
+              </label>
               <textarea
+                id={messageId}
+                ref={messageRef}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                className={`${inputClass} resize-none`}
+                className={`${inputClass} resize-none ${errors.message ? inputErrorClass : ""}`}
                 placeholder="چطور می‌توانیم به شما کمک کنیم؟"
                 rows={4}
+                name="message"
+                required
+                aria-required="true"
+                aria-invalid={errors.message ? "true" : undefined}
+                aria-describedby={errors.message ? `${messageId}-error` : undefined}
               />
+              {errors.message && (
+                <p id={`${messageId}-error`} role="alert" className="text-xs text-red-400">
+                  {errors.message}
+                </p>
+              )}
             </div>
             <button
               type="submit"
               disabled={submitting}
-              className="shimmer-btn w-full rounded-lg py-5 text-xl font-extrabold text-background shadow-xl shadow-surface-tint/20 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+              className="shimmer-btn w-full rounded-lg py-5 text-xl font-extrabold text-background shadow-xl shadow-surface-tint/20 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {submitting ? "در حال ارسال..." : "ارسال درخواست مشاوره"}
             </button>
