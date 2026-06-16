@@ -62,6 +62,51 @@ export default function AboutSection({ steps }) {
 
   return (
     <section id="about" className="mx-auto max-w-7xl scroll-mt-24 overflow-hidden px-6 py-12 md:py-16">
+      {/* How it works — onboarding flow */}
+      <div className="mb-20">
+        <motion.h3
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.25 }}
+          transition={{ duration: 0.6 }}
+          className="mb-10 text-right text-3xl font-extrabold text-primary md:text-4xl"
+        >
+          فقط <span className="gradient-text">سه قدم</span> تا شروع
+        </motion.h3>
+
+        <div className="grid gap-6 md:grid-cols-3">
+          {stepItems.map((s, idx) => (
+            <motion.div
+              key={s.id || s.title}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.25 }}
+              transition={{ duration: 0.5, delay: idx * 0.08 }}
+              className="glow-card relative flex h-full flex-col gap-3 rounded-2xl p-6 text-right"
+            >
+              <span
+                aria-hidden
+                className="gradient-text text-5xl font-extrabold leading-none opacity-80"
+              >
+                {idx + 1}
+              </span>
+              <h4 className="text-2xl font-semibold text-primary">{s.title}</h4>
+              <p className="leading-7 text-on-surface-variant">{s.text}</p>
+            </motion.div>
+          ))}
+        </div>
+
+        <div className="mt-10 flex justify-end">
+          <Link
+            href="/coaches"
+            className="flex items-center gap-2 rounded-full bg-surface-tint px-8 py-4 font-bold text-on-primary shadow-2xl transition-transform hover:scale-105"
+          >
+            انتخاب مربی و شروع
+            <FiArrowLeft className="text-xl" />
+          </Link>
+        </div>
+      </div>
+
       {/* Intro */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
@@ -106,51 +151,6 @@ export default function AboutSection({ steps }) {
             </motion.div>
           );
         })}
-      </div>
-
-      {/* How it works — onboarding flow */}
-      <div className="mt-20">
-        <motion.h3
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.25 }}
-          transition={{ duration: 0.6 }}
-          className="mb-10 text-right text-3xl font-extrabold text-primary md:text-4xl"
-        >
-          فقط <span className="gradient-text">سه قدم</span> تا شروع
-        </motion.h3>
-
-        <div className="grid gap-6 md:grid-cols-3">
-          {stepItems.map((s, idx) => (
-            <motion.div
-              key={s.id || s.title}
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.25 }}
-              transition={{ duration: 0.5, delay: idx * 0.08 }}
-              className="glow-card relative flex h-full flex-col gap-3 rounded-2xl p-6 text-right"
-            >
-              <span
-                aria-hidden
-                className="gradient-text text-5xl font-extrabold leading-none opacity-80"
-              >
-                {idx + 1}
-              </span>
-              <h4 className="text-2xl font-semibold text-primary">{s.title}</h4>
-              <p className="leading-7 text-on-surface-variant">{s.text}</p>
-            </motion.div>
-          ))}
-        </div>
-
-        <div className="mt-10 flex justify-end">
-          <Link
-            href="/coaches"
-            className="flex items-center gap-2 rounded-full bg-surface-tint px-8 py-4 font-bold text-on-primary shadow-2xl transition-transform hover:scale-105"
-          >
-            انتخاب مربی و شروع
-            <FiArrowLeft className="text-xl" />
-          </Link>
-        </div>
       </div>
     </section>
   );
