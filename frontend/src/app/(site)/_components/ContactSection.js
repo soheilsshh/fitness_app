@@ -1,16 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { FiMail, FiPhone, FiMapPin, FiSend } from "react-icons/fi";
+import { FiMail, FiPhone, FiMapPin } from "react-icons/fi";
 import InlineSocialIcons from "./InlineSocialIcons";
+import { TiltCard } from "./landingEffects";
 import { api } from "@/lib/axios/client";
 import { toastError, toastSuccess } from "@/app/(site)/auth/_components/helpers";
 
 const DEFAULT_CONTACT = {
-  address: "تهران، ایران",
-  phone: "0912 000 0000",
-  email: "support@fitpro.ir",
+  address: "تهران، سعادت آباد، برج فیت‌پرو",
+  phone: "+۹۸ ۲۱ ۲۸۴۲ ۱۰۰۰",
+  email: "info@fitpro.academy",
   instagram: "https://instagram.com/",
   telegram: "https://t.me/",
   whatsapp: "https://wa.me/989000000000",
@@ -24,17 +25,41 @@ export default function ContactSection({ contactInfo }) {
     whatsapp: info.whatsapp,
   };
 
+  const fieldId = useId();
+  const nameId = `${fieldId}-name`;
+  const contactId = `${fieldId}-contact`;
+  const messageId = `${fieldId}-message`;
+
+  const nameRef = useRef(null);
+  const contactRef = useRef(null);
+  const messageRef = useRef(null);
+
   const [fullName, setFullName] = useState("");
   const [contact, setContact] = useState("");
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  const validate = () => {
+    const next = {};
+    if (!fullName.trim()) next.fullName = "نام و نام خانوادگی را وارد کنید.";
+    if (!contact.trim()) next.contact = "شماره موبایل یا ایمیل را وارد کنید.";
+    if (!message.trim()) next.message = "متن پیام نمی‌تواند خالی باشد.";
+    return next;
+  };
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    if (!fullName.trim() || !contact.trim() || !message.trim()) {
-      toastError("خطا", "همه فیلدها الزامی هستند.");
+    const found = validate();
+    if (Object.keys(found).length > 0) {
+      setErrors(found);
+      // Move focus to the first invalid field so keyboard/screen-reader users land on it.
+      if (found.fullName) nameRef.current?.focus();
+      else if (found.contact) contactRef.current?.focus();
+      else messageRef.current?.focus();
       return;
     }
+    setErrors({});
     setSubmitting(true);
     try {
       const isEmail = contact.includes("@");
@@ -55,96 +80,139 @@ export default function ContactSection({ contactInfo }) {
     }
   };
 
+  const inputClass =
+    "w-full rounded-lg border border-white/10 bg-white/5 p-4 text-right outline-none transition-all focus:border-surface-tint focus:ring-2 focus:ring-surface-tint/20";
+  const inputErrorClass = "border-red-400/70 focus:border-red-400 focus:ring-red-400/20";
+  const labelClass = "block text-xs text-on-surface-variant";
+
   return (
-    <section id="contact" className="scroll-mt-24 py-20 md:py-24">
-      <div className="mx-auto max-w-7xl px-4">
-        <div className="grid gap-6 md:grid-cols-2">
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.25 }}
-            transition={{ duration: 0.6 }}
-            className="rounded-[32px] border border-white/10 bg-white/5 p-6 md:p-7"
-          >
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-zinc-950/35 px-3 py-1 text-xs text-zinc-200">
-              تماس با ما
-              <span className="h-1 w-1 rounded-full bg-white/30" />
-              پاسخ‌گویی سریع
-            </div>
-
-            <h2 className="mt-3 text-2xl font-extrabold md:text-3xl">
-              راهنمایی می‌خوای؟{" "}
-              <span className="text-emerald-300">پیام بده</span>
+    <section id="contact" className="mx-auto max-w-7xl scroll-mt-24 px-6 py-12 md:py-16">
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+        {/* Info card */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.25 }}
+          transition={{ duration: 0.6 }}
+          className="glass space-y-10 rounded-[2rem] border border-white/5 p-10 text-right"
+        >
+          <div>
+            <h2 className="mb-4 text-4xl font-extrabold text-primary md:text-5xl">
+              راهنمایی می‌خوای؟ <span className="gradient-text">پیام بده</span>
             </h2>
-
-            <p className="mt-2 text-sm leading-7 text-zinc-300 md:text-base">
-              اگر برای انتخاب پلن یا شروع مسیر سوال داری، همینجا پیام بده تا
-              راهنماییت کنیم.
+            <p className="text-base leading-8 text-on-surface-variant md:text-lg">
+              سوالی دارید؟ مربیان ما آماده پاسخگویی و ارائه مشاوره رایگان به شما هستند.
             </p>
+          </div>
 
-            <div className="mt-6 space-y-3">
-              <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-zinc-950/35 p-4">
-                <FiPhone className="text-lg text-emerald-300" />
-                <div className="text-sm text-zinc-200">{info.phone}</div>
-              </div>
-              <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-zinc-950/35 p-4">
-                <FiMail className="text-lg text-emerald-300" />
-                <div className="text-sm text-zinc-200">{info.email}</div>
-              </div>
-              <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-zinc-950/35 p-4">
-                <FiMapPin className="text-lg text-emerald-300" />
-                <div className="text-sm text-zinc-200">{info.address}</div>
-              </div>
-              <InlineSocialIcons links={socialLinks} />
+          <div className="space-y-6">
+            <div className="group flex flex-row-reverse items-center gap-4">
+              <FiMail className="text-xl text-surface-tint transition-transform group-hover:scale-110" />
+              <span className="text-base text-on-surface" dir="ltr">{info.email}</span>
             </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.25 }}
-            transition={{ duration: 0.6, delay: 0.06 }}
-            className="rounded-[32px] border border-white/10 bg-linear-to-b from-white/10 to-white/5 p-6 md:p-7"
-          >
-            <div className="text-sm font-extrabold text-white">فرم تماس</div>
-            <div className="mt-1 text-sm text-zinc-300">
-              تمام فیلدها ضروری هستند. ما در اسرع وقت پاسخ می‌دهیم.
+            <div className="group flex flex-row-reverse items-center gap-4">
+              <FiPhone className="text-xl text-surface-tint transition-transform group-hover:scale-110" />
+              <span className="text-base text-on-surface" dir="ltr">{info.phone}</span>
             </div>
+            <div className="group flex flex-row-reverse items-center gap-4">
+              <FiMapPin className="text-xl text-surface-tint transition-transform group-hover:scale-110" />
+              <span className="text-base text-on-surface">{info.address}</span>
+            </div>
+          </div>
 
-            <form className="mt-5 space-y-3" onSubmit={onSubmit}>
+          <div className="flex justify-end border-t border-outline-variant/10 pt-10">
+            <InlineSocialIcons links={socialLinks} />
+          </div>
+        </motion.div>
+
+        {/* Form card */}
+        <TiltCard className="glow-card relative h-full overflow-hidden rounded-[2rem] p-10">
+          <div className="gradient-bg absolute top-0 right-0 h-32 w-32 opacity-5 blur-3xl" />
+          <form className="relative z-10 space-y-6 text-right" onSubmit={onSubmit} noValidate>
+            <div className="space-y-2">
+              <label htmlFor={nameId} className={labelClass}>
+                نام و نام خانوادگی <span className="text-red-400">*</span>
+              </label>
               <input
+                id={nameId}
+                ref={nameRef}
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="w-full rounded-2xl border border-white/10 bg-zinc-950/35 px-4 py-3 text-sm text-white placeholder:text-zinc-500 outline-none focus:border-emerald-400/40"
-                placeholder="نام و نام خانوادگی"
+                className={`${inputClass} ${errors.fullName ? inputErrorClass : ""}`}
+                placeholder="مثلا: علی محمدی"
+                type="text"
+                name="name"
+                autoComplete="name"
+                required
+                aria-required="true"
+                aria-invalid={errors.fullName ? "true" : undefined}
+                aria-describedby={errors.fullName ? `${nameId}-error` : undefined}
               />
+              {errors.fullName && (
+                <p id={`${nameId}-error`} role="alert" className="text-xs text-red-400">
+                  {errors.fullName}
+                </p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <label htmlFor={contactId} className={labelClass}>
+                شماره موبایل یا ایمیل <span className="text-red-400">*</span>
+              </label>
               <input
+                id={contactId}
+                ref={contactRef}
                 value={contact}
                 onChange={(e) => setContact(e.target.value)}
-                className="w-full rounded-2xl border border-white/10 bg-zinc-950/35 px-4 py-3 text-sm text-white placeholder:text-zinc-500 outline-none focus:border-emerald-400/40"
-                placeholder="شماره موبایل یا ایمیل"
+                className={`${inputClass} ${errors.contact ? inputErrorClass : ""}`}
+                placeholder="۰۹۱۲۳۴۵۶۷۸۹"
+                name="contact"
+                inputMode="email"
+                autoComplete="email"
+                dir="ltr"
+                required
+                aria-required="true"
+                aria-invalid={errors.contact ? "true" : undefined}
+                aria-describedby={errors.contact ? `${contactId}-error` : undefined}
               />
+              {errors.contact && (
+                <p id={`${contactId}-error`} role="alert" className="text-xs text-red-400">
+                  {errors.contact}
+                </p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <label htmlFor={messageId} className={labelClass}>
+                پیغام شما <span className="text-red-400">*</span>
+              </label>
               <textarea
-                rows={5}
+                id={messageId}
+                ref={messageRef}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                className="w-full resize-none rounded-2xl border border-white/10 bg-zinc-950/35 px-4 py-3 text-sm text-white placeholder:text-zinc-500 outline-none focus:border-emerald-400/40"
-                placeholder="پیام شما..."
+                className={`${inputClass} resize-none ${errors.message ? inputErrorClass : ""}`}
+                placeholder="چطور می‌توانیم به شما کمک کنیم؟"
+                rows={4}
+                name="message"
+                required
+                aria-required="true"
+                aria-invalid={errors.message ? "true" : undefined}
+                aria-describedby={errors.message ? `${messageId}-error` : undefined}
               />
-              <button
-                type="submit"
-                disabled={submitting}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-extrabold text-zinc-950 hover:bg-zinc-200 disabled:opacity-50"
-              >
-                {submitting ? "در حال ارسال..." : "ارسال پیام"} <FiSend />
-              </button>
-            </form>
-
-            <div className="mt-3 text-center text-[11px] text-zinc-400">
-              با ارسال پیام، قوانین و حریم خصوصی را می‌پذیرید.
+              {errors.message && (
+                <p id={`${messageId}-error`} role="alert" className="text-xs text-red-400">
+                  {errors.message}
+                </p>
+              )}
             </div>
-          </motion.div>
-        </div>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="shimmer-btn w-full rounded-lg py-5 text-xl font-extrabold text-background shadow-xl shadow-surface-tint/20 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {submitting ? "در حال ارسال..." : "ارسال درخواست مشاوره"}
+            </button>
+          </form>
+        </TiltCard>
       </div>
     </section>
   );
