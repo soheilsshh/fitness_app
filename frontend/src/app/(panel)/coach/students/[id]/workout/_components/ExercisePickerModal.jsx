@@ -18,8 +18,13 @@ function mediaUrl(path) {
   return `${API_BASE}${path}`;
 }
 
+function exercisePreviewUrl(ex) {
+  return mediaUrl(ex?.gifUrl || ex?.imageUrl);
+}
+
 export default function ExercisePickerModal({ open, onClose, onAdd, dayLabel }) {
   const [mounted, setMounted] = useState(false);
+  const [source, setSource] = useState("dataset");
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
   const [categories, setCategories] = useState([]);
@@ -49,7 +54,7 @@ export default function ExercisePickerModal({ open, onClose, onAdd, dayLabel }) 
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
-    api.get("/coach/exercises/categories")
+    api.get("/coach/exercises/categories", { params: { source } })
       .then((res) => {
         if (!cancelled) setCategories(res.data?.categories || []);
       })
@@ -57,10 +62,11 @@ export default function ExercisePickerModal({ open, onClose, onAdd, dayLabel }) 
         if (!cancelled) setCategories([]);
       });
     return () => { cancelled = true; };
-  }, [open]);
+  }, [open, source]);
 
   useEffect(() => {
     if (!open) {
+      setSource("dataset");
       setQuery("");
       setCategory("");
       setItems([]);
@@ -77,6 +83,7 @@ export default function ExercisePickerModal({ open, onClose, onAdd, dayLabel }) 
       try {
         const res = await api.get("/coach/exercises", {
           params: {
+            source,
             query: query.trim() || undefined,
             category: category || undefined,
             pageSize: 48,
@@ -99,7 +106,7 @@ export default function ExercisePickerModal({ open, onClose, onAdd, dayLabel }) 
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [open, query, category]);
+  }, [open, source, query, category]);
 
   const resetSelection = () => {
     setSelected(null);
@@ -112,7 +119,7 @@ export default function ExercisePickerModal({ open, onClose, onAdd, dayLabel }) 
     onAdd?.({
       exerciseId: selected.id,
       name: selected.name,
-      imageUrl: selected.imageUrl || "",
+      imageUrl: selected.gifUrl || selected.imageUrl || "",
       sets,
       reps,
     });
@@ -152,6 +159,40 @@ export default function ExercisePickerModal({ open, onClose, onAdd, dayLabel }) 
           </div>
 
           <div className="space-y-3 border-b border-white/10 px-5 py-3">
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setSource("dataset");
+                  setCategory("");
+                  setSelected(null);
+                }}
+                className={cn(
+                  "flex-1 rounded-2xl border px-3 py-2 text-xs font-bold transition",
+                  source === "dataset"
+                    ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-100"
+                    : "border-white/10 bg-zinc-950/30 text-zinc-300 hover:bg-white/10"
+                )}
+              >
+                دیتاست
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSource("mine");
+                  setCategory("");
+                  setSelected(null);
+                }}
+                className={cn(
+                  "flex-1 rounded-2xl border px-3 py-2 text-xs font-bold transition",
+                  source === "mine"
+                    ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-100"
+                    : "border-white/10 bg-zinc-950/30 text-zinc-300 hover:bg-white/10"
+                )}
+              >
+                حرکات من
+              </button>
+            </div>
             <div className="relative">
               <FiSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500" />
               <input
@@ -201,7 +242,11 @@ export default function ExercisePickerModal({ open, onClose, onAdd, dayLabel }) 
                 {error}
               </div>
             ) : items.length === 0 ? (
-              <div className="py-8 text-center text-sm text-zinc-400">حرکتی یافت نشد.</div>
+              <div className="py-8 text-center text-sm text-zinc-400">
+                {source === "mine"
+                  ? "هنوز حرکتی ثبت نکرده‌اید. از «افزودن حرکت دستی» استفاده کنید."
+                  : "حرکتی یافت نشد."}
+              </div>
             ) : (
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {items.map((ex) => (
@@ -217,9 +262,9 @@ export default function ExercisePickerModal({ open, onClose, onAdd, dayLabel }) 
                     )}
                   >
                     <div className="aspect-square w-full bg-zinc-900">
-                      {ex.imageUrl ? (
+                      {exercisePreviewUrl(ex) ? (
                         <img
-                          src={mediaUrl(ex.imageUrl)}
+                          src={exercisePreviewUrl(ex)}
                           alt={ex.name}
                           className="h-full w-full object-cover"
                           onError={(e) => {
@@ -251,9 +296,9 @@ export default function ExercisePickerModal({ open, onClose, onAdd, dayLabel }) 
           {selected ? (
             <div className="border-t border-white/10 bg-zinc-950/80 px-5 py-4">
               <div className="flex items-center gap-3">
-                {selected.imageUrl ? (
+                {exercisePreviewUrl(selected) ? (
                   <img
-                    src={mediaUrl(selected.imageUrl)}
+                    src={exercisePreviewUrl(selected)}
                     alt={selected.name}
                     className="h-16 w-16 shrink-0 rounded-xl object-cover"
                   />
