@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { FiInstagram, FiPhone, FiGlobe, FiCheck } from "react-icons/fi";
-import { FaTelegram, FaWhatsapp } from "react-icons/fa";
+import { FiPhone, FiCheck, FiChevronDown } from "react-icons/fi";
 import { api } from "@/lib/axios/client";
 import { apiAssetUrl } from "@/lib/api/assets";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
@@ -12,6 +11,10 @@ import { toastError, toastSuccess } from "@/app/(site)/auth/_components/helpers"
 import { getAuthSession } from "@/lib/auth/session";
 import BorderGlow from "@/components/ui/BorderGlow";
 import ContainerTextFlip from "@/components/ui/ContainerTextFlip";
+import AuroraBackground from "@/components/ui/aurora-background";
+import BlurTextAnimation from "@/components/ui/blur-text-animation";
+
+const HERO_PIXEL_COLORS = ["#34d399", "#6ee7b7", "#a7f3d0", "#ecfdf5", "#ffffff"];
 
 function formatToman(amount) {
   return new Intl.NumberFormat("fa-IR").format(Number(amount)) + " تومان";
@@ -25,12 +28,16 @@ export default function CoachLandingClient({ slug }) {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [loadError, setLoadError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
   const [assignedCoach, setAssignedCoach] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
       setLoading(true);
+      setNotFound(false);
+      setLoadError(false);
       try {
         const requests = [
           api.get(`/coaches/${slug}`),
@@ -56,7 +63,7 @@ export default function CoachLandingClient({ slug }) {
       } catch (error) {
         if (!cancelled) {
           if (error?.response?.status === 404) setNotFound(true);
-          else setCoach(null);
+          else setLoadError(true);
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -66,7 +73,7 @@ export default function CoachLandingClient({ slug }) {
     return () => {
       cancelled = true;
     };
-  }, [slug]);
+  }, [slug, reloadKey]);
 
   const hasOtherCoach =
     assignedCoach?.id && coach?.coachId && Number(assignedCoach.id) !== Number(coach.coachId);
@@ -74,8 +81,35 @@ export default function CoachLandingClient({ slug }) {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-5xl px-4 py-20 text-center text-zinc-400">
-        در حال بارگذاری پروفایل مربی...
+      <div className="mx-auto max-w-6xl px-4 pt-6 md:pt-10" aria-busy="true" aria-label="در حال بارگذاری پروفایل مربی">
+        <div className="grid gap-px overflow-hidden rounded-[28px] ring-1 ring-white/10 md:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+          <div className="min-h-[340px] animate-pulse bg-zinc-900 md:min-h-[540px]" />
+          <div className="flex flex-col gap-4 bg-zinc-900 p-7 md:p-10">
+            <div className="h-10 w-2/3 animate-pulse self-start rounded-lg bg-zinc-800" />
+            <div className="h-5 w-1/2 animate-pulse self-start rounded bg-zinc-800" />
+            <div className="mt-4 h-4 w-full animate-pulse rounded bg-zinc-800" />
+            <div className="h-4 w-5/6 animate-pulse self-start rounded bg-zinc-800" />
+            <div className="mt-4 h-12 w-48 animate-pulse self-start rounded-2xl bg-zinc-800" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-24 text-center" role="alert">
+        <h1 className="text-2xl font-extrabold text-white">خطا در بارگذاری</h1>
+        <p className="mt-3 text-sm text-zinc-400">
+          ارتباط با سرور برقرار نشد. لطفاً دوباره تلاش کنید.
+        </p>
+        <button
+          type="button"
+          onClick={() => setReloadKey((k) => k + 1)}
+          className="mt-6 inline-block cursor-pointer rounded-xl bg-white px-4 py-2 text-sm font-bold text-zinc-950 transition-colors hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+        >
+          تلاش مجدد
+        </button>
       </div>
     );
   }
@@ -89,7 +123,7 @@ export default function CoachLandingClient({ slug }) {
         </p>
         <Link
           href="/"
-          className="mt-6 inline-block rounded-xl bg-white px-4 py-2 text-sm font-bold text-zinc-950"
+          className="mt-6 inline-block rounded-xl bg-white px-4 py-2 text-sm font-bold text-zinc-950 transition-colors hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
         >
           بازگشت به صفحه اصلی
         </Link>
@@ -99,6 +133,12 @@ export default function CoachLandingClient({ slug }) {
 
   const cover = apiAssetUrl(coach.coverImageUrl);
   const avatar = apiAssetUrl(coach.avatarUrl);
+  // Big hero portrait uses the cover image (fallback to avatar).
+  const portrait = cover || avatar;
+  const aboutLines = (coach.aboutCoach || coach.bio || "")
+    .split(/\r?\n/)
+    .map((s) => s.replace(/^[•\-•]\s*/, "").trim())
+    .filter(Boolean);
   const plansExist = plans.length > 0;
   const minPrice = plansExist
     ? Math.min(...plans.map((p) => (p.discountPrice > 0 ? p.discountPrice : p.price)))
@@ -109,107 +149,92 @@ export default function CoachLandingClient({ slug }) {
     .map((s) => s.trim())
     .filter(Boolean);
 
-  const socialLinks = (
-    <>
-      {coach.social?.phone && (
-        <a
-          href={`tel:${coach.social.phone}`}
-          aria-label={`تماس: ${coach.social.phone}`}
-          className="inline-flex h-11 items-center gap-2 rounded-xl border border-white/10 bg-white/10 px-3.5 text-sm text-zinc-100 backdrop-blur transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
-        >
-          <FiPhone /> {coach.social.phone}
-        </a>
-      )}
-      {coach.social?.instagram && (
-        <a
-          href={coach.social.instagram}
-          target="_blank"
-          rel="noreferrer"
-          aria-label="اینستاگرام"
-          className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/10 text-zinc-100 backdrop-blur transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
-        >
-          <FiInstagram />
-        </a>
-      )}
-      {coach.social?.telegram && (
-        <a
-          href={coach.social.telegram.startsWith("http") ? coach.social.telegram : `https://t.me/${coach.social.telegram}`}
-          target="_blank"
-          rel="noreferrer"
-          aria-label="تلگرام"
-          className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/10 text-zinc-100 backdrop-blur transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
-        >
-          <FaTelegram />
-        </a>
-      )}
-      {coach.social?.whatsapp && (
-        <a
-          href={`https://wa.me/${coach.social.whatsapp.replace(/\D/g, "")}`}
-          target="_blank"
-          rel="noreferrer"
-          aria-label="واتساپ"
-          className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/10 text-zinc-100 backdrop-blur transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
-        >
-          <FaWhatsapp />
-        </a>
-      )}
-      {coach.social?.website && (
-        <a
-          href={coach.social.website}
-          target="_blank"
-          rel="noreferrer"
-          aria-label="وب‌سایت"
-          className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/10 text-zinc-100 backdrop-blur transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
-        >
-          <FiGlobe />
-        </a>
-      )}
-    </>
-  );
+  const socialLinks = coach.social?.phone ? (
+    <a
+      href={`tel:${coach.social.phone}`}
+      aria-label={`تماس: ${coach.social.phone}`}
+      dir="rtl"
+      className="inline-flex h-11 items-center gap-2 rounded-xl bg-zinc-800/60 px-3.5 text-sm font-medium text-white ring-1 ring-white/15 backdrop-blur transition-colors hover:bg-zinc-700/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+    >
+      <FiPhone /> {coach.social.phone}
+    </a>
+  ) : null;
 
   return (
     <div className="pb-28 md:pb-16">
-      {/* HERO — full-bleed, hero-centric */}
-      <section className="relative flex min-h-[80vh] flex-col items-center justify-center overflow-hidden px-4 py-16 text-center">
-        <div className="absolute inset-0 -z-10">
-          {cover ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={cover} alt="" className="h-full w-full object-cover" />
-          ) : (
-            <div className="h-full w-full bg-gradient-to-br from-emerald-500/25 via-zinc-900 to-cyan-500/10" />
-          )}
-          <div className="absolute inset-0 bg-zinc-950/65" />
-          <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/55 to-zinc-950/20" />
-        </div>
-
-        <div className="mx-auto h-32 w-32 overflow-hidden rounded-[28px] border border-white/15 bg-zinc-900 shadow-2xl ring-4 ring-emerald-400/20 md:h-36 md:w-36">
-          {avatar ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={avatar} alt={coach.displayName} className="h-full w-full object-cover" />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center text-4xl font-bold text-emerald-300">
-              {coach.displayName?.[0] || "?"}
-            </div>
-          )}
-        </div>
-
-        <h1 className="mt-6 text-4xl font-extrabold tracking-tight text-white md:text-5xl">
-          {coach.displayName}
-        </h1>
-        {coach.title && (
-          <p className="mt-3 text-base font-semibold text-emerald-300 md:text-lg">{coach.title}</p>
-        )}
-        {specialtyParts.length > 1 ? (
-          <div className="mt-4 flex items-center justify-center">
-            <ContainerTextFlip words={specialtyParts} />
+      {/* HERO — split: big portrait (left) + green info panel (right) */}
+      <section className="mx-auto max-w-6xl px-4 pt-6 md:pt-10">
+        <div className="grid overflow-hidden rounded-[28px] shadow-2xl ring-1 ring-white/10 md:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+          {/* Portrait — left column in RTL */}
+          <div className="relative min-h-[340px] bg-zinc-900 md:min-h-[540px]">
+            {portrait ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={portrait}
+                alt={`عکس ${coach.displayName}`}
+                loading="eager"
+                decoding="async"
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-7xl font-bold text-emerald-300">
+                {coach.displayName?.[0] || "?"}
+              </div>
+            )}
           </div>
-        ) : coach.specialty ? (
-          <p className="mt-2 max-w-xl text-sm leading-7 text-zinc-300 md:text-base">
-            {coach.specialty}
-          </p>
-        ) : null}
 
-        <div className="mt-7 flex flex-wrap items-center justify-center gap-2">{socialLinks}</div>
+          {/* Info panel — right column in RTL */}
+          <AuroraBackground>
+            <div className="relative z-10 flex h-full w-full flex-col justify-center gap-5 p-7 text-right md:p-10">
+              <div className="relative">
+              <h1 className="text-3xl font-extrabold tracking-tight text-white md:text-5xl">
+                {coach.displayName}
+              </h1>
+              {coach.title && (
+                <p className="mt-2 text-base font-semibold text-amber-100/90 md:text-lg">
+                  {coach.title}
+                </p>
+              )}
+            </div>
+
+            {specialtyParts.length > 1 ? (
+              <div className="relative flex justify-start">
+                <ContainerTextFlip words={specialtyParts} />
+              </div>
+            ) : coach.specialty ? (
+              <p className="relative text-sm leading-7 text-amber-100/90">{coach.specialty}</p>
+            ) : null}
+
+            {aboutLines.length > 0 && (
+              <div className="relative">
+                <h2 className="mb-3 text-lg font-bold text-white md:text-xl">سوابق حرفه‌ای</h2>
+                <ul className="space-y-2">
+                  {aboutLines.map((line, i) => (
+                    <li
+                      key={i}
+                      className="flex items-start justify-start gap-2 text-sm leading-7 text-zinc-300 md:text-base"
+                    >
+                      <span className="mt-2 inline-block h-1.5 w-1.5 flex-shrink-0 rounded-full bg-amber-500" />
+                      <span>{line}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <div className="relative flex flex-wrap items-center justify-start gap-2">{socialLinks}</div>
+
+            <a
+              href="#about"
+              dir="rtl"
+              className="relative self-start inline-flex items-center justify-center gap-2 rounded-2xl bg-zinc-800/65 px-6 py-3.5 text-base font-bold text-white ring-1 ring-white/25 backdrop-blur transition-colors hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+            >
+              <FiChevronDown className="text-lg" />
+              آشنایی بیشتر با مربی
+            </a>
+            </div>
+          </AuroraBackground>
+        </div>
       </section>
 
       {/* VALUE / PROOF STRIP */}
@@ -236,16 +261,31 @@ export default function CoachLandingClient({ slug }) {
 
       <div className="mx-auto mt-10 max-w-5xl px-4">
         {(coach.bio || coach.aboutCoach) && (
-          <section className="space-y-4 rounded-[26px] border border-white/10 bg-white/5 p-6">
+          <section id="about" className="scroll-mt-20 space-y-4 rounded-[26px] border border-white/10 bg-white/5 p-6">
             {coach.bio && (
-              <p className="text-sm leading-7 text-zinc-200">{coach.bio}</p>
+              <BlurTextAnimation 
+                text={coach.bio} 
+                textColor="text-zinc-200"
+                fontSize="text-sm"
+                className="leading-7"
+              />
             )}
             {coach.aboutCoach && (
               <div>
-                <h2 className="mb-2 text-lg font-bold text-white">درباره مربی</h2>
-                <p className="text-sm leading-7 text-zinc-300 whitespace-pre-line">
-                  {coach.aboutCoach}
-                </p>
+                <h2 className="mb-2 text-lg font-bold text-white">
+                  <BlurTextAnimation 
+                    text="درباره مربی"
+                    textColor="text-white"
+                    fontSize="text-lg"
+                    className="font-bold"
+                  />
+                </h2>
+                <BlurTextAnimation 
+                  text={coach.aboutCoach} 
+                  textColor="text-zinc-300"
+                  fontSize="text-sm"
+                  className="leading-7 whitespace-pre-line mt-2"
+                />
               </div>
             )}
           </section>
