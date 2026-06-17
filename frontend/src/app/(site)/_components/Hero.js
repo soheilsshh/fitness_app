@@ -1,129 +1,111 @@
 "use client";
 
-import Image from "next/image";
 import { motion } from "framer-motion";
-import { FiArrowDownRight, FiCheckCircle } from "react-icons/fi";
+import { FiArrowLeft, FiCheckCircle } from "react-icons/fi";
 
-import { apiAssetUrl } from "@/lib/api/assets";
+const HERO_VIDEO = "/landing/statue.mp4";
 
 const DEFAULT_FEATURES = [
-  "برنامه شخصی‌سازی‌شده",
-  "پشتیبانی و پیگیری",
-  "قابل استفاده روی موبایل",
-  "بدون نیاز به تجهیزات خاص",
-  "قابل تنظیم بر اساس سطح",
-  "نتایج قابل اندازه‌گیری",
+  "برنامه غذایی اختصاصی",
+  "پشتیبانی ۲۴ ساعته",
+  "آنالیز پیشرفته عضلانی",
+  "تمرینات اصلاحی",
+  "مشاوره تخصصی",
+  "دسترسی نامحدود",
 ];
 
 export default function Hero({ settings }) {
   const FEATURES = settings?.featureBullets?.items?.length
     ? settings.featureBullets.items
     : DEFAULT_FEATURES;
-  const heroImage = settings?.heroImage?.url ? apiAssetUrl(settings.heroImage.url) : "/images/22.png";
 
   return (
-    <section className="relative overflow-hidden">
-      {/* Background glow */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-24 left-1/2 h-130 w-130 -translate-x-1/2 rounded-full bg-emerald-500/15 blur-3xl" />
-        <div className="absolute -bottom-40 -right-30 h-130 w-130 rounded-full bg-cyan-500/10 blur-3xl" />
-      </div>
+    <section className="relative mx-auto flex min-h-[88vh] max-w-7xl flex-col items-center gap-12 overflow-hidden px-6 pt-10 pb-20 md:flex-row-reverse md:pt-16">
+      {/* Text */}
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7 }}
+        className="z-10 flex-1 space-y-8 text-right"
+      >
+        <div className="glass inline-flex items-center gap-2 rounded-full border border-surface-tint/20 px-4 py-1 text-xs tracking-widest text-surface-tint">
+          <span className="h-2 w-2 animate-pulse rounded-full bg-surface-tint" />
+          آکادمی اختصاصی تناسب اندام
+        </div>
 
-      <div className="mx-auto grid max-w-7xl items-center gap-10  pt-16 md:pt-2۰ md:grid-cols-2 ">
-        {/* Text */}
-        <motion.div
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7 }}
-          className="px-4"
-        >
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-zinc-200">
-            <span className="h-2 w-2 rounded-full bg-emerald-400" />
-            برنامه‌های تمرینی + تغذیه، متناسب با هدف شما
-          </div>
+        <h1 className="text-4xl font-extrabold leading-tight text-primary md:text-6xl">
+          فیتنس رو <span className="gradient-text">هوشمند</span> شروع کن
+        </h1>
 
-          <h1 className="mt-5 text-3xl font-extrabold leading-tight md:text-5xl">
-            فیتنس رو <span className="text-emerald-300">هوشمند</span> شروع کن،
-            <br className="hidden md:block" /> نتیجه رو{" "}
-            <span className="text-cyan-300">قابل اندازه‌گیری</span> ببین
-          </h1>
+        <p className="ml-auto max-w-xl text-base leading-8 text-on-surface-variant md:text-lg">
+          در فیت‌پرو، ما ورزش را یک علم و بدن را یک بوم نقاشی می‌بینیم. با استفاده از
+          متدهای علمی و مربیان تراز اول، مسیر حرفه‌ای شما را برای رسیدن به اوج
+          توانایی‌های جسمی طراحی می‌کنیم.
+        </p>
 
-          <p className="mt-4 max-w-xl text-sm leading-7 text-zinc-300 md:text-base">
-            برنامه‌های تخصصی برای چربی‌سوزی، عضله‌سازی و تناسب اندام. با پلن‌های
-            قابل خرید، مسیرت رو دقیق و حرفه‌ای جلو ببر.
-          </p>
+        <div className="flex flex-row-reverse items-center gap-4">
+          <a
+            href="#programs"
+            className="flex items-center gap-2 rounded-full bg-primary px-8 py-4 font-bold text-background shadow-2xl transition-all hover:scale-105 hover:shadow-[0_0_30px_rgba(251,255,250,0.2)]"
+          >
+            مشاهده برنامه‌ها
+            <FiArrowLeft className="text-xl" />
+          </a>
+          <a
+            href="#contact"
+            className="glass rounded-full border border-white/10 px-8 py-4 font-bold text-primary transition-colors hover:bg-white/5"
+          >
+            مشاوره رایگان
+          </a>
+        </div>
 
-          <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <a
-              href="#programs"
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-bold text-zinc-950 hover:bg-zinc-200"
+        <div className="grid grid-cols-2 gap-4 border-t border-outline-variant/10 pt-8">
+          {FEATURES.map((t, index) => (
+            <div
+              key={t}
+              className={[
+                "check-pulse flex flex-row-reverse items-center gap-3",
+                index > 2 ? "hidden md:flex" : "",
+              ].join(" ")}
             >
-              مشاهده برنامه‌ها <FiArrowDownRight />
-            </a>
-            <a
-              href="#"
-              className="inline-flex items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-zinc-100 hover:bg-white/10"
-            >
-              مشاوره رایگان
-            </a>
-          </div>
-
-          <div className="mt-7 grid max-w-xl grid-cols-2 gap-3 text-sm text-zinc-200 md:grid-cols-3">
-            {FEATURES.map((t, index) => (
-              <div
-                key={t}
-                className={[
-                  "flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-3",
-                  index > 3 ? "hidden md:flex" : "",
-                ].join(" ")}
-              >
-                <FiCheckCircle className="text-emerald-300 shrink-0" />
-                <span className="text-xs md:text-sm">{t}</span>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Image */}
-        <motion.div
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.15 }}
-          className="relative md:-translate-y-13"
-        >
-          <div className="relative overflow-hidden rounded-4xl">
-            <div className="relative aspect-4/5 w-full md:aspect-5/5">
-              <Image
-                src={heroImage}
-                alt="Fitness athlete"
-                fill
-                priority
-                className="object-cover"
-                unoptimized={heroImage.startsWith("http")}
-              />
-              {/* soft overlay */}
+              <FiCheckCircle className="check-pulse-icon shrink-0 text-surface-tint" />
+              <span className="text-on-surface-variant">{t}</span>
             </div>
+          ))}
+        </div>
+      </motion.div>
 
-            {/* badges */}
-            <div className="absolute bottom-4 left-4 right-4 grid grid-cols-2 gap-3">
-              <div className="rounded-2xl border border-white/10 bg-zinc-950/55 px-4 py-3 backdrop-blur">
-                <div className="text-[11px] text-zinc-300">هدف</div>
-                <div className="mt-1 text-sm font-bold text-white">
-                  عضله‌سازی
-                </div>
-              </div>
-              <div className="rounded-2xl border border-white/10 bg-zinc-950/55 px-4 py-3 backdrop-blur">
-                <div className="text-[11px] text-zinc-300">سطح</div>
-                <div className="mt-1 text-sm font-bold text-white">
-                  متوسط تا حرفه‌ای
-                </div>
-              </div>
-            </div>
+      {/* Statue */}
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, delay: 0.15 }}
+        className="relative flex h-[600px] w-full flex-1 items-center justify-center"
+      >
+        <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-surface-tint/5 to-transparent blur-[100px]" />
+        <div className="statue-frame glass group relative mx-auto aspect-[9/16] h-full w-auto max-w-full overflow-hidden rounded-[3rem] border border-white/5">
+          <video
+            src={HERO_VIDEO}
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="auto"
+            aria-label="مجسمه مرمری یونانی"
+            className="absolute inset-0 z-10 h-full w-full rounded-[2.5rem] object-cover object-center drop-shadow-[0_0_50px_rgba(0,225,171,0.2)]"
+          />
+
+          {/* Floating badges */}
+          <div className="glass absolute top-6 right-6 z-20 animate-bounce rounded-2xl border border-surface-tint/30 p-3 [animation-duration:4s]">
+            <span className="mb-1 block text-xs tracking-widest text-surface-tint">هدف</span>
+            <span className="text-lg font-bold text-primary">عضله‌سازی</span>
           </div>
-
-          <div className="pointer-events-none absolute -bottom-6 -left-6 h-24 w-24 rounded-full bg-emerald-400/20 blur-2xl" />
-        </motion.div>
-      </div>
+          <div className="glass absolute bottom-6 left-6 z-20 animate-bounce rounded-2xl border border-secondary-container/30 p-3 [animation-duration:5s]">
+            <span className="mb-1 block text-xs tracking-widest text-secondary-container">سطح</span>
+            <span className="text-lg font-bold text-primary">متوسط تا حرفه‌ای</span>
+          </div>
+        </div>
+      </motion.div>
     </section>
   );
 }
