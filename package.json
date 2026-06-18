@@ -1,0 +1,14 @@
+{
+  "name": "morabiyar",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w sport",
+    "build": "npm run build -w sport",
+    "start": "npm run start -w sport",
+    "lint": "npm run lint -w sport"
+  }
+}

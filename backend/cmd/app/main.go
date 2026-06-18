@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"strings"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -37,14 +38,26 @@ func NewServer() *Server {
 	// Initialize Gin router
 	router := gin.Default()
 
-	// CORS configuration for frontend <-> backend communication
-	frontendOrigin := os.Getenv("FRONTEND_ORIGIN")
-	if frontendOrigin == "" {
-		// Default to common Next.js dev origin
-		frontendOrigin = "http://localhost:3000"
+	// CORS configuration for frontend <-> backend communication.
+	// FRONTEND_ORIGIN may be a comma-separated list. When unset, default to the
+	// common Next.js dev ports (3000-3002) so a dev-server port bounce doesn't
+	// break preflight with a 403.
+	var allowOrigins []string
+	if env := os.Getenv("FRONTEND_ORIGIN"); env != "" {
+		for _, o := range strings.Split(env, ",") {
+			if o = strings.TrimSpace(o); o != "" {
+				allowOrigins = append(allowOrigins, o)
+			}
+		}
+	} else {
+		allowOrigins = []string{
+			"http://localhost:3000",
+			"http://localhost:3001",
+			"http://localhost:3002",
+		}
 	}
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{frontendOrigin},
+		AllowOrigins:     allowOrigins,
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
