@@ -78,7 +78,17 @@ export default function WorkoutProgramPreview({ studentId, programs }) {
             روز استراحت
           </p>
         ) : (
-          <WorkoutExerciseCards workout={workout} dayKey={selectedDay} />
+          <>
+            <p className="mb-4 text-xs text-muted-foreground">
+              برای مشاهده انیمیشن و طرز انجام، روی هر حرکت کلیک کنید
+            </p>
+            <WorkoutExerciseCards
+              workout={workout}
+              dayKey={selectedDay}
+              clickable
+              variant="cards"
+            />
+          </>
         )}
       </CardContent>
     </Card>

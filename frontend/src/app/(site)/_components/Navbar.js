@@ -72,17 +72,17 @@ export default function Navbar() {
       >
         <div
           className={[
-            "glass mx-auto flex items-center justify-between gap-3 border border-outline-variant/20 px-3 py-2.5 sm:px-6 sm:py-3",
-            "shadow-[0_12px_40px_-12px_rgba(0,0,0,0.65)] transition-all duration-300",
+            "glass mx-auto flex items-center justify-between gap-3 border border-border/60 px-3 py-2.5 sm:px-6 sm:py-3",
+            "shadow-sm transition-all duration-300 dark:shadow-[0_12px_40px_-12px_rgba(0,0,0,0.65)]",
             scrolled
-              ? "max-w-none rounded-none border-x-0 border-t-0 bg-black/80 backdrop-blur-xl"
+              ? "max-w-none rounded-none border-x-0 border-t-0 bg-background/90 backdrop-blur-xl"
               : "max-w-7xl rounded-full",
           ].join(" ")}
         >
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <button
               type="button"
-              className="inline-flex shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 p-2 text-zinc-100 hover:bg-white/10 md:hidden"
+              className="inline-flex shrink-0 items-center justify-center rounded-xl border bg-muted/60 p-2 text-foreground hover:bg-muted md:hidden"
               onClick={() => setDrawerOpen(true)}
               aria-label="باز کردن منو"
             >
@@ -90,8 +90,8 @@ export default function Navbar() {
             </button>
 
             <Link href="/" className="flex min-w-0 items-center gap-2">
-              <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-surface-tint/25 to-secondary-container/15 ring-1 ring-white/15">
-                <FaDumbbell className="text-surface-tint" />
+              <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 ring-1 ring-border">
+                <FaDumbbell className="text-primary" />
               </span>
               <span className="hidden text-2xl font-extrabold gradient-text sm:block">FitPro</span>
             </Link>
@@ -102,7 +102,7 @@ export default function Navbar() {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className="rounded-xl px-3 py-2 text-sm font-medium text-on-surface-variant transition hover:bg-white/8 hover:text-surface-tint"
+                    className="rounded-xl px-3 py-2 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-primary"
                   >
                     {item.label}
                   </Link>
@@ -111,7 +111,7 @@ export default function Navbar() {
                     key={item.id}
                     type="button"
                     onClick={() => goToSection(item.id)}
-                    className="rounded-xl px-3 py-2 text-sm font-medium text-on-surface-variant transition hover:bg-white/8 hover:text-surface-tint"
+                    className="rounded-xl px-3 py-2 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-primary"
                   >
                     {item.label}
                   </button>
@@ -121,23 +121,21 @@ export default function Navbar() {
           </div>
 
           <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
-            <ThemeToggle
-              buttonClassName="border-white/10 bg-white/5 text-zinc-100 hover:bg-white/10 hover:text-white"
-            />
+            <ThemeToggle buttonClassName="border-border bg-muted/60 text-foreground hover:bg-muted" />
             <CartButton />
 
             {session?.token ? (
               <div className="hidden items-center gap-1.5 md:flex">
                 <Link
                   href={panelHref}
-                  className="rounded-xl px-3 py-2 text-sm font-medium text-zinc-200 transition hover:bg-white/8"
+                  className="rounded-xl px-3 py-2 text-sm font-medium text-foreground transition hover:bg-muted"
                 >
                   {displayName}
                 </Link>
                 <button
                   type="button"
                   onClick={() => logout()}
-                  className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-zinc-200 transition hover:bg-white/10"
+                  className="inline-flex items-center gap-2 rounded-xl border bg-muted/60 px-3 py-2 text-sm text-foreground transition hover:bg-muted"
                 >
                   <FiLogOut />
                   خروج
@@ -147,13 +145,13 @@ export default function Navbar() {
               <div className="hidden items-center gap-1.5 md:flex">
                 <Link
                   href="/auth/login"
-                  className="rounded-xl px-3 py-2 text-sm font-medium text-zinc-200 transition hover:bg-white/8"
+                  className="rounded-xl px-3 py-2 text-sm font-medium text-foreground transition hover:bg-muted"
                 >
                   ورود
                 </Link>
                 <Link
                   href="/auth/register"
-                  className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-zinc-100 transition hover:bg-white/10"
+                  className="rounded-xl border bg-muted/60 px-3 py-2 text-sm font-medium text-foreground transition hover:bg-muted"
                 >
                   ثبت‌نام
                 </Link>
@@ -168,7 +166,7 @@ export default function Navbar() {
 
             <Link
               href={session?.token ? panelHref : "/auth/login"}
-              className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 p-2 text-zinc-100 transition hover:bg-white/10 md:hidden"
+              className="inline-flex items-center justify-center rounded-xl border bg-muted/60 p-2 text-foreground transition hover:bg-muted md:hidden"
               aria-label="ورود یا پنل"
             >
               <FiUser className="text-xl" />

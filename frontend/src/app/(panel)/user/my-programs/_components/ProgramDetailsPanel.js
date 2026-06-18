@@ -221,7 +221,7 @@ export default function ProgramDetailsPanel({ program, timeline }) {
                       workout={workout}
                       dayKey={selectedDay}
                       clickable
-                      variant="accordion"
+                      variant="cards"
                     />
                   </>
                 )}

@@ -141,7 +141,7 @@ export default function AboutSection({ steps }) {
               transition={{ duration: 0.5, delay: idx * 0.05 }}
               className="group glow-card flex h-full flex-col gap-4 rounded-2xl p-6 text-right"
             >
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/5 ring-1 ring-white/10 transition-transform group-hover:scale-110">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted ring-1 ring-border transition-transform group-hover:scale-110">
                 <Icon className={`text-3xl ${p.color}`} />
               </div>
               <div>

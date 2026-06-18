@@ -12,18 +12,26 @@ function getInitials(name) {
   return `${parts[0][0] || ""}${parts[1][0] || ""}`;
 }
 
+function userFromSession(session) {
+  if (!session) return null;
+  const name = session.name || "کاربر";
+  return {
+    name,
+    email: "",
+    avatar: "",
+    role: session.role || "",
+    initials: getInitials(name),
+  };
+}
+
 export function usePanelUser({ fetchProfile = true } = {}) {
-  const [user, setUser] = useState(() => {
-    const session = getAuthSession();
-    if (!session) return null;
-    return {
-      name: session.name || "کاربر",
-      email: "",
-      avatar: "",
-      role: session.role || "",
-      initials: getInitials(session.name),
-    };
-  });
+  // Always start null so SSR and the first client render match.
+  // Session is read from localStorage only after mount (browser-only).
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    setUser(userFromSession(getAuthSession()));
+  }, []);
 
   useEffect(() => {
     if (!fetchProfile) return;

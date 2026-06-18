@@ -43,6 +43,28 @@ func enrichWorkoutPlan(ctx context.Context, exerciseRepo repository.ExerciseRepo
 		return planByDay
 	}
 
+	for key, day := range planByDay {
+		if day.Workout == nil {
+			continue
+		}
+		if len(day.Workout.Exercises) == 0 && len(day.Workout.Steps) > 0 {
+			exercises := make([]MeWorkoutExerciseDTO, 0, len(day.Workout.Steps))
+			for _, step := range day.Workout.Steps {
+				name, sets, reps := parseWorkoutStep(step)
+				if strings.TrimSpace(name) == "" {
+					continue
+				}
+				exercises = append(exercises, MeWorkoutExerciseDTO{
+					Name: name,
+					Sets: sets,
+					Reps: reps,
+				})
+			}
+			day.Workout.Exercises = exercises
+			planByDay[key] = day
+		}
+	}
+
 	idSet := map[uint]bool{}
 	nameSet := map[string]bool{}
 	for _, day := range planByDay {

@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { mediaUrl } from "./mediaUrl";
+import { exercisePreviewUrl, isVideoMedia } from "./mediaUrl";
 import ExerciseDetailModal from "./ExerciseDetailModal";
 
 function normalizeExercises(workout) {
@@ -58,19 +58,32 @@ function ExerciseBadges({ exercise }) {
 }
 
 function ExerciseThumb({ exercise, index }) {
-  const img = mediaUrl(exercise.imageUrl);
+  const preview = exercisePreviewUrl(exercise);
+  const showVideo = isVideoMedia(exercise?.gifUrl) || isVideoMedia(preview);
 
   return (
     <div className="relative size-16 shrink-0 overflow-hidden rounded-lg border bg-muted">
-      {img ? (
-        <img
-          src={img}
-          alt={exercise.name}
-          className="size-full object-cover"
-          onError={(e) => {
-            e.target.style.display = "none";
-          }}
-        />
+      {preview ? (
+        showVideo ? (
+          <video
+            src={preview}
+            className="size-full object-cover"
+            muted
+            playsInline
+            loop
+            autoPlay
+            aria-hidden
+          />
+        ) : (
+          <img
+            src={preview}
+            alt={exercise.name}
+            className="size-full object-cover"
+            onError={(e) => {
+              e.target.style.display = "none";
+            }}
+          />
+        )
       ) : (
         <div className="flex size-full items-center justify-center text-sm font-semibold text-muted-foreground">
           {(index + 1).toLocaleString("fa-IR")}

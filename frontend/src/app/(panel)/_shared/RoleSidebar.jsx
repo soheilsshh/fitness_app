@@ -13,7 +13,28 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { Skeleton } from "@/components/ui/skeleton";
 import { DumbbellIcon } from "lucide-react";
+
+function NavUserPlaceholder() {
+  return (
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <SidebarMenuButton
+          size="lg"
+          className="pointer-events-none"
+          aria-hidden
+        >
+          <Skeleton className="size-8 rounded-lg" />
+          <div className="grid flex-1 gap-1.5 text-start">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-3 w-32" />
+          </div>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    </SidebarMenu>
+  );
+}
 
 export function RoleSidebar({
   brand,
@@ -71,11 +92,10 @@ export function RoleSidebar({
 
       <SidebarFooter>
         {user ? (
-          <NavUser
-            user={user}
-            profileHref={profileHref}
-          />
-        ) : null}
+          <NavUser user={user} profileHref={profileHref} />
+        ) : (
+          <NavUserPlaceholder />
+        )}
       </SidebarFooter>
 
       <SidebarRail />
