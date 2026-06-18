@@ -65,7 +65,7 @@ export default function Navbar() {
     goToSection(item.id);
   };
 
-  const panelHref = session?.role ? getDashboardPath(session.role) : "/user/my-programs";
+  const panelHref = session?.role ? getDashboardPath(session.role) : "/user/dashboard";
   const displayName = session?.name || "حساب من";
 
   return (

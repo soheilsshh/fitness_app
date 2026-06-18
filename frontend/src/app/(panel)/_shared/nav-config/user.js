@@ -2,6 +2,8 @@ import {
   ClipboardListIcon,
   Contact,
   HistoryIcon,
+  LayoutDashboardIcon,
+  LineChartIcon,
   ShoppingBagIcon,
   UserIcon,
 } from "lucide-react";
@@ -13,6 +15,16 @@ export const userBrand = {
 };
 
 export const userNav = [
+  {
+    href: "/user/dashboard",
+    label: "داشبورد",
+    icon: LayoutDashboardIcon,
+  },
+  {
+    href: "/user/tracking",
+    label: "پایش",
+    icon: LineChartIcon,
+  },
   {
     href: "/user/my-programs",
     label: "برنامه‌های من",

@@ -15,5 +15,5 @@ type Subscription struct {
 	EndsAt              *time.Time
 	LastCheckInDate     *time.Time
 	NextCheckInDueDate  *time.Time
-	CheckinFrequencyDays int       `gorm:"default:7"`
+	CheckinFrequencyDays int       `gorm:"default:14"`
 }

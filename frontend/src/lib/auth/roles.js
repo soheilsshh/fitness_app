@@ -7,7 +7,7 @@ export const ROLES = {
 const DASHBOARD_PATHS = {
   [ROLES.ADMIN]: "/admin/dashboard",
   [ROLES.COACH]: "/coach/dashboard",
-  [ROLES.STUDENT]: "/user/my-programs",
+  [ROLES.STUDENT]: "/user/dashboard",
 };
 
 /** Returns the post-login dashboard path for a given role. */

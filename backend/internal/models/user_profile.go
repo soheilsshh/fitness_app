@@ -19,6 +19,7 @@ const (
 	PhotoTypeRight = "right"
 	PhotoTypeBack  = "back"
 	PhotoTypeLeft  = "left"
+	PhotoTypeSide  = "side"
 )
 
 var (
@@ -44,6 +45,13 @@ var (
 		PhotoTypeBack,
 		PhotoTypeLeft,
 	}
+	// TrackingPhotoTypes are the three angles required for bi-weekly progress check-ins.
+	TrackingPhotoTypes = []string{
+		PhotoTypeFront,
+		PhotoTypeBack,
+		PhotoTypeSide,
+	}
+	DefaultCheckinFrequencyDays = 14
 )
 
 func (u *User) GetGoals() []string {

@@ -135,6 +135,9 @@ func NewServer() *Server {
 	coachExerciseController := controllers.NewCoachExerciseController(adminExerciseService)
 	coachTicketController := controllers.NewCoachTicketController(ticketService)
 	checkoutController := controllers.NewCheckoutController(checkoutService)
+	trackingService := service.NewTrackingService(db, subscriptionRepo, coachStudentService)
+	trackingController := controllers.NewTrackingController(trackingService)
+	coachTrackingController := controllers.NewCoachTrackingController(trackingService)
 
 	// Auth routes
 	router.POST("/auth/register", authController.Register)
@@ -191,6 +194,8 @@ func NewServer() *Server {
 		coachGroup.GET("/exercises", coachExerciseController.ListExercises)
 		coachGroup.POST("/exercises", coachExerciseController.CreateExercise)
 		coachGroup.GET("/exercises/:id", coachExerciseController.GetExerciseByID)
+		coachGroup.GET("/tracking/students", coachTrackingController.ListStudents)
+		coachGroup.GET("/tracking/students/:id", coachTrackingController.GetStudentTracking)
 	}
 
 	// Student (user panel) routes - all protected
@@ -200,6 +205,9 @@ func NewServer() *Server {
 		studentGroup.GET("/me", meController.GetProfile)
 		studentGroup.PATCH("/me", meController.UpdateProfile)
 		studentGroup.POST("/me/body-photos", meController.UploadBodyPhoto)
+		studentGroup.GET("/me/tracking", trackingController.GetMyTracking)
+		studentGroup.POST("/me/tracking/weight", trackingController.SubmitWeight)
+		studentGroup.POST("/me/tracking/photos", trackingController.UploadTrackingPhoto)
 		studentGroup.POST("/me/change-password", authController.ChangePassword)
 		studentGroup.GET("/me/orders", meController.ListMyOrders)
 		studentGroup.GET("/me/orders/:id", meController.GetMyOrderByID)

@@ -190,12 +190,15 @@ func (s *checkoutService) Checkout(ctx context.Context, userID uint, req *Checko
 		}
 
 		endsAt := now.AddDate(0, 0, maxDurationDays)
+		nextDue := now.AddDate(0, 0, models.DefaultCheckinFrequencyDays)
 		sub := &models.Subscription{
-			UserID:        userID,
-			CoachID:       coachID,
-			ServicePlanID: lines[0].plan.ID,
-			StartsAt:      now,
-			EndsAt:        &endsAt,
+			UserID:               userID,
+			CoachID:              coachID,
+			ServicePlanID:        lines[0].plan.ID,
+			StartsAt:             now,
+			EndsAt:               &endsAt,
+			NextCheckInDueDate:   &nextDue,
+			CheckinFrequencyDays: models.DefaultCheckinFrequencyDays,
 		}
 		if err := tx.Create(sub).Error; err != nil {
 			return err
