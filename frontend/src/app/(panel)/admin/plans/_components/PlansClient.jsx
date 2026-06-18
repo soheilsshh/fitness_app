@@ -1,11 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FiSearch, FiClipboard } from "react-icons/fi";
+import { ClipboardList, Search } from "lucide-react";
 import { api } from "@/lib/axios/client";
 import PlanRow from "./PlanRow";
 import FilterChip from "./FilterChip";
-import Pagination from "./Pagination";
+import PanelPagination from "@/app/(panel)/_shared/Pagination";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function PlansClient() {
   const [items, setItems] = useState([]);
@@ -45,51 +49,86 @@ export default function PlansClient() {
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4 md:gap-6" dir="rtl">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <div className="text-lg font-extrabold text-white">پلن‌های پلتفرم</div>
-          <div className="mt-1 text-sm text-zinc-300">
+        <div className="text-start">
+          <h2 className="text-lg font-semibold tracking-tight">پلن‌های پلتفرم</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
             مشاهده همه پلن‌های مربی‌ها (فقط خواندنی)
+          </p>
+        </div>
+        <Badge variant="outline" className="gap-1.5 px-3 py-1.5 text-sm">
+          <ClipboardList className="size-3.5 text-primary" />
+          تعداد:
+          <span className="font-semibold tabular-nums text-foreground">
+            {total.toLocaleString("fa-IR")}
+          </span>
+        </Badge>
+      </div>
+
+      <Card>
+        <CardContent className="flex flex-col gap-3 pt-6 md:flex-row md:items-center md:justify-between">
+          <div className="relative w-full md:max-w-md">
+            <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setPage(1);
+              }}
+              placeholder="جستجو با تیتر، ساب‌تیتر یا نام دوره..."
+              className="ps-9"
+            />
           </div>
-        </div>
-        <div className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-zinc-950/30 px-4 py-3 text-sm text-zinc-200">
-          <FiClipboard className="text-emerald-200" />
-          تعداد: <span className="font-bold text-white">{total}</span>
-        </div>
-      </div>
+          <div className="flex flex-wrap gap-2">
+            <FilterChip
+              active={tag === "all"}
+              onClick={() => {
+                setTag("all");
+                setPage(1);
+              }}
+            >
+              همه
+            </FilterChip>
+            <FilterChip
+              active={tag === "discounted"}
+              onClick={() => {
+                setTag("discounted");
+                setPage(1);
+              }}
+            >
+              تخفیف‌دار
+            </FilterChip>
+            <FilterChip
+              active={tag === "popular"}
+              onClick={() => {
+                setTag("popular");
+                setPage(1);
+              }}
+            >
+              محبوب
+            </FilterChip>
+          </div>
+        </CardContent>
+      </Card>
 
-      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-        <div className="relative w-full md:max-w-md">
-          <FiSearch className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400" />
-          <input
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              setPage(1);
-            }}
-            placeholder="جستجو با تیتر، ساب‌تیتر یا نام دوره..."
-            className="w-full rounded-2xl border border-white/10 bg-white/5 py-2.5 pl-3 pr-9 text-sm text-white placeholder:text-zinc-500 outline-none focus:border-emerald-400/40"
-          />
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <FilterChip active={tag === "all"} onClick={() => { setTag("all"); setPage(1); }}>همه</FilterChip>
-          <FilterChip active={tag === "discounted"} onClick={() => { setTag("discounted"); setPage(1); }}>تخفیف‌دار</FilterChip>
-          <FilterChip active={tag === "popular"} onClick={() => { setTag("popular"); setPage(1); }}>محبوب</FilterChip>
-        </div>
-      </div>
-
-      <div className="rounded-[26px] border border-white/10 bg-white/5">
+      <Card>
         {loading ? (
-          <div className="p-6 text-sm text-zinc-400">در حال بارگذاری...</div>
+          <CardContent className="space-y-3 py-6">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-16 w-full rounded-lg" />
+            ))}
+          </CardContent>
         ) : items.length === 0 ? (
-          <div className="p-6 text-sm text-zinc-400">پلنی یافت نشد.</div>
+          <CardContent className="py-10 text-center text-sm text-muted-foreground">
+            پلنی یافت نشد.
+          </CardContent>
         ) : (
           items.map((plan) => <PlanRow key={plan.id} plan={plan} />)
         )}
-      </div>
+      </Card>
 
-      <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+      <PanelPagination page={page} totalPages={totalPages} onPage={setPage} />
     </div>
   );
 }

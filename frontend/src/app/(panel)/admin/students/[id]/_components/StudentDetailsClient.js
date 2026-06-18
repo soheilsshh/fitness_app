@@ -2,8 +2,17 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { FiChevronLeft, FiPhone, FiClipboard } from "react-icons/fi";
+import { ChevronLeft, ChevronRight, ClipboardList, Phone } from "lucide-react";
 import { api } from "@/lib/axios/client";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function StudentDetailsClient({ id }) {
   const [student, setStudent] = useState(null);
@@ -27,59 +36,80 @@ export default function StudentDetailsClient({ id }) {
   }, [id]);
 
   if (loading) {
-    return <div className="rounded-[26px] border border-white/10 bg-white/5 p-6 text-sm text-zinc-400">در حال بارگذاری...</div>;
+    return (
+      <Card dir="rtl">
+        <CardHeader>
+          <CardTitle>در حال بارگذاری...</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <Skeleton className="h-5 w-48" />
+          <Skeleton className="h-24 w-full" />
+        </CardContent>
+      </Card>
+    );
   }
 
   if (!student) {
     return (
-      <div className="rounded-[26px] border border-white/10 bg-white/5 p-6 text-sm text-zinc-300">
-        شاگرد پیدا نشد.
-      </div>
+      <Card dir="rtl">
+        <CardContent className="pt-6 text-sm text-muted-foreground">شاگرد پیدا نشد.</CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div dir="rtl" className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
-        <Link
-          href="/admin/students"
-          className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-bold text-zinc-100 hover:bg-white/10"
-        >
-          <FiChevronLeft />
-          بازگشت
-        </Link>
-        <div className="text-lg font-extrabold text-white">{student.fullName}</div>
+        <Button asChild variant="outline">
+          <Link href="/admin/students" className="inline-flex items-center gap-2">
+            <ChevronRight className="size-4" />
+            بازگشت
+          </Link>
+        </Button>
+        <h1 className="text-lg font-extrabold">{student.fullName}</h1>
       </div>
 
-      <div className="rounded-[26px] border border-white/10 bg-white/5 p-5 md:p-6">
-        <div className="mb-4 text-sm text-zinc-400">
-          تخصیص برنامه توسط مربی در پنل مربی انجام می‌شود.
-        </div>
-        <div className="grid gap-4 md:grid-cols-2">
-          <InfoRow icon={FiPhone} label="موبایل" value={student.phone} />
-          <InfoRow icon={FiClipboard} label="پلن" value={student.planTitle || "—"} />
-          <InfoRow label="وضعیت" value={student.status === "active" ? "فعال" : "در انتظار"} />
-          <InfoRow label="نوع پلن" value={
-            student.planType === "both" ? "تمرین + تغذیه" : student.planType === "workout" ? "تمرین" : "تغذیه"
-          } />
-          {student.durationDays ? <InfoRow label="مدت پلن" value={`${student.durationDays} روز`} /> : null}
+      <Card>
+        <CardHeader>
+          <CardTitle>جزئیات شاگرد</CardTitle>
+          <CardDescription>تخصیص برنامه توسط مربی در پنل مربی انجام می‌شود.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-2">
+            <InfoRow icon={Phone} label="موبایل" value={student.phone} />
+            <InfoRow icon={ClipboardList} label="پلن" value={student.planTitle || "—"} />
+            <InfoRow label="وضعیت" value={student.status === "active" ? "فعال" : "در انتظار"} />
+            <InfoRow
+              label="نوع پلن"
+              value={
+                student.planType === "both"
+                  ? "تمرین + تغذیه"
+                  : student.planType === "workout"
+                    ? "تمرین"
+                    : "تغذیه"
+              }
+            />
+            {student.durationDays ? <InfoRow label="مدت پلن" value={`${student.durationDays} روز`} /> : null}
           {student.remainingDays > 0 ? (
             <InfoRow label="روز باقی‌مانده" value={`${student.remainingDays} روز`} />
           ) : null}
-        </div>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
 
 function InfoRow({ icon: Icon, label, value }) {
   return (
-    <div className="rounded-3xl border border-white/10 bg-zinc-950/30 p-4">
-      <div className="flex items-center gap-2 text-[11px] text-zinc-400">
+    <Card className="bg-muted/20">
+      <CardContent className="pt-4">
+        <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
         {Icon ? <Icon /> : null}
         {label}
       </div>
-      <div className="mt-1 text-sm font-bold text-white">{value}</div>
-    </div>
+        <div className="mt-1 text-sm font-bold">{value}</div>
+      </CardContent>
+    </Card>
   );
 }

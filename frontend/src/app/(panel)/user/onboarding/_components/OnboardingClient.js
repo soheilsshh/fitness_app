@@ -2,27 +2,41 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
 import {
-  FiUser,
-  FiTarget,
-  FiActivity,
-  FiImage,
-  FiArrowLeft,
-  FiArrowRight,
-  FiCheck,
-} from "react-icons/fi";
+  Activity,
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  Image as ImageIcon,
+  Target,
+  User,
+} from "lucide-react";
 import JalaliDateField from "@/components/forms/JalaliDateField";
 import { api } from "@/lib/axios/client";
 import { apiAssetUrl } from "@/lib/api/assets";
 import { getDashboardPath, ROLES } from "@/lib/auth/roles";
 import { gregorianISOToJalali, jalaliToGregorianISO } from "@/lib/date/jalali";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { cn } from "@/lib/utils";
 
 const STEPS = [
-  { id: "personal", label: "اطلاعات شخصی", icon: FiUser },
-  { id: "body", label: "اهداف و بدن", icon: FiTarget },
-  { id: "medical", label: "سوابق پزشکی", icon: FiActivity },
-  { id: "photos", label: "عکس‌های بدن", icon: FiImage },
+  { id: "personal", label: "اطلاعات شخصی", icon: User },
+  { id: "body", label: "اهداف و بدن", icon: Target },
+  { id: "medical", label: "سوابق پزشکی", icon: Activity },
+  { id: "photos", label: "عکس‌های بدن", icon: ImageIcon },
 ];
 
 const GOAL_OPTIONS = [
@@ -131,45 +145,51 @@ export default function OnboardingClient() {
 
   const setField = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
 
-  const toggleGoal = (value) => {
-    setForm((prev) => {
-      const has = prev.goals.includes(value);
-      return {
-        ...prev,
-        goals: has ? prev.goals.filter((g) => g !== value) : [...prev.goals, value],
-      };
-    });
-  };
-
   const validateStep = () => {
     if (step === 0) {
-      if (!form.firstName.trim() || !form.lastName.trim()) return "نام و نام خانوادگی الزامی است.";
+      if (!form.firstName.trim() || !form.lastName.trim()) {
+        return "نام و نام خانوادگی الزامی است.";
+      }
       const { year, month, day } = form.birthDateJalali || EMPTY_JALALI;
       if (!year || !month || !day) return "تاریخ تولد شمسی را کامل انتخاب کنید.";
       const isoBirth = jalaliToGregorianISO(year, month, day);
       if (!isoBirth) return "تاریخ تولد وارد شده معتبر نیست.";
       const h = Number(form.heightCm);
       const w = Number(form.weightKg);
-      if (!Number.isFinite(h) || h < 80 || h > 250) return "قد باید بین ۸۰ تا ۲۵۰ سانتی‌متر باشد.";
-      if (!Number.isFinite(w) || w < 20 || w > 300) return "وزن باید بین ۲۰ تا ۳۰۰ کیلوگرم باشد.";
+      if (!Number.isFinite(h) || h < 80 || h > 250) {
+        return "قد باید بین ۸۰ تا ۲۵۰ سانتی‌متر باشد.";
+      }
+      if (!Number.isFinite(w) || w < 20 || w > 300) {
+        return "وزن باید بین ۲۰ تا ۳۰۰ کیلوگرم باشد.";
+      }
       if (!/^\d{10}$/.test(form.nationalId.trim())) return "کد ملی باید ۱۰ رقم باشد.";
       if (!form.gender) return "جنسیت را انتخاب کنید.";
     }
     if (step === 1) {
       const tw = Number(form.targetWeightKg);
-      if (!Number.isFinite(tw) || tw < 20 || tw > 300) return "وزن هدف باید بین ۲۰ تا ۳۰۰ کیلوگرم باشد.";
+      if (!Number.isFinite(tw) || tw < 20 || tw > 300) {
+        return "وزن هدف باید بین ۲۰ تا ۳۰۰ کیلوگرم باشد.";
+      }
       if (!form.bodyCondition) return "وضعیت بدنی را انتخاب کنید.";
       if (form.goals.length === 0) return "حداقل یک هدف انتخاب کنید.";
       if (!form.primaryGoal.trim()) return "هدف اصلی را بنویسید.";
       if (form.bodyFatPercent !== "" && form.bodyFatPercent != null) {
         const bf = Number(form.bodyFatPercent);
-        if (!Number.isFinite(bf) || bf < 1 || bf > 60) return "درصد چربی باید بین ۱ تا ۶۰ باشد.";
+        if (!Number.isFinite(bf) || bf < 1 || bf > 60) {
+          return "درصد چربی باید بین ۱ تا ۶۰ باشد.";
+        }
       }
     }
     if (step === 2) {
-      if (!form.medicalHistory.trim()) return "سوابق پزشکی را وارد کنید (در صورت نداشتن بنویسید: ندارم).";
-      if (!form.injuries.trim()) return "آسیب‌دیدگی‌ها را وارد کنید (در صورت نداشتن بنویسید: ندارم).";
-      if (!form.physicalLimitations.trim()) return "محدودیت بدنی را وارد کنید (در صورت نداشتن بنویسید: ندارم).";
+      if (!form.medicalHistory.trim()) {
+        return "سوابق پزشکی را وارد کنید (در صورت نداشتن بنویسید: ندارم).";
+      }
+      if (!form.injuries.trim()) {
+        return "آسیب‌دیدگی‌ها را وارد کنید (در صورت نداشتن بنویسید: ندارم).";
+      }
+      if (!form.physicalLimitations.trim()) {
+        return "محدودیت بدنی را وارد کنید (در صورت نداشتن بنویسید: ندارم).";
+      }
     }
     if (step === 3) {
       for (const slot of PHOTO_SLOTS) {
@@ -304,69 +324,88 @@ export default function OnboardingClient() {
   };
 
   if (loading) {
-    return <div className="text-sm text-zinc-400">در حال بارگذاری...</div>;
+    return (
+      <div className="mx-auto flex max-w-3xl flex-col gap-4" dir="rtl">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-24 w-full rounded-xl" />
+        <Skeleton className="h-64 w-full rounded-xl" />
+      </div>
+    );
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <div>
-        <h1 className="text-xl font-extrabold text-white">تکمیل پروفایل</h1>
-        <p className="mt-1 text-sm text-zinc-400">
+    <div className="mx-auto flex max-w-3xl flex-col gap-4 md:gap-6" dir="rtl">
+      <div className="text-start">
+        <h1 className="text-xl font-semibold tracking-tight">تکمیل پروفایل</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
           برای استفاده از پنل، لطفاً اطلاعات زیر را کامل کنید.
         </p>
       </div>
 
-      <div className="rounded-[26px] border border-white/10 bg-white/5 p-4">
-        <div className="mb-4 h-2 overflow-hidden rounded-full bg-zinc-800">
-          <div
-            className="h-full rounded-full bg-emerald-400 transition-all"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          {STEPS.map((s, i) => {
-            const Icon = s.icon;
-            const active = i === step;
-            const done = i < step;
-            return (
-              <div
-                key={s.id}
-                className={[
-                  "rounded-2xl border px-3 py-2 text-center text-xs font-bold",
-                  active
-                    ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-100"
-                    : done
-                      ? "border-white/10 bg-zinc-950/30 text-zinc-300"
-                      : "border-white/10 bg-zinc-950/20 text-zinc-500",
-                ].join(" ")}
-              >
-                <Icon className="mx-auto mb-1 text-base" />
-                {s.label}
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      <Card>
+        <CardContent className="space-y-4 pt-6">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>پیشرفت تکمیل</span>
+              <span className="tabular-nums">
+                {Math.round(progress).toLocaleString("fa-IR")}%
+              </span>
+            </div>
+            <Progress value={progress} />
+          </div>
 
-      {error && (
-        <div className="rounded-2xl border border-rose-400/20 bg-rose-400/10 px-4 py-3 text-sm text-rose-100">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {STEPS.map((item, index) => {
+              const Icon = item.icon;
+              const active = index === step;
+              const done = index < step;
+              return (
+                <div
+                  key={item.id}
+                  className={cn(
+                    "rounded-lg border px-3 py-2 text-center text-xs font-medium",
+                    active && "border-primary/40 bg-primary/5 text-foreground",
+                    done && !active && "border-border bg-muted/50 text-muted-foreground",
+                    !active && !done && "border-border bg-muted/20 text-muted-foreground"
+                  )}
+                >
+                  <Icon className="mx-auto mb-1 size-4" />
+                  {item.label}
+                </div>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      {error ? (
+        <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-800 dark:text-rose-200">
           {error}
         </div>
-      )}
+      ) : null}
 
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={step}
-          initial={{ opacity: 0, x: 12 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -12 }}
-          className="rounded-[26px] border border-white/10 bg-white/5 p-6"
-        >
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">{STEPS[step].label}</CardTitle>
+          <CardDescription>
+            مرحله {(step + 1).toLocaleString("fa-IR")} از{" "}
+            {STEPS.length.toLocaleString("fa-IR")}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
           {step === 0 && (
             <div className="space-y-4">
-              <div className="grid gap-3 sm:grid-cols-2">
-                <Field label="نام" value={form.firstName} onChange={(v) => setField("firstName", v)} />
-                <Field label="نام خانوادگی" value={form.lastName} onChange={(v) => setField("lastName", v)} />
+              <div className="grid gap-4 sm:grid-cols-2">
+                <FormField
+                  label="نام"
+                  value={form.firstName}
+                  onChange={(v) => setField("firstName", v)}
+                />
+                <FormField
+                  label="نام خانوادگی"
+                  value={form.lastName}
+                  onChange={(v) => setField("lastName", v)}
+                />
               </div>
               <JalaliDateField
                 label="تاریخ تولد (شمسی)"
@@ -382,104 +421,101 @@ export default function OnboardingClient() {
                   }));
                 }}
               />
-              <div className="grid gap-3 sm:grid-cols-2">
-                <Field
+              <div className="grid gap-4 sm:grid-cols-2">
+                <FormField
                   label="قد (cm)"
                   type="number"
                   value={form.heightCm}
                   onChange={(v) => setField("heightCm", v)}
                 />
-                <Field
+                <FormField
                   label="وزن فعلی (kg)"
                   type="number"
                   value={form.weightKg}
                   onChange={(v) => setField("weightKg", v)}
                 />
               </div>
-              <Field
+              <FormField
                 label="کد ملی"
                 value={form.nationalId}
-                onChange={(v) => setField("nationalId", v.replace(/\D/g, "").slice(0, 10))}
+                onChange={(v) =>
+                  setField("nationalId", v.replace(/\D/g, "").slice(0, 10))
+                }
                 inputMode="numeric"
               />
-              <div>
-                <div className="mb-2 text-xs font-bold text-zinc-300">جنسیت</div>
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { value: "male", label: "مرد" },
-                    { value: "female", label: "زن" },
-                  ].map((g) => (
-                    <button
-                      key={g.value}
-                      type="button"
-                      onClick={() => setField("gender", g.value)}
-                      className={[
-                        "rounded-2xl border px-4 py-3 text-sm font-bold",
-                        form.gender === g.value
-                          ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-100"
-                          : "border-white/10 bg-zinc-950/30 text-zinc-200 hover:bg-white/5",
-                      ].join(" ")}
-                    >
-                      {g.label}
-                    </button>
-                  ))}
-                </div>
+              <div className="space-y-2">
+                <Label>جنسیت</Label>
+                <ToggleGroup
+                  type="single"
+                  value={form.gender}
+                  onValueChange={(v) => v && setField("gender", v)}
+                  variant="outline"
+                  className="grid w-full grid-cols-2"
+                >
+                  <ToggleGroupItem value="male">مرد</ToggleGroupItem>
+                  <ToggleGroupItem value="female">زن</ToggleGroupItem>
+                </ToggleGroup>
               </div>
             </div>
           )}
 
           {step === 1 && (
             <div className="space-y-4">
-              <div className="grid gap-3 sm:grid-cols-2">
-                <Field label="وزن هدف (kg)" type="number" value={form.targetWeightKg} onChange={(v) => setField("targetWeightKg", v)} />
-                <Field
+              <div className="grid gap-4 sm:grid-cols-2">
+                <FormField
+                  label="وزن هدف (kg)"
+                  type="number"
+                  value={form.targetWeightKg}
+                  onChange={(v) => setField("targetWeightKg", v)}
+                />
+                <FormField
                   label="درصد چربی (اختیاری)"
                   type="number"
                   value={form.bodyFatPercent}
                   onChange={(v) => setField("bodyFatPercent", v)}
                 />
               </div>
-              <div>
-                <div className="mb-2 text-xs font-bold text-zinc-300">وضعیت بدنی</div>
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                  {BODY_CONDITIONS.map((c) => (
-                    <button
-                      key={c.value}
-                      type="button"
-                      onClick={() => setField("bodyCondition", c.value)}
-                      className={[
-                        "rounded-2xl border px-3 py-2 text-xs font-bold",
-                        form.bodyCondition === c.value
-                          ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-100"
-                          : "border-white/10 bg-zinc-950/30 text-zinc-200 hover:bg-white/5",
-                      ].join(" ")}
+              <div className="space-y-2">
+                <Label>وضعیت بدنی</Label>
+                <ToggleGroup
+                  type="single"
+                  value={form.bodyCondition}
+                  onValueChange={(v) => v && setField("bodyCondition", v)}
+                  variant="outline"
+                  className="grid w-full grid-cols-2 gap-2 sm:grid-cols-3"
+                >
+                  {BODY_CONDITIONS.map((condition) => (
+                    <ToggleGroupItem
+                      key={condition.value}
+                      value={condition.value}
+                      className="text-xs"
                     >
-                      {c.label}
-                    </button>
+                      {condition.label}
+                    </ToggleGroupItem>
                   ))}
-                </div>
+                </ToggleGroup>
               </div>
-              <div>
-                <div className="mb-2 text-xs font-bold text-zinc-300">اهداف</div>
-                <div className="flex flex-wrap gap-2">
-                  {GOAL_OPTIONS.map((g) => (
-                    <button
-                      key={g.value}
-                      type="button"
-                      onClick={() => toggleGoal(g.value)}
-                      className={[
-                        "rounded-2xl border px-3 py-2 text-xs font-bold",
-                        form.goals.includes(g.value)
-                          ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-100"
-                          : "border-white/10 bg-zinc-950/30 text-zinc-200 hover:bg-white/5",
-                      ].join(" ")}
+              <div className="space-y-2">
+                <Label>اهداف</Label>
+                <ToggleGroup
+                  type="multiple"
+                  value={form.goals}
+                  onValueChange={(values) => setForm((prev) => ({ ...prev, goals: values }))}
+                  variant="outline"
+                  className="flex flex-wrap justify-start gap-2"
+                >
+                  {GOAL_OPTIONS.map((goal) => (
+                    <ToggleGroupItem
+                      key={goal.value}
+                      value={goal.value}
+                      className="text-xs"
                     >
-                      {g.label}
-                    </button>
+                      {goal.label}
+                    </ToggleGroupItem>
                   ))}
-                </div>
+                </ToggleGroup>
               </div>
-              <Field
+              <FormField
                 label="هدف اصلی (توضیح کوتاه)"
                 value={form.primaryGoal}
                 onChange={(v) => setField("primaryGoal", v)}
@@ -490,19 +526,19 @@ export default function OnboardingClient() {
 
           {step === 2 && (
             <div className="space-y-4">
-              <TextArea
+              <TextAreaField
                 label="سوابق پزشکی"
                 value={form.medicalHistory}
                 onChange={(v) => setField("medicalHistory", v)}
                 placeholder="در صورت نداشتن بنویسید: ندارم"
               />
-              <TextArea
+              <TextAreaField
                 label="بیماری‌ها و آسیب‌دیدگی‌ها"
                 value={form.injuries}
                 onChange={(v) => setField("injuries", v)}
                 placeholder="در صورت نداشتن بنویسید: ندارم"
               />
-              <TextArea
+              <TextAreaField
                 label="محدودیت‌های بدنی"
                 value={form.physicalLimitations}
                 onChange={(v) => setField("physicalLimitations", v)}
@@ -517,96 +553,112 @@ export default function OnboardingClient() {
                 const photo = photos[slot.type];
                 const isUploading = uploadingType === slot.type;
                 return (
-                  <div
-                    key={slot.type}
-                    className="rounded-3xl border border-white/10 bg-zinc-950/30 p-4"
-                  >
-                    <div className="mb-3 text-sm font-extrabold text-white">نمای {slot.label}</div>
-                    {photo?.url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={apiAssetUrl(photo.url)}
-                        alt={slot.label}
-                        className="mb-3 h-40 w-full rounded-2xl object-cover"
-                      />
-                    ) : (
-                      <div className="mb-3 flex h-40 items-center justify-center rounded-2xl border border-dashed border-white/10 bg-white/5 text-xs text-zinc-500">
-                        عکس انتخاب نشده
-                      </div>
-                    )}
-                    <label className="inline-flex w-full cursor-pointer items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold text-zinc-100 hover:bg-white/10">
-                      {isUploading ? "در حال آپلود..." : photo ? "تغییر عکس" : "انتخاب عکس"}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        disabled={isUploading}
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) uploadPhoto(slot.type, file);
-                          e.target.value = "";
-                        }}
-                      />
-                    </label>
-                  </div>
+                  <Card key={slot.type} size="sm">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm">نمای {slot.label}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {photo?.url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={apiAssetUrl(photo.url)}
+                          alt={slot.label}
+                          className="mb-3 h-40 w-full rounded-lg object-cover"
+                        />
+                      ) : (
+                        <div className="mb-3 flex h-40 items-center justify-center rounded-lg border border-dashed text-xs text-muted-foreground">
+                          عکس انتخاب نشده
+                        </div>
+                      )}
+                      <label className="block cursor-pointer">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="sr-only"
+                          disabled={isUploading}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) uploadPhoto(slot.type, file);
+                            e.target.value = "";
+                          }}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="pointer-events-none w-full"
+                          disabled={isUploading}
+                          tabIndex={-1}
+                        >
+                          {isUploading
+                            ? "در حال آپلود..."
+                            : photo
+                              ? "تغییر عکس"
+                              : "انتخاب عکس"}
+                        </Button>
+                      </label>
+                    </CardContent>
+                  </Card>
                 );
               })}
             </div>
           )}
-        </motion.div>
-      </AnimatePresence>
+        </CardContent>
+      </Card>
 
       <div className="flex items-center justify-between gap-3">
-        <button
+        <Button
           type="button"
+          variant="outline"
           onClick={onBack}
           disabled={step === 0 || saving}
-          className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-bold text-zinc-100 hover:bg-white/10 disabled:opacity-50"
         >
-          <FiArrowRight />
+          <ArrowRight data-icon="inline-start" />
           قبلی
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           onClick={onNext}
           disabled={saving || !!uploadingType}
-          className="inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-extrabold text-zinc-950 hover:bg-zinc-200 disabled:opacity-60"
         >
           {saving ? "در حال ذخیره..." : step === 3 ? "اتمام" : "بعدی"}
-          {step === 3 ? <FiCheck /> : <FiArrowLeft />}
-        </button>
+          {step === 3 ? (
+            <Check data-icon="inline-end" />
+          ) : (
+            <ArrowLeft data-icon="inline-end" />
+          )}
+        </Button>
       </div>
     </div>
   );
 }
 
-function Field({ label, value, onChange, type = "text", placeholder, inputMode }) {
+function FormField({ label, value, onChange, type = "text", placeholder, inputMode }) {
   return (
-    <label className="block">
-      <div className="mb-2 text-xs font-bold text-zinc-300">{label}</div>
-      <input
+    <div className="space-y-2">
+      <Label>{label}</Label>
+      <Input
         type={type}
         value={value ?? ""}
         inputMode={inputMode}
         placeholder={placeholder}
         onChange={(e) => onChange?.(e.target.value)}
-        className="w-full rounded-2xl border border-white/10 bg-zinc-950/30 px-4 py-3 text-sm text-white outline-none placeholder:text-zinc-500 focus:border-white/20"
+        className={type === "number" ? "tabular-nums" : undefined}
       />
-    </label>
+    </div>
   );
 }
 
-function TextArea({ label, value, onChange, placeholder }) {
+function TextAreaField({ label, value, onChange, placeholder }) {
   return (
-    <label className="block">
-      <div className="mb-2 text-xs font-bold text-zinc-300">{label}</div>
-      <textarea
+    <div className="space-y-2">
+      <Label>{label}</Label>
+      <Textarea
         value={value ?? ""}
         rows={4}
         placeholder={placeholder}
         onChange={(e) => onChange?.(e.target.value)}
-        className="w-full rounded-2xl border border-white/10 bg-zinc-950/30 px-4 py-3 text-sm text-white outline-none placeholder:text-zinc-500 focus:border-white/20"
       />
-    </label>
+    </div>
   );
 }

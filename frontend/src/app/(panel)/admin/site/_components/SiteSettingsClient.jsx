@@ -9,6 +9,14 @@ import StatsEditor from "./StatsEditor";
 import StepsEditor from "./StepsEditor";
 import SaveBar from "./SaveBar";
 import ContactInfoEditor from "./ContactInfoEditor";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function SiteSettingsClient() {
   const [settings, setSettings] = useState(null);
@@ -77,31 +85,36 @@ export default function SiteSettingsClient() {
 
   if (loading) {
     return (
-      <div className="rounded-[26px] border border-white/10 bg-white/5 p-6 text-sm text-zinc-400">
-        در حال بارگذاری...
-      </div>
+      <Card dir="rtl">
+        <CardContent className="space-y-3 pt-4">
+          <Skeleton className="h-10 w-64" />
+          <Skeleton className="h-48 w-full" />
+        </CardContent>
+      </Card>
     );
   }
 
   if (!settings) {
     return (
-      <div className="rounded-[26px] border border-white/10 bg-white/5 p-6 text-sm text-zinc-300">
-        بارگذاری تنظیمات سایت ناموفق بود.
-      </div>
+      <Card dir="rtl">
+        <CardContent className="pt-4 text-sm text-muted-foreground">
+          بارگذاری تنظیمات سایت ناموفق بود.
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <div className="text-lg font-extrabold text-white">سایت</div>
-          <div className="mt-1 text-sm text-zinc-300">
-            تنظیمات بخش‌های صفحه اصلی را مدیریت کنید
+    <div dir="rtl" className="space-y-4">
+      <Card>
+        <CardHeader className="flex flex-row items-end justify-between gap-3">
+          <div className="space-y-1">
+            <CardTitle>سایت</CardTitle>
+            <CardDescription>تنظیمات بخش‌های صفحه اصلی را مدیریت کنید</CardDescription>
           </div>
-        </div>
         <SaveBar saving={saving} onSave={onSave} />
-      </div>
+        </CardHeader>
+      </Card>
 
       <ImageUploader
         value={settings.heroImage}

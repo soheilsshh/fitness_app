@@ -1,44 +1,62 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { api } from "@/lib/axios/client";
-import { motion, AnimatePresence } from "framer-motion";
 import {
-  FiUser,
-  FiEdit3,
-  FiSave,
-  FiLock,
-  FiActivity,
-  FiUploadCloud,
-  FiTrash2,
-  FiImage,
-} from "react-icons/fi";
-
+  Activity,
+  Edit3,
+  Image as ImageIcon,
+  Lock,
+  Save,
+  Trash2,
+  UploadCloud,
+  User,
+} from "lucide-react";
+import { api } from "@/lib/axios/client";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 import ChangePasswordModal from "./ChangePasswordModal";
 
-function Toast({ type, text, onClose }) {
-  const styles =
-    type === "success"
-      ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-100"
-      : "border-rose-400/20 bg-rose-400/10 text-rose-100";
-
+function ProfileSkeleton() {
   return (
-    <div className={["rounded-3xl border px-4 py-3 text-sm", styles].join(" ")}>
-      <div className="flex items-center justify-between gap-3">
-        <span className="break-words">{text}</span>
-        <button
-          onClick={onClose}
-          className="rounded-xl border border-white/10 bg-white/5 px-3 py-1 text-xs"
-        >
-          بستن
-        </button>
+    <div className="flex flex-col gap-4 md:gap-6" dir="rtl">
+      <Skeleton className="h-8 w-32" />
+      <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
+        <Skeleton className="h-64 rounded-xl" />
+        <Skeleton className="h-96 rounded-xl" />
       </div>
     </div>
   );
 }
 
-function cn(...xs) {
-  return xs.filter(Boolean).join(" ");
+function AlertBanner({ type, text, onClose }) {
+  return (
+    <div
+      className={cn(
+        "rounded-lg border px-4 py-3 text-sm",
+        type === "success"
+          ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-800 dark:text-emerald-200"
+          : "border-rose-500/30 bg-rose-500/10 text-rose-800 dark:text-rose-200"
+      )}
+    >
+      <div className="flex items-center justify-between gap-3">
+        <span className="break-words">{text}</span>
+        <Button type="button" variant="outline" size="xs" onClick={onClose}>
+          بستن
+        </Button>
+      </div>
+    </div>
+  );
 }
 
 export default function ProfileClient() {
@@ -63,7 +81,7 @@ export default function ProfileClient() {
     photos: profile.photos,
   });
 
-  const [toast, setToast] = useState(null); // {type, text}
+  const [toast, setToast] = useState(null);
   const [pwdOpen, setPwdOpen] = useState(false);
 
   const fileRef = useRef(null);
@@ -86,19 +104,26 @@ export default function ProfileClient() {
           ordersCount: data.ordersCount || 0,
         });
       } catch {
-        if (!cancelled) setToast({ type: "error", text: "بارگذاری پروفایل ناموفق بود." });
+        if (!cancelled) {
+          setToast({ type: "error", text: "بارگذاری پروفایل ناموفق بود." });
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
     }
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const stats = useMemo(() => ({
-    total: profile.programsCount || 0,
-    active: profile.programsCount || 0,
-  }), [profile.programsCount]);
+  const stats = useMemo(
+    () => ({
+      total: profile.programsCount || 0,
+      active: profile.programsCount || 0,
+    }),
+    [profile.programsCount]
+  );
 
   const onStartEdit = () => {
     setDraft({
@@ -156,7 +181,10 @@ export default function ProfileClient() {
       setEditing(false);
       setToast({ type: "success", text: "اطلاعات پروفایل با موفقیت ذخیره شد." });
     } catch (e) {
-      setToast({ type: "error", text: e?.response?.data?.error || "ذخیره ناموفق بود." });
+      setToast({
+        type: "error",
+        text: e?.response?.data?.error || "ذخیره ناموفق بود.",
+      });
     }
   };
 
@@ -188,246 +216,280 @@ export default function ProfileClient() {
     setDraft((p) => ({ ...p, photos: [...(p.photos || []), ...toAdd] }));
 
     if (onlyImages.length > remaining) {
-      setToast({ type: "error", text: `فقط ${remaining} عکس دیگر می‌توانید اضافه کنید.` });
+      setToast({
+        type: "error",
+        text: `فقط ${remaining} عکس دیگر می‌توانید اضافه کنید.`,
+      });
     }
   };
 
   const removePhoto = (id) => {
     if (!editing) return;
-    setDraft((p) => ({ ...p, photos: (p.photos || []).filter((x) => x.id !== id) }));
+    setDraft((p) => ({
+      ...p,
+      photos: (p.photos || []).filter((x) => x.id !== id),
+    }));
   };
 
+  const visiblePhotos = (editing ? draft.photos : profile.photos) || [];
+
   if (loading) {
-    return <div className="text-sm text-zinc-400">در حال بارگذاری پروفایل...</div>;
+    return <ProfileSkeleton />;
   }
 
   return (
-    <div className="space-y-5">
-      {/* Header */}
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <div className="text-lg font-extrabold text-white">پروفایل</div>
-          <div className="mt-1 text-sm text-zinc-300">اطلاعات حساب و تنظیمات امنیتی</div>
-        </div>
+    <div className="flex flex-col gap-4 md:gap-6" dir="rtl">
+      <div className="text-start">
+        <h2 className="text-lg font-semibold tracking-tight">پروفایل</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          اطلاعات حساب و تنظیمات امنیتی
+        </p>
       </div>
 
-      {/* Toast */}
-      <AnimatePresence>
-        {toast && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-          >
-            <Toast type={toast.type} text={toast.text} onClose={() => setToast(null)} />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {toast ? (
+        <AlertBanner
+          type={toast.type}
+          text={toast.text}
+          onClose={() => setToast(null)}
+        />
+      ) : null}
 
-      {/* Stats + Profile card */}
       <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
-        {/* Stats */}
-        <div className="rounded-[26px] border border-white/10 bg-white/5 p-6">
-          <div className="flex items-center gap-2 text-sm font-extrabold text-white">
-            <FiActivity className="text-emerald-300" />
-            خلاصه حساب
-          </div>
-
-          <div className="mt-4 grid grid-cols-2 gap-3">
-            <div className="rounded-3xl border border-white/10 bg-zinc-950/30 p-4">
-              <div className="text-[11px] text-zinc-400">برنامه‌های فعال</div>
-              <div className="mt-2 text-2xl font-extrabold text-white">{stats.active}</div>
+        <Card className="bg-gradient-to-t from-primary/5 to-card dark:bg-card">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Activity className="size-4 text-primary" />
+              خلاصه حساب
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <Card size="sm">
+                <CardContent className="pt-4">
+                  <p className="text-xs text-muted-foreground">برنامه‌های فعال</p>
+                  <p className="mt-2 text-2xl font-semibold tabular-nums">
+                    {stats.active.toLocaleString("fa-IR")}
+                  </p>
+                </CardContent>
+              </Card>
+              <Card size="sm">
+                <CardContent className="pt-4">
+                  <p className="text-xs text-muted-foreground">
+                    کل برنامه‌های خریداری‌شده
+                  </p>
+                  <p className="mt-2 text-2xl font-semibold tabular-nums">
+                    {stats.total.toLocaleString("fa-IR")}
+                  </p>
+                </CardContent>
+              </Card>
             </div>
 
-            <div className="rounded-3xl border border-white/10 bg-zinc-950/30 p-4">
-              <div className="text-[11px] text-zinc-400">کل برنامه‌های خریداری‌شده</div>
-              <div className="mt-2 text-2xl font-extrabold text-white">{stats.total}</div>
-            </div>
-          </div>
-
-          {/* Body stats */}
-          <div className="mt-4 rounded-3xl border border-white/10 bg-zinc-950/30 p-4">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <div className="text-[11px] text-zinc-400">قد</div>
-                <div className="mt-1 text-lg font-extrabold text-white">
-                  {profile.heightCm} <span className="text-sm text-zinc-400">cm</span>
+            <Card size="sm">
+              <CardContent className="flex items-center justify-between gap-4 pt-4">
+                <div>
+                  <p className="text-xs text-muted-foreground">قد</p>
+                  <p className="mt-1 text-lg font-semibold tabular-nums">
+                    {profile.heightCm}{" "}
+                    <span className="text-sm font-normal text-muted-foreground">cm</span>
+                  </p>
                 </div>
-              </div>
-              <div>
-                <div className="text-[11px] text-zinc-400">وزن</div>
-                <div className="mt-1 text-lg font-extrabold text-white">
-                  {profile.weightKg} <span className="text-sm text-zinc-400">kg</span>
+                <div className="text-start">
+                  <p className="text-xs text-muted-foreground">وزن</p>
+                  <p className="mt-1 text-lg font-semibold tabular-nums">
+                    {profile.weightKg}{" "}
+                    <span className="text-sm font-normal text-muted-foreground">kg</span>
+                  </p>
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
+              </CardContent>
+            </Card>
+          </CardContent>
+        </Card>
 
-        {/* Profile form */}
-        <div className="rounded-[26px] border border-white/10 bg-white/5 p-6">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2 text-sm font-extrabold text-white">
-              <FiUser className="text-cyan-300" />
-              اطلاعات پروفایل
-            </div>
-
-            {!editing ? (
-              <button
-                onClick={onStartEdit}
-                className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-bold text-zinc-100 hover:bg-white/10"
-              >
-                <FiEdit3 />
-                ویرایش
-              </button>
-            ) : (
-              <button
-                onClick={onSave}
-                className="inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-2 text-sm font-extrabold text-zinc-950 hover:bg-zinc-200"
-              >
-                <FiSave />
-                ذخیره
-              </button>
-            )}
-          </div>
-
-          <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            <Field
-              label="نام"
-              value={editing ? draft.firstName : profile.firstName}
-              onChange={(v) => setDraft((p) => ({ ...p, firstName: v }))}
-              disabled={!editing}
-            />
-            <Field
-              label="نام خانوادگی"
-              value={editing ? draft.lastName : profile.lastName}
-              onChange={(v) => setDraft((p) => ({ ...p, lastName: v }))}
-              disabled={!editing}
-            />
-          </div>
-
-          <div className="mt-3">
-            <Field label="شماره تماس" value={profile.phone} disabled />
-          </div>
-
-          <div className="mt-3 grid gap-3 sm:grid-cols-2">
-            <NumberField
-              label="قد (cm)"
-              value={editing ? draft.heightCm : profile.heightCm}
-              onChange={(v) => setDraft((p) => ({ ...p, heightCm: v }))}
-              disabled={!editing}
-              min={80}
-              max={250}
-            />
-            <NumberField
-              label="وزن (kg)"
-              value={editing ? draft.weightKg : profile.weightKg}
-              onChange={(v) => setDraft((p) => ({ ...p, weightKg: v }))}
-              disabled={!editing}
-              min={20}
-              max={300}
-            />
-          </div>
-
-          {/* Photos */}
-          <div className="mt-6 rounded-3xl border border-white/10 bg-zinc-950/30 p-4">
-            <div className="flex flex-wrap items-end justify-between gap-3">
-              <div>
-                <div className="text-sm font-extrabold text-white">عکس‌های بدن</div>
-                <div className="mt-1 text-[11px] text-zinc-400">
-                  حداکثر ۵ عکس • برای ثبت پیشرفت (Front/Side/Back)
-                </div>
-              </div>
-
-              <div className="text-[11px] text-zinc-400">
-                {((editing ? draft.photos : profile.photos) || []).length}/5
-              </div>
-            </div>
-
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              multiple
-              className="hidden"
-              onChange={(e) => {
-                addFiles(e.target.files);
-                e.target.value = "";
-              }}
-            />
-
-            <DropZone
-              disabled={!editing}
-              onPick={() => fileRef.current?.click()}
-              onDropFiles={addFiles}
-            />
-
-            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {((editing ? draft.photos : profile.photos) || []).map((p) => (
-                <div
-                  key={p.id}
-                  className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={p.url}
-                    alt={p.name || "photo"}
-                    className="h-36 w-full object-cover sm:h-40"
-                  />
-
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3">
-                    <div className="truncate text-[11px] text-zinc-200">
-                      {p.name || "photo"}
-                    </div>
-                  </div>
-
-                  {editing && (
-                    <button
-                      onClick={() => removePhoto(p.id)}
-                      className="absolute left-3 top-3 inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-black/50 text-zinc-100 opacity-100 hover:bg-black/65 sm:opacity-0 sm:group-hover:opacity-100"
-                      aria-label="Remove photo"
-                      title="حذف"
-                    >
-                      <FiTrash2 />
-                    </button>
-                  )}
-                </div>
-              ))}
-
-              {((editing ? draft.photos : profile.photos) || []).length === 0 && (
-                <div className="col-span-2 rounded-3xl border border-white/10 bg-white/5 p-4 text-sm text-zinc-300 sm:col-span-3">
-                  هنوز عکسی اضافه نشده.
-                </div>
+        <Card>
+          <CardHeader>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <User className="size-4 text-primary" />
+                اطلاعات پروفایل
+              </CardTitle>
+              {!editing ? (
+                <Button type="button" variant="outline" size="sm" onClick={onStartEdit}>
+                  <Edit3 data-icon="inline-start" />
+                  ویرایش
+                </Button>
+              ) : (
+                <Button type="button" size="sm" onClick={onSave}>
+                  <Save data-icon="inline-start" />
+                  ذخیره
+                </Button>
               )}
             </div>
-          </div>
+          </CardHeader>
 
-          {/* Change password */}
-          <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-white/10 bg-zinc-950/30 p-4">
-            <div>
-              <div className="text-sm font-extrabold text-white">امنیت حساب</div>
-              <div className="mt-1 text-[11px] text-zinc-400">
-                برای امنیت بیشتر، رمز عبور را دوره‌ای تغییر دهید.
-              </div>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <FormField
+                label="نام"
+                value={editing ? draft.firstName : profile.firstName}
+                onChange={(v) => setDraft((p) => ({ ...p, firstName: v }))}
+                disabled={!editing}
+              />
+              <FormField
+                label="نام خانوادگی"
+                value={editing ? draft.lastName : profile.lastName}
+                onChange={(v) => setDraft((p) => ({ ...p, lastName: v }))}
+                disabled={!editing}
+              />
             </div>
 
-            <button
-              onClick={() => setPwdOpen(true)}
-              className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-bold text-zinc-100 hover:bg-white/10"
-            >
-              <FiLock />
-              تغییر رمز عبور
-            </button>
-          </div>
-        </div>
+            <FormField label="شماره تماس" value={profile.phone} disabled />
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <NumberField
+                label="قد (cm)"
+                value={editing ? draft.heightCm : profile.heightCm}
+                onChange={(v) => setDraft((p) => ({ ...p, heightCm: v }))}
+                disabled={!editing}
+                min={80}
+                max={250}
+              />
+              <NumberField
+                label="وزن (kg)"
+                value={editing ? draft.weightKg : profile.weightKg}
+                onChange={(v) => setDraft((p) => ({ ...p, weightKg: v }))}
+                disabled={!editing}
+                min={20}
+                max={300}
+              />
+            </div>
+
+            <Card size="sm">
+              <CardHeader className="pb-3">
+                <div className="flex flex-wrap items-end justify-between gap-3">
+                  <div className="text-start">
+                    <CardTitle className="text-sm">عکس‌های بدن</CardTitle>
+                    <CardDescription>
+                      حداکثر ۵ عکس • برای ثبت پیشرفت (Front/Side/Back)
+                    </CardDescription>
+                  </div>
+                  <Badge variant="outline" className="tabular-nums">
+                    {visiblePhotos.length.toLocaleString("fa-IR")}/۵
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => {
+                    addFiles(e.target.files);
+                    e.target.value = "";
+                  }}
+                />
+
+                <DropZone
+                  disabled={!editing}
+                  onPick={() => fileRef.current?.click()}
+                  onDropFiles={addFiles}
+                />
+
+                <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  {visiblePhotos.map((photo) => (
+                    <div
+                      key={photo.id}
+                      className="group relative overflow-hidden rounded-lg border bg-muted/30"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={photo.url}
+                        alt={photo.name || "photo"}
+                        className="h-36 w-full object-cover sm:h-40"
+                      />
+                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3">
+                        <p className="truncate text-[11px] text-white/90">
+                          {photo.name || "photo"}
+                        </p>
+                      </div>
+                      {editing ? (
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="icon-sm"
+                          className="absolute start-3 top-3 bg-background/80 opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
+                          onClick={() => removePhoto(photo.id)}
+                          aria-label="حذف عکس"
+                        >
+                          <Trash2 />
+                        </Button>
+                      ) : null}
+                    </div>
+                  ))}
+
+                  {visiblePhotos.length === 0 ? (
+                    <div className="col-span-2 rounded-lg border border-dashed p-4 text-sm text-muted-foreground sm:col-span-3">
+                      هنوز عکسی اضافه نشده.
+                    </div>
+                  ) : null}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card size="sm">
+              <CardContent className="flex flex-wrap items-center justify-between gap-3 pt-6">
+                <div className="text-start">
+                  <p className="text-sm font-medium">امنیت حساب</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    برای امنیت بیشتر، رمز عبور را دوره‌ای تغییر دهید.
+                  </p>
+                </div>
+                <Button type="button" variant="outline" onClick={() => setPwdOpen(true)}>
+                  <Lock data-icon="inline-start" />
+                  تغییر رمز عبور
+                </Button>
+              </CardContent>
+            </Card>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Modal */}
       <ChangePasswordModal
         open={pwdOpen}
         onClose={() => setPwdOpen(false)}
         onSuccess={(msg) => setToast({ type: "success", text: msg })}
         onError={(msg) => setToast({ type: "error", text: msg })}
+      />
+    </div>
+  );
+}
+
+function FormField({ label, value, onChange, disabled }) {
+  return (
+    <div className="space-y-2">
+      <Label>{label}</Label>
+      <Input
+        value={value || ""}
+        onChange={(e) => onChange?.(e.target.value)}
+        disabled={disabled}
+      />
+    </div>
+  );
+}
+
+function NumberField({ label, value, onChange, disabled, min, max }) {
+  return (
+    <div className="space-y-2">
+      <Label>{label}</Label>
+      <Input
+        type="number"
+        value={value ?? ""}
+        min={min}
+        max={max}
+        onChange={(e) => onChange?.(e.target.value)}
+        disabled={disabled}
+        className="tabular-nums"
       />
     </div>
   );
@@ -446,7 +508,12 @@ function DropZone({ disabled, onPick, onDropFiles }) {
 
   return (
     <div
+      role="button"
+      tabIndex={disabled ? -1 : 0}
       onClick={() => !disabled && onPick?.()}
+      onKeyDown={(e) => {
+        if (!disabled && (e.key === "Enter" || e.key === " ")) onPick?.();
+      }}
       onDragEnter={(e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -466,75 +533,39 @@ function DropZone({ disabled, onPick, onDropFiles }) {
       }}
       onDrop={handleDrop}
       className={cn(
-        "mt-4 cursor-pointer rounded-3xl border border-dashed p-4 transition",
-        drag ? "border-emerald-400/40 bg-emerald-400/10" : "border-white/10 bg-white/5",
-        disabled ? "cursor-not-allowed opacity-60" : "hover:bg-white/10"
+        "cursor-pointer rounded-lg border border-dashed p-4 transition-colors",
+        drag
+          ? "border-primary/40 bg-primary/5"
+          : "border-border bg-muted/20",
+        disabled && "cursor-not-allowed opacity-60"
       )}
     >
-      <div className="flex flex-col items-center gap-2 text-center sm:flex-row sm:justify-between sm:text-right">
-        <div className="flex items-center gap-2 text-sm font-extrabold text-white">
-          <FiUploadCloud className="text-emerald-300 text-xl" />
+      <div className="flex flex-col items-center gap-2 text-center sm:flex-row sm:justify-between sm:text-start">
+        <div className="flex items-center gap-2 text-sm font-medium">
+          <UploadCloud className="size-4 text-primary" />
           آپلود عکس (حداکثر ۵)
         </div>
-
-        <div className="text-[11px] text-zinc-400">
-          {disabled ? "برای آپلود، وارد حالت ویرایش شوید." : "کلیک کنید یا فایل را درگ کنید."}
-        </div>
+        <p className="text-xs text-muted-foreground">
+          {disabled
+            ? "برای آپلود، وارد حالت ویرایش شوید."
+            : "کلیک کنید یا فایل را درگ کنید."}
+        </p>
       </div>
 
       <div className="mt-3 flex flex-wrap items-center justify-center gap-2 sm:justify-end">
-        <Chip icon={FiImage} text="Front" />
-        <Chip icon={FiImage} text="Side" />
-        <Chip icon={FiImage} text="Back" />
+        <Badge variant="outline">
+          <ImageIcon data-icon="inline-start" />
+          Front
+        </Badge>
+        <Badge variant="outline">
+          <ImageIcon data-icon="inline-start" />
+          Side
+        </Badge>
+        <Badge variant="outline">
+          <ImageIcon data-icon="inline-start" />
+          Back
+        </Badge>
       </div>
     </div>
-  );
-}
-
-function Chip({ icon: Icon, text }) {
-  return (
-    <div className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-zinc-950/30 px-3 py-2 text-xs text-zinc-200">
-      <Icon className="text-[16px]" />
-      {text}
-    </div>
-  );
-}
-
-function Field({ label, value, onChange, disabled }) {
-  return (
-    <label className="block">
-      <div className="mb-2 text-xs font-bold text-zinc-300">{label}</div>
-      <input
-        value={value || ""}
-        onChange={(e) => onChange?.(e.target.value)}
-        disabled={disabled}
-        className={[
-          "w-full rounded-2xl border border-white/10 bg-zinc-950/30 px-4 py-3 text-sm text-white outline-none",
-          "placeholder:text-zinc-500 focus:border-white/20",
-          disabled ? "opacity-70" : "",
-        ].join(" ")}
-      />
-    </label>
-  );
-}
-
-function NumberField({ label, value, onChange, disabled, min, max }) {
-  return (
-    <label className="block">
-      <div className="mb-2 text-xs font-bold text-zinc-300">{label}</div>
-      <input
-        type="number"
-        value={value ?? ""}
-        min={min}
-        max={max}
-        onChange={(e) => onChange?.(e.target.value)}
-        disabled={disabled}
-        className={[
-          "w-full rounded-2xl border border-white/10 bg-zinc-950/30 px-4 py-3 text-sm text-white outline-none",
-          "placeholder:text-zinc-500 focus:border-white/20",
-          disabled ? "opacity-70" : "",
-        ].join(" ")}
-      />
-    </label>
   );
 }

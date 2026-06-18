@@ -1,5 +1,5 @@
-import AdminShell from "./_components/AdminShell";
+import AdminPanelLayout from "./_components/AdminPanelLayout";
 
 export default function AdminLayout({ children }) {
-  return <AdminShell>{children}</AdminShell>;
+  return <AdminPanelLayout>{children}</AdminPanelLayout>;
 }

@@ -2,10 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { FiImage, FiTrash2, FiUpload } from "react-icons/fi";
-
-function cn(...xs) {
-  return xs.filter(Boolean).join(" ");
-}
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 
 export default function ImageUploader({ value, onChange }) {
   const [file, setFile] = useState(value?.file || null);
@@ -41,46 +40,33 @@ export default function ImageUploader({ value, onChange }) {
   };
 
   return (
-    <div className="rounded-[26px] border border-white/10 bg-white/5 p-5 md:p-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <div className="text-base font-extrabold text-white">آپلود تصویر</div>
-          <div className="mt-1 text-sm text-zinc-300">
-            تصویر بخش اصلی/بنر صفحه اصلی 
-          </div>
+    <Card dir="rtl">
+      <CardHeader className="flex flex-row items-start justify-between gap-3">
+        <div className="space-y-1">
+          <CardTitle>آپلود تصویر</CardTitle>
+          <p className="text-sm text-muted-foreground">تصویر بخش اصلی/بنر صفحه اصلی</p>
         </div>
-
         <div className="flex items-center gap-2">
-          <label className="inline-flex cursor-pointer items-center gap-2 rounded-2xl border border-white/10 bg-zinc-950/30 px-4 py-2 text-sm font-bold text-zinc-100 hover:bg-white/10">
-            <FiUpload />
-            انتخاب تصویر
-            <input
-              type="file"
-              accept="image/*"
-              onChange={onPick}
-              className="hidden"
-            />
-          </label>
-
-          <button
-            onClick={onRemove}
-            disabled={!previewUrl}
-            className={cn(
-              "inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-bold transition",
-              previewUrl
-                ? "border-rose-400/25 bg-rose-400/10 text-rose-100 hover:bg-rose-400/15"
-                : "border-white/10 bg-white/5 text-zinc-500 opacity-60 pointer-events-none"
-            )}
-          >
+          <Label className="cursor-pointer">
+            <Button type="button" variant="outline" asChild>
+              <span>
+                <FiUpload />
+                انتخاب تصویر
+                <input type="file" accept="image/*" onChange={onPick} className="hidden" />
+              </span>
+            </Button>
+          </Label>
+          <Button type="button" variant="destructive" onClick={onRemove} disabled={!previewUrl}>
             <FiTrash2 />
             حذف
-          </button>
+          </Button>
         </div>
-      </div>
+      </CardHeader>
 
-      <div className="mt-5 rounded-3xl border border-white/10 bg-zinc-950/30 p-4">
+      <CardContent className="pt-0">
+        <div className="rounded-xl border bg-muted/30 p-4">
         {!previewUrl ? (
-          <div className="flex h-[220px] items-center justify-center gap-2 text-sm text-zinc-400">
+          <div className="flex h-[220px] items-center justify-center gap-2 text-sm text-muted-foreground">
             <FiImage />
             هنوز تصویری انتخاب نشده
           </div>
@@ -89,11 +75,11 @@ export default function ImageUploader({ value, onChange }) {
           <img
             src={previewUrl}
             alt="preview"
-            className="h-[220px] w-full rounded-2xl object-cover"
+            className="h-[220px] w-full rounded-lg object-cover"
           />
         )}
-      </div>
-
-    </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

@@ -1,9 +1,12 @@
 "use client";
 
 import { FiBarChart2 } from "react-icons/fi";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
-function cn(...xs) {
-  return xs.filter(Boolean).join(" ");
+function faNum(value) {
+  return new Intl.NumberFormat("fa-IR").format(value ?? 0);
 }
 
 export default function StatsEditor({ value, onChange }) {
@@ -15,51 +18,46 @@ export default function StatsEditor({ value, onChange }) {
   };
 
   return (
-    <div className="rounded-[26px] border border-white/10 bg-white/5 p-5 md:p-6">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <div className="text-base font-extrabold text-white">آمار صفحه اصلی</div>
-          <div className="mt-1 text-sm text-zinc-300">
-            مقادیر کوتاه + عنوان زیرش
-          </div>
+    <Card dir="rtl">
+      <CardHeader className="flex flex-row items-start justify-between gap-3">
+        <div className="space-y-1">
+          <CardTitle>آمار صفحه اصلی</CardTitle>
+          <p className="text-sm text-muted-foreground">مقادیر کوتاه + عنوان زیرش</p>
         </div>
 
-        <span className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-zinc-950/30 px-3 py-2 text-xs text-zinc-200">
-          <FiBarChart2 className="text-emerald-200" />
-          {stats.length} آیتم
+        <span className="inline-flex items-center gap-2 rounded-lg border bg-muted/30 px-3 py-2 text-xs">
+          <FiBarChart2 className="text-emerald-500" />
+          {faNum(stats.length)} آیتم
         </span>
-      </div>
+      </CardHeader>
 
-      <div className="mt-5 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+      <CardContent className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((s) => (
-          <div key={s.id} className="rounded-3xl border border-white/10 bg-zinc-950/30 p-4">
-            <div className="mb-2 text-[11px] font-bold text-zinc-400">عنوان</div>
-            <input
+          <div key={s.id} className="space-y-3 rounded-xl border bg-muted/30 p-4">
+            <div className="space-y-2">
+              <Label>عنوان</Label>
+              <Input
               value={s.label ?? ""}
               onChange={(e) => setField(s.id, "label", e.target.value)}
-              className={cn(
-                "w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-zinc-500 outline-none focus:border-emerald-400/40"
-              )}
               placeholder="مثال: کاربر فعال"
             />
+            </div>
 
-            <div className="mb-2 mt-3 text-[11px] font-bold text-zinc-400">مقدار</div>
-            <input
+            <div className="space-y-2">
+              <Label>مقدار</Label>
+              <Input
               value={s.value ?? ""}
               onChange={(e) => setField(s.id, "value", e.target.value)}
-              className={cn(
-                "w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-zinc-500 outline-none focus:border-emerald-400/40"
-              )}
               placeholder="مثال: 12,500+"
             />
+            </div>
           </div>
         ))}
-      </div>
+      </CardContent>
 
-      <div className="mt-3 text-[11px] text-zinc-500">
-        {/* English comment: Keep values short for hero stats layout. */}
+      <CardContent className="pt-0 text-xs text-muted-foreground">
         پیشنهاد: مقدارها کوتاه و قابل خواندن باشند.
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

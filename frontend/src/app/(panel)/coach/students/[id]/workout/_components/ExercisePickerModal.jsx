@@ -1,16 +1,25 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
-import { FiSearch, FiX } from "react-icons/fi";
+import { Dumbbell, Search } from "lucide-react";
 import { api } from "@/lib/axios/client";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
-
-function cn(...xs) {
-  return xs.filter(Boolean).join(" ");
-}
 
 function mediaUrl(path) {
   if (!path) return null;
@@ -18,13 +27,7 @@ function mediaUrl(path) {
   return `${API_BASE}${path}`;
 }
 
-function exercisePreviewUrl(ex) {
-  return mediaUrl(ex?.gifUrl || ex?.imageUrl);
-}
-
 export default function ExercisePickerModal({ open, onClose, onAdd, dayLabel }) {
-  const [mounted, setMounted] = useState(false);
-  const [source, setSource] = useState("dataset");
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
   const [categories, setCategories] = useState([]);
@@ -35,38 +38,23 @@ export default function ExercisePickerModal({ open, onClose, onAdd, dayLabel }) 
   const [sets, setSets] = useState("3");
   const [reps, setReps] = useState("12");
 
-  useEffect(() => setMounted(true), []);
-
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e) => {
-      if (e.key === "Escape") onClose?.();
-    };
-    window.addEventListener("keydown", onKey);
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      window.removeEventListener("keydown", onKey);
-      document.body.style.overflow = prev;
-    };
-  }, [open, onClose]);
-
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
-    api.get("/coach/exercises/categories", { params: { source } })
+    api.get("/coach/exercises/categories")
       .then((res) => {
         if (!cancelled) setCategories(res.data?.categories || []);
       })
       .catch(() => {
         if (!cancelled) setCategories([]);
       });
-    return () => { cancelled = true; };
-  }, [open, source]);
+    return () => {
+      cancelled = true;
+    };
+  }, [open]);
 
   useEffect(() => {
     if (!open) {
-      setSource("dataset");
       setQuery("");
       setCategory("");
       setItems([]);
@@ -83,7 +71,6 @@ export default function ExercisePickerModal({ open, onClose, onAdd, dayLabel }) 
       try {
         const res = await api.get("/coach/exercises", {
           params: {
-            source,
             query: query.trim() || undefined,
             category: category || undefined,
             pageSize: 48,
@@ -94,8 +81,7 @@ export default function ExercisePickerModal({ open, onClose, onAdd, dayLabel }) 
         if (!cancelled) {
           setItems([]);
           setError(
-            err?.response?.data?.error ||
-              "بارگذاری حرکات ناموفق بود."
+            err?.response?.data?.error || "بارگذاری حرکات ناموفق بود."
           );
         }
       } finally {
@@ -106,7 +92,7 @@ export default function ExercisePickerModal({ open, onClose, onAdd, dayLabel }) 
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [open, source, query, category]);
+  }, [open, query, category]);
 
   const resetSelection = () => {
     setSelected(null);
@@ -119,7 +105,7 @@ export default function ExercisePickerModal({ open, onClose, onAdd, dayLabel }) 
     onAdd?.({
       exerciseId: selected.id,
       name: selected.name,
-      imageUrl: selected.gifUrl || selected.imageUrl || "",
+      imageUrl: selected.imageUrl || "",
       sets,
       reps,
     });
@@ -130,229 +116,185 @@ export default function ExercisePickerModal({ open, onClose, onAdd, dayLabel }) 
     }
   };
 
-  if (!open || !mounted) return null;
+  return (
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose?.()}>
+      <DialogContent
+        className="flex max-h-[92vh] flex-col gap-0 overflow-hidden p-0 sm:max-w-3xl"
+        dir="rtl"
+      >
+        <DialogHeader className="border-b px-5 py-4 text-start">
+          <DialogTitle className="flex items-center gap-2">
+            <Dumbbell className="size-4 text-primary" />
+            انتخاب حرکت
+          </DialogTitle>
+          {dayLabel ? (
+            <DialogDescription>برنامه {dayLabel}</DialogDescription>
+          ) : null}
+        </DialogHeader>
 
-  return createPortal(
-    <div className="fixed inset-0 z-[200]">
-      <button
-        type="button"
-        className="absolute inset-0 bg-black/70"
-        onClick={onClose}
-        aria-label="بستن"
-      />
-      <div className="absolute inset-0 flex items-center justify-center p-3 md:p-6">
-        <div className="flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-[26px] border border-white/10 bg-zinc-950 shadow-2xl">
-          <div className="flex items-center justify-between gap-3 border-b border-white/10 px-5 py-4">
-            <div>
-              <div className="text-base font-extrabold text-white">انتخاب حرکت</div>
-              {dayLabel ? (
-                <div className="mt-0.5 text-xs text-zinc-400">برنامه {dayLabel}</div>
-              ) : null}
-            </div>
-            <button
-              type="button"
-              onClick={onClose}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-zinc-200 hover:bg-white/10"
-            >
-              <FiX />
-            </button>
+        <div className="space-y-3 border-b px-5 py-3">
+          <div className="relative">
+            <Search className="pointer-events-none absolute end-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="جستجوی نام حرکت..."
+              className="pe-9"
+              autoFocus
+            />
           </div>
+          <div className="flex flex-wrap gap-2">
+            <FilterChip active={!category} onClick={() => setCategory("")}>
+              همه
+            </FilterChip>
+            {categories.map((cat) => (
+              <FilterChip
+                key={cat}
+                active={category === cat}
+                onClick={() => setCategory(cat)}
+              >
+                {cat}
+              </FilterChip>
+            ))}
+          </div>
+        </div>
 
-          <div className="space-y-3 border-b border-white/10 px-5 py-3">
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setSource("dataset");
-                  setCategory("");
-                  setSelected(null);
-                }}
-                className={cn(
-                  "flex-1 rounded-2xl border px-3 py-2 text-xs font-bold transition",
-                  source === "dataset"
-                    ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-100"
-                    : "border-white/10 bg-zinc-950/30 text-zinc-300 hover:bg-white/10"
-                )}
-              >
-                دیتاست
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setSource("mine");
-                  setCategory("");
-                  setSelected(null);
-                }}
-                className={cn(
-                  "flex-1 rounded-2xl border px-3 py-2 text-xs font-bold transition",
-                  source === "mine"
-                    ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-100"
-                    : "border-white/10 bg-zinc-950/30 text-zinc-300 hover:bg-white/10"
-                )}
-              >
-                حرکات من
-              </button>
+        <div className="flex-1 overflow-y-auto p-4">
+          {loading ? (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="aspect-square w-full rounded-xl" />
+              ))}
             </div>
-            <div className="relative">
-              <FiSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500" />
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="جستجوی نام حرکت..."
-                className="w-full rounded-2xl border border-white/10 bg-white/5 py-2.5 pr-10 pl-4 text-sm text-white outline-none focus:border-emerald-400/40"
-                autoFocus
-              />
+          ) : error ? (
+            <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+              {error}
             </div>
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => setCategory("")}
-                className={cn(
-                  "rounded-xl border px-3 py-1.5 text-[11px] font-bold transition",
-                  !category
-                    ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-100"
-                    : "border-white/10 bg-zinc-950/30 text-zinc-300 hover:bg-white/10"
-                )}
-              >
-                همه
-              </button>
-              {categories.map((cat) => (
+          ) : items.length === 0 ? (
+            <div className="py-8 text-center text-sm text-muted-foreground">
+              حرکتی یافت نشد.
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {items.map((ex) => (
                 <button
-                  key={cat}
+                  key={ex.id}
                   type="button"
-                  onClick={() => setCategory(cat)}
+                  onClick={() => setSelected(ex)}
                   className={cn(
-                    "rounded-xl border px-3 py-1.5 text-[11px] font-bold transition",
-                    category === cat
-                      ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-100"
-                      : "border-white/10 bg-zinc-950/30 text-zinc-300 hover:bg-white/10"
+                    "flex flex-col overflow-hidden rounded-xl border text-start transition",
+                    selected?.id === ex.id
+                      ? "border-primary bg-primary/10 ring-1 ring-primary/30"
+                      : "border-border bg-card hover:bg-muted/50"
                   )}
                 >
-                  {cat}
+                  <div className="aspect-square w-full bg-muted">
+                    {ex.imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={mediaUrl(ex.imageUrl)}
+                        alt={ex.name}
+                        className="h-full w-full object-cover"
+                        onError={(e) => {
+                          e.target.style.display = "none";
+                        }}
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-[10px] text-muted-foreground">
+                        بدون تصویر
+                      </div>
+                    )}
+                  </div>
+                  <div className="space-y-1 p-2.5">
+                    <div className="line-clamp-2 text-xs font-semibold">
+                      {ex.name}
+                    </div>
+                    {ex.category ? (
+                      <Badge variant="outline" className="max-w-full truncate text-[10px]">
+                        {ex.category}
+                      </Badge>
+                    ) : null}
+                  </div>
                 </button>
               ))}
             </div>
-          </div>
+          )}
+        </div>
 
-          <div className="flex-1 overflow-y-auto p-4">
-            {loading ? (
-              <div className="py-8 text-center text-sm text-zinc-400">در حال بارگذاری حرکات...</div>
-            ) : error ? (
-              <div className="rounded-2xl border border-rose-400/20 bg-rose-400/5 p-4 text-sm text-rose-200">
-                {error}
-              </div>
-            ) : items.length === 0 ? (
-              <div className="py-8 text-center text-sm text-zinc-400">
-                {source === "mine"
-                  ? "هنوز حرکتی ثبت نکرده‌اید. از «افزودن حرکت دستی» استفاده کنید."
-                  : "حرکتی یافت نشد."}
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {items.map((ex) => (
-                  <button
-                    key={ex.id}
-                    type="button"
-                    onClick={() => setSelected(ex)}
-                    className={cn(
-                      "flex flex-col overflow-hidden rounded-2xl border text-right transition",
-                      selected?.id === ex.id
-                        ? "border-emerald-400/50 bg-emerald-400/10 ring-1 ring-emerald-400/30"
-                        : "border-white/10 bg-white/5 hover:bg-white/10"
-                    )}
-                  >
-                    <div className="aspect-square w-full bg-zinc-900">
-                      {exercisePreviewUrl(ex) ? (
-                        <img
-                          src={exercisePreviewUrl(ex)}
-                          alt={ex.name}
-                          className="h-full w-full object-cover"
-                          onError={(e) => {
-                            e.target.style.display = "none";
-                          }}
-                        />
-                      ) : (
-                        <div className="flex h-full items-center justify-center text-[10px] text-zinc-600">
-                          بدون تصویر
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-2.5">
-                      <div className="line-clamp-2 text-xs font-bold text-white">
-                        {ex.name}
-                      </div>
-                      {ex.category ? (
-                        <div className="mt-1 truncate text-[10px] text-zinc-500">
-                          {ex.category}
-                        </div>
-                      ) : null}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {selected ? (
-            <div className="border-t border-white/10 bg-zinc-950/80 px-5 py-4">
+        {selected ? (
+          <DialogFooter className="flex-col gap-0 border-t bg-muted/30 p-0 sm:flex-col sm:justify-start">
+            <div className="w-full px-5 py-4">
               <div className="flex items-center gap-3">
-                {exercisePreviewUrl(selected) ? (
+                {selected.imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={exercisePreviewUrl(selected)}
+                    src={mediaUrl(selected.imageUrl)}
                     alt={selected.name}
-                    className="h-16 w-16 shrink-0 rounded-xl object-cover"
+                    className="size-16 shrink-0 rounded-xl object-cover"
                   />
                 ) : null}
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm font-bold text-white">{selected.name}</div>
-                  <div className="mt-2 flex flex-wrap gap-3">
-                    <label className="flex items-center gap-2 text-sm text-zinc-300">
-                      تعداد ست
-                      <input
+                <div className="min-w-0 flex-1 space-y-3">
+                  <div className="truncate text-sm font-semibold">{selected.name}</div>
+                  <div className="flex flex-wrap gap-4">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="exercise-sets">تعداد ست</Label>
+                      <Input
+                        id="exercise-sets"
                         type="number"
                         min="1"
                         value={sets}
                         onChange={(e) => setSets(e.target.value)}
-                        className="w-16 rounded-xl border border-white/10 bg-white/5 px-2 py-1.5 text-white outline-none"
+                        className="w-20 tabular-nums"
                       />
-                    </label>
-                    <label className="flex items-center gap-2 text-sm text-zinc-300">
-                      تکرار
-                      <input
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="exercise-reps">تکرار</Label>
+                      <Input
+                        id="exercise-reps"
                         value={reps}
                         onChange={(e) => setReps(e.target.value)}
                         placeholder="۱۲"
-                        className="w-20 rounded-xl border border-white/10 bg-white/5 px-2 py-1.5 text-white outline-none"
+                        className="w-24"
                       />
-                    </label>
+                    </div>
                   </div>
                 </div>
               </div>
               <div className="mt-4 flex gap-2">
-                <button
+                <Button
                   type="button"
+                  variant="outline"
+                  className="flex-1"
                   onClick={() => handleAdd(true)}
-                  className="flex-1 rounded-2xl border border-white/10 bg-white/5 py-2.5 text-sm font-bold text-zinc-100 hover:bg-white/10"
                 >
                   افزودن و ادامه
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleAdd(false)}
-                  className="flex-1 rounded-2xl bg-white py-2.5 text-sm font-extrabold text-zinc-950 hover:bg-zinc-200"
-                >
+                </Button>
+                <Button type="button" className="flex-1" onClick={() => handleAdd(false)}>
                   افزودن حرکت
-                </button>
+                </Button>
               </div>
             </div>
-          ) : (
-            <div className="border-t border-white/10 px-5 py-3 text-center text-xs text-zinc-500">
-              یک حرکت را انتخاب کنید، سپس ست و تکرار را مشخص کنید
-            </div>
-          )}
-        </div>
-      </div>
-    </div>,
-    document.body
+          </DialogFooter>
+        ) : (
+          <div className="border-t px-5 py-3 text-center text-xs text-muted-foreground">
+            یک حرکت را انتخاب کنید، سپس ست و تکرار را مشخص کنید
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function FilterChip({ active, children, onClick }) {
+  return (
+    <Button
+      type="button"
+      variant={active ? "default" : "outline"}
+      size="sm"
+      className="h-7 text-xs"
+      onClick={onClick}
+    >
+      {children}
+    </Button>
   );
 }

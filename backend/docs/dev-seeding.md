@@ -15,6 +15,40 @@ The seed process is idempotent and can be executed multiple times safely.
 
 ---
 
+## Quick start (local development)
+
+### 1) Create your `.env`
+
+- If you already have `.env`, keep it.
+- If you don't, you can create it from `env.example`:
+
+```bash
+cp env.example .env
+```
+
+On Windows you can also just run `run.bat` which will create `.env` from `env.example` automatically when missing.
+
+### 2) Start the API server
+
+From `backend/`:
+
+```bash
+./run.sh
+```
+
+Or on Windows:
+
+```text
+run.bat
+```
+
+Both scripts validate:
+- Go version (>= 1.24)
+- MySQL reachability based on `.env`
+- `go mod download` + a basic build check
+
+---
+
 ## Available Seed Modes
 
 ### Exercise Dataset Import

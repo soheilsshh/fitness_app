@@ -1,12 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
+import { ChevronLeft, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { FiChevronLeft, FiTrash2 } from "react-icons/fi";
+import { useEffect, useState } from "react";
 import PlanForm from "@/app/(panel)/admin/plans/_components/PlanForm";
 import { api } from "@/lib/axios/client";
 import { toastError, toastSuccess } from "@/app/(site)/auth/_components/helpers";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function CoachPlanDetailsClient({ id }) {
   const router = useRouter();
@@ -54,36 +57,42 @@ export default function CoachPlanDetailsClient({ id }) {
   };
 
   if (loading) {
-    return <div className="text-sm text-zinc-400">در حال بارگذاری...</div>;
+    return (
+      <div className="space-y-4" dir="rtl">
+        <Skeleton className="h-9 w-48" />
+        <Skeleton className="h-64 w-full rounded-xl" />
+      </div>
+    );
   }
 
   if (!plan) {
-    return <div className="text-sm text-zinc-400">پلن یافت نشد.</div>;
+    return (
+      <Card dir="rtl">
+        <CardContent className="py-10 text-center text-sm text-muted-foreground">
+          پلن یافت نشد.
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4 md:gap-6" dir="rtl">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <Link
-            href="/coach/plans"
-            className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-bold text-zinc-100 hover:bg-white/10"
-          >
-            <FiChevronLeft />
-            بازگشت
-          </Link>
-          <div className="text-lg font-extrabold text-white">ویرایش پلن</div>
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/coach/plans">
+              <ChevronLeft data-icon="inline-start" />
+              بازگشت
+            </Link>
+          </Button>
+          <h2 className="text-lg font-semibold">ویرایش پلن</h2>
         </div>
-        <button
-          type="button"
-          onClick={onDelete}
-          className="inline-flex items-center gap-2 rounded-2xl border border-rose-400/20 bg-rose-400/10 px-4 py-2 text-sm font-bold text-rose-200 hover:bg-rose-400/15"
-        >
-          <FiTrash2 />
-          حذف
-        </button>
+        <Button type="button" variant="destructive" size="sm" onClick={onDelete}>
+          <Trash2 data-icon="inline-start" />
+          حذف پلن
+        </Button>
       </div>
-      <PlanForm mode="edit" initialValue={plan} onSubmit={onSubmit} submitText="ذخیره تغییرات" />
+      <PlanForm mode="edit" initialValue={plan} onSubmit={onSubmit} />
     </div>
   );
 }

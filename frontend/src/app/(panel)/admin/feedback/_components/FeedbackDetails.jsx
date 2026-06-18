@@ -1,6 +1,14 @@
 "use client";
 
-import { FiMail, FiPhone, FiUser, FiMessageSquare } from "react-icons/fi";
+import { Mail, MessageSquare, Phone, User } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 function formatDateTimeFa(iso) {
   try {
@@ -13,52 +21,57 @@ function formatDateTimeFa(iso) {
 export default function FeedbackDetails({ item }) {
   if (!item) {
     return (
-      <div className="rounded-[26px] border border-white/10 bg-white/5 p-6 text-sm text-zinc-300">
-        یک پیام را از لیست انتخاب کنید.
-      </div>
+      <Card dir="rtl">
+        <CardContent className="pt-6 text-sm text-muted-foreground">
+          یک پیام را از لیست انتخاب کنید.
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="rounded-[26px] border border-white/10 bg-white/5 p-5 md:p-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <div className="text-base font-extrabold text-white">جزئیات پیام</div>
-          <div className="mt-1 text-sm text-zinc-300">
-            {formatDateTimeFa(item.createdAt)}
-          </div>
+    <Card dir="rtl">
+      <CardHeader className="flex flex-row items-start justify-between gap-3">
+        <div className="space-y-1">
+          <CardTitle>جزئیات پیام</CardTitle>
+          <CardDescription>{formatDateTimeFa(item.createdAt)}</CardDescription>
         </div>
-
-        <span className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-zinc-950/30 px-3 py-2 text-xs text-zinc-200">
-          <FiMessageSquare className="text-cyan-200" />
+        <Badge variant="outline" className="gap-1.5">
+          <MessageSquare className="size-3.5" />
           پیام کامل
-        </span>
-      </div>
+        </Badge>
+      </CardHeader>
 
-      <div className="mt-5 grid gap-3 md:grid-cols-3">
-        <InfoChip icon={FiUser} label="نام و نام خانوادگی" value={item.fullName} />
-        <InfoChip icon={FiPhone} label="شماره تماس" value={item.phone} />
-        <InfoChip icon={FiMail} label="ایمیل" value={item.email} />
-      </div>
-
-      <div className="mt-4 rounded-3xl border border-white/10 bg-zinc-950/30 p-4">
-        <div className="mb-2 text-[11px] font-bold text-zinc-400">متن پیام</div>
-        <div className="whitespace-pre-wrap break-words text-sm text-zinc-100">
-          {item.message}
+      <CardContent className="space-y-4">
+        <div className="grid gap-3 md:grid-cols-3">
+          <InfoChip icon={User} label="نام و نام خانوادگی" value={item.fullName} />
+          <InfoChip icon={Phone} label="شماره تماس" value={item.phone} />
+          <InfoChip icon={Mail} label="ایمیل" value={item.email} />
         </div>
-      </div>
-    </div>
+
+        <Card size="sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs text-muted-foreground">متن پیام</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="whitespace-pre-wrap break-words text-sm">{item.message}</p>
+          </CardContent>
+        </Card>
+      </CardContent>
+    </Card>
   );
 }
 
 function InfoChip({ icon: Icon, label, value }) {
   return (
-    <div className="rounded-3xl border border-white/10 bg-zinc-950/30 p-4">
-      <div className="flex items-center gap-2 text-[11px] text-zinc-400">
-        <Icon className="text-zinc-300" />
-        {label}
-      </div>
-      <div className="mt-2 text-sm font-extrabold text-white">{value || "—"}</div>
-    </div>
+    <Card size="sm">
+      <CardContent className="pt-4">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Icon className="size-3.5" />
+          {label}
+        </div>
+        <div className="mt-2 text-sm font-semibold">{value || "—"}</div>
+      </CardContent>
+    </Card>
   );
 }
