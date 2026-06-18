@@ -1,5 +1,6 @@
 import {
   ClipboardListIcon,
+  Contact,
   HistoryIcon,
   ShoppingBagIcon,
   UserIcon,
@@ -26,6 +27,11 @@ export const userNav = [
     href: "/user/orders",
     label: "سفارش‌های من",
     icon: ShoppingBagIcon,
+  },
+  {
+    href: "/user/contact",
+    label: "ارتباط با مربی",
+    icon: Contact
   },
   {
     href: "/user/profile",

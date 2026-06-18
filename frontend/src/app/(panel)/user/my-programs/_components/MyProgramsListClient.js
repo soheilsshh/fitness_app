@@ -137,7 +137,7 @@ export default function MyProgramsListClient() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 grid-cols-">
           {paged.map(({ program, timeline }) => (
             <div key={program.id} className="h-full">
               <ProgramCardLink program={program} timeline={timeline} />

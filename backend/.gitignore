@@ -43,6 +43,10 @@ coverage.out
 *.tmp
 *.swp
 
+# Local/dev artifacts (should never be committed)
+tmp_feedback_test.json
+1.24)
+
 
 task.txt
 exercises-dataset-main/videos/*

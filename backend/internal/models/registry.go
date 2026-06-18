@@ -21,6 +21,7 @@ func AllModels() []any {
 		&OrderItem{},
 		&SiteSettings{},
 		&Feedback{},
+		&Ticket{},
 		&OtpCode{},
 		&Exercise{},
 	}

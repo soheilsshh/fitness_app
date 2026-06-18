@@ -85,8 +85,8 @@ body {
   @apply font-iranianSansXRegular;
   /* Plain fallbacks so text stays light-on-dark even before the
      @theme CSS variables apply (avoids a dark-text flash on first paint). */
-  background-color: #131313;
-  color: #e2e2e2;
+  /* background-color: #131313;
+  color: #e2e2e2; */
 }
 
 html {
@@ -221,7 +221,7 @@ html {
 /* =========================================================
    Landing page design system ("Body Sculpture" theme)
    ========================================================= */
-@theme {
+/* @theme {
   --color-surface: #131313;
   --color-surface-dim: #131313;
   --color-surface-bright: #393939;
@@ -241,7 +241,7 @@ html {
   --color-on-surface-variant: #b9cbc1;
   --color-outline-variant: #3a4a43;
   --color-background: #131313;
-}
+} */
 
 :root {
   --emerald-cyan: linear-gradient(135deg, #00e1ab 0%, #00e3fd 100%);

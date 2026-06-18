@@ -28,7 +28,7 @@ export default function HomeClient() {
   }, []);
 
   return (
-    <main className="relative overflow-x-hidden bg-surface text-on-surface">
+    <main className="relative overflow-x-hidden bg-background text-foreground">
       <ScrollProgress />
       <section id="home" className="scroll-mt-24">
         <Hero settings={settings} />

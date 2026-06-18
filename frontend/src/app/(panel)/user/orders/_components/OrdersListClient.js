@@ -113,7 +113,7 @@ export default function OrdersListClient() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-1">
           {items.map((order) => (
             <div key={order.id} className="h-full">
               <OrderCardLink order={order} />

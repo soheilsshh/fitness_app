@@ -2,11 +2,17 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { FiMail, FiPhone, FiMapPin } from "react-icons/fi";
+import { Mail, MapPin, Phone } from "lucide-react";
 import InlineSocialIcons from "./InlineSocialIcons";
 import { TiltCard } from "./landingEffects";
 import { api } from "@/lib/axios/client";
 import { toastError, toastSuccess } from "@/app/(site)/auth/_components/helpers";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 
 const DEFAULT_CONTACT = {
   address: "تهران، سعادت آباد، برج فیت‌پرو",
@@ -56,94 +62,97 @@ export default function ContactSection({ contactInfo }) {
     }
   };
 
-  const inputClass =
-    "w-full rounded-lg border border-white/10 bg-white/5 p-4 text-right outline-none transition-all focus:border-surface-tint focus:ring-2 focus:ring-surface-tint/20";
-
   return (
-    <section id="contact" className="mx-auto max-w-7xl scroll-mt-24 px-6 py-12 md:py-16">
+    <section id="contact" dir="rtl" className="mx-auto max-w-7xl scroll-mt-24 px-6 py-12 md:py-16">
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-        {/* Info card */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.25 }}
           transition={{ duration: 0.6 }}
-          className="glass space-y-10 rounded-[2rem] border border-white/5 p-10 text-right"
         >
-          <div>
-            <h2 className="mb-4 text-4xl font-extrabold text-primary md:text-5xl">
-              راهنمایی می‌خوای؟ <span className="gradient-text">پیام بده</span>
-            </h2>
-            <p className="text-base leading-8 text-on-surface-variant md:text-lg">
-              سوالی دارید؟ مربیان ما آماده پاسخگویی و ارائه مشاوره رایگان به شما هستند.
-            </p>
-          </div>
+          <Card className="h-full bg-card/60 backdrop-blur-sm">
+            <CardHeader className="text-start">
+              <CardTitle className="text-4xl font-extrabold tracking-tight md:text-5xl">
+                راهنمایی می‌خوای؟{" "}
+                <span className="bg-linear-to-l from-primary via-chart-2 to-chart-3 bg-clip-text text-transparent">
+                  پیام بده
+                </span>
+              </CardTitle>
+              <CardDescription className="text-base leading-8 md:text-lg">
+                سوالی دارید؟ مربیان ما آماده پاسخگویی و ارائه مشاوره رایگان به شما هستند.
+              </CardDescription>
+            </CardHeader>
 
-          <div className="space-y-6">
-            <div className="group flex flex-row-reverse items-center gap-4">
-              <FiMail className="text-xl text-surface-tint transition-transform group-hover:scale-110" />
-              <span className="text-base text-on-surface" dir="ltr">{info.email}</span>
-            </div>
-            <div className="group flex flex-row-reverse items-center gap-4">
-              <FiPhone className="text-xl text-surface-tint transition-transform group-hover:scale-110" />
-              <span className="text-base text-on-surface" dir="ltr">{info.phone}</span>
-            </div>
-            <div className="group flex flex-row-reverse items-center gap-4">
-              <FiMapPin className="text-xl text-surface-tint transition-transform group-hover:scale-110" />
-              <span className="text-base text-on-surface">{info.address}</span>
-            </div>
-          </div>
+            <CardContent className="space-y-6 text-start">
+              <div className="group flex flex-row-reverse items-center gap-4">
+                <Mail className="size-5 text-primary transition-transform group-hover:scale-110" />
+                <span className="text-base text-foreground" dir="ltr">
+                  {info.email}
+                </span>
+              </div>
+              <div className="group flex flex-row-reverse items-center gap-4">
+                <Phone className="size-5 text-primary transition-transform group-hover:scale-110" />
+                <span className="text-base text-foreground" dir="ltr">
+                  {info.phone}
+                </span>
+              </div>
+              <div className="group flex flex-row-reverse items-center gap-4">
+                <MapPin className="size-5 text-primary transition-transform group-hover:scale-110" />
+                <span className="text-base text-foreground">{info.address}</span>
+              </div>
 
-          <div className="flex justify-end border-t border-outline-variant/10 pt-10">
-            <InlineSocialIcons links={socialLinks} />
-          </div>
+              <Separator />
+
+              <div className="flex justify-end pt-2">
+                <InlineSocialIcons links={socialLinks} />
+              </div>
+            </CardContent>
+          </Card>
         </motion.div>
 
-        {/* Form card */}
-        <TiltCard className="glow-card relative h-full overflow-hidden rounded-[2rem] p-10">
-          <div className="gradient-bg absolute top-0 right-0 h-32 w-32 opacity-5 blur-3xl" />
-          <form className="relative z-10 space-y-6 text-right" onSubmit={onSubmit}>
-            <div className="space-y-2">
-              <label className="block text-xs tracking-widest text-on-surface-variant">
-                نام و نام خانوادگی
-              </label>
-              <input
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                className={inputClass}
-                placeholder="مثلا: علی محمدی"
-                type="text"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="block text-xs tracking-widest text-on-surface-variant">
-                شماره موبایل یا ایمیل
-              </label>
-              <input
-                value={contact}
-                onChange={(e) => setContact(e.target.value)}
-                className={inputClass}
-                placeholder="۰۹۱۲۳۴۵۶۷۸۹"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="block text-xs tracking-widest text-on-surface-variant">پیغام شما</label>
-              <textarea
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                className={`${inputClass} resize-none`}
-                placeholder="چطور می‌توانیم به شما کمک کنیم؟"
-                rows={4}
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="shimmer-btn w-full rounded-lg py-5 text-xl font-extrabold text-background shadow-xl shadow-surface-tint/20 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
-            >
-              {submitting ? "در حال ارسال..." : "ارسال درخواست مشاوره"}
-            </button>
-          </form>
+        <TiltCard className="h-full">
+          <Card className="relative h-full overflow-hidden bg-linear-to-t from-primary/5 to-card shadow-xs">
+            <div className="pointer-events-none absolute top-0 end-0 size-32 rounded-full bg-primary/10 blur-3xl" />
+            <CardContent className="relative z-10 pt-6">
+              <form className="space-y-6 text-start" onSubmit={onSubmit}>
+                <div className="space-y-2">
+                  <Label htmlFor="contact-fullName">نام و نام خانوادگی</Label>
+                  <Input
+                    id="contact-fullName"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="مثلا: علی محمدی"
+                    className="h-11 text-start"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="contact-info">شماره موبایل یا ایمیل</Label>
+                  <Input
+                    id="contact-info"
+                    value={contact}
+                    onChange={(e) => setContact(e.target.value)}
+                    placeholder="۰۹۱۲۳۴۵۶۷۸۹"
+                    className="h-11 text-start"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="contact-message">پیغام شما</Label>
+                  <Textarea
+                    id="contact-message"
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    placeholder="چطور می‌توانیم به شما کمک کنیم؟"
+                    rows={4}
+                    className="min-h-28 text-start leading-7"
+                  />
+                </div>
+                <Button type="submit" size="lg" className="w-full" disabled={submitting}>
+                  {submitting ? "در حال ارسال..." : "ارسال درخواست مشاوره"}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
         </TiltCard>
       </div>
     </section>

@@ -66,7 +66,7 @@ export default function Navbar() {
     <>
       <header
         className={[
-          "fixed left-0 right-0 z-[100] transition-all duration-300",
+          "fixed left-0 right-0 z-100 transition-all duration-300",
           scrolled ? "top-0 px-0 pt-0" : "top-6 px-3 sm:px-6",
         ].join(" ")}
       >

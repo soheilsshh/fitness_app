@@ -2,6 +2,7 @@ import {
   CalculatorIcon,
   ClipboardListIcon,
   LayoutDashboardIcon,
+  MessageSquareIcon,
   ScaleIcon,
   UserCheckIcon,
   UserIcon,
@@ -23,6 +24,11 @@ export const coachNav = [
     href: "/coach/students",
     label: "دانشجویان من",
     icon: UserCheckIcon,
+  },
+  {
+    href: "/coach/tickets",
+    label: "تیکت‌ها",
+    icon: MessageSquareIcon,
   },
   {
     href: "/coach/plans",

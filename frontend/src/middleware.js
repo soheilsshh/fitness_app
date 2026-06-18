@@ -6,6 +6,7 @@ const COACH_PANEL_SEGMENTS = new Set([
   "profile",
   "plans",
   "students",
+  "tickets",
   "tools",
 ]);
 
@@ -72,6 +73,8 @@ export const config = {
     "/coach/plans/:path*",
     "/coach/students",
     "/coach/students/:path*",
+    "/coach/tickets",
+    "/coach/tickets/:path*",
     "/coach/tools",
     "/coach/tools/:path*",
   ],
