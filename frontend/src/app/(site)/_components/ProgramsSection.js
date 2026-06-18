@@ -1,11 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { FiArrowDownRight, FiUsers } from "react-icons/fi";
+import { Users } from "lucide-react";
 import { api } from "@/lib/axios/client";
 import { apiAssetUrl } from "@/lib/api/assets";
+import { getCoachPublicPath } from "@/lib/routes/coach-public";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ProgramsSection() {
   const [coaches, setCoaches] = useState([]);
@@ -30,41 +37,64 @@ export default function ProgramsSection() {
   }, []);
 
   return (
-    <section id="programs" className="scroll-mt-24 py-20 md:py-24">
-      <div className="mx-auto max-w-7xl px-4">
-        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-zinc-200">
-              مربی‌های منتخب
-              <span className="h-1 w-1 rounded-full bg-white/30" />
-              برنامه اختصاصی برای هر هدف
-            </div>
-            <h2 className="mt-3 text-2xl font-extrabold md:text-3xl">
-              با <span className="text-emerald-300">مربی خودت</span> شروع کن
-            </h2>
-            <p className="mt-2 max-w-2xl text-sm leading-7 text-zinc-300 md:text-base">
-              FitPro پلتفرم چندمربی است؛ هر مربی صفحه اختصاصی و پلن‌های خودش را دارد.
-              مربی مناسب را انتخاب کن و از همان‌جا خرید را انجام بده.
-            </p>
-          </div>
+    <section id="programs" dir="rtl" className="relative scroll-mt-24 py-12 md:py-16">
+      <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-background via-primary/5 to-background" />
 
-          <Link
-            href="/coaches"
-            className="inline-flex w-fit items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-zinc-100 hover:bg-white/10"
-          >
-            همه مربی‌ها <FiArrowDownRight />
-          </Link>
+      <div className="relative z-10 mx-auto max-w-7xl px-6">
+        <div className="mb-16 flex flex-col items-center space-y-8 text-center">
+          <Badge variant="outline" className="gap-2 px-4 py-1.5 text-xs tracking-widest">
+            <span className="size-2 animate-pulse rounded-full bg-primary" />
+            مربیان تراز اول
+          </Badge>
+
+          <h2 className="text-4xl font-extrabold leading-tight tracking-tight text-foreground md:text-6xl">
+            با مربی{" "}
+            <span className="bg-linear-to-l from-primary via-chart-2 to-chart-3 bg-clip-text text-transparent">
+              خودت
+            </span>{" "}
+            شروع کن
+          </h2>
+
+          <p className="mx-auto max-w-2xl text-base leading-8 text-muted-foreground md:text-lg">
+            فیت‌پرو پلتفرم چندمربی است. ما بهترین مربیان ایران را در یک‌جا جمع
+            کرده‌ایم تا شما بر اساس سلیقه و نیاز خود، راهبر مسیرتان را انتخاب کنید.
+          </p>
+
+          <Card className="mx-auto w-100 mt-4 max-w-xl border-primary/20 bg-card/60 backdrop-blur-sm">
+            <CardHeader className="text-center">
+              <CardTitle className="text-2xl">استاندارد طلایی تناسب</CardTitle>
+              <CardDescription className="text-base leading-7">
+                ترکیبی از آناتومی کلاسیک و متدهای مدرن بیومکانیک برای دستیابی به تقارن مطلق.
+              </CardDescription>
+            </CardHeader>
+          </Card>
         </div>
 
-        <div className="mt-10 grid gap-5 md:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-3">
           {loading ? (
-            <div className="col-span-full rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-zinc-400">
-              در حال بارگذاری مربی‌ها...
-            </div>
+            Array.from({ length: 3 }).map((_, i) => (
+              <Card key={i}>
+                <CardHeader className="flex flex-row-reverse items-start gap-3">
+                  <Skeleton className="size-12 rounded-xl" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-3 w-24" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-16 w-full" />
+                </CardContent>
+                <CardFooter>
+                  <Skeleton className="h-9 w-full" />
+                </CardFooter>
+              </Card>
+            ))
           ) : coaches.length === 0 ? (
-            <div className="col-span-full rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-zinc-300">
-              هنوز مربی منتشرشده‌ای وجود ندارد. به‌زودی مربی‌های جدید اضافه می‌شوند.
-            </div>
+            <Card className="col-span-full">
+              <CardContent className="py-8 text-center text-sm text-muted-foreground">
+                هنوز مربی منتشرشده‌ای وجود ندارد. به‌زودی مربی‌های جدید اضافه می‌شوند.
+              </CardContent>
+            </Card>
           ) : (
             coaches.map((coach, idx) => (
               <motion.div
@@ -73,55 +103,76 @@ export default function ProgramsSection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.2 }}
                 transition={{ duration: 0.6, delay: idx * 0.06 }}
-                className="relative h-full overflow-hidden rounded-[28px] border border-white/10 bg-white/5 shadow-[0_20px_60px_-30px_rgba(0,0,0,0.8)]"
+                className="h-full"
               >
-                <div className="pointer-events-none absolute -top-10 left-1/2 h-40 w-40 -translate-x-1/2 rounded-full bg-emerald-400/10 blur-3xl" />
-                <div className="flex h-full flex-col p-5 md:p-6">
-                  <div className="flex items-start gap-3">
-                    <div className="inline-flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-zinc-950/40">
+                <Card className="flex h-full flex-col bg-linear-to-t from-primary/5 to-card shadow-xs transition-shadow hover:shadow-md">
+                  <CardHeader className="flex flex-row-reverse items-start gap-3">
+                    <Avatar className="size-12 rounded-xl">
                       {coach.avatarUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
+                        <AvatarImage
                           src={apiAssetUrl(coach.avatarUrl)}
                           alt={coach.displayName}
-                          className="h-full w-full object-cover"
+                          className="rounded-xl object-cover"
                         />
-                      ) : (
-                        <FiUsers className="text-emerald-300" />
-                      )}
+                      ) : null}
+                      <AvatarFallback className="rounded-xl">
+                        <Users className="size-5 text-primary" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 flex-1 text-start">
+                      <CardTitle className="truncate text-lg">{coach.displayName}</CardTitle>
+                      <CardDescription className="text-xs">
+                        {coach.title || coach.specialty || "مربی تناسب اندام"}
+                      </CardDescription>
                     </div>
-                    <div className="min-w-0">
-                      <div className="truncate text-lg font-extrabold text-white">
-                        {coach.displayName}
-                      </div>
-                      <div className="mt-1 text-xs text-zinc-400">{coach.title || coach.specialty || "مربی تناسب اندام"}</div>
-                    </div>
-                  </div>
+                  </CardHeader>
 
-                  <p className="mt-4 flex-1 text-sm leading-7 text-zinc-300">
-                    {coach.specialty
-                      ? `تخصص: ${coach.specialty}`
-                      : "برنامه تمرین و تغذیه اختصاصی با پشتیبانی مربی."}
-                  </p>
+                  <CardContent className="flex-1 text-start">
+                    <p className="text-sm leading-7 text-muted-foreground">
+                      {coach.specialty
+                        ? `تخصص: ${coach.specialty}`
+                        : "برنامه تمرین و تغذیه اختصاصی با پشتیبانی مربی."}
+                    </p>
+                  </CardContent>
 
-                  <Link
-                    href={`/coach/${coach.slug}`}
-                    className="mt-4 w-full rounded-2xl bg-white px-4 py-3 text-center text-sm font-extrabold text-zinc-950 hover:bg-zinc-200"
-                  >
-                    مشاهده صفحه و پلن‌ها
-                  </Link>
-                </div>
+                  <CardFooter>
+                    <Button asChild className="w-full">
+                      <Link href={getCoachPublicPath(coach.slug)}>مشاهده صفحه و پلن‌ها</Link>
+                    </Button>
+                  </CardFooter>
+                </Card>
               </motion.div>
             ))
           )}
         </div>
 
-        <div className="mt-8 rounded-3xl border border-white/10 bg-white/5 p-5 text-sm text-zinc-300">
-          اگر مطمئن نیستی کدام مربی مناسب است، از بخش{" "}
-          <a href="#contact" className="font-semibold text-emerald-200">
-            تماس با ما
-          </a>{" "}
-          پیام بده تا راهنماییت کنیم.
+        <div className="group relative mt-16">
+          <div className="absolute -inset-4 rounded-full bg-primary/10 opacity-0 blur-3xl transition-opacity duration-1000 group-hover:opacity-100" />
+          <Card className="relative overflow-hidden border-primary/20 py-0 shadow-lg">
+            <div className="grid md:grid-cols-2">
+              <div className="relative h-72 md:h-auto md:min-h-[480px]">
+                <Image
+                  src="/coachStatue"
+                  alt="پیکرتراش در حال تراشیدن مجسمه"
+                  fill
+                  className="object-cover object-top transition-transform duration-700 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-linear-to-b from-transparent via-background/10 to-background md:bg-linear-to-l md:from-transparent md:via-background/20 md:to-background" />
+              </div>
+
+              <div className="relative z-10 flex flex-col items-center justify-center space-y-6 p-8 text-center md:p-14">
+                <h3 className="text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">
+                  آماده تغییر هستی؟
+                </h3>
+                <p className="max-w-md text-base leading-8 text-muted-foreground md:text-lg">
+                  همین حالا برنامه اختصاصی خود را از مربی مورد علاقه‌تان دریافت کنید.
+                </p>
+                <Button asChild size="lg" className="rounded-full px-12 text-base">
+                  <Link href="/coaches">انتخاب مربی و شروع</Link>
+                </Button>
+              </div>
+            </div>
+          </Card>
         </div>
       </div>
     </section>

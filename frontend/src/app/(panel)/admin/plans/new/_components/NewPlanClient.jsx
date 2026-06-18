@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
-import { FiChevronLeft } from "react-icons/fi";
+import { ChevronLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import PlanForm from "../../_components/PlanForm";
 import { buildEmptyPlan } from "../../_components/planModel";
 
@@ -28,23 +30,28 @@ export default function NewPlanClient() {
   };
 
   return (
-    <div className="space-y-4">
+    <div dir="rtl" className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <Link
-            href="/admin/plans"
-            className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-bold text-zinc-100 hover:bg-white/10"
-          >
-            <FiChevronLeft />
-            بازگشت
-          </Link>
-
-          <div className="text-lg font-extrabold text-white">ساخت پلن جدید</div>
+          <Button asChild variant="outline">
+            <Link href="/admin/plans" className="inline-flex items-center gap-2">
+              <ChevronLeft className="size-4" />
+              بازگشت
+            </Link>
+          </Button>
+          <h1 className="text-lg font-extrabold">ساخت پلن جدید</h1>
         </div>
 
       </div>
 
-      <PlanForm mode="create" initialValue={buildEmptyPlan()} onSubmit={onSubmit} />
+      <Card>
+        <CardHeader>
+          <CardTitle>فرم ساخت پلن</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <PlanForm mode="create" initialValue={buildEmptyPlan()} onSubmit={onSubmit} />
+        </CardContent>
+      </Card>
     </div>
   );
 }

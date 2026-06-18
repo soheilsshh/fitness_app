@@ -1,5 +1,5 @@
-import PanelShell from "./_components/PanelShell";
+import UserPanelLayout from "./_components/UserPanelLayout";
 
-export default function UserPanelLayout({ children }) {
-  return <PanelShell>{children}</PanelShell>;
+export default function Layout({ children }) {
+  return <UserPanelLayout>{children}</UserPanelLayout>;
 }

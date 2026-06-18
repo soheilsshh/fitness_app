@@ -1,15 +1,25 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { motion } from "framer-motion";
-import {
-  FiCalendar,
-  FiClipboard,
-  FiCoffee,
-} from "react-icons/fi";
-import { FaDumbbell } from "react-icons/fa";
+import { Calendar, ClipboardList, Coffee, Dumbbell, Info } from "lucide-react";
 import WorkoutExerciseCards from "@/components/workout/WorkoutExerciseCards";
-import ProgressBar from "./ProgressBar";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { cn } from "@/lib/utils";
 import { formatDateFa, shortRemaining } from "./helpers";
 
 const DAYS = [
@@ -22,287 +32,272 @@ const DAYS = [
   { key: "fri", label: "جمعه" },
 ];
 
-// Map JS day (0..6) to our keys. JS: 0 Sunday ... 6 Saturday
 function jsDayToKey(jsDay) {
   const map = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
   return map[jsDay] || "sat";
 }
 
+function statusBadgeProps(timeline) {
+  if (timeline?.isExpired) {
+    return {
+      label: "پایان‌یافته",
+      className: "border-border bg-muted text-muted-foreground",
+    };
+  }
+  if (timeline?.isActive) {
+    return {
+      label: "فعال",
+      className:
+        "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+    };
+  }
+  return {
+    label: "شروع نشده",
+    className: "border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300",
+  };
+}
+
 export default function ProgramDetailsPanel({ program, timeline }) {
   const restSet = useMemo(
     () => new Set(program?.schedule?.restDays || []),
-    [program?.id],
+    [program?.id, program?.schedule?.restDays]
   );
   const activeSet = useMemo(
     () => new Set(program?.schedule?.weekly || []),
-    [program?.id],
+    [program?.id, program?.schedule?.weekly]
   );
 
   const defaultDay = useMemo(() => {
     if (!program) return "sat";
 
     const todayKey = jsDayToKey(new Date().getDay());
-    if (!restSet.has(todayKey) && program.planByDay?.[todayKey])
-      return todayKey;
+    if (!restSet.has(todayKey) && program.planByDay?.[todayKey]) return todayKey;
 
     const firstSelectable = DAYS.find(
-      (d) => !restSet.has(d.key) && program.planByDay?.[d.key],
+      (d) => !restSet.has(d.key) && program.planByDay?.[d.key]
     );
     return firstSelectable?.key || "sat";
-  }, [program?.id, restSet]);
+  }, [program, restSet]);
 
   const [selectedDay, setSelectedDay] = useState(defaultDay);
 
-  // Keep selected day in sync when program changes
   useEffect(() => {
     setSelectedDay(defaultDay);
   }, [defaultDay]);
 
-  // Now it's safe to early-render UI based on program after hooks are called
   if (!program) {
     return (
-      <div className="rounded-[26px] border border-white/10 bg-white/5 p-6 text-sm text-zinc-300">
-        یک برنامه را انتخاب کنید.
-      </div>
+      <Card dir="rtl">
+        <CardContent className="py-10 text-center text-sm text-muted-foreground">
+          یک برنامه را انتخاب کنید.
+        </CardContent>
+      </Card>
     );
   }
 
   const dayPlan = program.planByDay?.[selectedDay] || {};
   const workout = dayPlan.workout || null;
   const nutrition = dayPlan.nutrition || null;
-
-  const statusText = timeline?.isExpired
-    ? "پایان‌یافته"
-    : timeline?.isActive
-      ? "فعال"
-      : "شروع نشده";
+  const status = statusBadgeProps(timeline);
+  const selectedDayLabel = DAYS.find((x) => x.key === selectedDay)?.label;
 
   const canSelectDay = (key) => {
-    // Disable rest days OR missing plan
     if (restSet.has(key)) return false;
     if (!program.planByDay?.[key]) return false;
     return true;
   };
 
+  const dayHint = (key) => {
+    if (restSet.has(key)) return "استراحت";
+    if (activeSet.has(key)) return "فعال";
+    return "—";
+  };
+
   return (
-    <motion.div
-      key={program.id}
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35 }}
-      className="rounded-[26px] border border-white/10 bg-white/5 p-6"
+    <Card
+      className="bg-gradient-to-t from-primary/5 to-card shadow-xs dark:bg-card"
+      dir="rtl"
     >
-      {/* Header */}
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <div className="text-lg font-extrabold text-white">
-            {program.title}
-          </div>
-          <div className="mt-1 text-sm text-zinc-300">{program.goal}</div>
-
-          <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] text-zinc-300">
-            <span className="rounded-full border border-white/10 bg-zinc-950/30 px-3 py-1">
-              {statusText}
-            </span>
-
-            <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-zinc-950/30 px-3 py-1">
-              <FiCalendar />
-              شروع: {formatDateFa(program.startDate)}
-            </span>
-
-            <span className="rounded-full border border-white/10 bg-zinc-950/30 px-3 py-1">
-              مدت: {program.durationDays} روز
-            </span>
-
-            <span className="rounded-full border border-white/10 bg-zinc-950/30 px-3 py-1">
-              {shortRemaining(timeline.remainingDays)}
-            </span>
-          </div>
+      <CardHeader>
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant="outline" className={status.className}>
+            {status.label}
+          </Badge>
+          <Badge variant="outline">
+            <Calendar data-icon="inline-start" />
+            شروع: {formatDateFa(program.startDate)}
+          </Badge>
+          <Badge variant="secondary">
+            مدت: {Number(program.durationDays).toLocaleString("fa-IR")} روز
+          </Badge>
+          <Badge variant="outline">{shortRemaining(timeline.remainingDays)}</Badge>
         </div>
 
-        {/* <div className="w-full max-w-xs rounded-3xl border border-white/10 bg-zinc-950/30 p-4">
-          <div className="flex items-center justify-between text-[11px] text-zinc-400">
-            <span className="inline-flex items-center gap-1">
-              <FiInfo />
-              پیشرفت دوره
-            </span>
-            <span className="text-zinc-200">{timeline.percent}%</span>
-          </div>
-          <div className="mt-2">
-            <ProgressBar value={timeline.percent} />
-          </div>
-          <div className="mt-3 text-[11px] text-zinc-400">
-            {program.coach} • سطح:{" "}
-            <span className="text-zinc-200">{program.level}</span>
-          </div>
-        </div> */}
-      </div>
+        <CardTitle className="mt-3 text-start text-lg">{program.title}</CardTitle>
+        <CardDescription className="text-start">{program.goal}</CardDescription>
+      </CardHeader>
 
-      {/* Day selector */}
-      <div className="mt-6 rounded-3xl border border-white/10 bg-zinc-950/30 p-4">
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <div className="text-sm font-extrabold text-white">
-            انتخاب روز هفته
+      <CardContent className="space-y-6">
+        <div className="rounded-lg border bg-muted/30 p-4">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <p className="text-sm font-medium">انتخاب روز هفته</p>
+            <p className="text-xs text-muted-foreground">
+              روزهای استراحت غیرقابل انتخاب هستند
+            </p>
           </div>
-          <div className="text-[11px] text-zinc-400">
-            روزهای استراحت غیرقابل انتخاب هستند
-          </div>
+
+          <ToggleGroup
+            type="single"
+            value={selectedDay}
+            onValueChange={(next) => {
+              if (next) setSelectedDay(next);
+            }}
+            variant="outline"
+            size="sm"
+            className="grid w-full grid-cols-4 gap-2 sm:grid-cols-7"
+          >
+            {DAYS.map((d) => {
+              const selectable = canSelectDay(d.key);
+              return (
+                <ToggleGroupItem
+                  key={d.key}
+                  value={d.key}
+                  disabled={!selectable}
+                  aria-label={d.label}
+                  className={cn(
+                    "flex h-auto min-w-0 flex-col gap-0.5 px-2 py-2 text-xs",
+                    !selectable && "opacity-50"
+                  )}
+                >
+                  <span>{d.label}</span>
+                  <span className="text-[10px] font-normal text-muted-foreground">
+                    {dayHint(d.key)}
+                  </span>
+                </ToggleGroupItem>
+              );
+            })}
+          </ToggleGroup>
         </div>
 
-        <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
-          {DAYS.map((d) => {
-            const selectable = canSelectDay(d.key);
-            const isSelected = selectedDay === d.key;
+        <Tabs defaultValue="workout" className="w-full">
+          <TabsList className="w-full sm:w-auto">
+            <TabsTrigger value="workout" className="gap-1.5">
+              <Dumbbell className="size-3.5" />
+              تمرین
+            </TabsTrigger>
+            <TabsTrigger value="nutrition" className="gap-1.5">
+              <Coffee className="size-3.5" />
+              تغذیه
+            </TabsTrigger>
+          </TabsList>
 
-            return (
-              <button
-                key={d.key}
-                disabled={!selectable}
-                onClick={() => setSelectedDay(d.key)}
-                className={[
-                  "relative rounded-2xl border px-3 py-2 text-xs font-bold transition",
-                  selectable
-                    ? "border-white/10 bg-white/5 text-zinc-200 hover:bg-white/10"
-                    : "border-white/5 bg-white/5 text-zinc-500 opacity-50 cursor-not-allowed",
-                ].join(" ")}
-              >
-                {/* Animated pill behind selected */}
-                {isSelected && (
-                  <motion.div
-                    layoutId="dayPill"
-                    className="absolute inset-0 rounded-2xl bg-white"
-                    transition={{ type: "spring", stiffness: 280, damping: 24 }}
-                  />
+          <TabsContent value="workout" className="mt-4">
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between gap-2">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <Dumbbell className="size-4 text-primary" />
+                    برنامه تمرین
+                  </CardTitle>
+                  <Badge variant="outline">{selectedDayLabel}</Badge>
+                </div>
+                {workout?.title ? (
+                  <CardDescription className="text-start">
+                    {workout.title}
+                  </CardDescription>
+                ) : null}
+              </CardHeader>
+              <CardContent>
+                {!workout ? (
+                  <p className="rounded-lg border border-dashed p-4 text-center text-sm text-muted-foreground">
+                    برای این روز برنامه تمرینی تعریف نشده.
+                  </p>
+                ) : (
+                  <>
+                    <p className="mb-4 text-xs text-muted-foreground">
+                      برای مشاهده انیمیشن و طرز انجام، روی هر حرکت کلیک کنید
+                    </p>
+                    <WorkoutExerciseCards
+                      workout={workout}
+                      dayKey={selectedDay}
+                      clickable
+                      variant="accordion"
+                    />
+                  </>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-                <span
-                  className={[
-                    "relative z-10",
-                    isSelected ? "text-zinc-950" : "",
-                  ].join(" ")}
-                >
-                  {d.label}
-                </span>
-
-                {/* Small hint for active/rest */}
-                <span
-                  className={[
-                    "relative z-10 mt-1 block text-[10px]",
-                    isSelected
-                      ? "text-zinc-700"
-                      : selectable
-                        ? "text-zinc-400"
-                        : "text-zinc-600",
-                  ].join(" ")}
-                >
-                  {restSet.has(d.key)
-                    ? "استراحت"
-                    : activeSet.has(d.key)
-                      ? "فعال"
-                      : "—"}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Day content */}
-      <div className="mt-6 grid gap-3 md:grid-cols-2">
-        {/* Workout */}
-        <div className="rounded-3xl border border-white/10 bg-zinc-950/30 p-5">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 text-sm font-extrabold text-white">
-              <FaDumbbell className="text-emerald-300" />
-              برنامه تمرین
-            </div>
-            <span className="text-[11px] text-zinc-400">
-              {DAYS.find((x) => x.key === selectedDay)?.label}
-            </span>
-          </div>
-
-          {!workout ? (
-            <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-zinc-300">
-              برای این روز برنامه تمرینی تعریف نشده.
-            </div>
-          ) : (
-            <>
-              {workout.title ? (
-                <div className="mt-2 text-sm text-zinc-200">{workout.title}</div>
-              ) : null}
-              <div className="mt-1 text-[11px] text-zinc-400">
-                برای مشاهده انیمیشن و طرز انجام، روی هر حرکت کلیک کنید
-              </div>
-              <div className="mt-4">
-                <WorkoutExerciseCards
-                  workout={workout}
-                  dayKey={selectedDay}
-                  clickable
-                />
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* Nutrition */}
-        <div className="rounded-3xl border border-white/10 bg-zinc-950/30 p-5">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 text-sm font-extrabold text-white">
-              <FiCoffee className="text-cyan-300" />
-              برنامه تغذیه
-            </div>
-            <span className="text-[11px] text-zinc-400">
-              {DAYS.find((x) => x.key === selectedDay)?.label}
-            </span>
-          </div>
-
-          {!nutrition ? (
-            <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-zinc-300">
-              برای این روز برنامه غذایی تعریف نشده.
-            </div>
-          ) : (
-            <>
-              <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
-                  <div className="text-[11px] text-zinc-400">کالری هدف</div>
-                  <div className="mt-1 text-sm font-bold text-white">
-                    {nutrition.caloriesTarget} kcal
-                  </div>
+          <TabsContent value="nutrition" className="mt-4">
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between gap-2">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <Coffee className="size-4 text-primary" />
+                    برنامه تغذیه
+                  </CardTitle>
+                  <Badge variant="outline">{selectedDayLabel}</Badge>
                 </div>
-
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
-                  <div className="text-[11px] text-zinc-400">پروتئین هدف</div>
-                  <div className="mt-1 text-sm font-bold text-white">
-                    {nutrition.proteinTarget}
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-4 space-y-2">
-                {(nutrition.meals || []).map((m, i) => (
-                  <div
-                    key={`${selectedDay}-meal-${i}`}
-                    className="rounded-2xl border border-white/10 bg-white/5 px-3 py-2"
-                  >
-                    <div className="flex items-center gap-2 text-sm font-bold text-white">
-                      <FiClipboard className="text-zinc-200" />
-                      {m.title}
+              </CardHeader>
+              <CardContent>
+                {!nutrition ? (
+                  <p className="rounded-lg border border-dashed p-4 text-center text-sm text-muted-foreground">
+                    برای این روز برنامه غذایی تعریف نشده.
+                  </p>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-3">
+                      <Card size="sm">
+                        <CardContent className="pt-4">
+                          <p className="text-xs text-muted-foreground">کالری هدف</p>
+                          <p className="mt-1 text-sm font-semibold tabular-nums">
+                            {nutrition.caloriesTarget} kcal
+                          </p>
+                        </CardContent>
+                      </Card>
+                      <Card size="sm">
+                        <CardContent className="pt-4">
+                          <p className="text-xs text-muted-foreground">پروتئین هدف</p>
+                          <p className="mt-1 text-sm font-semibold">
+                            {nutrition.proteinTarget}
+                          </p>
+                        </CardContent>
+                      </Card>
                     </div>
-                    <div className="mt-1 text-[11px] text-zinc-300">
-                      {m.detail}
-                    </div>
+
+                    {(nutrition.meals || []).length ? (
+                      <Accordion type="multiple" className="w-full rounded-lg border px-3">
+                        {(nutrition.meals || []).map((meal, index) => (
+                          <AccordionItem
+                            key={`${selectedDay}-meal-${index}`}
+                            value={`${selectedDay}-meal-${index}`}
+                          >
+                            <AccordionTrigger className="hover:no-underline">
+                              <span className="flex items-center gap-2 text-start">
+                                <ClipboardList className="size-4 shrink-0 text-muted-foreground" />
+                                {meal.title}
+                              </span>
+                            </AccordionTrigger>
+                            <AccordionContent className="text-muted-foreground">
+                              {meal.detail}
+                            </AccordionContent>
+                          </AccordionItem>
+                        ))}
+                      </Accordion>
+                    ) : null}
                   </div>
-                ))}
-              </div>
-            </>
-          )}
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+
+        <div className="flex items-start gap-2 rounded-lg border bg-muted/30 p-4 text-xs text-muted-foreground">
+          <Info className="mt-0.5 size-3.5 shrink-0" />
+          نکته: روزهای استراحت قابل انتخاب نیستند.
         </div>
-      </div>
-
-      {/* Hint */}
-      <div className="mt-6 rounded-3xl border border-white/10 bg-zinc-950/30 p-5 text-[11px] text-zinc-500">
-        نکته: روزهای استراحت قابل انتخاب نیستند.
-      </div>
-    </motion.div>
+      </CardContent>
+    </Card>
   );
 }

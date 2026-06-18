@@ -1,8 +1,31 @@
 "use client";
 
 import Link from "next/link";
-import { FiChevronLeft, FiHash, FiCreditCard } from "react-icons/fi";
+import { ChevronLeft, CreditCard, Hash } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import { calcTotals, formatDateTimeFa, formatToman, statusMeta } from "./helpers";
+
+function paymentStatusBadgeClass(status) {
+  switch (status) {
+    case "paid":
+      return "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300";
+    case "pending":
+      return "border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300";
+    case "failed":
+      return "border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-300";
+    default:
+      return "border-border bg-muted text-muted-foreground";
+  }
+}
 
 export default function OrderCardLink({ order }) {
   const meta = statusMeta(order.status);
@@ -11,59 +34,79 @@ export default function OrderCardLink({ order }) {
   return (
     <Link
       href={`/user/orders/${encodeURIComponent(order.id)}`}
-      className="block rounded-[26px] border border-white/10 bg-white/5 p-5 transition hover:bg-white/10"
+      className="group block h-full"
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
+      <Card
+        className={cn(
+          "h-full bg-gradient-to-t from-primary/5 to-card shadow-xs transition-colors",
+          "hover:bg-muted/40 dark:bg-card"
+        )}
+      >
+        <CardHeader className="pb-0">
           <div className="flex flex-wrap items-center gap-2">
-            <span className={["rounded-full border px-3 py-1 text-[11px]", meta.badge].join(" ")}>
+            <Badge
+              variant="outline"
+              className={paymentStatusBadgeClass(order.status)}
+            >
               {meta.label}
-            </span>
+            </Badge>
 
-            <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-zinc-950/30 px-3 py-1 text-[11px] text-zinc-200">
-              <FiHash />
+            <Badge variant="outline">
+              <Hash data-icon="inline-start" />
               {order.id}
-            </span>
+            </Badge>
           </div>
 
-          <div className="mt-2 text-sm text-zinc-300">{formatDateTimeFa(order.createdAt)}</div>
+          <CardDescription className="mt-2 text-start">
+            {formatDateTimeFa(order.createdAt)}
+          </CardDescription>
 
-          <div className="mt-3 text-base font-extrabold text-white">
+          <CardTitle className="mt-3 text-start text-base font-semibold">
             مبلغ پرداختی: {formatToman(total)}
-          </div>
+          </CardTitle>
 
-          <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-zinc-400">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
             <span className="inline-flex items-center gap-1">
-              <FiCreditCard />
+              <CreditCard className="size-3.5" />
               {order.paymentMethod}
             </span>
-            <span>کد پیگیری: <span className="text-zinc-200">{order.trackingCode}</span></span>
+            <span>
+              کد پیگیری:{" "}
+              <span className="font-medium text-foreground">
+                {order.trackingCode}
+              </span>
+            </span>
           </div>
-        </div>
 
-        <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-zinc-950/30 text-zinc-100">
-          <FiChevronLeft className="text-xl" />
-        </span>
-      </div>
-
-      <div className="mt-4 rounded-3xl border border-white/10 bg-zinc-950/30 p-4">
-        <div className="text-[11px] text-zinc-400">آیتم‌ها</div>
-        <div className="mt-2 flex flex-wrap gap-2">
-          {order.items.slice(0, 3).map((it) => (
+          <CardAction>
             <span
-              key={it.refId}
-              className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] text-zinc-200"
+              className={cn(
+                "inline-flex size-9 items-center justify-center rounded-lg border border-border",
+                "bg-muted/50 text-muted-foreground transition-colors",
+                "group-hover:bg-muted group-hover:text-foreground"
+              )}
             >
-              {it.title}
+              <ChevronLeft className="size-4" />
             </span>
-          ))}
-          {order.items.length > 3 && (
-            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] text-zinc-200">
-              +{order.items.length - 3} مورد دیگر
-            </span>
-          )}
-        </div>
-      </div>
+          </CardAction>
+        </CardHeader>
+
+        <CardContent className="pt-4">
+          <p className="text-start text-xs text-muted-foreground">آیتم‌ها</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {order.items.slice(0, 3).map((item) => (
+              <Badge key={item.refId} variant="secondary">
+                {item.title}
+              </Badge>
+            ))}
+            {order.items.length > 3 ? (
+              <Badge variant="outline">
+                +{(order.items.length - 3).toLocaleString("fa-IR")} مورد دیگر
+              </Badge>
+            ) : null}
+          </div>
+        </CardContent>
+      </Card>
     </Link>
   );
 }

@@ -3,9 +3,52 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { FiChevronRight } from "react-icons/fi";
+import { ChevronRight } from "lucide-react";
 import { api } from "@/lib/axios/client";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import OrderDetailsPanel from "./OrderDetailsPanel";
+
+function OrderDetailsSkeleton() {
+  return (
+    <div className="flex flex-col gap-4" dir="rtl">
+      <Skeleton className="h-9 w-40" />
+      <Card>
+        <CardContent className="space-y-4 pt-6">
+          <Skeleton className="h-6 w-1/2" />
+          <Skeleton className="h-4 w-1/3" />
+          <Skeleton className="h-32 w-full rounded-lg" />
+          <Skeleton className="h-48 w-full rounded-lg" />
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function BackLink({ href, children }) {
+  return (
+    <Button variant="outline" size="sm" asChild>
+      <Link href={href}>
+        <ChevronRight data-icon="inline-start" />
+        {children}
+      </Link>
+    </Button>
+  );
+}
+
+function EmptyState({ href, backLabel, message }) {
+  return (
+    <div className="flex flex-col gap-4" dir="rtl">
+      <BackLink href={href}>{backLabel}</BackLink>
+      <Card>
+        <CardContent className="py-10 text-center text-sm text-muted-foreground">
+          {message}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
 
 export default function OrderDetailsClient() {
   const params = useParams();
@@ -29,47 +72,38 @@ export default function OrderDetailsClient() {
       }
     }
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
   if (!rawId) {
     return (
-      <div className="space-y-4">
-        <Link href="/user/orders" className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-zinc-100 hover:bg-white/10">
-          <FiChevronRight />
-          برگشت به سفارش‌ها
-        </Link>
-        <div className="rounded-[26px] border border-white/10 bg-white/5 p-6 text-sm text-zinc-300">
-          پارامتر آیدی دریافت نشد.
-        </div>
-      </div>
+      <EmptyState
+        href="/user/orders"
+        backLabel="برگشت به سفارش‌ها"
+        message="پارامتر آیدی دریافت نشد."
+      />
     );
   }
 
   if (loading) {
-    return <div className="text-sm text-zinc-400">در حال بارگذاری...</div>;
+    return <OrderDetailsSkeleton />;
   }
 
   if (!order) {
     return (
-      <div className="space-y-4">
-        <Link href="/user/orders" className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-zinc-100 hover:bg-white/10">
-          <FiChevronRight />
-          برگشت به سفارش‌ها
-        </Link>
-        <div className="rounded-[26px] border border-white/10 bg-white/5 p-6 text-sm text-zinc-300">
-          سفارش پیدا نشد.
-        </div>
-      </div>
+      <EmptyState
+        href="/user/orders"
+        backLabel="برگشت به سفارش‌ها"
+        message="سفارش پیدا نشد."
+      />
     );
   }
 
   return (
-    <div className="space-y-4">
-      <Link href="/user/orders" className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-zinc-100 hover:bg-white/10">
-        <FiChevronRight />
-        برگشت به سفارش‌ها
-      </Link>
+    <div className="flex flex-col gap-4 md:gap-6" dir="rtl">
+      <BackLink href="/user/orders">برگشت به سفارش‌ها</BackLink>
       <OrderDetailsPanel order={order} />
     </div>
   );

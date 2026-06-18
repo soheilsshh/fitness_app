@@ -1,40 +1,74 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { FiCopy, FiExternalLink, FiSave } from "react-icons/fi";
+import { Copy, ExternalLink, Save, Upload } from "lucide-react";
 import { api } from "@/lib/axios/client";
 import { apiAssetUrl } from "@/lib/api/assets";
+import { getCoachPublicPath } from "@/lib/routes/coach-public";
 import { toastError, toastSuccess } from "@/app/(site)/auth/_components/helpers";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 
 function ImageUploadBox({ label, url, onUpload, uploading }) {
   return (
-    <div className="space-y-2">
-      <div className="text-sm font-bold text-white">{label}</div>
-      <div className="overflow-hidden rounded-2xl border border-white/10 bg-zinc-900/50">
-        {url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={apiAssetUrl(url)} alt={label} className="h-40 w-full object-cover" />
-        ) : (
-          <div className="flex h-40 items-center justify-center text-sm text-zinc-500">
-            تصویری انتخاب نشده
-          </div>
-        )}
-      </div>
-      <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-zinc-100 hover:bg-white/10">
-        <input
-          type="file"
-          accept="image/*"
-          className="hidden"
-          disabled={uploading}
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) onUpload(file);
-            e.target.value = "";
-          }}
-        />
-        {uploading ? "در حال آپلود..." : "انتخاب تصویر"}
-      </label>
-    </div>
+    <Card size="sm">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-sm">{label}</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div className="overflow-hidden rounded-lg border bg-muted/30">
+          {url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={apiAssetUrl(url)}
+              alt={label}
+              className="h-40 w-full object-cover"
+            />
+          ) : (
+            <div className="flex h-40 items-center justify-center text-sm text-muted-foreground">
+              تصویری انتخاب نشده
+            </div>
+          )}
+        </div>
+        <label className="block cursor-pointer">
+          <input
+            type="file"
+            accept="image/*"
+            className="sr-only"
+            disabled={uploading}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) onUpload(file);
+              e.target.value = "";
+            }}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="pointer-events-none w-full"
+            disabled={uploading}
+            tabIndex={-1}
+          >
+            <Upload data-icon="inline-start" />
+            {uploading ? "در حال آپلود..." : "انتخاب تصویر"}
+          </Button>
+        </label>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -169,7 +203,7 @@ export default function ProfileClient() {
   };
 
   const copyPublicLink = async () => {
-    const path = form.publicUrl || `/coach/${form.slug}`;
+    const path = form.publicUrl || getCoachPublicPath(form.slug);
     const full = `${window.location.origin}${path}`;
     try {
       await navigator.clipboard.writeText(full);
@@ -180,45 +214,47 @@ export default function ProfileClient() {
   };
 
   if (loading) {
-    return <div className="text-sm text-zinc-400">در حال بارگذاری پروفایل...</div>;
+    return (
+      <div className="space-y-4" dir="rtl">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-64 w-full rounded-xl" />
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-4 md:gap-6" dir="rtl">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-extrabold text-white">پروفایل مربی</h1>
-          <p className="mt-1 text-sm text-zinc-400">
+        <div className="text-start">
+          <h1 className="text-xl font-semibold tracking-tight">پروفایل مربی</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
             اطلاعات لندینگ عمومی و راه‌های ارتباطی خود را مدیریت کنید.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={copyPublicLink}
-            className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-zinc-100 hover:bg-white/10"
-          >
-            <FiCopy />
+          <Button type="button" variant="outline" size="sm" onClick={copyPublicLink}>
+            <Copy data-icon="inline-start" />
             کپی لینک
-          </button>
-          <a
-            href={form.publicUrl || `/coach/${form.slug}`}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-zinc-100 hover:bg-white/10"
-          >
-            <FiExternalLink />
-            پیش‌نمایش
-          </a>
-          <button
+          </Button>
+          <Button type="button" variant="outline" size="sm" asChild>
+            <a
+              href={form.publicUrl || getCoachPublicPath(form.slug)}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <ExternalLink data-icon="inline-start" />
+              پیش‌نمایش
+            </a>
+          </Button>
+          <Button
             type="button"
+            size="sm"
             onClick={onSave}
             disabled={saving || slugStatus === "taken"}
-            className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-bold text-zinc-950 hover:bg-emerald-400 disabled:opacity-60"
           >
-            <FiSave />
+            <Save data-icon="inline-start" />
             {saving ? "در حال ذخیره..." : "ذخیره"}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -241,126 +277,130 @@ export default function ProfileClient() {
         />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <label className="block space-y-1">
-          <span className="text-sm text-zinc-300">نام نمایشی</span>
-          <input
+      <Card>
+        <CardContent className="grid gap-4 pt-6 md:grid-cols-2">
+          <FormField
+            label="نام نمایشی"
             value={form.displayName}
-            onChange={(e) => updateField("displayName", e.target.value)}
-            className="w-full rounded-xl border border-white/10 bg-zinc-900/60 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400/40"
+            onChange={(v) => updateField("displayName", v)}
           />
-        </label>
-        <label className="block space-y-1">
-          <span className="text-sm text-zinc-300">شناسه لینک (slug)</span>
-          <input
-            value={form.slug}
-            onChange={(e) => updateField("slug", e.target.value)}
-            className="w-full rounded-xl border border-white/10 bg-zinc-900/60 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400/40"
-            dir="ltr"
-          />
-          {slugStatus === "available" && (
-            <span className="text-xs text-emerald-400">شناسه در دسترس است</span>
-          )}
-          {slugStatus === "taken" && (
-            <span className="text-xs text-rose-400">شناسه قبلاً استفاده شده</span>
-          )}
-        </label>
-        <label className="block space-y-1 md:col-span-2">
-          <span className="text-sm text-zinc-300">عنوان / تخصص کوتاه</span>
-          <input
-            value={form.title}
-            onChange={(e) => updateField("title", e.target.value)}
-            placeholder="مثلاً مربی بدنسازی"
-            className="w-full rounded-xl border border-white/10 bg-zinc-900/60 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400/40"
-          />
-        </label>
-        <label className="block space-y-1 md:col-span-2">
-          <span className="text-sm text-zinc-300">معرفی کوتاه</span>
-          <textarea
-            value={form.bio}
-            onChange={(e) => updateField("bio", e.target.value)}
-            rows={3}
-            className="w-full rounded-xl border border-white/10 bg-zinc-900/60 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400/40"
-          />
-        </label>
-        <label className="block space-y-1 md:col-span-2">
-          <span className="text-sm text-zinc-300">درباره مربی</span>
-          <textarea
-            value={form.aboutCoach}
-            onChange={(e) => updateField("aboutCoach", e.target.value)}
-            rows={5}
-            className="w-full rounded-xl border border-white/10 bg-zinc-900/60 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400/40"
-          />
-        </label>
-        <label className="block space-y-1">
-          <span className="text-sm text-zinc-300">تخصص</span>
-          <input
-            value={form.specialty}
-            onChange={(e) => updateField("specialty", e.target.value)}
-            className="w-full rounded-xl border border-white/10 bg-zinc-900/60 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400/40"
-          />
-        </label>
-        <label className="block space-y-1">
-          <span className="text-sm text-zinc-300">شماره تماس</span>
-          <input
-            value={form.contactPhone}
-            onChange={(e) => updateField("contactPhone", e.target.value)}
-            className="w-full rounded-xl border border-white/10 bg-zinc-900/60 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400/40"
-            dir="ltr"
-          />
-        </label>
-        <label className="block space-y-1">
-          <span className="text-sm text-zinc-300">اینستاگرام</span>
-          <input
-            value={form.instagram}
-            onChange={(e) => updateField("instagram", e.target.value)}
-            className="w-full rounded-xl border border-white/10 bg-zinc-900/60 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400/40"
-            dir="ltr"
-          />
-        </label>
-        <label className="block space-y-1">
-          <span className="text-sm text-zinc-300">تلگرام</span>
-          <input
-            value={form.telegram}
-            onChange={(e) => updateField("telegram", e.target.value)}
-            className="w-full rounded-xl border border-white/10 bg-zinc-900/60 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400/40"
-            dir="ltr"
-          />
-        </label>
-        <label className="block space-y-1">
-          <span className="text-sm text-zinc-300">واتساپ</span>
-          <input
-            value={form.whatsapp}
-            onChange={(e) => updateField("whatsapp", e.target.value)}
-            className="w-full rounded-xl border border-white/10 bg-zinc-900/60 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400/40"
-            dir="ltr"
-          />
-        </label>
-        <label className="block space-y-1">
-          <span className="text-sm text-zinc-300">وب‌سایت</span>
-          <input
-            value={form.website}
-            onChange={(e) => updateField("website", e.target.value)}
-            className="w-full rounded-xl border border-white/10 bg-zinc-900/60 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400/40"
-            dir="ltr"
-          />
-        </label>
-      </div>
-
-      <label className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-        <input
-          type="checkbox"
-          checked={form.isPublished}
-          onChange={(e) => updateField("isPublished", e.target.checked)}
-          className="h-4 w-4 accent-emerald-500"
-        />
-        <div>
-          <div className="text-sm font-bold text-white">انتشار پروفایل عمومی</div>
-          <div className="text-xs text-zinc-400">
-            با فعال‌سازی، لندینگ شما در آدرس عمومی قابل مشاهده خواهد بود.
+          <div className="space-y-2">
+            <FormField
+              label="شناسه لینک (slug)"
+              value={form.slug}
+              onChange={(v) => updateField("slug", v)}
+              dir="ltr"
+            />
+            {slugStatus === "available" ? (
+              <Badge variant="outline" className="border-emerald-500/30 text-emerald-700 dark:text-emerald-300">
+                شناسه در دسترس است
+              </Badge>
+            ) : null}
+            {slugStatus === "taken" ? (
+              <Badge variant="outline" className="border-rose-500/30 text-rose-700 dark:text-rose-300">
+                شناسه قبلاً استفاده شده
+              </Badge>
+            ) : null}
           </div>
-        </div>
-      </label>
+          <FormField
+            label="عنوان / تخصص کوتاه"
+            value={form.title}
+            onChange={(v) => updateField("title", v)}
+            placeholder="مثلاً مربی بدنسازی"
+            className="md:col-span-2"
+          />
+          <TextFormField
+            label="معرفی کوتاه"
+            value={form.bio}
+            onChange={(v) => updateField("bio", v)}
+            rows={3}
+            className="md:col-span-2"
+          />
+          <TextFormField
+            label="درباره مربی"
+            value={form.aboutCoach}
+            onChange={(v) => updateField("aboutCoach", v)}
+            rows={5}
+            className="md:col-span-2"
+          />
+          <FormField
+            label="تخصص"
+            value={form.specialty}
+            onChange={(v) => updateField("specialty", v)}
+          />
+          <FormField
+            label="شماره تماس"
+            value={form.contactPhone}
+            onChange={(v) => updateField("contactPhone", v)}
+            dir="ltr"
+          />
+          <FormField
+            label="اینستاگرام"
+            value={form.instagram}
+            onChange={(v) => updateField("instagram", v)}
+            dir="ltr"
+          />
+          <FormField
+            label="تلگرام"
+            value={form.telegram}
+            onChange={(v) => updateField("telegram", v)}
+            dir="ltr"
+          />
+          <FormField
+            label="واتساپ"
+            value={form.whatsapp}
+            onChange={(v) => updateField("whatsapp", v)}
+            dir="ltr"
+          />
+          <FormField
+            label="وب‌سایت"
+            value={form.website}
+            onChange={(v) => updateField("website", v)}
+            dir="ltr"
+          />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="flex items-start gap-3 pt-6">
+          <Checkbox
+            id="is-published"
+            checked={form.isPublished}
+            onCheckedChange={(checked) => updateField("isPublished", !!checked)}
+          />
+          <div className="text-start">
+            <Label htmlFor="is-published" className="font-medium">
+              انتشار پروفایل عمومی
+            </Label>
+            <CardDescription className="mt-1">
+              با فعال‌سازی، لندینگ شما در آدرس عمومی قابل مشاهده خواهد بود.
+            </CardDescription>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function FormField({ label, value, onChange, placeholder, dir, className }) {
+  return (
+    <div className={cn("space-y-2", className)}>
+      <Label>{label}</Label>
+      <Input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        dir={dir}
+      />
+    </div>
+  );
+}
+
+function TextFormField({ label, value, onChange, rows = 3, className }) {
+  return (
+    <div className={cn("space-y-2", className)}>
+      <Label>{label}</Label>
+      <Textarea value={value} onChange={(e) => onChange(e.target.value)} rows={rows} />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { FiUsers } from "react-icons/fi";
 import { api } from "@/lib/axios/client";
 import { apiAssetUrl } from "@/lib/api/assets";
+import { getCoachPublicPath } from "@/lib/routes/coach-public";
 
 export default function CoachesListPage() {
   const [items, setItems] = useState([]);
@@ -61,7 +62,7 @@ export default function CoachesListPage() {
           {items.map((coach) => (
             <Link
               key={coach.coachId || coach.slug}
-              href={`/coach/${coach.slug}`}
+              href={getCoachPublicPath(coach.slug)}
               className="rounded-[26px] border border-white/10 bg-white/5 p-5 transition hover:bg-white/10"
             >
               <div className="flex items-start gap-3">

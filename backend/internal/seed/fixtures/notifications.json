@@ -1,0 +1,35 @@
+[
+  {
+    "ID": 1,
+    "UserID": 4,
+    "Type": "program_updated",
+    "Title": "برنامه تمرین به‌روز شد",
+    "Message": "مربی علی رضایی برنامه هفته ۲ را برای شما فعال کرد.",
+    "IsRead": false
+  },
+  {
+    "ID": 2,
+    "UserID": 4,
+    "Type": "checkin_reminder",
+    "Title": "یادآوری چک‌این",
+    "Message": "امروز موعد ثبت وزن و اندازه‌گیری‌های هفتگی شماست.",
+    "IsRead": false
+  },
+  {
+    "ID": 3,
+    "UserID": 5,
+    "Type": "message_from_coach",
+    "Title": "پیام از مربی",
+    "Message": "مریم عزیز، فرم حرکت در لunge را در ویدیو ارسالی بررسی کنید.",
+    "IsRead": true,
+    "ReadAt": "2026-05-19T08:00:00Z"
+  },
+  {
+    "ID": 4,
+    "UserID": 6,
+    "Type": "program_updated",
+    "Title": "برنامه تغذیه جدید",
+    "Message": "رژیم حجم هفته ۳ آماده مشاهده در پنل شماست.",
+    "IsRead": false
+  }
+]

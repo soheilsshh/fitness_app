@@ -1,8 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { FiChevronLeft } from "react-icons/fi";
+import { ChevronLeft, PlayCircle } from "lucide-react";
 import { parseExerciseStep } from "@/app/(panel)/coach/students/_components/exerciseHelpers";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import { mediaUrl } from "./mediaUrl";
 import ExerciseDetailModal from "./ExerciseDetailModal";
 
@@ -29,83 +39,159 @@ function normalizeExercises(workout) {
   });
 }
 
+function ExerciseBadges({ exercise }) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {exercise.sets > 0 ? (
+        <Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+          {Number(exercise.sets).toLocaleString("fa-IR")} ست
+        </Badge>
+      ) : null}
+      {exercise.reps ? (
+        <Badge variant="secondary">{exercise.reps} تکرار</Badge>
+      ) : null}
+      {exercise.category ? (
+        <Badge variant="outline">{exercise.category}</Badge>
+      ) : null}
+    </div>
+  );
+}
+
+function ExerciseThumb({ exercise, index }) {
+  const img = mediaUrl(exercise.imageUrl);
+
+  return (
+    <div className="relative size-16 shrink-0 overflow-hidden rounded-lg border bg-muted">
+      {img ? (
+        <img
+          src={img}
+          alt={exercise.name}
+          className="size-full object-cover"
+          onError={(e) => {
+            e.target.style.display = "none";
+          }}
+        />
+      ) : (
+        <div className="flex size-full items-center justify-center text-sm font-semibold text-muted-foreground">
+          {(index + 1).toLocaleString("fa-IR")}
+        </div>
+      )}
+      <span className="absolute bottom-1 end-1 rounded bg-background/80 px-1.5 py-0.5 text-[10px] font-medium tabular-nums">
+        {(index + 1).toLocaleString("fa-IR")}
+      </span>
+    </div>
+  );
+}
+
+function ExerciseCardRow({ exercise, index, clickable, onSelect }) {
+  const Wrapper = clickable ? "button" : "div";
+
+  return (
+    <Wrapper
+      type={clickable ? "button" : undefined}
+      onClick={clickable ? () => onSelect?.(exercise) : undefined}
+      className={cn(
+        "flex w-full items-center gap-3 rounded-lg border bg-card p-3 text-start transition-colors",
+        clickable && "cursor-pointer hover:bg-muted/50"
+      )}
+    >
+      <ExerciseThumb exercise={exercise} index={index} />
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium">{exercise.name}</p>
+        <div className="mt-2">
+          <ExerciseBadges exercise={exercise} />
+        </div>
+      </div>
+      {clickable ? <ChevronLeft className="size-4 shrink-0 text-muted-foreground" /> : null}
+    </Wrapper>
+  );
+}
+
 export default function WorkoutExerciseCards({
   workout,
   dayKey = "day",
   clickable = false,
+  variant = "cards",
 }) {
   const [selected, setSelected] = useState(null);
   const exercises = normalizeExercises(workout);
 
   if (exercises.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-white/10 bg-zinc-950/20 p-5 text-center text-sm text-zinc-500">
-        حرکتی ثبت نشده
-      </div>
+      <Card>
+        <CardContent className="py-8 text-center text-sm text-muted-foreground">
+          حرکتی ثبت نشده
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (variant === "accordion") {
+    return (
+      <>
+        <Accordion type="multiple" className="w-full rounded-lg border px-3">
+          {exercises.map((exercise, index) => (
+            <AccordionItem key={`${dayKey}-${exercise.key}`} value={exercise.key}>
+              <AccordionTrigger className="hover:no-underline">
+                <span className="flex flex-1 items-center gap-3 pe-2 text-start">
+                  <ExerciseThumb exercise={exercise} index={index} />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-medium">
+                      {exercise.name}
+                    </span>
+                    <span className="mt-2 block">
+                      <ExerciseBadges exercise={exercise} />
+                    </span>
+                  </span>
+                </span>
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="space-y-3 ps-1">
+                  {exercise.category ? (
+                    <p className="text-xs text-muted-foreground">
+                      دسته: {exercise.category}
+                    </p>
+                  ) : null}
+                  {clickable ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSelected(exercise)}
+                    >
+                      <PlayCircle data-icon="inline-start" />
+                      مشاهده جزئیات و انیمیشن
+                    </Button>
+                  ) : null}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+
+        {clickable ? (
+          <ExerciseDetailModal
+            open={!!selected}
+            onClose={() => setSelected(null)}
+            exercise={selected}
+          />
+        ) : null}
+      </>
     );
   }
 
   return (
     <>
       <div className="space-y-3">
-        {exercises.map((ex, index) => {
-          const img = mediaUrl(ex.imageUrl);
-          const Wrapper = clickable ? "button" : "div";
-          return (
-            <Wrapper
-              key={`${dayKey}-${ex.key}`}
-              type={clickable ? "button" : undefined}
-              onClick={clickable ? () => setSelected(ex) : undefined}
-              className={[
-                "flex w-full items-center gap-3 rounded-2xl border border-white/10 bg-zinc-950/40 p-3 text-right transition",
-                clickable ? "hover:border-emerald-400/30 hover:bg-emerald-400/5 cursor-pointer" : "",
-              ].join(" ")}
-            >
-              <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-zinc-900">
-                {img ? (
-                  <img
-                    src={img}
-                    alt={ex.name}
-                    className="h-full w-full object-cover"
-                    onError={(e) => { e.target.style.display = "none"; }}
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center text-lg font-bold text-zinc-600">
-                    {index + 1}
-                  </div>
-                )}
-                <span className="absolute bottom-1 right-1 rounded-md bg-black/70 px-1.5 py-0.5 text-[10px] font-bold text-white">
-                  {index + 1}
-                </span>
-              </div>
-
-              <div className="min-w-0 flex-1">
-                <div className="truncate text-sm font-extrabold text-white">{ex.name}</div>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {ex.sets > 0 ? (
-                    <span className="rounded-lg border border-emerald-400/25 bg-emerald-400/10 px-2.5 py-1 text-[11px] font-bold text-emerald-200">
-                      {ex.sets} ست
-                    </span>
-                  ) : null}
-                  {ex.reps ? (
-                    <span className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] font-bold text-zinc-300">
-                      {ex.reps} تکرار
-                    </span>
-                  ) : null}
-                  {ex.category ? (
-                    <span className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] text-zinc-400">
-                      {ex.category}
-                    </span>
-                  ) : null}
-                </div>
-              </div>
-
-              {clickable ? (
-                <FiChevronLeft className="shrink-0 text-zinc-500" />
-              ) : null}
-            </Wrapper>
-          );
-        })}
+        {exercises.map((exercise, index) => (
+          <ExerciseCardRow
+            key={`${dayKey}-${exercise.key}`}
+            exercise={exercise}
+            index={index}
+            clickable={clickable}
+            onSelect={setSelected}
+          />
+        ))}
       </div>
 
       {clickable ? (

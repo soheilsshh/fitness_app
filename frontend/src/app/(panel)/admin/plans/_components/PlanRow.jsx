@@ -1,10 +1,8 @@
 "use client";
 
 import Link from "next/link";
-
-function cn(...xs) {
-  return xs.filter(Boolean).join(" ");
-}
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 function formatNumber(v) {
   try {
@@ -15,33 +13,44 @@ function formatNumber(v) {
 }
 
 export default function PlanRow({ plan, basePath = "/admin/plans" }) {
-  const hasDiscount = Number(plan.discountPercent || 0) > 0 || Number(plan.discountPrice || 0) > 0;
+  const hasDiscount =
+    Number(plan.discountPercent || 0) > 0 || Number(plan.discountPrice || 0) > 0;
 
   const price = Number(plan.price || 0);
   const discountPrice = Number(plan.discountPrice || 0);
   const finalPrice = discountPrice > 0 ? discountPrice : price;
 
   return (
-    <Link href={`${basePath}/${plan.id}`} className="block px-4 py-4 hover:bg-white/10">
+    <Link
+      href={`${basePath}/${plan.id}`}
+      className={cn(
+        "block border-b px-4 py-4 transition-colors last:border-b-0",
+        "hover:bg-muted/50"
+      )}
+    >
       <div className="grid grid-cols-1 gap-2 md:grid-cols-12 md:gap-2">
         <div className="md:col-span-5">
-          <div className="text-sm font-extrabold text-white">{plan.title || "—"}</div>
-          <div className="mt-1 text-[11px] text-zinc-400">{plan.subtitle || "—"}</div>
+          <div className="text-sm font-semibold">{plan.title || "—"}</div>
+          <div className="mt-1 text-xs text-muted-foreground">
+            {plan.subtitle || "—"}
+          </div>
         </div>
 
         <div className="md:col-span-3">
-          <div className="text-sm text-zinc-200">{plan.courseName || "—"}</div>
+          <div className="text-sm">{plan.courseName || "—"}</div>
           {plan.coachName ? (
-            <div className="mt-1 text-[11px] text-zinc-400">مربی: {plan.coachName}</div>
+            <div className="mt-1 text-xs text-muted-foreground">
+              مربی: {plan.coachName}
+            </div>
           ) : null}
         </div>
 
         <div className="md:col-span-2">
-          <div className="text-sm font-extrabold text-white">
+          <div className="text-sm font-semibold tabular-nums">
             {formatNumber(finalPrice)}
           </div>
           {hasDiscount && price > 0 ? (
-            <div className="mt-1 text-[11px] text-zinc-400 line-through">
+            <div className="mt-1 text-xs text-muted-foreground line-through tabular-nums">
               {formatNumber(price)}
             </div>
           ) : null}
@@ -50,21 +59,24 @@ export default function PlanRow({ plan, basePath = "/admin/plans" }) {
         <div className="md:col-span-2 md:text-left">
           <div className="flex flex-wrap items-center gap-2 md:justify-end">
             {plan.isPopular ? (
-              <span className="inline-flex rounded-full border border-amber-400/25 bg-amber-400/10 px-3 py-1 text-[11px] font-bold text-amber-100">
+              <Badge
+                variant="outline"
+                className="border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300"
+              >
                 محبوب
-              </span>
+              </Badge>
             ) : null}
 
-            <span
-              className={cn(
-                "inline-flex rounded-full border px-3 py-1 text-[11px] font-bold",
+            <Badge
+              variant="outline"
+              className={
                 hasDiscount
-                  ? "border-emerald-400/25 bg-emerald-400/10 text-emerald-200"
-                  : "border-white/10 bg-zinc-950/30 text-zinc-200"
-              )}
+                  ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                  : undefined
+              }
             >
               {hasDiscount ? "تخفیف‌دار" : "عادی"}
-            </span>
+            </Badge>
           </div>
         </div>
       </div>

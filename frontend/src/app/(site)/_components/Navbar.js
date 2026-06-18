@@ -7,6 +7,7 @@ import { FiMenu, FiUser, FiLogOut } from "react-icons/fi";
 import { FaDumbbell } from "react-icons/fa";
 import MobileDrawer from "./MobileDrawer";
 import CartButton from "./CartButton";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { getAuthSession, logout } from "@/lib/auth/session";
 import { getDashboardPath } from "@/lib/auth/roles";
 
@@ -63,16 +64,19 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-[100] px-3 pt-3 sm:px-4 sm:pt-4">
+      <header
+        className={[
+          "fixed left-0 right-0 z-100 transition-all duration-300",
+          scrolled ? "top-0 px-0 pt-0" : "top-6 px-3 sm:px-6",
+        ].join(" ")}
+      >
         <div
           className={[
-            "mx-auto flex max-w-7xl items-center justify-between gap-3 rounded-[22px] border px-3 py-2.5 sm:px-4 sm:py-3",
-            "border-white/15 bg-white/[0.07] backdrop-blur-2xl backdrop-saturate-150",
-            "shadow-[0_12px_40px_-12px_rgba(0,0,0,0.65)]",
-            "transition-all duration-300",
+            "glass mx-auto flex items-center justify-between gap-3 border border-outline-variant/20 px-3 py-2.5 sm:px-6 sm:py-3",
+            "shadow-[0_12px_40px_-12px_rgba(0,0,0,0.65)] transition-all duration-300",
             scrolled
-              ? "bg-zinc-950/55 ring-1 ring-white/10"
-              : "bg-zinc-950/35",
+              ? "max-w-none rounded-none border-x-0 border-t-0 bg-black/80 backdrop-blur-xl"
+              : "max-w-7xl rounded-full",
           ].join(" ")}
         >
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
@@ -86,13 +90,10 @@ export default function Navbar() {
             </button>
 
             <Link href="/" className="flex min-w-0 items-center gap-2">
-              <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400/25 to-cyan-400/15 ring-1 ring-white/15">
-                <FaDumbbell className="text-emerald-300" />
+              <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-surface-tint/25 to-secondary-container/15 ring-1 ring-white/15">
+                <FaDumbbell className="text-surface-tint" />
               </span>
-              <div className="hidden leading-tight sm:block">
-                <div className="text-sm font-extrabold text-white">FitPro</div>
-                <div className="text-[11px] text-zinc-400">Fitness Programs</div>
-              </div>
+              <span className="hidden text-2xl font-extrabold gradient-text sm:block">FitPro</span>
             </Link>
 
             <nav className="hidden md:flex md:items-center md:gap-0.5">
@@ -101,7 +102,7 @@ export default function Navbar() {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className="rounded-xl px-3 py-2 text-sm font-medium text-zinc-200 transition hover:bg-white/8 hover:text-white"
+                    className="rounded-xl px-3 py-2 text-sm font-medium text-on-surface-variant transition hover:bg-white/8 hover:text-surface-tint"
                   >
                     {item.label}
                   </Link>
@@ -110,7 +111,7 @@ export default function Navbar() {
                     key={item.id}
                     type="button"
                     onClick={() => goToSection(item.id)}
-                    className="rounded-xl px-3 py-2 text-sm font-medium text-zinc-200 transition hover:bg-white/8 hover:text-white"
+                    className="rounded-xl px-3 py-2 text-sm font-medium text-on-surface-variant transition hover:bg-white/8 hover:text-surface-tint"
                   >
                     {item.label}
                   </button>
@@ -120,6 +121,9 @@ export default function Navbar() {
           </div>
 
           <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+            <ThemeToggle
+              buttonClassName="border-white/10 bg-white/5 text-zinc-100 hover:bg-white/10 hover:text-white"
+            />
             <CartButton />
 
             {session?.token ? (
@@ -155,7 +159,7 @@ export default function Navbar() {
                 </Link>
                 <Link
                   href="/auth/register/coach"
-                  className="rounded-xl bg-gradient-to-l from-emerald-400 to-cyan-400 px-3 py-2 text-sm font-extrabold text-zinc-950 transition hover:opacity-90"
+                  className="gradient-bg rounded-full px-4 py-2 text-sm font-extrabold text-on-primary transition hover:opacity-90"
                 >
                   مربی شو
                 </Link>

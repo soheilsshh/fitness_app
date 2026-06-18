@@ -2,10 +2,9 @@
 
 import { FiInstagram, FiMail, FiMapPin, FiPhone } from "react-icons/fi";
 import { FaTelegramPlane, FaWhatsapp } from "react-icons/fa";
-
-function cn(...xs) {
-  return xs.filter(Boolean).join(" ");
-}
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export default function ContactInfoEditor({ value, onChange }) {
   const v = value || {
@@ -20,16 +19,16 @@ export default function ContactInfoEditor({ value, onChange }) {
   const setField = (key, val) => onChange?.({ ...v, [key]: val });
 
   return (
-    <div className="rounded-[26px] border border-white/10 bg-white/5 p-5 md:p-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <div className="text-base font-extrabold text-white">اطلاعات تماس (تماس با ما)</div>
-          <div className="mt-1 text-sm text-zinc-300">
-            آدرس + ایمیل + شماره تماس + لینک شبکه‌های اجتماعی 
-          </div>
+    <Card dir="rtl">
+      <CardHeader className="flex flex-row items-start justify-between gap-3">
+        <div className="space-y-1">
+          <CardTitle>اطلاعات تماس (تماس با ما)</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            آدرس + ایمیل + شماره تماس + لینک شبکه‌های اجتماعی
+          </p>
         </div>
 
-        <div className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-zinc-950/30 px-3 py-2 text-xs text-zinc-200">
+        <div className="inline-flex items-center gap-2 rounded-lg border bg-muted/30 px-3 py-2 text-xs">
           <span className="inline-flex items-center gap-1">
             <FiMapPin className="text-[14px]" />
             <FiPhone className="text-[14px]" />
@@ -37,10 +36,9 @@ export default function ContactInfoEditor({ value, onChange }) {
           </span>
           Contact
         </div>
-      </div>
+      </CardHeader>
 
-      {/* Address / Phone / Email */}
-      <div className="mt-5 grid gap-3 md:grid-cols-3">
+      <CardContent className="grid gap-3 md:grid-cols-3">
         <Field
           label="آدرس"
           value={v.address}
@@ -64,10 +62,9 @@ export default function ContactInfoEditor({ value, onChange }) {
           placeholder="مثال: support@example.com"
           icon={<FiMail />}
         />
-      </div>
+      </CardContent>
 
-      {/* Social links */}
-      <div className="mt-4 grid gap-3 md:grid-cols-3">
+      <CardContent className="grid gap-3 md:grid-cols-3">
         <Field
           label="لینک اینستاگرام"
           value={v.instagram}
@@ -91,31 +88,28 @@ export default function ContactInfoEditor({ value, onChange }) {
           placeholder="https://wa.me/989xxxxxxxxx"
           icon={<FaWhatsapp />}
         />
-      </div>
+      </CardContent>
 
-      <div className="mt-3 text-[11px] text-zinc-500">
-        {/* English comment: This section is only for static contact info and social icons under address. */}
+      <CardContent className="pt-0 text-xs text-muted-foreground">
         این بخش فقط برای اطلاعات تماس ثابت و آیکون‌های زیر آدرس است، نه فرم ارسال پیام.
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 
 function Field({ label, value, onChange, placeholder, icon }) {
   return (
-    <label className="block">
-      <div className="mb-2 text-[11px] font-bold text-zinc-400">{label}</div>
+    <label className="block space-y-2">
+      <Label>{label}</Label>
       <div className="relative">
-        <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500">
+        <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
           {icon}
         </span>
-        <input
+        <Input
           value={value ?? ""}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className={cn(
-            "w-full rounded-2xl border border-white/10 bg-zinc-950/30 px-4 py-2.5 pr-10 text-sm text-white placeholder:text-zinc-500 outline-none focus:border-emerald-400/40"
-          )}
+          className="pr-10"
         />
       </div>
     </label>

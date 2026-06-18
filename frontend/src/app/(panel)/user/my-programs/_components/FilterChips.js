@@ -1,31 +1,36 @@
 "use client";
 
-export default function FilterChips({ value, onChange }) {
-  const items = [
-    { key: "all", label: "همه" },
-    { key: "active", label: "فعال‌ها" },
-    { key: "inactive", label: "غیرفعال‌ها" },
-  ];
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
+const FILTER_ITEMS = [
+  { key: "all", label: "همه" },
+  { key: "active", label: "فعال‌ها" },
+  { key: "inactive", label: "غیرفعال‌ها" },
+];
+
+export default function FilterChips({ value, onChange }) {
   return (
-    <div className="flex flex-wrap gap-2">
-      {items.map((x) => {
-        const active = value === x.key;
-        return (
-          <button
-            key={x.key}
-            onClick={() => onChange(x.key)}
-            className={[
-              "rounded-full border px-4 py-2 text-sm font-bold transition",
-              active
-                ? "border-white/0 bg-white text-zinc-950"
-                : "border-white/10 bg-white/5 text-zinc-200 hover:bg-white/10",
-            ].join(" ")}
-          >
-            {x.label}
-          </button>
-        );
-      })}
-    </div>
+    <ToggleGroup
+      type="single"
+      value={value}
+      onValueChange={(next) => {
+        if (next) onChange(next);
+      }}
+      variant="outline"
+      size="sm"
+      spacing={2}
+      dir="rtl"
+    >
+      {FILTER_ITEMS.map((item) => (
+        <ToggleGroupItem
+          key={item.key}
+          value={item.key}
+          aria-label={item.label}
+          className="min-w-16 px-3"
+        >
+          {item.label}
+        </ToggleGroupItem>
+      ))}
+    </ToggleGroup>
   );
 }

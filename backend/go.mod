@@ -1,14 +1,13 @@
 module github.com/yourusername/fitness-management
 
-go 1.24.0
-
-toolchain go1.24.5
+go 1.26.3
 
 require (
 	github.com/gin-contrib/cors v1.7.6
 	github.com/gin-gonic/gin v1.11.0
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/joho/godotenv v1.5.1
+	github.com/promptrails/gorm-seed v0.1.0
 	github.com/spf13/viper v1.21.0
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.0

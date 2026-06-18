@@ -3,9 +3,31 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FiChevronLeft, FiPlus, FiSave, FiTrash2, FiX } from "react-icons/fi";
+import {
+  ChevronLeft,
+  Dumbbell,
+  Moon,
+  Plus,
+  Save,
+  Trash2,
+} from "lucide-react";
 import { api } from "@/lib/axios/client";
 import { toastError, toastSuccess } from "@/app/(site)/auth/_components/helpers";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { cn } from "@/lib/utils";
 import { DAY_KEYS, DAY_LABELS } from "../../../_components/programDays";
 import {
   dayExercisesToPlanByDay,
@@ -65,7 +87,9 @@ export default function WorkoutEditorClient({ studentId, embedded = false, onSav
       }
     }
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [studentId]);
 
   const isRestDay = restDays.includes(selectedDay);
@@ -74,10 +98,7 @@ export default function WorkoutEditorClient({ studentId, embedded = false, onSav
   const addExercise = (entry) => {
     setDayExercises((prev) => ({
       ...prev,
-      [selectedDay]: [
-        ...(prev[selectedDay] || []),
-        { uid: uid(), ...entry },
-      ],
+      [selectedDay]: [...(prev[selectedDay] || []), { uid: uid(), ...entry }],
     }));
     if (restDays.includes(selectedDay)) {
       setRestDays((prev) => prev.filter((d) => d !== selectedDay));
@@ -109,10 +130,7 @@ export default function WorkoutEditorClient({ studentId, embedded = false, onSav
     }
   };
 
-  const hasAnyExercise = DAY_KEYS.some(
-    (k) => (dayExercises[k] || []).length > 0
-  );
-
+  const hasAnyExercise = DAY_KEYS.some((k) => (dayExercises[k] || []).length > 0);
   const weekly = DAY_KEYS.filter((k) => !restDays.includes(k));
 
   const handleSave = async () => {
@@ -146,183 +164,167 @@ export default function WorkoutEditorClient({ studentId, embedded = false, onSav
   };
 
   if (loading) {
-    return <div className="text-sm text-zinc-400">در حال بارگذاری...</div>;
+    return (
+      <div className="space-y-4" dir="rtl">
+        <Skeleton className="h-9 w-48" />
+        <Skeleton className="h-12 w-full rounded-xl" />
+        <Skeleton className="h-10 w-full max-w-xl rounded-xl" />
+        <Skeleton className="h-64 w-full rounded-xl" />
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        {!embedded ? (
-          <Link
-            href={`/coach/students/${studentId}`}
-            className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-bold text-zinc-100 hover:bg-white/10"
-          >
-            <FiChevronLeft />
-            بازگشت
-          </Link>
-        ) : (
-          <div className="text-sm font-extrabold text-white">ساخت برنامه تمرین</div>
-        )}
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={saving}
-          className="inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-2 text-sm font-extrabold text-zinc-950 hover:bg-zinc-200 disabled:opacity-50"
-        >
-          <FiSave />
-          {saving ? "در حال ارسال..." : "ارسال برنامه به دانشجو"}
-        </button>
-      </div>
-
-      <div className="rounded-[26px] border border-white/10 bg-white/5 p-5">
-        <label className="text-sm text-zinc-400">عنوان برنامه</label>
-        <input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="mt-2 w-full rounded-2xl border border-white/10 bg-zinc-950/30 px-4 py-2.5 text-sm text-white outline-none focus:border-emerald-400/40"
-        />
-      </div>
-
-      <div className="flex flex-wrap gap-2">
-        {DAY_KEYS.map((key) => {
-          const count = (dayExercises[key] || []).length;
-          const isRest = restDays.includes(key);
-          return (
-            <button
-              key={key}
-              type="button"
-              onClick={() => setSelectedDay(key)}
-              className={[
-                "relative rounded-2xl border px-4 py-2.5 text-sm font-bold transition",
-                selectedDay === key
-                  ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-100"
-                  : "border-white/10 bg-zinc-950/30 text-zinc-200 hover:bg-white/10",
-                isRest ? "opacity-60" : "",
-              ].join(" ")}
-            >
-              {DAY_LABELS[key]}
-              {count > 0 ? (
-                <span className="mr-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-emerald-400/20 px-1 text-[10px] text-emerald-200">
-                  {count}
-                </span>
-              ) : null}
-              {isRest ? (
-                <span className="mt-0.5 block text-[9px] font-normal text-zinc-500">استراحت</span>
-              ) : null}
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="rounded-[26px] border border-white/10 bg-white/5 p-5 md:p-6 space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="text-base font-extrabold text-white">
-            برنامه {DAY_LABELS[selectedDay]}
-          </div>
-          <button
-            type="button"
-            onClick={toggleRestDay}
-            className="text-xs text-zinc-400 hover:text-zinc-200"
-          >
-            {isRestDay ? "لغو روز استراحت" : "علامت‌گذاری به‌عنوان روز استراحت"}
-          </button>
+    <div className="flex flex-col gap-4 md:gap-6" dir="rtl">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="space-y-1 text-start">
+          {!embedded ? (
+            <Button variant="outline" size="sm" asChild className="mb-2">
+              <Link href={`/coach/students/${studentId}`}>
+                <ChevronLeft data-icon="inline-start" />
+                بازگشت
+              </Link>
+            </Button>
+          ) : null}
+          <h1 className="flex items-center gap-2 text-lg font-semibold tracking-tight">
+            <Dumbbell className="size-5 text-primary" />
+            {embedded ? "ساخت برنامه تمرین" : "ویرایش برنامه تمرین"}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            حرکات هر روز را انتخاب کنید و برنامه را برای دانشجو ارسال نمایید.
+          </p>
         </div>
-
-        {isRestDay ? (
-          <div className="rounded-2xl border border-dashed border-white/10 bg-zinc-950/30 p-6 text-center text-sm text-zinc-400">
-            این روز به‌عنوان روز استراحت تنظیم شده است.
-            <button
-              type="button"
-              onClick={toggleRestDay}
-              className="mt-2 block w-full text-emerald-300 hover:text-emerald-200"
-            >
-              فعال‌سازی و افزودن حرکت
-            </button>
-          </div>
-        ) : (
-          <>
-            <button
-              type="button"
-              onClick={() => setPickerOpen(true)}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3.5 text-sm font-extrabold text-emerald-100 hover:bg-emerald-400/15"
-            >
-              <FiPlus className="text-lg" />
-              اضافه کردن حرکت
-            </button>
-
-            {currentExercises.length > 0 ? (
-              <div className="space-y-3">
-                {currentExercises.map((ex, index) => (
-                  <div
-                    key={ex.uid}
-                    className="flex gap-3 rounded-2xl border border-white/10 bg-zinc-950/40 p-3"
-                  >
-                    {ex.imageUrl ? (
-                      <img
-                        src={mediaUrl(ex.imageUrl)}
-                        alt={ex.name}
-                        className="h-16 w-16 shrink-0 rounded-xl object-cover"
-                        onError={(e) => { e.target.style.display = "none"; }}
-                      />
-                    ) : (
-                      <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-zinc-900 text-[10px] text-zinc-600">
-                        {index + 1}
-                      </div>
-                    )}
-                    <div className="min-w-0 flex-1 space-y-2">
-                      <div className="text-sm font-bold text-white">{ex.name}</div>
-                      <div className="flex flex-wrap gap-2">
-                        <label className="flex items-center gap-1.5 text-xs text-zinc-400">
-                          ست
-                          <input
-                            type="number"
-                            min="1"
-                            value={ex.sets}
-                            onChange={(e) => updateExercise(ex.uid, "sets", e.target.value)}
-                            className="w-14 rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-sm text-white outline-none"
-                          />
-                        </label>
-                        <label className="flex items-center gap-1.5 text-xs text-zinc-400">
-                          تکرار
-                          <input
-                            value={ex.reps}
-                            onChange={(e) => updateExercise(ex.uid, "reps", e.target.value)}
-                            placeholder="۱۲"
-                            className="w-16 rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-sm text-white outline-none"
-                          />
-                        </label>
-                        <span className="self-center text-[11px] text-zinc-500">
-                          {formatExerciseEntry(ex)}
-                        </span>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => removeExercise(ex.uid)}
-                      className="self-start rounded-xl p-2 text-zinc-500 hover:bg-rose-400/10 hover:text-rose-300"
-                    >
-                      <FiTrash2 />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="rounded-2xl border border-dashed border-white/10 bg-zinc-950/20 p-5 text-center text-sm text-zinc-500">
-                هنوز حرکتی برای {DAY_LABELS[selectedDay]} اضافه نشده
-              </div>
-            )}
-
-            <button
-              type="button"
-              onClick={() => setManualOpen(true)}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-zinc-950/30 px-4 py-3 text-sm font-bold text-zinc-200 hover:bg-white/10"
-            >
-              <FiPlus />
-              افزودن حرکت دستی (جدید)
-            </button>
-          </>
-        )}
+        <Button type="button" onClick={handleSave} disabled={saving}>
+          <Save data-icon="inline-start" />
+          {saving ? "در حال ارسال..." : "ارسال برنامه به دانشجو"}
+        </Button>
       </div>
+
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">اطلاعات برنامه</CardTitle>
+          <CardDescription>عنوانی که دانشجو در پنل خود می‌بیند</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <Label htmlFor="workout-title">عنوان برنامه</Label>
+            <Input
+              id="workout-title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="space-y-2">
+        <Label className="text-muted-foreground">انتخاب روز</Label>
+        <ToggleGroup
+          type="single"
+          value={selectedDay}
+          onValueChange={(v) => v && setSelectedDay(v)}
+          variant="outline"
+          size="sm"
+          className="flex flex-wrap justify-start gap-2"
+        >
+          {DAY_KEYS.map((key) => {
+            const count = (dayExercises[key] || []).length;
+            const isRest = restDays.includes(key);
+            return (
+              <ToggleGroupItem key={key} value={key} className={cn(isRest && "opacity-60")}>
+                {DAY_LABELS[key]}
+                {isRest ? (
+                  <Moon className="ms-1 size-3 text-muted-foreground" />
+                ) : null}
+                {count > 0 ? (
+                  <Badge variant="secondary" className="ms-1.5 h-5 min-w-5 px-1 tabular-nums">
+                    {count.toLocaleString("fa-IR")}
+                  </Badge>
+                ) : null}
+              </ToggleGroupItem>
+            );
+          })}
+        </ToggleGroup>
+      </div>
+
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="space-y-1 text-start">
+              <CardTitle className="text-base">برنامه {DAY_LABELS[selectedDay]}</CardTitle>
+              <CardDescription>
+                {isRestDay
+                  ? "این روز به‌عنوان استراحت علامت‌گذاری شده"
+                  : `${currentExercises.length.toLocaleString("fa-IR")} حرکت ثبت شده`}
+              </CardDescription>
+            </div>
+            <Button type="button" variant="outline" size="sm" onClick={toggleRestDay}>
+              {isRestDay ? "لغو روز استراحت" : "روز استراحت"}
+            </Button>
+          </div>
+        </CardHeader>
+
+        <CardContent className="space-y-4">
+          {isRestDay ? (
+            <Card className="border-dashed bg-muted/20">
+              <CardContent className="flex flex-col items-center gap-3 py-8 text-center">
+                <div className="flex size-12 items-center justify-center rounded-full bg-muted">
+                  <Moon className="size-5 text-muted-foreground" />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  این روز به‌عنوان روز استراحت تنظیم شده است.
+                </p>
+                <Button type="button" variant="secondary" size="sm" onClick={toggleRestDay}>
+                  فعال‌سازی و افزودن حرکت
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <>
+              <Button
+                type="button"
+                className="w-full"
+                onClick={() => setPickerOpen(true)}
+              >
+                <Plus data-icon="inline-start" />
+                اضافه کردن حرکت
+              </Button>
+
+              {currentExercises.length > 0 ? (
+                <div className="space-y-3">
+                  {currentExercises.map((ex, index) => (
+                    <ExerciseRow
+                      key={ex.uid}
+                      ex={ex}
+                      index={index}
+                      onRemove={() => removeExercise(ex.uid)}
+                      onUpdate={(field, value) => updateExercise(ex.uid, field, value)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <Card className="border-dashed">
+                  <CardContent className="py-8 text-center text-sm text-muted-foreground">
+                    هنوز حرکتی برای {DAY_LABELS[selectedDay]} اضافه نشده
+                  </CardContent>
+                </Card>
+              )}
+
+              <Separator />
+
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => setManualOpen(true)}
+              >
+                <Plus data-icon="inline-start" />
+                افزودن حرکت دستی (جدید)
+              </Button>
+            </>
+          )}
+        </CardContent>
+      </Card>
 
       <ExercisePickerModal
         open={pickerOpen}
@@ -337,6 +339,88 @@ export default function WorkoutEditorClient({ studentId, embedded = false, onSav
         dayLabel={DAY_LABELS[selectedDay]}
         onAdd={(entry) => addExercise(entry)}
       />
+    </div>
+  );
+}
+
+function ExerciseRow({ ex, index, onRemove, onUpdate }) {
+  return (
+    <Card size="sm">
+      <CardContent className="flex gap-3 pt-4">
+        <ExerciseThumb ex={ex} index={index} />
+        <div className="min-w-0 flex-1 space-y-3">
+          <div className="flex items-start justify-between gap-2">
+            <p className="text-sm font-medium leading-snug">{ex.name}</p>
+            <Badge variant="outline" className="shrink-0 tabular-nums">
+              {formatExerciseEntry(ex)}
+            </Badge>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor={`sets-${ex.uid}`} className="text-xs text-muted-foreground">
+                ست
+              </Label>
+              <Input
+                id={`sets-${ex.uid}`}
+                type="number"
+                min="1"
+                value={ex.sets}
+                onChange={(e) => onUpdate("sets", e.target.value)}
+                className="h-8 w-16 tabular-nums"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={`reps-${ex.uid}`} className="text-xs text-muted-foreground">
+                تکرار
+              </Label>
+              <Input
+                id={`reps-${ex.uid}`}
+                value={ex.reps}
+                onChange={(e) => onUpdate("reps", e.target.value)}
+                placeholder="۱۲"
+                className="h-8 w-20"
+              />
+            </div>
+          </div>
+        </div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          onClick={onRemove}
+          className="shrink-0 text-muted-foreground hover:text-destructive"
+          aria-label="حذف حرکت"
+        >
+          <Trash2 />
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+function ExerciseThumb({ ex, index }) {
+  const img = mediaUrl(ex.imageUrl);
+
+  return (
+    <div className="relative size-16 shrink-0 overflow-hidden rounded-lg border bg-muted">
+      {img ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={img}
+          alt={ex.name}
+          className="size-full object-cover"
+          onError={(e) => {
+            e.target.style.display = "none";
+          }}
+        />
+      ) : (
+        <div className="flex size-full items-center justify-center text-sm font-semibold text-muted-foreground">
+          {(index + 1).toLocaleString("fa-IR")}
+        </div>
+      )}
+      <span className="absolute bottom-1 end-1 rounded bg-background/80 px-1.5 py-0.5 text-[10px] font-medium tabular-nums">
+        {(index + 1).toLocaleString("fa-IR")}
+      </span>
     </div>
   );
 }

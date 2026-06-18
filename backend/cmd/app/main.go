@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"strings"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -37,32 +38,31 @@ func NewServer() *Server {
 	// Initialize Gin router
 	router := gin.Default()
 
-	// CORS configuration for frontend <-> backend communication
-	frontendOrigin := os.Getenv("FRONTEND_ORIGIN")
-	if frontendOrigin == "" {
-		// Default to common Next.js dev origin
-		frontendOrigin = "http://localhost:3000"
+	// CORS configuration for frontend <-> backend communication.
+	// FRONTEND_ORIGIN may be a comma-separated list. When unset, default to the
+	// common Next.js dev ports (3000-3002) so a dev-server port bounce doesn't
+	// break preflight with a 403.
+	var allowOrigins []string
+	if env := os.Getenv("FRONTEND_ORIGIN"); env != "" {
+		for _, o := range strings.Split(env, ",") {
+			if o = strings.TrimSpace(o); o != "" {
+				allowOrigins = append(allowOrigins, o)
+			}
+		}
+	} else {
+		allowOrigins = []string{
+			"http://localhost:3000",
+			"http://localhost:3001",
+			"http://localhost:3002",
+		}
 	}
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{frontendOrigin},
+		AllowOrigins:     allowOrigins,
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: false, // we send JWT via Authorization header, not cookies
 	}))
-
-	// Load environment variables from .env file (if present)
-	if err := godotenv.Load(); err != nil {
-		log.Println("no .env file found or failed to load, falling back to existing environment variables")
-	} else {
-		log.Println(".env file loaded successfully")
-		log.Printf("DB_HOST=%s DB_PORT=%s DB_USER=%s DB_NAME=%s\n",
-			os.Getenv("DB_HOST"),
-			os.Getenv("DB_PORT"),
-			os.Getenv("DB_USER"),
-			os.Getenv("DB_NAME"),
-		)
-	}
 
 	// Initialize database
 	db, err := config.NewMySQLGORM()
@@ -71,6 +71,9 @@ func NewServer() *Server {
 	}
 	if err := config.SetupDatabase(db); err != nil {
 		log.Fatalf("failed to migrate database: %v", err)
+	}
+	if err := config.MaybeSeedDevData(db); err != nil {
+		log.Fatalf("failed to seed development data: %v", err)
 	}
 
 	// Initialize repositories
@@ -83,6 +86,7 @@ func NewServer() *Server {
 	txRepo := repository.NewTransactionRepository(db)
 	siteSettingsRepo := repository.NewSiteSettingsRepository(db)
 	feedbackRepo := repository.NewFeedbackRepository(db)
+	ticketRepo := repository.NewTicketRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
 	coachProfileRepo := repository.NewCoachProfileRepository(db)
 	exerciseRepo := repository.NewExerciseRepository(db)
@@ -102,11 +106,13 @@ func NewServer() *Server {
 	adminExerciseService := service.NewAdminExerciseService(exerciseRepo)
 	siteSettingsService := service.NewSiteSettingsService(siteSettingsRepo)
 	feedbackService := service.NewFeedbackService(feedbackRepo)
+	ticketService := service.NewTicketService(userRepo, ticketRepo)
 
 	// Initialize handlers
 	authController := controllers.NewAuthController(authService, meService)
 	studentController := controllers.NewStudentController(studentService)
 	meController := controllers.NewMeController(meService)
+	meTicketController := controllers.NewMeTicketController(ticketService)
 	adminUserController := controllers.NewAdminUserController(adminUserService)
 	adminDashboardController := controllers.NewAdminDashboardController(adminDashboardService)
 	adminStudentController := controllers.NewAdminStudentController(adminStudentService)
@@ -127,6 +133,7 @@ func NewServer() *Server {
 	coachProgramController := controllers.NewCoachProgramController(coachProgramService)
 	coachDashboardController := controllers.NewCoachDashboardController(coachDashboardService)
 	coachExerciseController := controllers.NewCoachExerciseController(adminExerciseService)
+	coachTicketController := controllers.NewCoachTicketController(ticketService)
 	checkoutController := controllers.NewCheckoutController(checkoutService)
 
 	// Auth routes
@@ -176,6 +183,10 @@ func NewServer() *Server {
 		coachGroup.POST("/students/:id/nutrition-programs", coachProgramController.AssignNutritionProgram)
 		coachGroup.PATCH("/students/:id/nutrition-programs/:programId", coachProgramController.UpdateNutritionProgram)
 		coachGroup.GET("/dashboard/stats", coachDashboardController.GetStats)
+		coachGroup.GET("/tickets", coachTicketController.ListTickets)
+		coachGroup.GET("/tickets/:id", coachTicketController.GetTicket)
+		coachGroup.PATCH("/tickets/:id/answer", coachTicketController.AnswerTicket)
+		coachGroup.PATCH("/tickets/:id/status", coachTicketController.UpdateTicketStatus)
 		coachGroup.GET("/exercises/categories", coachExerciseController.ListCategories)
 		coachGroup.GET("/exercises", coachExerciseController.ListExercises)
 		coachGroup.POST("/exercises", coachExerciseController.CreateExercise)
@@ -194,6 +205,9 @@ func NewServer() *Server {
 		studentGroup.GET("/me/orders/:id", meController.GetMyOrderByID)
 		studentGroup.GET("/me/programs", meController.ListMyPrograms)
 		studentGroup.GET("/me/programs/:id", meController.GetMyProgramByID)
+		studentGroup.GET("/me/tickets", meTicketController.ListTickets)
+		studentGroup.POST("/me/tickets", meTicketController.CreateTicket)
+		studentGroup.GET("/me/tickets/:id", meTicketController.GetTicket)
 		studentGroup.GET("/subscriptions/current", studentController.GetCurrentSubscription)
 		studentGroup.GET("/subscriptions", studentController.ListSubscriptions)
 		studentGroup.GET("/programs/current", studentController.GetCurrentPrograms)
@@ -256,6 +270,18 @@ func (s *Server) Run() {
 }
 
 func main() {
+	if err := godotenv.Load(); err != nil {
+		log.Println("no .env file found or failed to load, falling back to existing environment variables")
+	} else {
+		log.Println(".env file loaded successfully")
+		log.Printf("DB_HOST=%s DB_PORT=%s DB_USER=%s DB_NAME=%s\n",
+			os.Getenv("DB_HOST"),
+			os.Getenv("DB_PORT"),
+			os.Getenv("DB_USER"),
+			os.Getenv("DB_NAME"),
+		)
+	}
+
 	server := NewServer()
 	server.Run()
 }

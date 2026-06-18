@@ -1,43 +1,40 @@
 "use client";
 
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import { Button } from "@/components/ui/button";
 
-function cn(...xs) {
-  return xs.filter(Boolean).join(" ");
+function faNum(value) {
+  return new Intl.NumberFormat("fa-IR").format(value ?? 0);
 }
 
 export default function PaginationBar({ page, totalPages, onPrev, onNext }) {
   return (
-    <div className="flex items-center justify-between gap-3">
-      <div className="text-xs text-zinc-400">
-        صفحه <span className="font-bold text-white">{page}</span> از{" "}
-        <span className="font-bold text-white">{totalPages}</span>
+    <div dir="rtl" className="flex items-center justify-between gap-3">
+      <div className="text-xs text-muted-foreground">
+        صفحه <span className="font-bold text-foreground">{faNum(page)}</span> از{" "}
+        <span className="font-bold text-foreground">{faNum(totalPages)}</span>
       </div>
 
       <div className="flex items-center gap-2">
-        <button
+        <Button
           onClick={onPrev}
+          type="button"
+          variant="outline"
           disabled={page <= 1}
-          className={cn(
-            "inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-bold text-zinc-100 hover:bg-white/10",
-            page <= 1 ? "pointer-events-none opacity-50" : ""
-          )}
         >
           <FiChevronRight />
           قبلی
-        </button>
+        </Button>
 
-        <button
+        <Button
           onClick={onNext}
+          type="button"
+          variant="outline"
           disabled={page >= totalPages}
-          className={cn(
-            "inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-bold text-zinc-100 hover:bg-white/10",
-            page >= totalPages ? "pointer-events-none opacity-50" : ""
-          )}
         >
           بعدی
           <FiChevronLeft />
-        </button>
+        </Button>
       </div>
     </div>
   );

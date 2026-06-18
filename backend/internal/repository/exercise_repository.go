@@ -8,14 +8,23 @@ import (
 	"gorm.io/gorm"
 )
 
+type ExerciseListFilter struct {
+	Query     string
+	Category  string
+	BodyPart  string
+	Equipment string
+	CoachID   *uint  // when set with Source, scopes coach panel listing
+	Source    string // all | mine | dataset (coach panel only)
+}
+
 type ExerciseRepository interface {
 	Create(ctx context.Context, e *models.Exercise) error
 	Update(ctx context.Context, e *models.Exercise) error
 	Delete(ctx context.Context, id uint) error
 	FindByID(ctx context.Context, id uint) (*models.Exercise, error)
 	FindByExternalID(ctx context.Context, externalID string) (*models.Exercise, error)
-	List(ctx context.Context, page, pageSize int, query, category, bodyPart, equipment string) ([]models.Exercise, int64, error)
-	ListCategories(ctx context.Context) ([]string, error)
+	List(ctx context.Context, page, pageSize int, filter ExerciseListFilter) ([]models.Exercise, int64, error)
+	ListCategories(ctx context.Context, filter ExerciseListFilter) ([]string, error)
 	FindByIDs(ctx context.Context, ids []uint) ([]models.Exercise, error)
 	FindByNames(ctx context.Context, names []string) ([]models.Exercise, error)
 	UpsertByExternalID(ctx context.Context, e *models.Exercise) error
@@ -29,25 +38,35 @@ func NewExerciseRepository(db *gorm.DB) ExerciseRepository {
 	return &exerciseRepository{db: db}
 }
 
-func (r *exerciseRepository) applyFilters(db *gorm.DB, query, category, bodyPart, equipment string) *gorm.DB {
-	q := strings.TrimSpace(query)
+func (r *exerciseRepository) applyFilters(db *gorm.DB, filter ExerciseListFilter) *gorm.DB {
+	q := strings.TrimSpace(filter.Query)
 	if q != "" {
 		like := "%" + q + "%"
 		db = db.Where("name LIKE ? OR external_id LIKE ? OR target LIKE ?", like, like, like)
 	}
-	if category != "" && category != "all" {
-		db = db.Where("category = ?", category)
+	if filter.Category != "" && filter.Category != "all" {
+		db = db.Where("category = ?", filter.Category)
 	}
-	if bodyPart != "" && bodyPart != "all" {
-		db = db.Where("body_part = ?", bodyPart)
+	if filter.BodyPart != "" && filter.BodyPart != "all" {
+		db = db.Where("body_part = ?", filter.BodyPart)
 	}
-	if equipment != "" && equipment != "all" {
-		db = db.Where("equipment = ?", equipment)
+	if filter.Equipment != "" && filter.Equipment != "all" {
+		db = db.Where("equipment = ?", filter.Equipment)
+	}
+	if filter.CoachID != nil {
+		switch strings.ToLower(strings.TrimSpace(filter.Source)) {
+		case "mine":
+			db = db.Where("coach_id = ?", *filter.CoachID)
+		case "dataset":
+			db = db.Where("coach_id IS NULL")
+		default:
+			db = db.Where("coach_id IS NULL OR coach_id = ?", *filter.CoachID)
+		}
 	}
 	return db
 }
 
-func (r *exerciseRepository) List(ctx context.Context, page, pageSize int, query, category, bodyPart, equipment string) ([]models.Exercise, int64, error) {
+func (r *exerciseRepository) List(ctx context.Context, page, pageSize int, filter ExerciseListFilter) ([]models.Exercise, int64, error) {
 	if page <= 0 {
 		page = 1
 	}
@@ -56,7 +75,7 @@ func (r *exerciseRepository) List(ctx context.Context, page, pageSize int, query
 	}
 	db := r.applyFilters(
 		r.db.WithContext(ctx).Model(&models.Exercise{}).Where("is_active = ?", true),
-		query, category, bodyPart, equipment,
+		filter,
 	)
 
 	var total int64
@@ -72,13 +91,14 @@ func (r *exerciseRepository) List(ctx context.Context, page, pageSize int, query
 	return list, total, nil
 }
 
-func (r *exerciseRepository) ListCategories(ctx context.Context) ([]string, error) {
+func (r *exerciseRepository) ListCategories(ctx context.Context, filter ExerciseListFilter) ([]string, error) {
 	var categories []string
-	err := r.db.WithContext(ctx).Model(&models.Exercise{}).
-		Where("is_active = ? AND category != ''", true).
-		Distinct("category").
-		Order("category ASC").
-		Pluck("category", &categories).Error
+	db := r.applyFilters(
+		r.db.WithContext(ctx).Model(&models.Exercise{}).
+			Where("is_active = ? AND category != ''", true),
+		filter,
+	)
+	err := db.Distinct("category").Order("category ASC").Pluck("category", &categories).Error
 	return categories, err
 }
 

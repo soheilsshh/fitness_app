@@ -16,10 +16,13 @@ import (
 )
 
 var ErrExerciseNotFound = errors.New("exercise not found")
+var ErrExerciseForbidden = errors.New("exercise not accessible")
 
 type AdminExerciseItem struct {
 	ID               uint     `json:"id"`
 	ExternalID       string   `json:"externalId"`
+	CoachID          *uint    `json:"coachId,omitempty"`
+	IsCustom         bool     `json:"isCustom"`
 	Name             string   `json:"name"`
 	Category         string   `json:"category"`
 	BodyPart         string   `json:"bodyPart"`
@@ -87,10 +90,13 @@ type AdminExerciseUpdateRequest struct {
 
 type AdminExerciseService interface {
 	ListExercises(ctx context.Context, page, pageSize int, query, category, bodyPart, equipment string) (*AdminExerciseListResponse, error)
+	ListCoachExercises(ctx context.Context, coachID uint, page, pageSize int, query, category, bodyPart, equipment, source string) (*AdminExerciseListResponse, error)
 	ListCategories(ctx context.Context) ([]string, error)
+	ListCoachCategories(ctx context.Context, coachID uint, source string) ([]string, error)
 	GetExerciseByID(ctx context.Context, id uint) (*AdminExerciseItem, error)
+	GetCoachExerciseByID(ctx context.Context, coachID, id uint) (*AdminExerciseItem, error)
 	CreateExercise(ctx context.Context, req *AdminExerciseCreateRequest) (*AdminExerciseItem, error)
-	CreateCoachExercise(ctx context.Context, req *CoachExerciseCreateRequest) (*AdminExerciseItem, error)
+	CreateCoachExercise(ctx context.Context, coachID uint, req *CoachExerciseCreateRequest) (*AdminExerciseItem, error)
 	UpdateExercise(ctx context.Context, id uint, req *AdminExerciseUpdateRequest) (*AdminExerciseItem, error)
 	DeleteExercise(ctx context.Context, id uint) error
 }
@@ -140,6 +146,8 @@ func exerciseToItem(e *models.Exercise) AdminExerciseItem {
 	return AdminExerciseItem{
 		ID:               e.ID,
 		ExternalID:       e.ExternalID,
+		CoachID:          e.CoachID,
+		IsCustom:         e.CoachID != nil,
 		Name:             e.Name,
 		Category:         e.Category,
 		BodyPart:         e.BodyPart,
@@ -157,6 +165,20 @@ func exerciseToItem(e *models.Exercise) AdminExerciseItem {
 	}
 }
 
+func coachExerciseFilter(coachID uint, source string) repository.ExerciseListFilter {
+	return repository.ExerciseListFilter{
+		CoachID: &coachID,
+		Source:  source,
+	}
+}
+
+func coachCanAccessExercise(coachID uint, e *models.Exercise) bool {
+	if e.CoachID == nil {
+		return true
+	}
+	return *e.CoachID == coachID
+}
+
 func (s *adminExerciseService) ListExercises(ctx context.Context, page, pageSize int, query, category, bodyPart, equipment string) (*AdminExerciseListResponse, error) {
 	if page <= 0 {
 		page = 1
@@ -168,7 +190,47 @@ func (s *adminExerciseService) ListExercises(ctx context.Context, page, pageSize
 		pageSize = 100
 	}
 
-	list, total, err := s.repo.List(ctx, page, pageSize, query, category, bodyPart, equipment)
+	list, total, err := s.repo.List(ctx, page, pageSize, repository.ExerciseListFilter{
+		Query:     query,
+		Category:  category,
+		BodyPart:  bodyPart,
+		Equipment: equipment,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	items := make([]AdminExerciseItem, 0, len(list))
+	for i := range list {
+		items = append(items, exerciseToItem(&list[i]))
+	}
+
+	return &AdminExerciseListResponse{
+		Items:    items,
+		Page:     page,
+		PageSize: pageSize,
+		Total:    total,
+	}, nil
+}
+
+func (s *adminExerciseService) ListCoachExercises(ctx context.Context, coachID uint, page, pageSize int, query, category, bodyPart, equipment, source string) (*AdminExerciseListResponse, error) {
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 20
+	}
+	if pageSize > 100 {
+		pageSize = 100
+	}
+
+	filter := coachExerciseFilter(coachID, source)
+	filter.Query = query
+	filter.Category = category
+	filter.BodyPart = bodyPart
+	filter.Equipment = equipment
+
+	list, total, err := s.repo.List(ctx, page, pageSize, filter)
 	if err != nil {
 		return nil, err
 	}
@@ -187,7 +249,18 @@ func (s *adminExerciseService) ListExercises(ctx context.Context, page, pageSize
 }
 
 func (s *adminExerciseService) ListCategories(ctx context.Context) ([]string, error) {
-	cats, err := s.repo.ListCategories(ctx)
+	cats, err := s.repo.ListCategories(ctx, repository.ExerciseListFilter{})
+	if err != nil {
+		return nil, err
+	}
+	if cats == nil {
+		return []string{}, nil
+	}
+	return cats, nil
+}
+
+func (s *adminExerciseService) ListCoachCategories(ctx context.Context, coachID uint, source string) ([]string, error) {
+	cats, err := s.repo.ListCategories(ctx, coachExerciseFilter(coachID, source))
 	if err != nil {
 		return nil, err
 	}
@@ -204,6 +277,21 @@ func (s *adminExerciseService) GetExerciseByID(ctx context.Context, id uint) (*A
 			return nil, ErrExerciseNotFound
 		}
 		return nil, err
+	}
+	item := exerciseToItem(e)
+	return &item, nil
+}
+
+func (s *adminExerciseService) GetCoachExerciseByID(ctx context.Context, coachID, id uint) (*AdminExerciseItem, error) {
+	e, err := s.repo.FindByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrExerciseNotFound
+		}
+		return nil, err
+	}
+	if !coachCanAccessExercise(coachID, e) {
+		return nil, ErrExerciseForbidden
 	}
 	item := exerciseToItem(e)
 	return &item, nil
@@ -227,7 +315,7 @@ func (s *adminExerciseService) generateUniqueExternalID(ctx context.Context) (st
 	return "", errors.New("failed to generate external id")
 }
 
-func (s *adminExerciseService) CreateCoachExercise(ctx context.Context, req *CoachExerciseCreateRequest) (*AdminExerciseItem, error) {
+func (s *adminExerciseService) CreateCoachExercise(ctx context.Context, coachID uint, req *CoachExerciseCreateRequest) (*AdminExerciseItem, error) {
 	name := strings.TrimSpace(req.Name)
 	if name == "" {
 		return nil, errors.New("name is required")
@@ -240,6 +328,7 @@ func (s *adminExerciseService) CreateCoachExercise(ctx context.Context, req *Coa
 
 	e := &models.Exercise{
 		ExternalID:       externalID,
+		CoachID:          &coachID,
 		Name:             name,
 		Category:         strings.TrimSpace(req.Category),
 		BodyPart:         strings.TrimSpace(req.BodyPart),

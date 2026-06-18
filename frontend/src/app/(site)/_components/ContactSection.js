@@ -1,16 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { FiMail, FiPhone, FiMapPin, FiSend } from "react-icons/fi";
+import { Mail, MapPin, Phone } from "lucide-react";
 import InlineSocialIcons from "./InlineSocialIcons";
+import { TiltCard } from "./landingEffects";
 import { api } from "@/lib/axios/client";
 import { toastError, toastSuccess } from "@/app/(site)/auth/_components/helpers";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 
 const DEFAULT_CONTACT = {
-  address: "تهران، ایران",
-  phone: "0912 000 0000",
-  email: "support@fitpro.ir",
+  address: "تهران، سعادت آباد، برج فیت‌پرو",
+  phone: "+۹۸ ۲۱ ۲۸۴۲ ۱۰۰۰",
+  email: "info@fitpro.academy",
   instagram: "https://instagram.com/",
   telegram: "https://t.me/",
   whatsapp: "https://wa.me/989000000000",
@@ -24,17 +31,41 @@ export default function ContactSection({ contactInfo }) {
     whatsapp: info.whatsapp,
   };
 
+  const fieldId = useId();
+  const nameId = `${fieldId}-name`;
+  const contactId = `${fieldId}-contact`;
+  const messageId = `${fieldId}-message`;
+
+  const nameRef = useRef(null);
+  const contactRef = useRef(null);
+  const messageRef = useRef(null);
+
   const [fullName, setFullName] = useState("");
   const [contact, setContact] = useState("");
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  const validate = () => {
+    const next = {};
+    if (!fullName.trim()) next.fullName = "نام و نام خانوادگی را وارد کنید.";
+    if (!contact.trim()) next.contact = "شماره موبایل یا ایمیل را وارد کنید.";
+    if (!message.trim()) next.message = "متن پیام نمی‌تواند خالی باشد.";
+    return next;
+  };
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    if (!fullName.trim() || !contact.trim() || !message.trim()) {
-      toastError("خطا", "همه فیلدها الزامی هستند.");
+    const found = validate();
+    if (Object.keys(found).length > 0) {
+      setErrors(found);
+      // Move focus to the first invalid field so keyboard/screen-reader users land on it.
+      if (found.fullName) nameRef.current?.focus();
+      else if (found.contact) contactRef.current?.focus();
+      else messageRef.current?.focus();
       return;
     }
+    setErrors({});
     setSubmitting(true);
     try {
       const isEmail = contact.includes("@");
@@ -56,95 +87,140 @@ export default function ContactSection({ contactInfo }) {
   };
 
   return (
-    <section id="contact" className="scroll-mt-24 py-20 md:py-24">
-      <div className="mx-auto max-w-7xl px-4">
-        <div className="grid gap-6 md:grid-cols-2">
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.25 }}
-            transition={{ duration: 0.6 }}
-            className="rounded-[32px] border border-white/10 bg-white/5 p-6 md:p-7"
-          >
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-zinc-950/35 px-3 py-1 text-xs text-zinc-200">
-              تماس با ما
-              <span className="h-1 w-1 rounded-full bg-white/30" />
-              پاسخ‌گویی سریع
-            </div>
+    <section id="contact" dir="rtl" className="mx-auto max-w-7xl scroll-mt-24 px-6 py-12 md:py-16">
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.25 }}
+          transition={{ duration: 0.6 }}
+        >
+          <Card className="h-full bg-card/60 backdrop-blur-sm">
+            <CardHeader className="text-start">
+              <CardTitle className="text-4xl font-extrabold tracking-tight md:text-5xl">
+                راهنمایی می‌خوای؟{" "}
+                <span className="bg-linear-to-l from-primary via-chart-2 to-chart-3 bg-clip-text text-transparent">
+                  پیام بده
+                </span>
+              </CardTitle>
+              <CardDescription className="text-base leading-8 md:text-lg">
+                سوالی دارید؟ مربیان ما آماده پاسخگویی و ارائه مشاوره رایگان به شما هستند.
+              </CardDescription>
+            </CardHeader>
 
-            <h2 className="mt-3 text-2xl font-extrabold md:text-3xl">
-              راهنمایی می‌خوای؟{" "}
-              <span className="text-emerald-300">پیام بده</span>
-            </h2>
-
-            <p className="mt-2 text-sm leading-7 text-zinc-300 md:text-base">
-              اگر برای انتخاب پلن یا شروع مسیر سوال داری، همینجا پیام بده تا
-              راهنماییت کنیم.
-            </p>
-
-            <div className="mt-6 space-y-3">
-              <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-zinc-950/35 p-4">
-                <FiPhone className="text-lg text-emerald-300" />
-                <div className="text-sm text-zinc-200">{info.phone}</div>
+            <CardContent className="space-y-6 text-start">
+              <div className="group flex flex-row-reverse items-center gap-4">
+                <Mail className="size-5 text-primary transition-transform group-hover:scale-110" />
+                <span className="text-base text-foreground" dir="ltr">
+                  {info.email}
+                </span>
               </div>
-              <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-zinc-950/35 p-4">
-                <FiMail className="text-lg text-emerald-300" />
-                <div className="text-sm text-zinc-200">{info.email}</div>
+              <div className="group flex flex-row-reverse items-center gap-4">
+                <Phone className="size-5 text-primary transition-transform group-hover:scale-110" />
+                <span className="text-base text-foreground" dir="ltr">
+                  {info.phone}
+                </span>
               </div>
-              <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-zinc-950/35 p-4">
-                <FiMapPin className="text-lg text-emerald-300" />
-                <div className="text-sm text-zinc-200">{info.address}</div>
+              <div className="group flex flex-row-reverse items-center gap-4">
+                <MapPin className="size-5 text-primary transition-transform group-hover:scale-110" />
+                <span className="text-base text-foreground">{info.address}</span>
               </div>
-              <InlineSocialIcons links={socialLinks} />
-            </div>
-          </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.25 }}
-            transition={{ duration: 0.6, delay: 0.06 }}
-            className="rounded-[32px] border border-white/10 bg-gradient-to-b from-white/10 to-white/5 p-6 md:p-7"
-          >
-            <div className="text-sm font-extrabold text-white">فرم تماس</div>
-            <div className="mt-1 text-sm text-zinc-300">
-              تمام فیلدها ضروری هستند. ما در اسرع وقت پاسخ می‌دهیم.
-            </div>
+              <Separator />
 
-            <form className="mt-5 space-y-3" onSubmit={onSubmit}>
-              <input
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                className="w-full rounded-2xl border border-white/10 bg-zinc-950/35 px-4 py-3 text-sm text-white placeholder:text-zinc-500 outline-none focus:border-emerald-400/40"
-                placeholder="نام و نام خانوادگی"
-              />
-              <input
-                value={contact}
-                onChange={(e) => setContact(e.target.value)}
-                className="w-full rounded-2xl border border-white/10 bg-zinc-950/35 px-4 py-3 text-sm text-white placeholder:text-zinc-500 outline-none focus:border-emerald-400/40"
-                placeholder="شماره موبایل یا ایمیل"
-              />
-              <textarea
-                rows={5}
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                className="w-full resize-none rounded-2xl border border-white/10 bg-zinc-950/35 px-4 py-3 text-sm text-white placeholder:text-zinc-500 outline-none focus:border-emerald-400/40"
-                placeholder="پیام شما..."
-              />
-              <button
-                type="submit"
-                disabled={submitting}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-extrabold text-zinc-950 hover:bg-zinc-200 disabled:opacity-50"
-              >
-                {submitting ? "در حال ارسال..." : "ارسال پیام"} <FiSend />
-              </button>
-            </form>
+              <div className="flex justify-end pt-2">
+                <InlineSocialIcons links={socialLinks} />
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
 
-            <div className="mt-3 text-center text-[11px] text-zinc-400">
-              با ارسال پیام، قوانین و حریم خصوصی را می‌پذیرید.
-            </div>
-          </motion.div>
-        </div>
+        <TiltCard className="h-full">
+          <Card className="relative h-full overflow-hidden bg-linear-to-t from-primary/5 to-card shadow-xs">
+            <div className="pointer-events-none absolute top-0 end-0 size-32 rounded-full bg-primary/10 blur-3xl" />
+            <CardContent className="relative z-10 pt-6">
+              <form className="space-y-6 text-start" onSubmit={onSubmit} noValidate>
+                <div className="space-y-2">
+                  <Label htmlFor={nameId}>
+                    نام و نام خانوادگی <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id={nameId}
+                    ref={nameRef}
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="مثلا: علی محمدی"
+                    className="h-11 text-start"
+                    name="name"
+                    autoComplete="name"
+                    required
+                    aria-required="true"
+                    aria-invalid={errors.fullName ? "true" : undefined}
+                    aria-describedby={errors.fullName ? `${nameId}-error` : undefined}
+                  />
+                  {errors.fullName && (
+                    <p id={`${nameId}-error`} role="alert" className="text-xs text-destructive">
+                      {errors.fullName}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor={contactId}>
+                    شماره موبایل یا ایمیل <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id={contactId}
+                    ref={contactRef}
+                    value={contact}
+                    onChange={(e) => setContact(e.target.value)}
+                    placeholder="۰۹۱۲۳۴۵۶۷۸۹"
+                    className="h-11 text-start"
+                    name="contact"
+                    inputMode="email"
+                    autoComplete="email"
+                    dir="ltr"
+                    required
+                    aria-required="true"
+                    aria-invalid={errors.contact ? "true" : undefined}
+                    aria-describedby={errors.contact ? `${contactId}-error` : undefined}
+                  />
+                  {errors.contact && (
+                    <p id={`${contactId}-error`} role="alert" className="text-xs text-destructive">
+                      {errors.contact}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor={messageId}>
+                    پیغام شما <span className="text-destructive">*</span>
+                  </Label>
+                  <Textarea
+                    id={messageId}
+                    ref={messageRef}
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    placeholder="چطور می‌توانیم به شما کمک کنیم؟"
+                    rows={4}
+                    className="min-h-28 text-start leading-7"
+                    name="message"
+                    required
+                    aria-required="true"
+                    aria-invalid={errors.message ? "true" : undefined}
+                    aria-describedby={errors.message ? `${messageId}-error` : undefined}
+                  />
+                  {errors.message && (
+                    <p id={`${messageId}-error`} role="alert" className="text-xs text-destructive">
+                      {errors.message}
+                    </p>
+                  )}
+                </div>
+                <Button type="submit" size="lg" className="w-full" disabled={submitting}>
+                  {submitting ? "در حال ارسال..." : "ارسال درخواست مشاوره"}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </TiltCard>
       </div>
     </section>
   );

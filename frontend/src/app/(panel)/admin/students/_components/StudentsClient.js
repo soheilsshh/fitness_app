@@ -2,12 +2,15 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { FiUserCheck } from "react-icons/fi";
+import { ChevronLeft, UserCheck } from "lucide-react";
 import { api } from "@/lib/axios/client";
-
-function cn(...xs) {
-  return xs.filter(Boolean).join(" ");
-}
+import PanelPagination from "@/app/(panel)/_shared/Pagination";
+import FilterChip from "@/app/(panel)/admin/plans/_components/FilterChip";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 
 export default function StudentsClient() {
   const [filter, setFilter] = useState("pending");
@@ -39,120 +42,133 @@ export default function StudentsClient() {
       }
     }
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [filter, q, page]);
 
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4 md:gap-6" dir="rtl">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <div className="text-lg font-extrabold text-white">همه شاگردان</div>
-          <div className="mt-1 text-sm text-zinc-300">
+        <div className="text-start">
+          <h2 className="text-lg font-semibold tracking-tight">همه شاگردان</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
             مشاهده همه دانشجویان پلتفرم (فقط خواندنی)
-          </div>
+          </p>
         </div>
-        <div className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-zinc-950/30 px-4 py-3 text-sm text-zinc-200">
-          <FiUserCheck className="text-emerald-200" />
-          تعداد: <span className="font-bold text-white">{total}</span>
-        </div>
+        <Badge variant="outline" className="gap-1.5 px-3 py-1.5 text-sm">
+          <UserCheck className="size-3.5 text-primary" />
+          تعداد:
+          <span className="font-semibold tabular-nums text-foreground">
+            {total.toLocaleString("fa-IR")}
+          </span>
+        </Badge>
       </div>
 
-      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-        <div className="flex flex-wrap gap-2 rounded-3xl border border-white/10 bg-white/5 p-2">
-          <Tab active={filter === "pending"} onClick={() => { setFilter("pending"); setPage(1); }}>
-            در انتظار
-          </Tab>
-          <Tab active={filter === "active"} onClick={() => { setFilter("active"); setPage(1); }}>
-            فعال
-          </Tab>
-        </div>
-        <input
-          value={q}
-          onChange={(e) => { setQ(e.target.value); setPage(1); }}
-          placeholder="جستجو (نام/موبایل/پلن)..."
-          className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-zinc-500 outline-none focus:border-emerald-400/40 md:max-w-md"
-        />
-      </div>
+      <Card>
+        <CardContent className="flex flex-col gap-3 pt-6 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-wrap gap-2">
+            <FilterChip
+              active={filter === "pending"}
+              onClick={() => {
+                setFilter("pending");
+                setPage(1);
+              }}
+            >
+              در انتظار
+            </FilterChip>
+            <FilterChip
+              active={filter === "active"}
+              onClick={() => {
+                setFilter("active");
+                setPage(1);
+              }}
+            >
+              فعال
+            </FilterChip>
+          </div>
+          <Input
+            value={q}
+            onChange={(e) => {
+              setQ(e.target.value);
+              setPage(1);
+            }}
+            placeholder="جستجو (نام/موبایل/پلن)..."
+            className="md:max-w-md"
+          />
+        </CardContent>
+      </Card>
 
       <div className="space-y-2">
         {loading ? (
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-5 text-sm text-zinc-400">
-            در حال بارگذاری...
-          </div>
+          Array.from({ length: 5 }).map((_, i) => (
+            <Card key={i}>
+              <CardContent className="pt-4">
+                <Skeleton className="h-16 w-full rounded-lg" />
+              </CardContent>
+            </Card>
+          ))
         ) : items.length === 0 ? (
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-5 text-sm text-zinc-300">
-            موردی یافت نشد.
-          </div>
+          <Card>
+            <CardContent className="py-10 text-center text-sm text-muted-foreground">
+              موردی یافت نشد.
+            </CardContent>
+          </Card>
         ) : (
           items.map((s) => (
             <Link
               key={s.id}
               href={`/admin/students/${s.id}`}
-              className="flex items-center justify-between gap-3 rounded-3xl border border-white/10 bg-white/5 p-4 hover:bg-white/10"
+              className="block"
             >
-              <div className="min-w-0">
-                <div className="truncate text-sm font-extrabold text-white">{s.fullName}</div>
-                <div className="mt-1 text-[11px] text-zinc-400">{s.phone}</div>
-                <div className="mt-2 text-[11px] text-zinc-300">
-                  مربی: <span className="font-bold text-white">{s.coachName || "—"}</span>
-                </div>
-                <div className="mt-1 text-[11px] text-zinc-300">
-                  پلن: <span className="font-bold text-white">{s.planTitle || "—"}</span>
-                </div>
-              </div>
-              <div className="flex flex-col items-end gap-2">
-                <span
-                  className={cn(
-                    "rounded-full border px-3 py-1 text-[11px] font-bold",
-                    s.status === "active"
-                      ? "border-emerald-400/25 bg-emerald-400/10 text-emerald-200"
-                      : "border-white/10 bg-zinc-950/30 text-zinc-200"
-                  )}
-                >
-                  {s.status === "active" ? "فعال" : "در انتظار"}
-                </span>
-                <span className="rounded-full border border-white/10 bg-zinc-950/30 px-3 py-1 text-[11px] text-zinc-200">
-                  {s.planType === "both" ? "تمرین + تغذیه" : s.planType === "workout" ? "تمرین" : "تغذیه"}
-                </span>
-              </div>
+              <Card className="transition-colors hover:bg-muted/40">
+                <CardContent className="flex items-center justify-between gap-3 pt-4">
+                  <div className="min-w-0 text-start">
+                    <p className="truncate text-sm font-semibold">{s.fullName}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{s.phone}</p>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      مربی:{" "}
+                      <span className="font-medium text-foreground">
+                        {s.coachName || "—"}
+                      </span>
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      پلن:{" "}
+                      <span className="font-medium text-foreground">
+                        {s.planTitle || "—"}
+                      </span>
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 flex-col items-end gap-2">
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        s.status === "active"
+                          ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                          : undefined
+                      )}
+                    >
+                      {s.status === "active" ? "فعال" : "در انتظار"}
+                    </Badge>
+                    <Badge variant="secondary">
+                      {s.planType === "both"
+                        ? "تمرین + تغذیه"
+                        : s.planType === "workout"
+                          ? "تمرین"
+                          : "تغذیه"}
+                    </Badge>
+                  </div>
+                  <ChevronLeft className="size-4 shrink-0 text-muted-foreground" />
+                </CardContent>
+              </Card>
             </Link>
           ))
         )}
       </div>
 
-      {total > pageSize ? (
-        <div className="flex justify-center gap-2">
-          <button
-            disabled={page <= 1}
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-zinc-200 disabled:opacity-40"
-          >
-            قبلی
-          </button>
-          <span className="px-3 py-2 text-sm text-zinc-400">صفحه {page}</span>
-          <button
-            disabled={page * pageSize >= total}
-            onClick={() => setPage((p) => p + 1)}
-            className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-zinc-200 disabled:opacity-40"
-          >
-            بعدی
-          </button>
-        </div>
-      ) : null}
+      <PanelPagination page={page} totalPages={totalPages} onPage={setPage} />
     </div>
-  );
-}
-
-function Tab({ active, children, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        "rounded-2xl px-4 py-2 text-sm font-extrabold transition",
-        active ? "bg-white text-zinc-950" : "border border-white/10 bg-zinc-950/30 text-zinc-200 hover:bg-white/10"
-      )}
-    >
-      {children}
-    </button>
   );
 }

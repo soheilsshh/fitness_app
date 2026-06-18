@@ -2,8 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { FiActivity, FiEdit2 } from "react-icons/fi";
+import { Activity, Pencil } from "lucide-react";
 import WorkoutExerciseCards from "@/components/workout/WorkoutExerciseCards";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { DAY_KEYS, DAY_LABELS } from "../../_components/programDays";
 
 export default function WorkoutProgramPreview({ studentId, programs }) {
@@ -16,62 +19,68 @@ export default function WorkoutProgramPreview({ studentId, programs }) {
   const restDays = new Set(programs?.schedule?.restDays || []);
   const workout = programs?.planByDay?.[selectedDay]?.workout;
 
+  const visibleDays = DAY_KEYS.filter((key) => {
+    const isRest = restDays.has(key);
+    const hasExercises =
+      (programs?.planByDay?.[key]?.workout?.exercises?.length || 0) > 0 ||
+      (programs?.planByDay?.[key]?.workout?.steps?.length || 0) > 0;
+    return !isRest || hasExercises;
+  });
+
   return (
-    <div className="rounded-[26px] border border-white/10 bg-white/5 p-5 md:p-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-emerald-400/25 bg-emerald-400/10">
-            <FiActivity className="text-lg text-emerald-200" />
-          </span>
-          <div>
-            <div className="text-sm font-extrabold text-white">برنامه تمرین اختصاصی</div>
-            <div className="mt-0.5 text-[11px] text-zinc-400">برنامه فعال دانشجو</div>
-          </div>
+    <Card dir="rtl">
+      <CardHeader>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <span className="inline-flex size-10 items-center justify-center rounded-lg border border-emerald-500/30 bg-emerald-500/10">
+              <Activity className="size-4 text-emerald-700 dark:text-emerald-300" />
+            </span>
+            <span>
+              برنامه تمرین اختصاصی
+              <span className="mt-0.5 block text-xs font-normal text-muted-foreground">
+                برنامه فعال دانشجو
+              </span>
+            </span>
+          </CardTitle>
+          <Button variant="outline" size="sm" asChild>
+            <Link href={`/coach/students/${studentId}/workout`}>
+              <Pencil data-icon="inline-start" />
+              ویرایش
+            </Link>
+          </Button>
         </div>
-        <Link
-          href={`/coach/students/${studentId}/workout`}
-          className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-bold text-zinc-100 hover:bg-white/10"
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <ToggleGroup
+          type="single"
+          value={selectedDay}
+          onValueChange={(next) => next && setSelectedDay(next)}
+          variant="outline"
+          size="sm"
+          className="flex flex-wrap justify-start gap-2"
         >
-          <FiEdit2 />
-          ویرایش
-        </Link>
-      </div>
+          {visibleDays.map((key) => {
+            const isRest = restDays.has(key);
+            return (
+              <ToggleGroupItem
+                key={key}
+                value={key}
+                className={isRest ? "opacity-50" : undefined}
+              >
+                {DAY_LABELS[key]}
+              </ToggleGroupItem>
+            );
+          })}
+        </ToggleGroup>
 
-      <div className="mt-4 flex flex-wrap gap-2">
-        {DAY_KEYS.map((key) => {
-          const isRest = restDays.has(key);
-          const hasExercises =
-            (programs?.planByDay?.[key]?.workout?.exercises?.length || 0) > 0 ||
-            (programs?.planByDay?.[key]?.workout?.steps?.length || 0) > 0;
-          if (isRest && !hasExercises) return null;
-          return (
-            <button
-              key={key}
-              type="button"
-              onClick={() => setSelectedDay(key)}
-              className={[
-                "rounded-2xl border px-3 py-2 text-xs font-bold transition",
-                selectedDay === key
-                  ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-100"
-                  : "border-white/10 bg-zinc-950/30 text-zinc-200 hover:bg-white/10",
-                isRest ? "opacity-50" : "",
-              ].join(" ")}
-            >
-              {DAY_LABELS[key]}
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="mt-4">
         {restDays.has(selectedDay) ? (
-          <div className="rounded-2xl border border-white/10 bg-zinc-950/30 p-4 text-sm text-zinc-400">
+          <p className="rounded-lg border border-dashed p-4 text-center text-sm text-muted-foreground">
             روز استراحت
-          </div>
+          </p>
         ) : (
           <WorkoutExerciseCards workout={workout} dayKey={selectedDay} />
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

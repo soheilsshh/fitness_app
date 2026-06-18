@@ -1,10 +1,14 @@
 "use client";
 
-import { useState } from "react";
 import { apiAssetUrl } from "@/lib/api/assets";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
-function cn(...xs) {
-  return xs.filter(Boolean).join(" ");
+function faNum(value) {
+  return new Intl.NumberFormat("fa-IR").format(value ?? 0);
 }
 
 function linesToArray(text) {
@@ -79,11 +83,6 @@ export function formToPayload(form, { isEdit = false } = {}) {
   return payload;
 }
 
-const inputClass =
-  "w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-zinc-500 outline-none focus:border-emerald-400/40";
-
-const labelClass = "mb-1.5 block text-xs font-bold text-zinc-400";
-
 export default function ExerciseForm({
   form,
   setForm,
@@ -97,6 +96,7 @@ export default function ExerciseForm({
 
   return (
     <form
+      dir="rtl"
       onSubmit={(e) => {
         e.preventDefault();
         onSubmit();
@@ -105,10 +105,9 @@ export default function ExerciseForm({
     >
       <div className="grid gap-4 md:grid-cols-2">
         {!isEdit ? (
-          <div>
-            <label className={labelClass}>شناسه خارجی (externalId) *</label>
-            <input
-              className={inputClass}
+          <div className="space-y-2">
+            <Label>شناسه خارجی (externalId) *</Label>
+            <Input
               value={form.externalId}
               onChange={(e) => setForm((f) => ({ ...f, externalId: e.target.value }))}
               placeholder="مثلاً 0001"
@@ -116,73 +115,66 @@ export default function ExerciseForm({
             />
           </div>
         ) : (
-          <div>
-            <label className={labelClass}>شناسه خارجی</label>
-            <div className="rounded-2xl border border-white/10 bg-zinc-950/30 px-4 py-2.5 text-sm text-zinc-300">
+          <div className="space-y-2">
+            <Label>شناسه خارجی</Label>
+            <div className="rounded-lg border bg-muted px-3 py-2 text-sm">
               {form.externalId}
             </div>
           </div>
         )}
 
-        <div>
-          <label className={labelClass}>نام تمرین *</label>
-          <input
-            className={inputClass}
+        <div className="space-y-2">
+          <Label>نام تمرین *</Label>
+          <Input
             value={form.name}
             onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
             required
           />
         </div>
 
-        <div>
-          <label className={labelClass}>دسته‌بندی</label>
-          <input
-            className={inputClass}
+        <div className="space-y-2">
+          <Label>دسته‌بندی</Label>
+          <Input
             value={form.category}
             onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
           />
         </div>
 
-        <div>
-          <label className={labelClass}>ناحیه بدن</label>
-          <input
-            className={inputClass}
+        <div className="space-y-2">
+          <Label>ناحیه بدن</Label>
+          <Input
             value={form.bodyPart}
             onChange={(e) => setForm((f) => ({ ...f, bodyPart: e.target.value }))}
           />
         </div>
 
-        <div>
-          <label className={labelClass}>تجهیزات</label>
-          <input
-            className={inputClass}
+        <div className="space-y-2">
+          <Label>تجهیزات</Label>
+          <Input
             value={form.equipment}
             onChange={(e) => setForm((f) => ({ ...f, equipment: e.target.value }))}
           />
         </div>
 
-        <div>
-          <label className={labelClass}>عضله هدف</label>
-          <input
-            className={inputClass}
+        <div className="space-y-2">
+          <Label>عضله هدف</Label>
+          <Input
             value={form.target}
             onChange={(e) => setForm((f) => ({ ...f, target: e.target.value }))}
           />
         </div>
 
-        <div>
-          <label className={labelClass}>گروه عضلانی</label>
-          <input
-            className={inputClass}
+        <div className="space-y-2">
+          <Label>گروه عضلانی</Label>
+          <Input
             value={form.muscleGroup}
             onChange={(e) => setForm((f) => ({ ...f, muscleGroup: e.target.value }))}
           />
         </div>
 
-        <div>
-          <label className={labelClass}>مسیر تصویر</label>
-          <input
-            className={inputClass}
+        <div className="space-y-2">
+          <Label>مسیر تصویر</Label>
+          <Input
             dir="ltr"
             value={form.imagePath}
             onChange={(e) => setForm((f) => ({ ...f, imagePath: e.target.value, imageUrl: "" }))}
@@ -190,10 +182,9 @@ export default function ExerciseForm({
           />
         </div>
 
-        <div>
-          <label className={labelClass}>مسیر GIF</label>
-          <input
-            className={inputClass}
+        <div className="space-y-2">
+          <Label>مسیر GIF</Label>
+          <Input
             dir="ltr"
             value={form.gifPath}
             onChange={(e) => setForm((f) => ({ ...f, gifPath: e.target.value, gifUrl: "" }))}
@@ -202,28 +193,28 @@ export default function ExerciseForm({
         </div>
       </div>
 
-      <div>
-        <label className={labelClass}>توضیحات</label>
-        <textarea
-          className={cn(inputClass, "min-h-[100px] resize-y")}
+      <div className="space-y-2">
+        <Label>توضیحات</Label>
+        <Textarea
+          className="min-h-[100px] resize-y"
           value={form.description}
           onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
         />
       </div>
 
-      <div>
-        <label className={labelClass}>مراحل اجرا (هر خط یک مرحله)</label>
-        <textarea
-          className={cn(inputClass, "min-h-[120px] resize-y")}
+      <div className="space-y-2">
+        <Label>مراحل اجرا (هر خط یک مرحله)</Label>
+        <Textarea
+          className="min-h-[120px] resize-y"
           value={form.instructionStepsText}
           onChange={(e) => setForm((f) => ({ ...f, instructionStepsText: e.target.value }))}
         />
       </div>
 
-      <div>
-        <label className={labelClass}>عضلات ثانویه (هر خط یک مورد)</label>
-        <textarea
-          className={cn(inputClass, "min-h-[80px] resize-y")}
+      <div className="space-y-2">
+        <Label>عضلات ثانویه (هر خط یک مورد)</Label>
+        <Textarea
+          className="min-h-[80px] resize-y"
           value={form.secondaryMusclesText}
           onChange={(e) => setForm((f) => ({ ...f, secondaryMusclesText: e.target.value }))}
         />
@@ -232,47 +223,53 @@ export default function ExerciseForm({
       {(previewImage || previewGif) && (
         <div className="grid gap-4 md:grid-cols-2">
           {previewImage ? (
-            <div className="rounded-3xl border border-white/10 bg-zinc-950/30 p-4">
-              <div className="mb-2 text-xs font-bold text-zinc-400">پیش‌نمایش تصویر</div>
+            <div className="rounded-xl border bg-muted/40 p-4">
+              <div className="mb-2 text-xs text-muted-foreground">پیش‌نمایش تصویر</div>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={previewImage}
                 alt={form.name || "exercise"}
-                className="max-h-48 w-full rounded-2xl object-contain bg-zinc-900"
+                className="max-h-48 w-full rounded-lg bg-black object-contain"
               />
             </div>
           ) : null}
           {previewGif ? (
-            <div className="rounded-3xl border border-white/10 bg-zinc-950/30 p-4">
-              <div className="mb-2 text-xs font-bold text-zinc-400">پیش‌نمایش GIF</div>
+            <div className="rounded-xl border bg-muted/40 p-4">
+              <div className="mb-2 text-xs text-muted-foreground">پیش‌نمایش GIF</div>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={previewGif}
                 alt={form.name || "exercise gif"}
-                className="max-h-48 w-full rounded-2xl object-contain bg-zinc-900"
+                className="max-h-48 w-full rounded-lg bg-black object-contain"
               />
             </div>
           ) : null}
         </div>
       )}
 
-      <label className="inline-flex cursor-pointer items-center gap-3 rounded-2xl border border-white/10 bg-zinc-950/30 px-4 py-3">
-        <input
-          type="checkbox"
+      <Label className="inline-flex w-fit cursor-pointer items-center gap-3 rounded-lg border bg-muted/40 px-4 py-3">
+        <Checkbox
           checked={form.isActive}
-          onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.checked }))}
-          className="h-4 w-4 rounded border-white/20 bg-zinc-900"
+          onCheckedChange={(checked) =>
+            setForm((f) => ({ ...f, isActive: checked === true }))
+          }
         />
-        <span className="text-sm font-bold text-white">فعال در سیستم</span>
-      </label>
+        <span className="text-sm">فعال در سیستم</span>
+      </Label>
 
-      <button
+      <Button
         type="submit"
         disabled={submitting}
-        className="rounded-2xl bg-emerald-500/90 px-6 py-3 text-sm font-extrabold text-zinc-950 hover:bg-emerald-400 disabled:opacity-50"
+        className="min-w-36"
       >
         {submitting ? "در حال ذخیره..." : submitLabel}
-      </button>
+      </Button>
+
+      {isEdit ? (
+        <div className="text-xs text-muted-foreground">
+          شناسه خارجی در حالت ویرایش قابل تغییر نیست.
+        </div>
+      ) : null}
     </form>
   );
 }
