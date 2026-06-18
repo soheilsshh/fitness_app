@@ -24,5 +24,6 @@ func AllModels() []any {
 		&Ticket{},
 		&OtpCode{},
 		&Exercise{},
+		&WorkoutSession{},
 	}
 }

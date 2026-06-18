@@ -27,6 +27,7 @@ var fixtureDeps = map[string][]string{
 	"nutrition_programs.json": {"subscriptions.json"},
 	"nutrition_items.json":    {"nutrition_programs.json"},
 	"check_ins.json":          {"users.json", "subscriptions.json"},
+	"workout_sessions.json":   {"users.json", "subscriptions.json", "workout_programs.json"},
 	"transactions.json":       {"users.json", "subscriptions.json"},
 	"notifications.json":      {"users.json"},
 }
@@ -46,6 +47,7 @@ var devFixtures = map[string]any{
 	"site_settings.json":      &[]models.SiteSettings{},
 	"feedbacks.json":          &[]models.Feedback{},
 	"check_ins.json":          &[]models.CheckIn{},
+	"workout_sessions.json":   &[]models.WorkoutSession{},
 	"transactions.json":       &[]models.Transaction{},
 	"notifications.json":      &[]models.Notification{},
 }

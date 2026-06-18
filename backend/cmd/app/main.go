@@ -138,6 +138,8 @@ func NewServer() *Server {
 	trackingService := service.NewTrackingService(db, subscriptionRepo, coachStudentService)
 	trackingController := controllers.NewTrackingController(trackingService)
 	coachTrackingController := controllers.NewCoachTrackingController(trackingService)
+	workoutHistoryService := service.NewWorkoutHistoryService(db, subscriptionRepo, servicePlanRepo, programRepo)
+	workoutHistoryController := controllers.NewWorkoutHistoryController(workoutHistoryService)
 
 	// Auth routes
 	router.POST("/auth/register", authController.Register)
@@ -208,6 +210,8 @@ func NewServer() *Server {
 		studentGroup.GET("/me/tracking", trackingController.GetMyTracking)
 		studentGroup.POST("/me/tracking/weight", trackingController.SubmitWeight)
 		studentGroup.POST("/me/tracking/photos", trackingController.UploadTrackingPhoto)
+		studentGroup.GET("/me/workout-history", workoutHistoryController.ListHistory)
+		studentGroup.POST("/me/workout-sessions", workoutHistoryController.LogSession)
 		studentGroup.POST("/me/change-password", authController.ChangePassword)
 		studentGroup.GET("/me/orders", meController.ListMyOrders)
 		studentGroup.GET("/me/orders/:id", meController.GetMyOrderByID)

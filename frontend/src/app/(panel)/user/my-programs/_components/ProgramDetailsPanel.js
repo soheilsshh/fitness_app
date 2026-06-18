@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Calendar, ClipboardList, Coffee, Dumbbell, Info } from "lucide-react";
+import { Calendar, CheckCircle2, ClipboardList, Coffee, Dumbbell, Info } from "lucide-react";
+import { api } from "@/lib/axios/client";
 import WorkoutExerciseCards from "@/components/workout/WorkoutExerciseCards";
 import {
   Accordion,
@@ -19,7 +20,9 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import { formatDateFa, shortRemaining } from "./helpers";
 
 const DAYS = [
@@ -80,10 +83,29 @@ export default function ProgramDetailsPanel({ program, timeline }) {
   }, [program, restSet]);
 
   const [selectedDay, setSelectedDay] = useState(defaultDay);
+  const [loggingWorkout, setLoggingWorkout] = useState(false);
 
   useEffect(() => {
     setSelectedDay(defaultDay);
   }, [defaultDay]);
+
+  async function handleLogWorkout() {
+    const dayWorkout = program?.planByDay?.[selectedDay]?.workout;
+    if (!program?.id || !dayWorkout) return;
+    setLoggingWorkout(true);
+    try {
+      await api.post("/me/workout-sessions", {
+        subscriptionId: program.id,
+        dayKey: selectedDay,
+        durationMin: dayWorkout.durationMin || 0,
+      });
+      toast.success("تمرین با موفقیت در تاریخچه ثبت شد");
+    } catch (err) {
+      toast.error(err?.response?.data?.error || "ثبت تمرین ناموفق بود");
+    } finally {
+      setLoggingWorkout(false);
+    }
+  }
 
   if (!program) {
     return (
@@ -223,6 +245,18 @@ export default function ProgramDetailsPanel({ program, timeline }) {
                       clickable
                       variant="cards"
                     />
+                    {timeline?.isActive && (
+                      <div className="mt-4 flex justify-end">
+                        <Button
+                          type="button"
+                          onClick={handleLogWorkout}
+                          disabled={loggingWorkout}
+                        >
+                          <CheckCircle2 className="size-4" />
+                          {loggingWorkout ? "در حال ثبت..." : "ثبت اتمام تمرین"}
+                        </Button>
+                      </div>
+                    )}
                   </>
                 )}
               </CardContent>

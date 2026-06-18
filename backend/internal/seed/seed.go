@@ -58,7 +58,7 @@ func syncAutoIncrement(ctx context.Context, db *gorm.DB) error {
 		"users", "coach_profiles", "service_plans", "subscriptions",
 		"orders", "order_items", "workout_programs", "program_items",
 		"nutrition_programs", "nutrition_items", "site_settings",
-		"feedbacks", "check_ins", "transactions", "notifications",
+		"feedbacks", "check_ins", "workout_sessions", "transactions", "notifications",
 	}
 	for _, table := range tables {
 		stmt := fmt.Sprintf(

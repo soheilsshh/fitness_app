@@ -1,0 +1,41 @@
+[
+  {
+    "ID": 1,
+    "UserID": 4,
+    "SubscriptionID": 1,
+    "WorkoutProgramID": 1,
+    "ProgramTitle": "برنامه کاهش وزن — فاز ۱",
+    "DayKey": "sat",
+    "DayLabel": "شنبه",
+    "ExerciseCount": 3,
+    "DurationMin": 45,
+    "Notes": "",
+    "CompletedAt": "2026-06-01T08:30:00Z"
+  },
+  {
+    "ID": 2,
+    "UserID": 4,
+    "SubscriptionID": 1,
+    "WorkoutProgramID": 1,
+    "ProgramTitle": "برنامه کاهش وزن — فاز ۱",
+    "DayKey": "mon",
+    "DayLabel": "دوشنبه",
+    "ExerciseCount": 3,
+    "DurationMin": 50,
+    "Notes": "تمرین سنگین",
+    "CompletedAt": "2026-06-03T09:00:00Z"
+  },
+  {
+    "ID": 3,
+    "UserID": 4,
+    "SubscriptionID": 1,
+    "WorkoutProgramID": 1,
+    "ProgramTitle": "برنامه کاهش وزن — فاز ۱",
+    "DayKey": "wed",
+    "DayLabel": "چهارشنبه",
+    "ExerciseCount": 2,
+    "DurationMin": 40,
+    "Notes": "",
+    "CompletedAt": "2026-06-05T07:45:00Z"
+  }
+]
