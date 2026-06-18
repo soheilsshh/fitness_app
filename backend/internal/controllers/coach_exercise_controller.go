@@ -26,7 +26,14 @@ func NewCoachExerciseController(s service.AdminExerciseService) *CoachExerciseCo
 }
 
 func (h *CoachExerciseController) ListCategories(c *gin.Context) {
-	cats, err := h.exerciseService.ListCategories(c.Request.Context())
+	coachID, err := middleware.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	source := c.DefaultQuery("source", "all")
+	cats, err := h.exerciseService.ListCoachCategories(c.Request.Context(), coachID, source)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -35,6 +42,12 @@ func (h *CoachExerciseController) ListCategories(c *gin.Context) {
 }
 
 func (h *CoachExerciseController) ListExercises(c *gin.Context) {
+	coachID, err := middleware.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
 	page := 1
 	if p := c.Query("page"); p != "" {
 		if v, err := strconv.Atoi(p); err == nil && v > 0 {
@@ -48,14 +61,18 @@ func (h *CoachExerciseController) ListExercises(c *gin.Context) {
 		}
 	}
 
-	resp, err := h.exerciseService.ListExercises(
+	source := c.DefaultQuery("source", "all")
+
+	resp, err := h.exerciseService.ListCoachExercises(
 		c.Request.Context(),
+		coachID,
 		page,
 		pageSize,
 		c.Query("query"),
 		c.Query("category"),
 		c.Query("bodyPart"),
 		c.Query("equipment"),
+		source,
 	)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -65,16 +82,26 @@ func (h *CoachExerciseController) ListExercises(c *gin.Context) {
 }
 
 func (h *CoachExerciseController) GetExerciseByID(c *gin.Context) {
+	coachID, err := middleware.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil || id == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
 		return
 	}
 
-	item, err := h.exerciseService.GetExerciseByID(c.Request.Context(), uint(id))
+	item, err := h.exerciseService.GetCoachExerciseByID(c.Request.Context(), coachID, uint(id))
 	if err != nil {
 		if errors.Is(err, service.ErrExerciseNotFound) || errors.Is(err, gorm.ErrRecordNotFound) {
 			c.JSON(http.StatusNotFound, gin.H{"error": "exercise not found"})
+			return
+		}
+		if errors.Is(err, service.ErrExerciseForbidden) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "exercise not accessible"})
 			return
 		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -97,15 +124,17 @@ func isAnimatedExerciseMedia(ext string) bool {
 	}
 }
 
-func exercisesDatasetDir() string {
-	if dir := os.Getenv("EXERCISES_DATASET_DIR"); dir != "" {
-		return dir
+func coachExerciseUploadDir(coachID uint) string {
+	baseDir := os.Getenv("UPLOAD_DIR")
+	if baseDir == "" {
+		baseDir = "uploads"
 	}
-	return "exercises-dataset-main"
+	return filepath.Join(baseDir, "coaches", fmt.Sprintf("%d", coachID), "exercises")
 }
 
 func (h *CoachExerciseController) CreateExercise(c *gin.Context) {
-	if _, err := middleware.GetUserID(c); err != nil {
+	coachID, err := middleware.GetUserID(c)
+	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
@@ -130,34 +159,28 @@ func (h *CoachExerciseController) CreateExercise(c *gin.Context) {
 			return
 		}
 
-		subDir := "images"
-		if isAnimatedExerciseMedia(ext) {
-			subDir = "videos"
-		}
-
-		dir := filepath.Join(exercisesDatasetDir(), subDir)
+		dir := coachExerciseUploadDir(coachID)
 		if err := os.MkdirAll(dir, 0755); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create media dir"})
 			return
 		}
 
-		name := fmt.Sprintf("coach-%d%s", time.Now().UnixNano(), ext)
+		name := fmt.Sprintf("%d%s", time.Now().UnixNano(), ext)
 		fullPath := filepath.Join(dir, name)
 		if err := c.SaveUploadedFile(file, fullPath); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 
-		// Relative path like dataset seed (e.g. videos/coach-123.gif) → served at /exercises-media/videos/...
-		relPath := filepath.ToSlash(filepath.Join(subDir, name))
+		urlPath := "/" + filepath.ToSlash(filepath.Join("uploads", "coaches", fmt.Sprintf("%d", coachID), "exercises", name))
 		if isAnimatedExerciseMedia(ext) {
-			req.GifPath = relPath
+			req.GifPath = urlPath
 		} else {
-			req.ImagePath = relPath
+			req.ImagePath = urlPath
 		}
 	}
 
-	item, err := h.exerciseService.CreateCoachExercise(c.Request.Context(), &req)
+	item, err := h.exerciseService.CreateCoachExercise(c.Request.Context(), coachID, &req)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

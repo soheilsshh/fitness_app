@@ -5,6 +5,7 @@ import "gorm.io/gorm"
 type Exercise struct {
 	gorm.Model
 	ExternalID       string `gorm:"column:external_id;size:20;uniqueIndex;not null"`
+	CoachID          *uint  `gorm:"column:coach_id;index"` // nil = global dataset; set = coach-owned custom exercise
 	Name             string `gorm:"size:255;not null"`
 	Category         string `gorm:"size:100;index"`
 	BodyPart         string `gorm:"column:body_part;size:100;index"`

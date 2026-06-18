@@ -1,92 +1,156 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
-import { Cpu, Shield, Target } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import {
+  FiAward,
+  FiTrendingUp,
+  FiMessageCircle,
+  FiArrowLeft,
+} from "react-icons/fi";
+import { FaDumbbell, FaAppleAlt, FaHeartbeat } from "react-icons/fa";
 
-const VALUES = [
+// Gym + coaching value pillars — what FitPro actually delivers.
+const PILLARS = [
   {
-    icon: Target,
-    iconClass: "text-primary",
-    title: "هدف‌محور",
-    desc: "هر برنامه با یک هدف شفاف و قابل اندازه‌گیری شروع می‌شود.",
+    icon: FiAward,
+    color: "text-surface-tint",
+    title: "مربیان متخصص و تاییدشده",
+    desc: "تیم مربیان حرفه‌ای و دارای مدرک، همراه شخصی شما در تمام مسیر تمرین.",
   },
   {
-    icon: Cpu,
-    iconClass: "text-chart-2",
-    title: "واقع‌بینانه",
-    desc: "ما به دنبال معجزه نیستیم، بلکه روی تلاش مستمر و علمی حساب می‌کنیم.",
+    icon: FaDumbbell,
+    color: "text-secondary-container",
+    title: "برنامه تمرین اختصاصی",
+    desc: "هر حرکت و هر ست متناسب با بدن، سطح و هدف شما طراحی و به‌روزرسانی می‌شود.",
   },
   {
-    icon: Shield,
-    iconClass: "text-primary",
-    title: "قابل اعتماد",
-    desc: "تمام برنامه‌ها زیر نظر متخصصین تایید شده طراحی می‌شوند.",
+    icon: FaAppleAlt,
+    color: "text-surface-tint",
+    title: "برنامه تغذیه علمی",
+    desc: "رژیم غذایی دقیق و قابل اجرا، کاملاً هماهنگ با تمرینات و سبک زندگی شما.",
+  },
+  {
+    icon: FiTrendingUp,
+    color: "text-secondary-container",
+    title: "پیگیری پیشرفت",
+    desc: "نتایج خود را با عدد و آمار دنبال کنید؛ هر هفته یک قدم به هدف نزدیک‌تر.",
+  },
+  {
+    icon: FiMessageCircle,
+    color: "text-surface-tint",
+    title: "پشتیبانی همیشگی مربی",
+    desc: "هر زمان سوال یا چالشی داشتی، مربی‌ات مستقیماً کنارت است.",
+  },
+  {
+    icon: FaHeartbeat,
+    color: "text-secondary-container",
+    title: "تمرین در باشگاه یا خانه",
+    desc: "برنامه‌ها برای هر امکانات و شرایطی قابل اجرا هستند، هرجا که باشی.",
   },
 ];
 
+// Onboarding flow — used when the API doesn't provide custom steps.
+const DEFAULT_STEPS = [
+  { id: "s1", title: "ثبت‌نام", text: "پروفایل خود را تکمیل کنید و هدفتان را مشخص کنید." },
+  { id: "s2", title: "انتخاب مربی", text: "از بین مربیان منتشرشده، پلن مناسب را انتخاب کنید." },
+  { id: "s3", title: "شروع برنامه", text: "برنامه تمرین و تغذیه را در پنل کاربری دنبال کنید." },
+];
+
 export default function AboutSection({ steps }) {
-  const stepItems = steps?.length ? steps : null;
+  const stepItems = steps?.length ? steps : DEFAULT_STEPS;
 
   return (
-    <section id="about" dir="rtl" className="mx-auto max-w-7xl scroll-mt-24 px-6 py-12 md:py-16">
-      <div className="flex flex-col items-center gap-12 md:flex-row-reverse">
-        <motion.div
+    <section id="about" className="mx-auto max-w-7xl scroll-mt-24 overflow-hidden px-6 py-12 md:py-16">
+      {/* How it works — onboarding flow */}
+      <div className="mb-20">
+        <motion.h3
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.25 }}
           transition={{ duration: 0.6 }}
-          className="flex-1 space-y-8"
+          className="mb-10 text-right text-3xl font-extrabold text-primary md:text-4xl"
         >
-          <h2 className="text-start text-4xl font-extrabold tracking-tight text-foreground md:text-5xl">
-            چرا{" "}
-            <span className="bg-linear-to-l from-primary via-chart-2 to-chart-3 bg-clip-text text-transparent">
-              FitPro؟
-            </span>
-          </h2>
+          فقط <span className="gradient-text">سه قدم</span> تا شروع
+        </motion.h3>
 
-          <div className="space-y-6">
-            {VALUES.map((v, idx) => {
-              const Icon = v.icon;
-              return (
-                <motion.div
-                  key={v.title}
-                  initial={{ opacity: 0, x: -10 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true, amount: 0.25 }}
-                  transition={{ duration: 0.55, delay: idx * 0.05 }}
-                  className="group flex flex-row-reverse items-center gap-6"
-                >
-                  <div className="flex size-16 shrink-0 items-center justify-center rounded-2xl border border-border bg-muted/50 transition-transform group-hover:scale-105">
-                    <Icon className={cn("size-8", v.iconClass)} />
-                  </div>
-                  <div className="text-start">
-                    <h3 className="text-2xl font-semibold text-foreground">{v.title}</h3>
-                    <p className="text-muted-foreground">{v.desc}</p>
-                  </div>
-                </motion.div>
-              );
-            })}
-
-            {stepItems?.map((s, idx) => (
-              <motion.div
-                key={s.id}
-                initial={{ opacity: 0, x: -10 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true, amount: 0.25 }}
-                transition={{ duration: 0.55, delay: (VALUES.length + idx) * 0.05 }}
+        <div className="grid gap-6 md:grid-cols-3">
+          {stepItems.map((s, idx) => (
+            <motion.div
+              key={s.id || s.title}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.25 }}
+              transition={{ duration: 0.5, delay: idx * 0.08 }}
+              className="glow-card relative flex h-full flex-col gap-3 rounded-2xl p-6 text-right"
+            >
+              <span
+                aria-hidden
+                className="gradient-text text-5xl font-extrabold leading-none opacity-80"
               >
-                <Card className="bg-card/60 backdrop-blur-sm">
-                  <CardContent className="pt-6 text-start">
-                    <div className="font-bold text-foreground">{s.title}</div>
-                    <div className="mt-1 text-muted-foreground">{s.text}</div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
+                {idx + 1}
+              </span>
+              <h4 className="text-2xl font-semibold text-primary">{s.title}</h4>
+              <p className="leading-7 text-on-surface-variant">{s.text}</p>
+            </motion.div>
+          ))}
+        </div>
+
+        <div className="mt-10 flex justify-end">
+          <Link
+            href="/coaches"
+            className="flex items-center gap-2 rounded-full bg-surface-tint px-8 py-4 font-bold text-on-primary shadow-2xl transition-transform hover:scale-105"
+          >
+            انتخاب مربی و شروع
+            <FiArrowLeft className="text-xl" />
+          </Link>
+        </div>
+      </div>
+
+      {/* Intro */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.25 }}
+        transition={{ duration: 0.6 }}
+        className="mb-12 space-y-4 text-right"
+      >
+        <div className="glass inline-flex items-center gap-2 rounded-full border border-surface-tint/20 px-4 py-1 text-xs text-surface-tint">
+          <span className="h-2 w-2 animate-pulse rounded-full bg-surface-tint" />
+          باشگاه هوشمند و مربیگری اختصاصی
+        </div>
+        <h2 className="text-4xl font-extrabold text-primary md:text-5xl">
+          چرا <span className="gradient-text">FitPro؟</span>
+        </h2>
+        <p className="max-w-2xl text-base leading-8 text-on-surface-variant md:text-lg">
+          فیت‌پرو یک باشگاه دیجیتال است که تمرین، تغذیه و مربیگری حرفه‌ای را در یک پلتفرم
+          جمع می‌کند؛ از انتخاب مربی تا رسیدن به فرم ایده‌آل، در هر قدم کنار شما هستیم.
+        </p>
+      </motion.div>
+
+      {/* Value pillars */}
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {PILLARS.map((p, idx) => {
+          const Icon = p.icon;
+          return (
+            <motion.div
+              key={p.title}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.25 }}
+              transition={{ duration: 0.5, delay: idx * 0.05 }}
+              className="group glow-card flex h-full flex-col gap-4 rounded-2xl p-6 text-right"
+            >
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/5 ring-1 ring-white/10 transition-transform group-hover:scale-110">
+                <Icon className={`text-3xl ${p.color}`} />
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold text-primary">{p.title}</h3>
+                <p className="mt-2 leading-7 text-on-surface-variant">{p.desc}</p>
+              </div>
+            </motion.div>
+          );
+        })}
       </div>
     </section>
   );

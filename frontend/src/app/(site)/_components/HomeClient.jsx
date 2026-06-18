@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { MotionConfig } from "framer-motion";
 import { api } from "@/lib/axios/client";
 import Hero from "./Hero";
 import ProgramsSection from "./ProgramsSection";
@@ -28,16 +29,18 @@ export default function HomeClient() {
   }, []);
 
   return (
-    <main className="relative overflow-x-hidden bg-background text-foreground">
-      <ScrollProgress />
-      <section id="home" className="scroll-mt-24">
-        <Hero settings={settings} />
-      </section>
-      <ProgramsSection />
-      <RecordsSection stats={settings?.stats} />
-      <AboutSection steps={settings?.steps} />
-      <ContactSection contactInfo={settings?.contactInfo} />
-      <Footer />
-    </main>
+    <MotionConfig reducedMotion="user">
+      <main className="relative overflow-x-hidden bg-background text-foreground">
+        <ScrollProgress />
+        <section id="home" className="scroll-mt-24">
+          <Hero settings={settings} />
+        </section>
+        <ProgramsSection />
+        <RecordsSection stats={settings?.stats} />
+        <AboutSection steps={settings?.steps} />
+        <ContactSection contactInfo={settings?.contactInfo} />
+        <Footer />
+      </main>
+    </MotionConfig>
   );
 }

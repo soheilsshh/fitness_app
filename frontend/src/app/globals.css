@@ -221,7 +221,7 @@ html {
 /* =========================================================
    Landing page design system ("Body Sculpture" theme)
    ========================================================= */
-/* @theme {
+@theme {
   --color-surface: #131313;
   --color-surface-dim: #131313;
   --color-surface-bright: #393939;
@@ -241,10 +241,12 @@ html {
   --color-on-surface-variant: #b9cbc1;
   --color-outline-variant: #3a4a43;
   --color-background: #131313;
-} */
+}
 
 :root {
   --emerald-cyan: linear-gradient(135deg, #00e1ab 0%, #00e3fd 100%);
+  --aurora-color1: rgba(168,85,247,0.2);
+  --aurora-color2: rgba(79,70,229,0.2);
 }
 
 /* Glass / frosted surfaces */
@@ -370,4 +372,43 @@ html {
   z-index: 200;
   width: 0%;
   transition: width 0.1s;
+}
+
+/* Visible keyboard focus for all interactive elements.
+   Uses :focus-visible so mouse clicks don't show the ring, only keyboard nav. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--color-surface-tint);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Pulsing animation for Aurora Background */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
+}
+
+/* Respect the user's reduced-motion preference.
+   Neutralises decorative loops (float/shimmer/bounce/pulse) and shortens
+   transitions so framer-motion and CSS effects don't trigger motion sickness. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
