@@ -37,7 +37,7 @@ export default function Footer() {
                 key={label}
                 href="#"
                 aria-label={label}
-                className="glass flex h-11 w-11 items-center justify-center rounded-full border border-white/10 text-on-surface-variant transition-all hover:border-surface-tint hover:text-surface-tint"
+                className="glass flex h-11 w-11 items-center justify-center rounded-full border border-outline-variant/25 text-on-surface-variant transition-all hover:border-surface-tint hover:text-surface-tint"
               >
                 <Icon className="text-sm" />
               </Link>
@@ -46,7 +46,7 @@ export default function Footer() {
         </div>
 
         <div className="space-y-6">
-          <h5 className="text-2xl font-semibold text-primary">دسترسی سریع</h5>
+          <h5 className="text-2xl font-semibold text-landing-heading">دسترسی سریع</h5>
           <ul className="space-y-4">
             {QUICK_LINKS.map((x) => (
               <li key={x.id}>
@@ -62,7 +62,7 @@ export default function Footer() {
         </div>
 
         <div className="space-y-6">
-          <h5 className="text-2xl font-semibold text-primary">حقوقی</h5>
+          <h5 className="text-2xl font-semibold text-landing-heading">حقوقی</h5>
           <ul className="space-y-4">
             {LEGAL_LINKS.map((x) => (
               <li key={x.label}>

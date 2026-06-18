@@ -115,12 +115,12 @@ export default function RegisterForm() {
         {/* Phone + Edit */}
         <div className="flex gap-2">
           <div className="relative flex-1">
-            <FiSmartphone className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400" />
+            <FiSmartphone className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant" />
             <input
               value={phone}
               onChange={(e) => setPhone(e.target.value.trim())}
               placeholder="شماره موبایل (09xxxxxxxxx)"
-              className="w-full rounded-2xl border border-white/10 bg-zinc-950/35 py-3 pl-4 pr-11 text-sm text-white placeholder:text-zinc-500 outline-none focus:border-emerald-400/40 disabled:opacity-70"
+              className="w-full site-input py-3 pl-4 pr-11 disabled:opacity-70"
               inputMode="numeric"
               disabled={phoneLocked}
             />
@@ -129,7 +129,7 @@ export default function RegisterForm() {
           {phoneLocked && !otpVerified && (
             <button
               onClick={resetOtpFlow}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-sm font-bold text-zinc-100 hover:bg-white/10"
+              className="site-btn-secondary px-3"
               aria-label="ویرایش شماره موبایل"
               title="ویرایش شماره"
             >
@@ -142,7 +142,7 @@ export default function RegisterForm() {
         {!otpSent && !otpVerified && (
           <button
             onClick={sendOtp}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-extrabold text-white hover:bg-white/10"
+            className="site-btn-secondary w-full font-extrabold"
           >
             ارسال رمز <FiKey />
           </button>
@@ -152,12 +152,12 @@ export default function RegisterForm() {
         {otpSent && !otpVerified && (
           <>
             <div className="relative">
-              <FiKey className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400" />
+              <FiKey className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant" />
               <input
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.trim())}
                 placeholder="کد OTP"
-                className="w-full rounded-2xl border border-white/10 bg-zinc-950/35 py-3 pl-4 pr-11 text-sm text-white placeholder:text-zinc-500 outline-none focus:border-emerald-400/40"
+                className="w-full site-input py-3 pl-4 pr-11"
                 inputMode="numeric"
               />
             </div>
@@ -166,7 +166,7 @@ export default function RegisterForm() {
               <button onClick={sendOtp} className="text-xs text-emerald-200 hover:text-emerald-100">
                 ارسال مجدد
               </button>
-              <button onClick={verifyOtp} className="text-xs text-zinc-200 hover:text-white">
+              <button onClick={verifyOtp} className="text-xs text-on-surface-variant hover:text-on-surface">
                 تایید کد
               </button>
             </div>
@@ -182,12 +182,12 @@ export default function RegisterForm() {
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="relative">
-                <FiUser className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400" />
+                <FiUser className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant" />
                 <input
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   placeholder="نام"
-                  className="w-full rounded-2xl border border-white/10 bg-zinc-950/35 py-3 pl-4 pr-11 text-sm text-white placeholder:text-zinc-500 outline-none focus:border-emerald-400/40"
+                  className="w-full site-input py-3 pl-4 pr-11"
                 />
               </div>
 
@@ -195,31 +195,31 @@ export default function RegisterForm() {
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 placeholder="نام خانوادگی"
-                className="w-full rounded-2xl border border-white/10 bg-zinc-950/35 px-4 py-3 text-sm text-white placeholder:text-zinc-500 outline-none focus:border-emerald-400/40"
+                className="w-full site-input px-4 py-3"
               />
             </div>
 
             <div className="relative">
-              <FiLock className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400" />
+              <FiLock className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant" />
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="رمز عبور (حداقل ۶ کاراکتر)"
-                className="w-full rounded-2xl border border-white/10 bg-zinc-950/35 py-3 pl-4 pr-11 text-sm text-white placeholder:text-zinc-500 outline-none focus:border-emerald-400/40"
+                className="w-full site-input py-3 pl-4 pr-11"
               />
             </div>
 
             <button
               onClick={submitRegister}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-extrabold text-zinc-950 hover:bg-zinc-200"
+              className="site-btn-primary"
             >
               ساخت حساب <FiArrowLeft />
             </button>
           </>
         )}
 
-        <div className="text-center text-[11px] text-zinc-500">
+        <div className="text-center text-[11px] site-muted">
           با ثبت نام، قوانین و حریم خصوصی را می‌پذیرید.
         </div>
       </motion.div>

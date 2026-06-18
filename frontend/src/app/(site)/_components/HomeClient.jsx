@@ -30,7 +30,7 @@ export default function HomeClient() {
 
   return (
     <MotionConfig reducedMotion="user">
-      <main className="relative overflow-x-hidden bg-background text-foreground">
+      <main className="relative overflow-x-hidden bg-surface text-on-surface">
         <ScrollProgress />
         <section id="home" className="scroll-mt-24">
           <Hero settings={settings} />

@@ -31,19 +31,18 @@ export default function CartButton() {
       >
         <button
           onClick={() => setOpen(true)}
-          className="relative inline-flex items-center justify-center rounded-2xl border border-white/10 bg-white/5 p-3 text-zinc-100 hover:bg-white/10"
+          className="site-chip relative inline-flex items-center justify-center rounded-2xl p-3"
           aria-label="Cart"
           title="سبد خرید"
         >
           <FiShoppingCart className="text-xl" />
           {count > 0 && (
-            <span className="absolute -top-2 -left-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-[11px] font-extrabold text-zinc-950">
+            <span className="absolute -top-2 -left-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-surface-tint px-1 text-[11px] font-extrabold text-on-primary">
               {count}
             </span>
           )}
         </button>
 
-        {/* Hover Preview */}
         <AnimatePresence>
           {hover && (
             <motion.div
@@ -51,12 +50,12 @@ export default function CartButton() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 8 }}
               transition={{ duration: 0.18 }}
-              className="absolute left-0 mt-3 w-[320px] origin-top-left rounded-3xl border border-white/10 bg-zinc-950/95 p-4 shadow-2xl backdrop-blur"
+              className="site-panel absolute left-0 mt-3 w-[320px] origin-top-left rounded-3xl p-4 shadow-2xl backdrop-blur"
             >
-              <div className="mb-2 text-sm font-extrabold text-white">سبد خرید</div>
+              <div className="mb-2 text-sm font-extrabold text-on-surface">سبد خرید</div>
 
               {items.length === 0 ? (
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-3 text-sm text-zinc-300">
+                <div className="site-chip rounded-2xl p-3 text-sm site-muted">
                   سبد خرید خالی است.
                 </div>
               ) : (
@@ -65,15 +64,15 @@ export default function CartButton() {
                     {topItems.map((it) => (
                       <div
                         key={it.id}
-                        className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/5 px-3 py-2"
+                        className="site-chip flex items-center justify-between gap-3 rounded-2xl px-3 py-2"
                       >
                         <div className="min-w-0">
-                          <div className="truncate text-sm font-bold text-white">{it.title}</div>
-                          <div className="mt-1 text-[11px] text-zinc-400">
+                          <div className="truncate text-sm font-bold text-on-surface">{it.title}</div>
+                          <div className="mt-1 text-[11px] site-muted">
                             {formatToman(it.price)}
                           </div>
                         </div>
-                        <div className="text-sm font-extrabold text-zinc-200">
+                        <div className="text-sm font-extrabold text-on-surface">
                           {formatToman(it.price)}
                         </div>
                       </div>
@@ -81,19 +80,19 @@ export default function CartButton() {
                   </div>
 
                   {items.length > topItems.length && (
-                    <div className="mt-2 text-[11px] text-zinc-400">
+                    <div className="mt-2 text-[11px] site-muted">
                       +{items.length - topItems.length} مورد دیگر
                     </div>
                   )}
 
-                  <div className="mt-3 flex items-center justify-between rounded-2xl border border-white/10 bg-zinc-950/40 px-3 py-2">
-                    <span className="text-[11px] text-zinc-400">جمع کل</span>
-                    <span className="text-sm font-extrabold text-white">{formatToman(total)}</span>
+                  <div className="site-chip mt-3 flex items-center justify-between rounded-2xl px-3 py-2">
+                    <span className="text-[11px] site-muted">جمع کل</span>
+                    <span className="text-sm font-extrabold text-on-surface">{formatToman(total)}</span>
                   </div>
 
                   <button
                     onClick={() => setOpen(true)}
-                    className="mt-3 w-full rounded-2xl bg-white px-4 py-3 text-sm font-extrabold text-zinc-950 hover:bg-zinc-200"
+                    className="mt-3 w-full rounded-2xl gradient-bg px-4 py-3 text-sm font-extrabold text-on-primary hover:opacity-90"
                   >
                     مشاهده سبد و ثبت سفارش
                   </button>

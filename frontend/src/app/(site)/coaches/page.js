@@ -41,20 +41,22 @@ export default function CoachesListPage() {
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   return (
-    <main className="mx-auto max-w-7xl px-4 py-16">
+    <main className="mx-auto max-w-7xl px-4 py-16 text-on-surface">
       <div className="mb-8">
-        <h1 className="text-2xl font-extrabold text-white md:text-3xl">مربی‌های FitPro</h1>
-        <p className="mt-2 max-w-2xl text-sm text-zinc-300 md:text-base">
+        <h1 className="text-2xl font-extrabold text-landing-heading md:text-3xl">
+          مربی‌های FitPro
+        </h1>
+        <p className="mt-2 max-w-2xl text-sm site-muted md:text-base">
           مربی مورد نظر خود را انتخاب کنید و از صفحه اختصاصی او پلن‌ها را ببینید.
         </p>
       </div>
 
       {loading ? (
-        <div className="rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-zinc-400">
+        <div className="site-panel rounded-3xl p-6 text-sm site-muted">
           در حال بارگذاری...
         </div>
       ) : items.length === 0 ? (
-        <div className="rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-zinc-300">
+        <div className="site-panel rounded-3xl p-6 text-sm site-muted">
           مربی منتشرشده‌ای یافت نشد.
         </div>
       ) : (
@@ -63,10 +65,10 @@ export default function CoachesListPage() {
             <Link
               key={coach.coachId || coach.slug}
               href={getCoachPublicPath(coach.slug)}
-              className="rounded-[26px] border border-white/10 bg-white/5 p-5 transition hover:bg-white/10"
+              className="site-chip rounded-[26px] p-5 transition hover:bg-[var(--landing-nav-hover)]"
             >
               <div className="flex items-start gap-3">
-                <div className="inline-flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-zinc-950/40">
+                <div className="site-chip inline-flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl">
                   {coach.avatarUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -75,16 +77,16 @@ export default function CoachesListPage() {
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <FiUsers className="text-xl text-emerald-300" />
+                    <FiUsers className="text-xl text-surface-tint" />
                   )}
                 </div>
                 <div className="min-w-0">
-                  <div className="truncate text-base font-extrabold text-white">
+                  <div className="truncate text-base font-extrabold text-on-surface">
                     {coach.displayName}
                   </div>
-                  <div className="mt-1 text-xs text-zinc-400">{coach.title || "—"}</div>
+                  <div className="mt-1 text-xs site-muted">{coach.title || "—"}</div>
                   {coach.specialty ? (
-                    <div className="mt-2 text-xs text-zinc-300">{coach.specialty}</div>
+                    <div className="mt-2 text-xs text-on-surface-variant">{coach.specialty}</div>
                   ) : null}
                 </div>
               </div>
@@ -99,18 +101,18 @@ export default function CoachesListPage() {
             type="button"
             disabled={page <= 1}
             onClick={() => setPage((p) => Math.max(1, p - 1))}
-            className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-zinc-200 disabled:opacity-40"
+            className="site-chip rounded-2xl px-4 py-2 text-sm disabled:opacity-40"
           >
             قبلی
           </button>
-          <span className="px-3 py-2 text-sm text-zinc-400">
+          <span className="px-3 py-2 text-sm site-muted">
             صفحه {page} از {totalPages}
           </span>
           <button
             type="button"
             disabled={page >= totalPages}
             onClick={() => setPage((p) => p + 1)}
-            className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-zinc-200 disabled:opacity-40"
+            className="site-chip rounded-2xl px-4 py-2 text-sm disabled:opacity-40"
           >
             بعدی
           </button>

@@ -117,19 +117,19 @@ export default function LoginForm() {
         <h1 className="text-lg font-extrabold">ورود</h1>
         <Link
           href="/auth/register"
-          className="text-sm text-emerald-200 hover:text-emerald-100"
+          className="text-sm text-surface-tint hover:opacity-80"
         >
           ثبت نام
         </Link>
       </div>
 
       {/* Tabs */}
-      <div className="mt-5 grid grid-cols-2 gap-2 rounded-2xl border border-white/10 bg-zinc-950/35 p-2">
+      <div className="site-segmented mt-5">
         <button
           onClick={() => switchMode("password")}
           className={[
-            "rounded-xl px-3 py-2 text-sm font-semibold",
-            mode === "password" ? "bg-white text-zinc-950" : "text-zinc-200 hover:bg-white/5",
+            "site-segmented-item",
+            mode === "password" ? "site-segmented-item-active" : "",
           ].join(" ")}
         >
           ورود با رمز
@@ -137,8 +137,8 @@ export default function LoginForm() {
         <button
           onClick={() => switchMode("otp")}
           className={[
-            "rounded-xl px-3 py-2 text-sm font-semibold",
-            mode === "otp" ? "bg-white text-zinc-950" : "text-zinc-200 hover:bg-white/5",
+            "site-segmented-item",
+            mode === "otp" ? "site-segmented-item-active" : "",
           ].join(" ")}
         >
           ورود با OTP
@@ -154,12 +154,12 @@ export default function LoginForm() {
         {/* Phone + Edit */}
         <div className="flex gap-2">
           <div className="relative flex-1">
-            <FiSmartphone className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400" />
+            <FiSmartphone className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant" />
             <input
               value={phone}
               onChange={(e) => setPhone(e.target.value.trim())}
               placeholder="شماره موبایل (09xxxxxxxxx)"
-              className="w-full rounded-2xl border border-white/10 bg-zinc-950/35 py-3 pl-4 pr-11 text-sm text-white placeholder:text-zinc-500 outline-none focus:border-emerald-400/40 disabled:opacity-70"
+              className="w-full site-input py-3 pl-4 pr-11 disabled:opacity-70"
               inputMode="numeric"
               disabled={phoneLocked}
             />
@@ -168,7 +168,7 @@ export default function LoginForm() {
           {phoneLocked && (
             <button
               onClick={resetOtpFlow}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-sm font-bold text-zinc-100 hover:bg-white/10"
+              className="site-btn-secondary px-3"
               aria-label="ویرایش شماره موبایل"
               title="ویرایش شماره"
             >
@@ -181,25 +181,25 @@ export default function LoginForm() {
           <>
             {/* Password */}
             <div className="relative">
-              <FiLock className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400" />
+              <FiLock className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant" />
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="رمز عبور"
-                className="w-full rounded-2xl border border-white/10 bg-zinc-950/35 py-3 pl-4 pr-11 text-sm text-white placeholder:text-zinc-500 outline-none focus:border-emerald-400/40"
+                className="w-full site-input py-3 pl-4 pr-11"
               />
             </div>
 
             <div className="flex items-center justify-between">
-              <Link href="/auth/forgot" className="text-xs text-zinc-300 hover:text-white">
+              <Link href="/auth/forgot" className="text-xs text-on-surface-variant hover:text-on-surface">
                 فراموشی رمز عبور؟
               </Link>
             </div>
 
             <button
               onClick={onLoginPassword}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-extrabold text-zinc-950 hover:bg-zinc-200"
+              className="site-btn-primary"
             >
               ورود <FiArrowLeft />
             </button>
@@ -210,7 +210,7 @@ export default function LoginForm() {
             {canSendOtp && (
               <button
                 onClick={onSendOtp}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-extrabold text-white hover:bg-white/10"
+                className="site-btn-secondary font-extrabold"
               >
                 ارسال رمز <FiKey />
               </button>
@@ -219,29 +219,29 @@ export default function LoginForm() {
             {/* OTP input (shown after sending) */}
             {otpSent && (
               <div className="relative">
-                <FiKey className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400" />
+                <FiKey className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant" />
                 <input
                   value={otp}
                   onChange={(e) => setOtp(e.target.value.trim())}
                   placeholder="کد OTP"
-                  className="w-full rounded-2xl border border-white/10 bg-zinc-950/35 py-3 pl-4 pr-11 text-sm text-white placeholder:text-zinc-500 outline-none focus:border-emerald-400/40"
+                  className="w-full site-input py-3 pl-4 pr-11"
                   inputMode="numeric"
                 />
-                <div className="mt-2 text-[11px] text-zinc-500">
-                  Demo OTP: <span className="text-zinc-300">12345</span>
+                <div className="mt-2 text-[11px] site-muted">
+                  Demo OTP: <span className="text-on-surface-variant">12345</span>
                 </div>
               </div>
             )}
 
             <div className="flex items-center justify-between">
-              <Link href="/auth/forgot" className="text-xs text-zinc-300 hover:text-white">
+              <Link href="/auth/forgot" className="text-xs text-on-surface-variant hover:text-on-surface">
                 فراموشی رمز عبور؟
               </Link>
 
               {otpSent && (
                 <button
                   onClick={onSendOtp}
-                  className="text-xs text-emerald-200 hover:text-emerald-100"
+                  className="text-xs text-surface-tint hover:opacity-80"
                 >
                   ارسال مجدد
                 </button>
@@ -250,7 +250,7 @@ export default function LoginForm() {
 
             <button
               onClick={onLoginOtp}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-extrabold text-zinc-950 hover:bg-zinc-200"
+              className="site-btn-primary"
             >
               ورود با OTP <FiArrowLeft />
             </button>

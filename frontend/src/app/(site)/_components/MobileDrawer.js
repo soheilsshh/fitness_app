@@ -8,30 +8,33 @@ function itemKey(item) {
   return item.href || item.id;
 }
 
+const drawerItemClass =
+  "w-full rounded-xl px-3 py-3 text-right text-sm font-medium text-on-surface-variant transition hover:bg-[var(--landing-nav-hover)] hover:text-on-surface";
+
 export default function MobileDrawer({ open, onClose, items, onItemClick, session, panelHref, onLogout }) {
   return (
     <AnimatePresence>
       {open && (
         <>
           <motion.div
-            className="fixed inset-0 z-[110] bg-black/50 backdrop-blur-md"
+            className="fixed inset-0 z-[110] bg-black/45 backdrop-blur-md"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
           />
           <motion.aside
-            className="fixed right-0 top-0 z-[120] h-full w-[86%] max-w-sm border-l border-white/15 bg-zinc-950/80 p-4 backdrop-blur-2xl"
+            className="site-panel fixed right-0 top-0 z-[120] h-full w-[86%] max-w-sm border-l border-outline-variant/25 p-4 backdrop-blur-2xl"
             initial={{ x: 420 }}
             animate={{ x: 0 }}
             exit={{ x: 420 }}
             transition={{ type: "spring", damping: 26, stiffness: 240 }}
           >
             <div className="flex items-center justify-between">
-              <div className="text-sm font-extrabold text-white">منو</div>
+              <div className="text-sm font-extrabold text-on-surface">منو</div>
               <button
                 type="button"
-                className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 p-2 hover:bg-white/10"
+                className="site-chip inline-flex items-center justify-center rounded-xl p-2"
                 onClick={onClose}
                 aria-label="بستن"
               >
@@ -46,7 +49,7 @@ export default function MobileDrawer({ open, onClose, items, onItemClick, sessio
                     key={itemKey(it)}
                     href={it.href}
                     onClick={onClose}
-                    className="block w-full rounded-xl px-3 py-3 text-right text-sm font-medium text-zinc-200 hover:bg-white/8"
+                    className={`block ${drawerItemClass}`}
                   >
                     {it.label}
                   </Link>
@@ -54,7 +57,7 @@ export default function MobileDrawer({ open, onClose, items, onItemClick, sessio
                   <button
                     key={itemKey(it)}
                     type="button"
-                    className="w-full rounded-xl px-3 py-3 text-right text-sm font-medium text-zinc-200 hover:bg-white/8"
+                    className={drawerItemClass}
                     onClick={() => onItemClick(it)}
                   >
                     {it.label}
@@ -63,14 +66,10 @@ export default function MobileDrawer({ open, onClose, items, onItemClick, sessio
               )}
             </div>
 
-            <div className="mt-6 border-t border-white/10 pt-4">
+            <div className="mt-6 border-t border-outline-variant/20 pt-4">
               {session?.token ? (
                 <>
-                  <Link
-                    href={panelHref}
-                    onClick={onClose}
-                    className="block rounded-xl px-3 py-3 text-sm text-zinc-200 hover:bg-white/8"
-                  >
+                  <Link href={panelHref} onClick={onClose} className={`block ${drawerItemClass}`}>
                     {session.name || "پنل من"}
                   </Link>
                   <button
@@ -79,7 +78,7 @@ export default function MobileDrawer({ open, onClose, items, onItemClick, sessio
                       onClose();
                       onLogout?.();
                     }}
-                    className="mt-2 flex w-full items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-zinc-200 hover:bg-white/10"
+                    className={`mt-2 flex items-center gap-2 px-3 py-3 text-sm site-chip rounded-xl ${drawerItemClass}`}
                   >
                     <FiLogOut />
                     خروج
@@ -87,24 +86,20 @@ export default function MobileDrawer({ open, onClose, items, onItemClick, sessio
                 </>
               ) : (
                 <>
-                  <Link
-                    href="/auth/login"
-                    onClick={onClose}
-                    className="block rounded-xl px-3 py-3 text-sm text-zinc-200 hover:bg-white/8"
-                  >
+                  <Link href="/auth/login" onClick={onClose} className={`block ${drawerItemClass}`}>
                     ورود
                   </Link>
                   <Link
                     href="/auth/register"
                     onClick={onClose}
-                    className="mt-2 block rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-center text-sm font-medium text-zinc-100 hover:bg-white/10"
+                    className={`mt-2 block px-3 py-3 text-center text-sm font-medium site-chip rounded-xl ${drawerItemClass}`}
                   >
                     ثبت‌نام دانشجو
                   </Link>
                   <Link
                     href="/auth/register/coach"
                     onClick={onClose}
-                    className="mt-2 block rounded-xl bg-gradient-to-l from-emerald-400 to-cyan-400 px-3 py-3 text-center text-sm font-extrabold text-zinc-950"
+                    className="mt-2 block rounded-xl gradient-bg px-3 py-3 text-center text-sm font-extrabold text-on-primary"
                   >
                     ثبت‌نام مربی
                   </Link>

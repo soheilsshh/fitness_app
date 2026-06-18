@@ -38,7 +38,7 @@ export default function ProgramsSection() {
 
   return (
     <section id="programs" dir="rtl" className="relative scroll-mt-24 py-12 md:py-16">
-      <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-background via-primary/5 to-background" />
+      <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-surface via-primary/5 to-surface" />
 
       <div className="relative z-10 mx-auto max-w-7xl px-6">
         <div className="mb-16 flex flex-col items-center space-y-8 text-center">
