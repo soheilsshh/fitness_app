@@ -23,11 +23,11 @@ const SOCIALS = [
 
 export default function Footer() {
   return (
-    <footer className="border-t border-border bg-muted/30 px-6 py-20">
+    <footer className="border-t border-outline-variant/10 bg-surface-container-lowest px-6 py-20">
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 text-right md:grid-cols-3">
         <div className="space-y-6">
-          <span className="block text-3xl font-bold text-primary">FitPro</span>
-          <p className="text-muted-foreground">
+          <span className="block text-3xl font-bold text-surface-tint">FitPro</span>
+          <p className="text-on-surface-variant">
             آکادمی فیت‌پرو، پیشرو در ارائه راهکارهای نوین بدنسازی و تناسب اندام بر
             پایه علم و هنر آناتومی.
           </p>
@@ -37,7 +37,7 @@ export default function Footer() {
                 key={label}
                 href="#"
                 aria-label={label}
-                className="glass flex h-11 w-11 items-center justify-center rounded-full border text-muted-foreground transition-all hover:border-primary hover:text-primary"
+                className="glass flex h-11 w-11 items-center justify-center rounded-full border border-white/10 text-on-surface-variant transition-all hover:border-surface-tint hover:text-surface-tint"
               >
                 <Icon className="text-sm" />
               </Link>
@@ -52,7 +52,7 @@ export default function Footer() {
               <li key={x.id}>
                 <Link
                   href={`/#${x.id}`}
-                  className="text-muted-foreground transition-colors hover:text-primary"
+                  className="text-on-surface-variant transition-colors hover:text-surface-tint"
                 >
                   {x.label}
                 </Link>
@@ -68,7 +68,7 @@ export default function Footer() {
               <li key={x.label}>
                 <Link
                   href={x.href}
-                  className="text-muted-foreground transition-colors hover:text-primary"
+                  className="text-on-surface-variant transition-colors hover:text-surface-tint"
                 >
                   {x.label}
                 </Link>
@@ -78,8 +78,8 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="mx-auto mt-20 max-w-7xl border-t border-border pt-20 text-center">
-        <p className="text-sm text-muted-foreground">
+      <div className="mx-auto mt-20 max-w-7xl border-t border-outline-variant/5 pt-20 text-center">
+        <p className="text-sm text-on-surface-variant/80">
           © {new Date().getFullYear()} فیت‌پرو. تمامی حقوق برای آکادمی مجسمه‌سازی بدن محفوظ است.
         </p>
       </div>
