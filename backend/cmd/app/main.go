@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/gin-contrib/cors"
@@ -56,8 +57,19 @@ func NewServer() *Server {
 			"http://localhost:3002",
 		}
 	}
+	// Allow any local port so a dev-server port bounce never breaks preflight.
+	localOriginRe := regexp.MustCompile(`^https?://(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$`)
+	allowed := make(map[string]struct{}, len(allowOrigins))
+	for _, o := range allowOrigins {
+		allowed[o] = struct{}{}
+	}
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     allowOrigins,
+		AllowOriginFunc: func(origin string) bool {
+			if _, ok := allowed[origin]; ok {
+				return true
+			}
+			return localOriginRe.MatchString(origin)
+		},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},

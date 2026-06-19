@@ -101,7 +101,7 @@ export default function Hero({ settings }) {
               aria-label="مجسمه مرمری یونانی"
               className="absolute inset-0 z-10 h-full w-full rounded-3xl object-cover object-center"
             />
-            <div className="pointer-events-none absolute inset-0 z-20 rounded-3xl bg-linear-to-t from-surface/80 via-transparent to-transparent" />
+            <div className="pointer-events-none absolute inset-0 z-20 rounded-3xl bg-linear-to-t from-background/80 via-transparent to-transparent" />
 
             <Card className="absolute top-6 end-6 z-30 animate-bounce border-primary/30 bg-card/80 py-3 shadow-lg backdrop-blur-md animation-duration-[4s]">
               <CardContent className="px-4 py-0 text-start">

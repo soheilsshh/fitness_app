@@ -2,122 +2,22 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import {
-  Globe,
-  Home,
-  Inbox,
-  MessageCircle,
-  Phone,
-  Send,
-  ShoppingCart,
-  Sparkles,
-  UserX,
-} from "lucide-react";
+import { FiPhone, FiCheck, FiChevronDown } from "react-icons/fi";
 import { api } from "@/lib/axios/client";
 import { apiAssetUrl } from "@/lib/api/assets";
-import { getCoachPublicPath } from "@/lib/routes/coach-public";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { addToCart, selectCartCoach, selectCartItems } from "@/store/slices/cartSlice";
 import { toastError, toastSuccess } from "@/app/(site)/auth/_components/helpers";
 import { getAuthSession } from "@/lib/auth/session";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
+import BorderGlow from "@/components/ui/BorderGlow";
+import ContainerTextFlip from "@/components/ui/ContainerTextFlip";
+import AuroraBackground from "@/components/ui/aurora-background";
+import BlurTextAnimation from "@/components/ui/blur-text-animation";
+
+const HERO_PIXEL_COLORS = ["#34d399", "#6ee7b7", "#a7f3d0", "#ecfdf5", "#ffffff"];
 
 function formatToman(amount) {
   return new Intl.NumberFormat("fa-IR").format(Number(amount)) + " تومان";
-}
-
-function formatDays(days) {
-  return new Intl.NumberFormat("fa-IR").format(Number(days) || 0);
-}
-
-function SocialButton({ href, label, children, className }) {
-  return (
-    <Button
-      asChild
-      variant="outline"
-      size="icon"
-      className={cn("shrink-0", className)}
-    >
-      <a href={href} target="_blank" rel="noreferrer" aria-label={label} title={label}>
-        {children}
-      </a>
-    </Button>
-  );
-}
-
-function LoadingSkeleton() {
-  return (
-    <div dir="rtl" className="pb-16">
-      <Skeleton className="h-56 w-full rounded-none md:h-72" />
-      <div className="mx-auto -mt-16 max-w-5xl space-y-8 px-4">
-        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <div className="flex items-end gap-4">
-            <Skeleton className="size-28 rounded-2xl" />
-            <div className="space-y-2 pb-1">
-              <Skeleton className="h-7 w-40" />
-              <Skeleton className="h-4 w-28" />
-              <Skeleton className="h-4 w-36" />
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Skeleton className="size-9 rounded-lg" />
-            <Skeleton className="size-9 rounded-lg" />
-            <Skeleton className="size-9 rounded-lg" />
-          </div>
-        </div>
-        <Card>
-          <CardContent className="space-y-2 pt-6">
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-3/4" />
-          </CardContent>
-        </Card>
-        <div className="grid gap-4 md:grid-cols-2">
-          <Skeleton className="h-56 w-full rounded-xl" />
-          <Skeleton className="h-56 w-full rounded-xl" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function NotFoundState() {
-  return (
-    <div dir="rtl" className="mx-auto flex min-h-[60vh] max-w-lg items-center px-4 py-16">
-      <Card className="w-full text-center">
-        <CardHeader className="items-center">
-          <div className="mb-2 flex size-14 items-center justify-center rounded-full bg-muted">
-            <UserX className="size-7 text-muted-foreground" />
-          </div>
-          <CardTitle>مربی یافت نشد</CardTitle>
-          <CardDescription>
-            این پروفایل وجود ندارد یا هنوز منتشر نشده است.
-          </CardDescription>
-        </CardHeader>
-        <CardFooter className="justify-center">
-          <Button asChild>
-            <Link href="/">
-              <Home data-icon="inline-start" />
-              بازگشت به صفحه اصلی
-            </Link>
-          </Button>
-        </CardFooter>
-      </Card>
-    </div>
-  );
 }
 
 export default function CoachLandingClient({ slug }) {
@@ -128,12 +28,16 @@ export default function CoachLandingClient({ slug }) {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [loadError, setLoadError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
   const [assignedCoach, setAssignedCoach] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
       setLoading(true);
+      setNotFound(false);
+      setLoadError(false);
       try {
         const requests = [
           api.get(`/coaches/${slug}`),
@@ -159,7 +63,7 @@ export default function CoachLandingClient({ slug }) {
       } catch (error) {
         if (!cancelled) {
           if (error?.response?.status === 404) setNotFound(true);
-          else setCoach(null);
+          else setLoadError(true);
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -169,255 +73,433 @@ export default function CoachLandingClient({ slug }) {
     return () => {
       cancelled = true;
     };
-  }, [slug]);
+  }, [slug, reloadKey]);
 
   const hasOtherCoach =
     assignedCoach?.id && coach?.coachId && Number(assignedCoach.id) !== Number(coach.coachId);
   const canPurchase = !hasOtherCoach;
 
   if (loading) {
-    return <LoadingSkeleton />;
+    return (
+      <div className="mx-auto max-w-6xl px-4 pt-6 md:pt-10" aria-busy="true" aria-label="در حال بارگذاری پروفایل مربی">
+        <div className="grid gap-px overflow-hidden rounded-[28px] ring-1 ring-white/10 md:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+          <div className="min-h-[340px] animate-pulse bg-zinc-900 md:min-h-[540px]" />
+          <div className="flex flex-col gap-4 bg-zinc-900 p-7 md:p-10">
+            <div className="h-10 w-2/3 animate-pulse self-start rounded-lg bg-zinc-800" />
+            <div className="h-5 w-1/2 animate-pulse self-start rounded bg-zinc-800" />
+            <div className="mt-4 h-4 w-full animate-pulse rounded bg-zinc-800" />
+            <div className="h-4 w-5/6 animate-pulse self-start rounded bg-zinc-800" />
+            <div className="mt-4 h-12 w-48 animate-pulse self-start rounded-2xl bg-zinc-800" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-24 text-center" role="alert">
+        <h1 className="text-2xl font-extrabold text-white">خطا در بارگذاری</h1>
+        <p className="mt-3 text-sm text-zinc-400">
+          ارتباط با سرور برقرار نشد. لطفاً دوباره تلاش کنید.
+        </p>
+        <button
+          type="button"
+          onClick={() => setReloadKey((k) => k + 1)}
+          className="mt-6 inline-block cursor-pointer rounded-xl bg-white px-4 py-2 text-sm font-bold text-zinc-950 transition-colors hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+        >
+          تلاش مجدد
+        </button>
+      </div>
+    );
   }
 
   if (notFound || !coach) {
-    return <NotFoundState />;
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-24 text-center">
+        <h1 className="text-2xl font-extrabold text-white">مربی یافت نشد</h1>
+        <p className="mt-3 text-sm text-zinc-400">
+          این پروفایل وجود ندارد یا هنوز منتشر نشده است.
+        </p>
+        <Link
+          href="/"
+          className="mt-6 inline-block rounded-xl bg-white px-4 py-2 text-sm font-bold text-zinc-950 transition-colors hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+        >
+          بازگشت به صفحه اصلی
+        </Link>
+      </div>
+    );
   }
 
   const cover = apiAssetUrl(coach.coverImageUrl);
   const avatar = apiAssetUrl(coach.avatarUrl);
+  // Big hero portrait uses the cover image (fallback to avatar).
+  const portrait = cover || avatar;
+  const aboutLines = (coach.aboutCoach || coach.bio || "")
+    .split(/\r?\n/)
+    .map((s) => s.replace(/^[•\-•]\s*/, "").trim())
+    .filter(Boolean);
+  const plansExist = plans.length > 0;
+  const minPrice = plansExist
+    ? Math.min(...plans.map((p) => (p.discountPrice > 0 ? p.discountPrice : p.price)))
+    : 0;
+  const showHeroCta = plansExist && canPurchase;
+  const specialtyParts = (coach.specialty || "")
+    .split(/[،,]/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  const socialLinks = coach.social?.phone ? (
+    <a
+      href={`tel:${coach.social.phone}`}
+      aria-label={`تماس: ${coach.social.phone}`}
+      dir="rtl"
+      className="inline-flex h-11 items-center gap-2 rounded-xl bg-zinc-800/60 px-3.5 text-sm font-medium text-white ring-1 ring-white/15 backdrop-blur transition-colors hover:bg-zinc-700/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+    >
+      <FiPhone /> {coach.social.phone}
+    </a>
+  ) : null;
 
   return (
-    <div dir="rtl" className="pb-16 text-foreground">
-      
-      <div className="relative h-56 overflow-hidden md:h-72">
-        {cover ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={cover} alt="" className="h-full w-full object-cover" />
-        ) : (
-          <div className="h-full w-full bg-gradient-to-br from-primary/25 via-primary/10 to-background" />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
-      </div>
-
-      <div className="mx-auto -mt-16 max-w-5xl px-4">
-        <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-          <div className="flex items-end gap-4">
-            <Avatar className="size-28 rounded-2xl border-4 border-background shadow-lg after:rounded-2xl">
-              {avatar ? (
-                <AvatarImage src={avatar} alt={coach.displayName} className="rounded-2xl" />
-              ) : null}
-              <AvatarFallback className="rounded-2xl bg-primary/15 text-3xl font-bold text-primary">
+    <div className="pb-28 md:pb-16">
+      {/* HERO — split: big portrait (left) + green info panel (right) */}
+      <section className="mx-auto max-w-6xl px-4 pt-6 md:pt-10">
+        <div className="grid overflow-hidden rounded-[28px] shadow-2xl ring-1 ring-white/10 md:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+          {/* Portrait — left column in RTL */}
+          <div className="relative min-h-[340px] bg-zinc-900 md:min-h-[540px]">
+            {portrait ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={portrait}
+                alt={`عکس ${coach.displayName}`}
+                loading="eager"
+                decoding="async"
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-7xl font-bold text-emerald-300">
                 {coach.displayName?.[0] || "?"}
-              </AvatarFallback>
-            </Avatar>
-            <div className="pb-1">
-              <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
+              </div>
+            )}
+          </div>
+
+          {/* Info panel — right column in RTL */}
+          <AuroraBackground>
+            <div className="relative z-10 flex h-full w-full flex-col justify-center gap-5 p-7 text-right md:p-10">
+              <div className="relative">
+              <h1 className="text-3xl font-extrabold tracking-tight text-white md:text-5xl">
                 {coach.displayName}
               </h1>
-              {coach.title ? (
-                <p className="mt-1 text-sm font-medium text-primary">{coach.title}</p>
-              ) : null}
-              {coach.specialty ? (
-                <p className="mt-1 text-sm text-muted-foreground">{coach.specialty}</p>
-              ) : null}
+              {coach.title && (
+                <p className="mt-2 text-base font-semibold text-amber-100/90 md:text-lg">
+                  {coach.title}
+                </p>
+              )}
+            </div>
+
+            {specialtyParts.length > 1 ? (
+              <div className="relative flex justify-start">
+                <ContainerTextFlip words={specialtyParts} />
+              </div>
+            ) : coach.specialty ? (
+              <p className="relative text-sm leading-7 text-amber-100/90">{coach.specialty}</p>
+            ) : null}
+
+            {aboutLines.length > 0 && (
+              <div className="relative">
+                <h2 className="mb-3 text-lg font-bold text-white md:text-xl">سوابق حرفه‌ای</h2>
+                <ul className="space-y-2">
+                  {aboutLines.map((line, i) => (
+                    <li
+                      key={i}
+                      className="flex items-start justify-start gap-2 text-sm leading-7 text-zinc-300 md:text-base"
+                    >
+                      <span className="mt-2 inline-block h-1.5 w-1.5 flex-shrink-0 rounded-full bg-amber-500" />
+                      <span>{line}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <div className="relative flex flex-wrap items-center justify-start gap-2">{socialLinks}</div>
+
+            <a
+              href="#about"
+              dir="rtl"
+              className="relative self-start inline-flex items-center justify-center gap-2 rounded-2xl bg-zinc-800/65 px-6 py-3.5 text-base font-bold text-white ring-1 ring-white/25 backdrop-blur transition-colors hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+            >
+              <FiChevronDown className="text-lg" />
+              آشنایی بیشتر با مربی
+            </a>
+            </div>
+          </AuroraBackground>
+        </div>
+      </section>
+
+      {/* VALUE / PROOF STRIP */}
+      {plansExist && (
+        <div className="mx-auto -mt-10 max-w-3xl px-4">
+          <div className="grid grid-cols-3 gap-2 rounded-3xl border border-white/10 bg-white/5 p-4 text-center backdrop-blur md:gap-4 md:p-6">
+            <div>
+              <p className="text-xl font-extrabold text-white md:text-2xl">{plans.length}</p>
+              <p className="mt-1 text-xs text-zinc-400 md:text-sm">پلن آماده</p>
+            </div>
+            <div className="border-x border-white/10">
+              <p className="text-xl font-extrabold text-emerald-300 md:text-2xl">
+                {new Intl.NumberFormat("fa-IR").format(minPrice)}
+              </p>
+              <p className="mt-1 text-xs text-zinc-400 md:text-sm">شروع از (تومان)</p>
+            </div>
+            <div>
+              <p className="text-xl font-extrabold text-white md:text-2xl">۱۰۰٪</p>
+              <p className="mt-1 text-xs text-zinc-400 md:text-sm">اختصاصی</p>
             </div>
           </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            {coach.social?.phone ? (
-              <Button asChild variant="outline" size="sm" className="gap-2">
-                <a href={`tel:${coach.social.phone}`}>
-                  <Phone data-icon="inline-start" />
-                  {coach.social.phone}
-                </a>
-              </Button>
-            ) : null}
-            {coach.social?.instagram ? (
-              <SocialButton href={`https://Instagram.com/${coach.social.instagram}`} label="Instagram">
-                <Inbox />
-              </SocialButton>
-            ) : null}
-            {coach.social?.telegram ? (
-              <SocialButton
-                href={
-                  coach.social.telegram.startsWith("http")
-                    ? coach.social.telegram
-                    : `https://t.me/${coach.social.telegram}`
-                }
-                label="Telegram"
-              >
-                <Send />
-              </SocialButton>
-            ) : null}
-            {coach.social?.whatsapp ? (
-              <SocialButton
-                href={`https://wa.me/${coach.social.whatsapp.replace(/\D/g, "")}`}
-                label="WhatsApp"
-              >
-                <MessageCircle />
-              </SocialButton>
-            ) : null}
-            {coach.social?.website ? (
-              <SocialButton href={`https://${coach.social.website}`} label="Website">
-                <Globe />
-              </SocialButton>
-            ) : null}
-          </div>
         </div>
+      )}
 
+      <div className="mx-auto mt-10 max-w-5xl px-4">
         {(coach.bio || coach.aboutCoach) && (
-          <Card className="mt-10">
-            <CardHeader>
-              <CardTitle className="text-lg">درباره مربی</CardTitle>
-              {coach.bio ? (
-                <CardDescription className="text-start text-sm leading-7 text-foreground/90">
-                  {coach.bio}
-                </CardDescription>
-              ) : null}
-            </CardHeader>
-            {coach.aboutCoach ? (
-              <>
-                {coach.bio ? <Separator /> : null}
-                <CardContent className={coach.bio ? "pt-4" : "pt-0"}>
-                  <p className="whitespace-pre-line text-sm leading-7 text-muted-foreground">
-                    {coach.aboutCoach}
-                  </p>
-                </CardContent>
-              </>
-            ) : null}
-          </Card>
+          <section id="about" className="scroll-mt-20 space-y-4 rounded-[26px] border border-white/10 bg-white/5 p-6">
+            {coach.bio && (
+              <BlurTextAnimation
+                text={coach.bio}
+                textColor="text-zinc-200"
+                fontSize="text-sm"
+                className="leading-7"
+              />
+            )}
+            {coach.aboutCoach && (
+              <div>
+                <h2 className="mb-2 text-lg font-bold text-white">
+                  <BlurTextAnimation
+                    text="درباره مربی"
+                    textColor="text-white"
+                    fontSize="text-lg"
+                    className="font-bold"
+                  />
+                </h2>
+                <BlurTextAnimation
+                  text={coach.aboutCoach}
+                  textColor="text-zinc-300"
+                  fontSize="text-sm"
+                  className="leading-7 whitespace-pre-line mt-2"
+                />
+              </div>
+            )}
+          </section>
         )}
 
-        <section className="mt-10 space-y-4">
-          <div className="flex items-center gap-2">
-            <Sparkles className="size-5 text-primary" />
-            <h2 className="text-lg font-semibold">پلن‌های قابل خرید</h2>
-          </div>
-
+        <section id="plans" className="mt-10 scroll-mt-20">
+          <h2 className="mb-4 text-xl font-extrabold text-white md:text-2xl">پلن‌های قابل خرید</h2>
           {hasOtherCoach ? (
-            <Card className="border-amber-500/30 bg-amber-500/10">
-              <CardContent className="pt-4 text-sm text-amber-950 dark:text-amber-100">
-                شما قبلاً زیر نظر مربی{" "}
-                <span className="font-semibold">{assignedCoach.name}</span> هستید و
-                نمی‌توانید از مربی دیگر خرید کنید.
-                {assignedCoach.slug ? (
-                  <>
-                    {" "}
-                    <Link
-                      href={getCoachPublicPath(assignedCoach.slug)}
-                      className="font-medium text-primary underline-offset-4 hover:underline"
-                    >
-                      مشاهده لندینگ مربی شما
-                    </Link>
-                  </>
-                ) : null}
-              </CardContent>
-            </Card>
+            <div className="mb-4 rounded-2xl border border-amber-400/25 bg-amber-400/10 p-4 text-sm text-amber-100">
+              شما قبلاً زیر نظر مربی{" "}
+              <span className="font-bold text-white">{assignedCoach.name}</span> هستید و
+              نمی‌توانید از مربی دیگر خرید کنید.
+              {assignedCoach.slug ? (
+                <>
+                  {" "}
+                  <Link href={`/coach/${assignedCoach.slug}`} className="underline text-emerald-200">
+                    مشاهده لندینگ مربی شما
+                  </Link>
+                </>
+              ) : null}
+            </div>
           ) : null}
-
           {plans.length === 0 ? (
-            <Card className="border-dashed">
-              <CardContent className="py-8 text-center text-sm text-muted-foreground">
-                فعلاً پلن فعالی برای این مربی ثبت نشده است.
-              </CardContent>
-            </Card>
+            <div className="rounded-2xl border border-dashed border-white/15 p-6 text-sm text-zinc-400">
+              فعلاً پلن فعالی برای این مربی ثبت نشده است.
+            </div>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 md:gap-6">
               {plans.map((plan) => {
-                const price = plan.discountPrice > 0 ? plan.discountPrice : plan.price;
-                const inCart = cartItems.some((it) => String(it.planId) === String(plan.id));
-                const hasOtherPlan = cartItems.length > 0 && !inCart;
-
+                const price =
+                  plan.discountPrice > 0 ? plan.discountPrice : plan.price;
+                const hasDiscount = plan.discountPrice > 0 && plan.discountPrice < plan.price;
+                const features = (plan.featuresText || "")
+                  .split(/\r?\n/)
+                  .map((f) => f.trim())
+                  .filter(Boolean);
+                const inCart = cartItems.some(
+                  (it) => String(it.planId) === String(plan.id)
+                );
+                const popular = !!plan.isPopular;
                 return (
-                  <Card key={plan.id} className="flex flex-col">
-                    <CardHeader>
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="space-y-1 text-start">
-                          <CardTitle>{plan.title}</CardTitle>
-                          {plan.subtitle ? (
-                            <CardDescription>{plan.subtitle}</CardDescription>
-                          ) : null}
-                        </div>
-                        {plan.isPopular ? (
-                          <Badge variant="secondary" className="shrink-0 gap-1">
-                            <Sparkles className="size-3" />
-                            محبوب
-                          </Badge>
-                        ) : null}
+                  <BorderGlow
+                    key={plan.id}
+                    className="h-full"
+                    borderRadius={26}
+                    glowRadius={popular ? 44 : 30}
+                    edgeSensitivity={popular ? 22 : 30}
+                    coneSpread={25}
+                    backgroundColor="#09090b"
+                    glowColor={popular ? "152 76 52" : "190 65 58"}
+                    glowIntensity={popular ? 1.35 : 0.8}
+                    colors={
+                      popular
+                        ? ["#34d399", "#10b981", "#22d3ee"]
+                        : ["#34d399", "#22d3ee", "#a1a1aa"]
+                    }
+                  >
+                    <div className="flex h-full w-full flex-col p-2">
+                    {/* header */}
+                    <div
+                      className={[
+                        "rounded-[18px] px-6 py-8",
+                        popular
+                          ? "bg-zinc-900 ring-1 ring-emerald-400/20 shadow-[0_8px_24px_-6px_rgba(16,185,129,0.25)]"
+                          : "bg-zinc-950 ring-1 ring-white/5 shadow-[0_8px_8px_-3px_rgba(0,0,0,0.4)]",
+                      ].join(" ")}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-xl font-bold text-white md:text-2xl">{plan.title}</p>
+                        {popular && (
+                          <span className="rounded-full bg-emerald-500/20 px-2.5 py-1 text-xs font-bold text-emerald-300">
+                            محبوب‌ترین
+                          </span>
+                        )}
                       </div>
-                    </CardHeader>
+                      {plan.subtitle && (
+                        <p className="mt-2 text-sm leading-6 text-zinc-400">{plan.subtitle}</p>
+                      )}
+                    </div>
 
-                    <CardContent className="flex-1 space-y-3">
-                      <p className="text-xl font-bold tabular-nums text-primary">
-                        {formatToman(price)}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        مدت: {formatDays(plan.durationDays)} روز
-                      </p>
-                      {plan.featuresText ? (
-                        <p className="whitespace-pre-line text-sm leading-6 text-muted-foreground">
-                          {plan.featuresText}
+                    {/* body */}
+                    <div className="mt-2 p-6">
+                      <div className="flex flex-wrap items-end gap-x-2 gap-y-1">
+                        <span className="text-4xl font-extrabold tracking-tight text-white lg:text-5xl">
+                          {new Intl.NumberFormat("fa-IR").format(price)}
+                        </span>
+                        <span className={["text-sm", popular ? "text-emerald-50/90" : "text-zinc-400"].join(" ")}>تومان</span>
+                        <span className={["text-sm", popular ? "text-emerald-100/80" : "text-zinc-500"].join(" ")}>/ {plan.durationDays} روز</span>
+                      </div>
+                      {hasDiscount && (
+                        <p className={[
+                          "mt-1 text-sm line-through",
+                          popular ? "text-emerald-100/70" : "text-zinc-500",
+                        ].join(" ")}>
+                          {formatToman(plan.price)}
                         </p>
-                      ) : null}
-                    </CardContent>
+                      )}
 
-                    {canPurchase ? (
-                      <CardFooter>
-                        <Button
-                          type="button"
-                          disabled={inCart}
-                          className="w-full"
-                          variant={inCart ? "secondary" : "default"}
-                          onClick={() => {
-                            if (
-                              cartCoach.coachId &&
-                              String(cartCoach.coachId) !== String(coach.coachId)
-                            ) {
-                              return toastError(
-                                "سبد خرید",
-                                "فقط می‌توانید از یک مربی خرید کنید. ابتدا سبد را خالی کنید."
+                      {canPurchase ? (() => {
+                        const hasOtherPlan = cartItems.length > 0 && !inCart;
+                        return (
+                          <button
+                            type="button"
+                            disabled={inCart}
+                            onClick={() => {
+                              if (
+                                cartCoach.coachId &&
+                                String(cartCoach.coachId) !== String(coach.coachId)
+                              ) {
+                                return toastError(
+                                  "سبد خرید",
+                                  "فقط می‌توانید از یک مربی خرید کنید. ابتدا سبد را خالی کنید."
+                                );
+                              }
+                              if (inCart) {
+                                return toastError("سبد خرید", "این پلن قبلاً در سبد است.");
+                              }
+                              dispatch(
+                                addToCart({
+                                  planId: plan.id,
+                                  id: String(plan.id),
+                                  title: plan.title,
+                                  price: plan.discountPrice > 0 ? plan.discountPrice : plan.price,
+                                  coachId: coach.coachId,
+                                  coachName: coach.displayName,
+                                  coachSlug: slug,
+                                })
                               );
-                            }
-                            if (inCart) {
-                              return toastError("سبد خرید", "این پلن قبلاً در سبد است.");
-                            }
-                            dispatch(
-                              addToCart({
-                                planId: plan.id,
-                                id: String(plan.id),
-                                title: plan.title,
-                                price: plan.discountPrice > 0 ? plan.discountPrice : plan.price,
-                                coachId: coach.coachId,
-                                coachName: coach.displayName,
-                                coachSlug: slug,
-                              })
-                            );
-                            toastSuccess(
-                              hasOtherPlan ? "جایگزین شد" : "افزوده شد",
-                              hasOtherPlan
-                                ? "پلن قبلی از سبد حذف و این پلن انتخاب شد."
-                                : "پلن به سبد خرید اضافه شد."
-                            );
-                          }}
-                        >
-                          {inCart ? (
-                            <>
-                              <ShoppingCart data-icon="inline-start" />
-                              در سبد خرید است
-                            </>
-                          ) : (
-                            "انتخاب این پلن"
-                          )}
-                        </Button>
-                      </CardFooter>
-                    ) : null}
-                  </Card>
+                              toastSuccess(
+                                hasOtherPlan ? "جایگزین شد" : "افزوده شد",
+                                hasOtherPlan
+                                  ? "پلن قبلی از سبد حذف و این پلن انتخاب شد."
+                                  : "پلن به سبد خرید اضافه شد."
+                              );
+                            }}
+                            className={[
+                              "mt-5 w-full rounded-full px-4 py-3.5 text-sm font-bold transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950",
+                              inCart
+                                ? popular
+                                  ? "cursor-not-allowed bg-emerald-950/40 text-emerald-50 ring-1 ring-white/30 focus-visible:ring-white"
+                                  : "cursor-not-allowed bg-emerald-400/10 text-emerald-200 ring-1 ring-emerald-400/30 focus-visible:ring-emerald-400"
+                                : popular
+                                  ? "cursor-pointer bg-white text-emerald-700 shadow-[0_4px_14px_-2px_rgba(0,0,0,0.25)] hover:bg-emerald-50 focus-visible:ring-white"
+                                  : "cursor-pointer bg-zinc-950 text-zinc-200 ring-1 ring-white/10 hover:bg-zinc-800 focus-visible:ring-emerald-400",
+                            ].join(" ")}
+                          >
+                            {inCart ? "در سبد خرید است" : "انتخاب این پلن"}
+                          </button>
+                        );
+                      })() : null}
+
+                      {/* divider */}
+                      <div className={[
+                        "my-7 h-px w-full bg-gradient-to-r from-transparent to-transparent",
+                        popular ? "via-white/30" : "via-white/15",
+                      ].join(" ")} />
+
+                      {features.length > 0 && (
+                        <>
+                          <p className={[
+                            "font-mono text-xs uppercase tracking-tight",
+                            popular ? "text-emerald-300/80" : "text-zinc-500",
+                          ].join(" ")}>
+                            {plan.title} — شامل
+                          </p>
+                          <div className="mt-4 flex flex-col gap-4">
+                            {features.map((feature, i) => (
+                              <div key={i} className="flex items-start justify-start gap-2.5">
+                                <span
+                                  className={[
+                                    "mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full",
+                                    popular ? "bg-emerald-500/20" : "bg-zinc-800",
+                                  ].join(" ")}
+                                >
+                                  <FiCheck
+                                    aria-hidden="true"
+                                    className={[
+                                      "size-3 stroke-[3]",
+                                      popular ? "text-emerald-300" : "text-emerald-400",
+                                    ].join(" ")}
+                                  />
+                                </span>
+                                <p className={[
+                                  "text-sm font-medium leading-6",
+                                  popular ? "text-zinc-100" : "text-zinc-300",
+                                ].join(" ")}>
+                                  {feature}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                    </div>
+                  </BorderGlow>
                 );
               })}
             </div>
           )}
         </section>
       </div>
+
+      {/* STICKY MOBILE CTA */}
+      {showHeroCta && (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-zinc-950/90 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur md:hidden">
+          <a
+            href="#plans"
+            className="flex w-full items-center justify-center rounded-2xl bg-white px-4 py-3 text-sm font-extrabold text-zinc-950 transition-colors hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+          >
+            مشاهده پلن‌ها · از {new Intl.NumberFormat("fa-IR").format(minPrice)} تومان
+          </a>
+        </div>
+      )}
     </div>
   );
 }

@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import coachStatue from "@/assets/landing-page/coach_section_statue.png";
 
 export default function ProgramsSection() {
   const [coaches, setCoaches] = useState([]);
@@ -38,7 +39,7 @@ export default function ProgramsSection() {
 
   return (
     <section id="programs" dir="rtl" className="relative scroll-mt-24 py-12 md:py-16">
-      <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-surface via-primary/5 to-surface" />
+      <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-background via-primary/5 to-background" />
 
       <div className="relative z-10 mx-auto max-w-7xl px-6">
         <div className="mb-16 flex flex-col items-center space-y-8 text-center">
@@ -152,7 +153,7 @@ export default function ProgramsSection() {
             <div className="grid md:grid-cols-2">
               <div className="relative h-72 md:h-auto md:min-h-[480px]">
                 <Image
-                  src="/coachStatue"
+                  src={coachStatue}
                   alt="پیکرتراش در حال تراشیدن مجسمه"
                   fill
                   className="object-cover object-top transition-transform duration-700 group-hover:scale-105"

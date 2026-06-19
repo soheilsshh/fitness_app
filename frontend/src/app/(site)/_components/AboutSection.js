@@ -69,7 +69,7 @@ export default function AboutSection({ steps }) {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.25 }}
           transition={{ duration: 0.6 }}
-          className="mb-10 text-right text-3xl font-extrabold text-landing-heading md:text-4xl"
+          className="mb-10 text-right text-3xl font-extrabold text-primary md:text-4xl"
         >
           فقط <span className="gradient-text">سه قدم</span> تا شروع
         </motion.h3>
@@ -90,7 +90,7 @@ export default function AboutSection({ steps }) {
               >
                 {idx + 1}
               </span>
-              <h4 className="text-2xl font-semibold text-landing-heading">{s.title}</h4>
+              <h4 className="text-2xl font-semibold text-primary">{s.title}</h4>
               <p className="leading-7 text-on-surface-variant">{s.text}</p>
             </motion.div>
           ))}
@@ -119,7 +119,7 @@ export default function AboutSection({ steps }) {
           <span className="h-2 w-2 animate-pulse rounded-full bg-surface-tint" />
           باشگاه هوشمند و مربیگری اختصاصی
         </div>
-        <h2 className="text-4xl font-extrabold text-landing-heading md:text-5xl">
+        <h2 className="text-4xl font-extrabold text-primary md:text-5xl">
           چرا <span className="gradient-text">FitPro؟</span>
         </h2>
         <p className="max-w-2xl text-base leading-8 text-on-surface-variant md:text-lg">
@@ -141,11 +141,11 @@ export default function AboutSection({ steps }) {
               transition={{ duration: 0.5, delay: idx * 0.05 }}
               className="group glow-card flex h-full flex-col gap-4 rounded-2xl p-6 text-right"
             >
-              <div className="site-chip flex h-14 w-14 items-center justify-center rounded-2xl ring-1 ring-outline-variant/25 transition-transform group-hover:scale-110">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted ring-1 ring-border transition-transform group-hover:scale-110">
                 <Icon className={`text-3xl ${p.color}`} />
               </div>
               <div>
-                <h3 className="text-xl font-semibold text-landing-heading">{p.title}</h3>
+                <h3 className="text-xl font-semibold text-primary">{p.title}</h3>
                 <p className="mt-2 leading-7 text-on-surface-variant">{p.desc}</p>
               </div>
             </motion.div>

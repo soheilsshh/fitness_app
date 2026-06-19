@@ -88,15 +88,23 @@ export default function RecordsSection({ stats: apiStats }) {
           >
             <CardContent className="relative h-full p-0">
               <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-foreground/5 to-transparent opacity-30" />
+              {/* Mobile: no hover, so just show the sculpted statue. */}
+              <Image
+                src={sculptedStatue}
+                alt="مجسمه تراش‌خورده"
+                fill
+                className="z-10 object-cover object-top md:hidden"
+              />
+              {/* Desktop: hover-reveal effect (base + clip-path overlay). */}
               <Image
                 src={baseStatue}
                 alt="مجسمه در حال تراش"
                 fill
-                className="z-10 object-cover object-top"
+                className="z-10 hidden object-cover object-top md:block"
               />
               <div
                 ref={overlayRef}
-                className="absolute inset-0 z-20 transition-[clip-path] duration-75 ease-out"
+                className="absolute inset-0 z-20 hidden transition-[clip-path] duration-75 ease-out md:block"
                 style={{ clipPath: "circle(0% at 50% 50%)" }}
               >
                 <Image
