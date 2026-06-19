@@ -224,8 +224,8 @@ html {
    ========================================================= */
 :root {
   --emerald-cyan: linear-gradient(135deg, #00b88a 0%, #00b8d4 100%);
-  --aurora-color1: rgba(168, 85, 247, 0.12);
-  --aurora-color2: rgba(79, 70, 229, 0.12);
+  --aurora-color1: rgba(16, 185, 129, 0.12);
+  --aurora-color2: rgba(20, 184, 166, 0.12);
   --landing-surface: oklch(0.99 0 0);
   --landing-surface-dim: oklch(0.97 0 0);
   --landing-surface-bright: oklch(0.94 0 0);
@@ -252,8 +252,8 @@ html {
 
 .dark {
   --emerald-cyan: linear-gradient(135deg, #00e1ab 0%, #00e3fd 100%);
-  --aurora-color1: rgba(168, 85, 247, 0.2);
-  --aurora-color2: rgba(79, 70, 229, 0.2);
+  --aurora-color1: rgba(16, 185, 129, 0.2);
+  --aurora-color2: rgba(20, 184, 166, 0.2);
   --landing-surface: #131313;
   --landing-surface-dim: #131313;
   --landing-surface-bright: #393939;

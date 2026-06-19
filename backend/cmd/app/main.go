@@ -102,6 +102,7 @@ func NewServer() *Server {
 	orderRepo := repository.NewOrderRepository(db)
 	coachProfileRepo := repository.NewCoachProfileRepository(db)
 	exerciseRepo := repository.NewExerciseRepository(db)
+	notificationRepo := repository.NewNotificationRepository(db)
 
 	// Initialize services
 	authService := service.NewAuthService(userRepo, coachProfileRepo, refreshTokenRepo, otpRepo)
@@ -140,7 +141,7 @@ func NewServer() *Server {
 	authzService := service.NewAuthorizationService(db, servicePlanRepo)
 	coachStudentService := service.NewCoachStudentService(db, subscriptionRepo, servicePlanRepo, programRepo, authzService)
 	coachProgramService := service.NewCoachProgramService(db, subscriptionRepo, programRepo, exerciseRepo, coachStudentService)
-	coachDashboardService := service.NewCoachDashboardService(subscriptionRepo, orderRepo)
+	coachDashboardService := service.NewCoachDashboardService(db, subscriptionRepo, orderRepo)
 	coachStudentController := controllers.NewCoachStudentController(coachStudentService)
 	coachProgramController := controllers.NewCoachProgramController(coachProgramService)
 	coachDashboardController := controllers.NewCoachDashboardController(coachDashboardService)
@@ -152,6 +153,8 @@ func NewServer() *Server {
 	coachTrackingController := controllers.NewCoachTrackingController(trackingService)
 	workoutHistoryService := service.NewWorkoutHistoryService(db, subscriptionRepo, servicePlanRepo, programRepo)
 	workoutHistoryController := controllers.NewWorkoutHistoryController(workoutHistoryService)
+	notificationService := service.NewNotificationService(notificationRepo)
+	notificationController := controllers.NewNotificationController(notificationService)
 
 	// Auth routes
 	router.POST("/auth/register", authController.Register)
@@ -200,6 +203,7 @@ func NewServer() *Server {
 		coachGroup.POST("/students/:id/nutrition-programs", coachProgramController.AssignNutritionProgram)
 		coachGroup.PATCH("/students/:id/nutrition-programs/:programId", coachProgramController.UpdateNutritionProgram)
 		coachGroup.GET("/dashboard/stats", coachDashboardController.GetStats)
+		coachGroup.GET("/notifications", notificationController.ListRecent)
 		coachGroup.GET("/tickets", coachTicketController.ListTickets)
 		coachGroup.GET("/tickets/:id", coachTicketController.GetTicket)
 		coachGroup.PATCH("/tickets/:id/answer", coachTicketController.AnswerTicket)

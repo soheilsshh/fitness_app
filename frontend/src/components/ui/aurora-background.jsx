@@ -44,7 +44,7 @@ const AuroraBackground = ({
           transition={{ duration: 1, ease: "easeInOut" }}
         >
           <motion.div
-            className="absolute -top-1/4 -left-1/4 w-1/2 h-1/2 bg-purple-600 rounded-full filter blur-3xl opacity-40"
+            className="absolute -top-1/4 -left-1/4 w-1/2 h-1/2 bg-emerald-600 rounded-full filter blur-3xl opacity-40"
             animate={{
               x: [-50, 50, -50],
               y: [-20, 20, -20],
@@ -58,7 +58,7 @@ const AuroraBackground = ({
             }}
           />
           <motion.div
-            className="absolute -bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-fuchsia-600 rounded-full filter blur-3xl opacity-40"
+            className="absolute -bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-green-500 rounded-full filter blur-3xl opacity-40"
             animate={{
               x: [50, -50, 50],
               y: [20, -20, 20],
@@ -72,7 +72,7 @@ const AuroraBackground = ({
             }}
           />
           <motion.div
-            className="absolute top-1/3 left-1/3 w-1/3 h-1/3 bg-indigo-700 rounded-full filter blur-3xl opacity-30"
+            className="absolute top-1/3 left-1/3 w-1/3 h-1/3 bg-teal-600 rounded-full filter blur-3xl opacity-30"
             animate={{
               x: [20, -20, 20],
               y: [-30, 30, -30],

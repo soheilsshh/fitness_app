@@ -174,7 +174,7 @@ export default function CoachLandingClient({ slug }) {
                 alt={`عکس ${coach.displayName}`}
                 loading="eager"
                 decoding="async"
-                className="absolute inset-0 h-full w-full object-cover"
+                className="absolute inset-0 h-full w-full object-fill"
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center text-7xl font-bold text-emerald-300">

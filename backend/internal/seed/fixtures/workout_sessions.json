@@ -37,5 +37,44 @@
     "DurationMin": 40,
     "Notes": "",
     "CompletedAt": "2026-06-05T07:45:00Z"
+  },
+  {
+    "ID": 4,
+    "UserID": 4,
+    "SubscriptionID": 1,
+    "WorkoutProgramID": 1,
+    "ProgramTitle": "برنامه کاهش وزن — فاز ۱",
+    "DayKey": "sat",
+    "DayLabel": "شنبه",
+    "ExerciseCount": 3,
+    "DurationMin": 48,
+    "Notes": "",
+    "CompletedAt": "2026-06-16T08:30:00Z"
+  },
+  {
+    "ID": 5,
+    "UserID": 5,
+    "SubscriptionID": 2,
+    "WorkoutProgramID": 2,
+    "ProgramTitle": "برنامه فرم‌دهی بانوان",
+    "DayKey": "sun",
+    "DayLabel": "یکشنبه",
+    "ExerciseCount": 4,
+    "DurationMin": 55,
+    "Notes": "",
+    "CompletedAt": "2026-06-17T18:00:00Z"
+  },
+  {
+    "ID": 6,
+    "UserID": 6,
+    "SubscriptionID": 3,
+    "WorkoutProgramID": 3,
+    "ProgramTitle": "حجم — هفته ۱ تا ۴",
+    "DayKey": "mon",
+    "DayLabel": "دوشنبه",
+    "ExerciseCount": 5,
+    "DurationMin": 60,
+    "Notes": "",
+    "CompletedAt": "2026-06-18T19:30:00Z"
   }
 ]

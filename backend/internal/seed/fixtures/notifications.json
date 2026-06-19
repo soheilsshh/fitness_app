@@ -31,5 +31,71 @@
     "Title": "برنامه تغذیه جدید",
     "Message": "رژیم حجم هفته ۳ آماده مشاهده در پنل شماست.",
     "IsRead": false
+  },
+  {
+    "ID": 5,
+    "UserID": 2,
+    "Type": "new_subscription",
+    "Title": "اشتراک جدید",
+    "Message": "رضا محمدی پلن «کاهش وزن» را خریداری کرد.",
+    "IsRead": false,
+    "CreatedAt": "2026-06-19T07:30:00Z"
+  },
+  {
+    "ID": 6,
+    "UserID": 2,
+    "Type": "checkin_reminder",
+    "Title": "چک‌این عقب‌افتاده",
+    "Message": "مریم احمدی ۲۵ روز است که وزن و عکس‌های پایش را ثبت نکرده است.",
+    "IsRead": false,
+    "CreatedAt": "2026-06-19T06:00:00Z"
+  },
+  {
+    "ID": 7,
+    "UserID": 2,
+    "Type": "ticket",
+    "Title": "تیکت پشتیبانی جدید",
+    "Message": "یک تیکت جدید از طرف دانشجوی شما ثبت شد.",
+    "IsRead": false,
+    "CreatedAt": "2026-06-18T20:15:00Z"
+  },
+  {
+    "ID": 8,
+    "UserID": 2,
+    "Type": "workout_logged",
+    "Title": "تمرین ثبت شد",
+    "Message": "رضا محمدی تمرین روز شنبه را با موفقیت تکمیل کرد.",
+    "IsRead": true,
+    "ReadAt": "2026-06-18T19:00:00Z",
+    "CreatedAt": "2026-06-18T18:00:00Z"
+  },
+  {
+    "ID": 9,
+    "UserID": 2,
+    "Type": "payment",
+    "Title": "تسویه حساب",
+    "Message": "درآمد این ماه شما به‌روزرسانی شد.",
+    "IsRead": true,
+    "ReadAt": "2026-06-17T10:00:00Z",
+    "CreatedAt": "2026-06-17T09:00:00Z"
+  },
+  {
+    "ID": 10,
+    "UserID": 3,
+    "Type": "checkin_reminder",
+    "Title": "چک‌این عقب‌افتاده",
+    "Message": "امیر حسینی موعد چک‌این هفتگی خود را رد کرده است.",
+    "IsRead": false,
+    "CreatedAt": "2026-06-19T05:30:00Z"
+  },
+  {
+    "ID": 11,
+    "UserID": 3,
+    "Type": "new_subscription",
+    "Title": "اشتراک جدید",
+    "Message": "یک دانشجوی جدید به پنل شما اضافه شد.",
+    "IsRead": true,
+    "ReadAt": "2026-06-16T11:00:00Z",
+    "CreatedAt": "2026-06-16T10:00:00Z"
   }
 ]
