@@ -12,6 +12,7 @@ import {
   User,
 } from "lucide-react";
 import { api } from "@/lib/axios/client";
+import HealthStatusCard from "@/components/health/HealthStatusCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -66,6 +67,9 @@ export default function ProfileClient() {
     phone: "",
     heightCm: null,
     weightKg: null,
+    age: null,
+    bmi: null,
+    bmiStatus: "",
     photos: [],
     programsCount: 0,
     ordersCount: 0,
@@ -99,6 +103,9 @@ export default function ProfileClient() {
           phone: data.phone || "",
           heightCm: data.heightCm ?? null,
           weightKg: data.weightKg ?? null,
+          age: data.age ?? null,
+          bmi: data.bmi ?? null,
+          bmiStatus: data.bmiStatus || "",
           photos: data.photos || [],
           programsCount: data.programsCount || 0,
           ordersCount: data.ordersCount || 0,
@@ -177,6 +184,9 @@ export default function ProfileClient() {
         lastName: data.lastName || l,
         heightCm: data.heightCm ?? h,
         weightKg: data.weightKg ?? w,
+        age: data.age ?? prev.age,
+        bmi: data.bmi ?? prev.bmi,
+        bmiStatus: data.bmiStatus ?? prev.bmiStatus,
       }));
       setEditing(false);
       setToast({ type: "success", text: "اطلاعات پروفایل با موفقیت ذخیره شد." });
@@ -284,24 +294,13 @@ export default function ProfileClient() {
               </Card>
             </div>
 
-            <Card size="sm">
-              <CardContent className="flex items-center justify-between gap-4 pt-4">
-                <div>
-                  <p className="text-xs text-muted-foreground">قد</p>
-                  <p className="mt-1 text-lg font-semibold tabular-nums">
-                    {profile.heightCm}{" "}
-                    <span className="text-sm font-normal text-muted-foreground">cm</span>
-                  </p>
-                </div>
-                <div className="text-start">
-                  <p className="text-xs text-muted-foreground">وزن</p>
-                  <p className="mt-1 text-lg font-semibold tabular-nums">
-                    {profile.weightKg}{" "}
-                    <span className="text-sm font-normal text-muted-foreground">kg</span>
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <HealthStatusCard
+              bmi={profile.bmi}
+              bmiStatus={profile.bmiStatus}
+              weightKg={profile.weightKg}
+              heightCm={profile.heightCm}
+              age={profile.age}
+            />
           </CardContent>
         </Card>
 
