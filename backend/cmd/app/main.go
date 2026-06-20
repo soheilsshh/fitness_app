@@ -153,6 +153,8 @@ func NewServer() *Server {
 	coachTrackingController := controllers.NewCoachTrackingController(trackingService)
 	workoutHistoryService := service.NewWorkoutHistoryService(db, subscriptionRepo, servicePlanRepo, programRepo)
 	workoutHistoryController := controllers.NewWorkoutHistoryController(workoutHistoryService)
+	meDashboardService := service.NewMeDashboardService(db, subscriptionRepo)
+	meDashboardController := controllers.NewMeDashboardController(meDashboardService)
 	notificationService := service.NewNotificationService(notificationRepo)
 	notificationController := controllers.NewNotificationController(notificationService)
 
@@ -231,6 +233,8 @@ func NewServer() *Server {
 		studentGroup.POST("/me/tracking/photos", trackingController.UploadTrackingPhoto)
 		studentGroup.GET("/me/workout-history", workoutHistoryController.ListHistory)
 		studentGroup.POST("/me/workout-sessions", workoutHistoryController.LogSession)
+		studentGroup.GET("/me/dashboard", meDashboardController.GetSummary)
+		studentGroup.GET("/me/records", meDashboardController.GetRecords)
 		studentGroup.POST("/me/change-password", authController.ChangePassword)
 		studentGroup.GET("/me/orders", meController.ListMyOrders)
 		studentGroup.GET("/me/orders/:id", meController.GetMyOrderByID)
