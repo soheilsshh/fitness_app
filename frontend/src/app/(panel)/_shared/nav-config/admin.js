@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 
 export const adminBrand = {
-  title: "FitPro",
+  title: "Fitino",
   subtitle: "پنل مدیر",
   href: "/admin",
 };

@@ -93,7 +93,7 @@ export default function Navbar() {
               <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 ring-1 ring-border">
                 <FaDumbbell className="text-primary" />
               </span>
-              <span className="hidden text-2xl font-extrabold gradient-text sm:block">FitPro</span>
+              <span className="hidden text-2xl font-extrabold gradient-text sm:block">Fitino</span>
             </Link>
 
             <nav className="hidden md:flex md:items-center md:gap-0.5">

@@ -57,7 +57,7 @@ export default function ProgramsSection() {
           </h2>
 
           <p className="mx-auto max-w-2xl text-base leading-8 text-muted-foreground md:text-lg">
-            فیت‌پرو پلتفرم چندمربی است. ما بهترین مربیان ایران را در یک‌جا جمع
+            فیتینو پلتفرم چندمربی است. ما بهترین مربیان ایران را در یک‌جا جمع
             کرده‌ایم تا شما بر اساس سلیقه و نیاز خود، راهبر مسیرتان را انتخاب کنید.
           </p>
 

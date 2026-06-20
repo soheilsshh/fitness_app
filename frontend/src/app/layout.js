@@ -4,8 +4,8 @@ import "./globals.css";
 import Providers from "./providers";
 
 export const metadata = {
-  title: "Fitness Platform",
-  description: "Fitness Platform",
+  title: "Fitino",
+  description: "پلتفرم مربیگری و تناسب اندام Fitino",
 }
 
 export default function RootLayout({ children }) {

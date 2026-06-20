@@ -26,9 +26,9 @@ export default function Footer() {
     <footer className="border-t border-border bg-muted/30 px-6 py-20">
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 text-right md:grid-cols-3">
         <div className="space-y-6">
-          <span className="block text-3xl font-bold text-primary">FitPro</span>
+          <span className="block text-3xl font-bold text-primary">Fitino</span>
           <p className="text-muted-foreground">
-            آکادمی فیت‌پرو، پیشرو در ارائه راهکارهای نوین بدنسازی و تناسب اندام بر
+            آکادمی فیتینو، پیشرو در ارائه راهکارهای نوین بدنسازی و تناسب اندام بر
             پایه علم و هنر آناتومی.
           </p>
           <div className="flex items-center justify-end gap-4 pt-4">
@@ -80,7 +80,7 @@ export default function Footer() {
 
       <div className="mx-auto mt-20 max-w-7xl border-t border-border pt-20 text-center">
         <p className="text-sm text-muted-foreground">
-          © {new Date().getFullYear()} فیت‌پرو. تمامی حقوق برای آکادمی مجسمه‌سازی بدن محفوظ است.
+          © {new Date().getFullYear()} فیتینو. تمامی حقوق برای آکادمی مجسمه‌سازی بدن محفوظ است.
         </p>
       </div>
     </footer>

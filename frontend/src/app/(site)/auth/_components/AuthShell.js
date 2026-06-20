@@ -27,7 +27,7 @@ export default function AuthShell({ children }) {
                 <FaDumbbell className="text-surface-tint" />
               </span>
               <div className="leading-tight">
-                <div className="text-sm font-extrabold">FitPro</div>
+                <div className="text-sm font-extrabold">Fitino</div>
                 <div className="text-[11px] text-on-surface-variant">Auth</div>
               </div>
             </div>
