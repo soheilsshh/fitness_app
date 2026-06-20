@@ -530,7 +530,7 @@ function PersonalRecordsCard({ loading, items }) {
   const max = items.reduce((m, r) => Math.max(m, r.est1rm || 0), 0) || 1;
   const action = (
     <Button variant="ghost" size="sm" asChild>
-      <Link href="/user/workout-log">
+      <Link href="/user/workout-history">
         ثبت تمرین
         <ChevronLeft className="size-4" />
       </Link>
