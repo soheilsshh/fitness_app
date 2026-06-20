@@ -157,6 +157,10 @@ func NewServer() *Server {
 	meDashboardController := controllers.NewMeDashboardController(meDashboardService)
 	notificationService := service.NewNotificationService(notificationRepo)
 	notificationController := controllers.NewNotificationController(notificationService)
+	funnelLeadRepo := repository.NewFunnelLeadRepository(db)
+	funnelService := service.NewFunnelService(funnelLeadRepo)
+	funnelController := controllers.NewFunnelController(funnelService)
+	adminFunnelController := controllers.NewAdminFunnelController(funnelService)
 
 	// Auth routes
 	router.POST("/auth/register", authController.Register)
@@ -182,6 +186,10 @@ func NewServer() *Server {
 	router.GET("/coaches", publicCoachController.ListCoaches)
 	router.GET("/coaches/:slug", publicCoachController.GetCoachBySlug)
 	router.GET("/coaches/:slug/plans", publicCoachController.GetCoachPlans)
+	router.GET("/public/funnel/config", funnelController.GetConfig)
+	router.POST("/public/funnel/leads", funnelController.CreateLead)
+	router.GET("/public/funnel/checkout/:token", funnelController.GetCheckout)
+	router.POST("/public/funnel/checkout/:token/pay", funnelController.PayDemo)
 
 	// Coach panel routes
 	coachGroup := router.Group("/coach")
@@ -279,6 +287,9 @@ func NewServer() *Server {
 		adminGroup.GET("/exercises/:id", adminExerciseController.GetExerciseByID)
 		adminGroup.PATCH("/exercises/:id", adminExerciseController.UpdateExercise)
 		adminGroup.DELETE("/exercises/:id", adminExerciseController.DeleteExercise)
+		adminGroup.GET("/funnel-leads", adminFunnelController.ListLeads)
+		adminGroup.GET("/funnel-leads/:id", adminFunnelController.GetLead)
+		adminGroup.PATCH("/funnel-leads/:id", adminFunnelController.PatchLead)
 	}
 
 	// Serve uploaded files (e.g. user body photos) at /uploads/*
