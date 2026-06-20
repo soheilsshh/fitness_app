@@ -89,6 +89,13 @@ body {
   color: #e2e2e2; */
 }
 
+/* Sonner renders toasts in a portal with its own font stack — force the app's
+   Persian font so toast text (e.g. session-expiry) matches the rest of the UI. */
+.cn-toast,
+.cn-toast * {
+  font-family: "IranianSansXRegular", sans-serif;
+}
+
 html {
   scrollbar-gutter: stable;
   background: var(--background);

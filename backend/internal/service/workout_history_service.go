@@ -41,11 +41,20 @@ type WorkoutHistoryListResponse struct {
 	Total    int64                   `json:"total"`
 }
 
+type LogSetInput struct {
+	ExerciseName string  `json:"exerciseName"`
+	ExerciseID   *uint   `json:"exerciseId,omitempty"`
+	SetNumber    int     `json:"setNumber"`
+	WeightKg     float64 `json:"weightKg"`
+	Reps         int     `json:"reps"`
+}
+
 type LogWorkoutSessionRequest struct {
-	SubscriptionID uint   `json:"subscriptionId"`
-	DayKey         string `json:"dayKey"`
-	DurationMin    int    `json:"durationMin"`
-	Notes          string `json:"notes"`
+	SubscriptionID uint          `json:"subscriptionId"`
+	DayKey         string        `json:"dayKey"`
+	DurationMin    int           `json:"durationMin"`
+	Notes          string        `json:"notes"`
+	Sets           []LogSetInput `json:"sets,omitempty"`
 }
 
 type WorkoutHistoryService interface {
@@ -214,9 +223,48 @@ func (s *workoutHistoryService) LogSession(ctx context.Context, userID uint, req
 		return nil, err
 	}
 
+	// Persist any logged sets (weight x reps) for personal-record tracking.
+	if logs := buildSetLogs(userID, sub.ID, session.ID, now, req.Sets); len(logs) > 0 {
+		if err := s.db.WithContext(ctx).Create(&logs).Error; err != nil {
+			return nil, err
+		}
+	}
+
 	coachName := s.resolveCoachName(ctx, sub.CoachID)
 	dto := workoutSessionToDTO(session, coachName)
 	return &dto, nil
+}
+
+// buildSetLogs converts validated set inputs into WorkoutSetLog rows, skipping
+// entries with no exercise name or a non-positive weight.
+func buildSetLogs(userID, subID, sessionID uint, performedAt time.Time, inputs []LogSetInput) []models.WorkoutSetLog {
+	logs := make([]models.WorkoutSetLog, 0, len(inputs))
+	for i, in := range inputs {
+		name := strings.TrimSpace(in.ExerciseName)
+		if name == "" || in.WeightKg <= 0 {
+			continue
+		}
+		setNo := in.SetNumber
+		if setNo <= 0 {
+			setNo = i + 1
+		}
+		reps := in.Reps
+		if reps < 0 {
+			reps = 0
+		}
+		logs = append(logs, models.WorkoutSetLog{
+			UserID:           userID,
+			SubscriptionID:   subID,
+			WorkoutSessionID: sessionID,
+			ExerciseName:     name,
+			ExerciseID:       in.ExerciseID,
+			SetNumber:        setNo,
+			WeightKg:         in.WeightKg,
+			Reps:             reps,
+			PerformedAt:      performedAt,
+		})
+	}
+	return logs
 }
 
 func workoutSessionToDTO(sess models.WorkoutSession, coachName string) WorkoutHistoryItemDTO {

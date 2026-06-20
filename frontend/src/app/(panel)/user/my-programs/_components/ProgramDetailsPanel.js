@@ -21,6 +21,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { formatDateFa, shortRemaining } from "./helpers";
@@ -38,6 +39,30 @@ const DAYS = [
 function jsDayToKey(jsDay) {
   const map = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
   return map[jsDay] || "sat";
+}
+
+// firstInt extracts the leading integer from a reps string like "12" or "8-10".
+function firstInt(value) {
+  const m = String(value ?? "").match(/\d+/);
+  return m ? parseInt(m[0], 10) : 0;
+}
+
+// buildSetsPayload turns entered per-exercise weights into the API `sets` shape,
+// dropping exercises with no (or non-positive) weight entered.
+function buildSetsPayload(exercises, weights) {
+  return (exercises || [])
+    .map((ex) => {
+      const w = parseFloat(weights?.[ex.name]);
+      if (!Number.isFinite(w) || w <= 0) return null;
+      return {
+        exerciseName: ex.name,
+        exerciseId: ex.exerciseId || undefined,
+        setNumber: 1,
+        weightKg: w,
+        reps: firstInt(ex.reps),
+      };
+    })
+    .filter(Boolean);
 }
 
 function statusBadgeProps(timeline) {
@@ -84,22 +109,32 @@ export default function ProgramDetailsPanel({ program, timeline }) {
 
   const [selectedDay, setSelectedDay] = useState(defaultDay);
   const [loggingWorkout, setLoggingWorkout] = useState(false);
+  // weights maps an exercise name to the weight (kg) the user lifted today.
+  const [weights, setWeights] = useState({});
 
   useEffect(() => {
     setSelectedDay(defaultDay);
   }, [defaultDay]);
+
+  // Reset entered weights whenever the selected day changes.
+  useEffect(() => {
+    setWeights({});
+  }, [selectedDay]);
 
   async function handleLogWorkout() {
     const dayWorkout = program?.planByDay?.[selectedDay]?.workout;
     if (!program?.id || !dayWorkout) return;
     setLoggingWorkout(true);
     try {
+      const sets = buildSetsPayload(dayWorkout.exercises, weights);
       await api.post("/me/workout-sessions", {
         subscriptionId: program.id,
         dayKey: selectedDay,
         durationMin: dayWorkout.durationMin || 0,
+        ...(sets.length ? { sets } : {}),
       });
       toast.success("تمرین با موفقیت در تاریخچه ثبت شد");
+      setWeights({});
     } catch (err) {
       toast.error(err?.response?.data?.error || "ثبت تمرین ناموفق بود");
     } finally {
@@ -245,6 +280,46 @@ export default function ProgramDetailsPanel({ program, timeline }) {
                       clickable
                       variant="cards"
                     />
+                    {timeline?.isActive && workout.exercises?.length ? (
+                      <div className="mt-5 rounded-lg border bg-muted/30 p-4">
+                        <div className="mb-3 flex items-center justify-between gap-2">
+                          <p className="text-sm font-medium">ثبت وزنه‌ها (اختیاری)</p>
+                          <p className="text-xs text-muted-foreground">
+                            برای محاسبه رکوردهای شخصی
+                          </p>
+                        </div>
+                        <div className="grid gap-2 sm:grid-cols-2">
+                          {workout.exercises.map((ex, i) => (
+                            <label
+                              key={`${ex.exerciseId || ex.name}-${i}`}
+                              className="flex items-center justify-between gap-2 rounded-md border bg-card px-3 py-2"
+                            >
+                              <span className="min-w-0 flex-1 truncate text-sm">
+                                {ex.name}
+                              </span>
+                              <div className="flex shrink-0 items-center gap-1">
+                                <Input
+                                  type="number"
+                                  inputMode="decimal"
+                                  min="0"
+                                  step="0.5"
+                                  placeholder="۰"
+                                  value={weights[ex.name] ?? ""}
+                                  onChange={(e) =>
+                                    setWeights((prev) => ({
+                                      ...prev,
+                                      [ex.name]: e.target.value,
+                                    }))
+                                  }
+                                  className="h-8 w-20 text-center"
+                                />
+                                <span className="text-xs text-muted-foreground">کیلوگرم</span>
+                              </div>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
                     {timeline?.isActive && (
                       <div className="mt-4 flex justify-end">
                         <Button

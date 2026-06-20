@@ -3,6 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  XAxis,
+} from "recharts";
+import {
   AlertTriangle,
   Bell,
   Camera,
@@ -11,6 +17,9 @@ import {
   Dumbbell,
   Scale,
   Ticket,
+  TrendingDown,
+  TrendingUp,
+  Trophy,
   UserPlus,
   Wallet,
 } from "lucide-react";
@@ -19,6 +28,11 @@ import { SectionCards } from "@/components/section-cards";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
 import { cn } from "@/lib/utils";
 
 function formatFa(value) {
@@ -31,6 +45,32 @@ function formatFa(value) {
 
 function formatToman(value) {
   return `${formatFa(value)} تومان`;
+}
+
+function jalaliLong(date = new Date()) {
+  try {
+    return new Intl.DateTimeFormat("fa-IR", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }).format(date);
+  } catch {
+    return "";
+  }
+}
+
+function jalaliShort(iso) {
+  if (!iso) return "";
+  const d = iso instanceof Date ? iso : new Date(iso);
+  if (Number.isNaN(d.getTime())) return String(iso);
+  try {
+    return new Intl.DateTimeFormat("fa-IR", {
+      day: "numeric",
+      month: "long",
+    }).format(d);
+  } catch {
+    return "";
+  }
 }
 
 function timeAgo(iso) {
@@ -49,6 +89,18 @@ function timeAgo(iso) {
   }
 }
 
+function deltaBadge(pct) {
+  if (pct == null) return null;
+  const up = pct >= 0;
+  const Icon = up ? TrendingUp : TrendingDown;
+  return (
+    <span className={cn("flex items-center gap-1", up ? "text-emerald-600" : "text-rose-600")}>
+      <Icon className="size-3" />
+      {formatFa(Math.abs(pct))}٪ نسبت به ماه قبل
+    </span>
+  );
+}
+
 const NOTIF_META = {
   new_subscription: { icon: UserPlus, className: "bg-emerald-500/10 text-emerald-500" },
   checkin_reminder: { icon: CalendarClock, className: "bg-amber-500/10 text-amber-500" },
@@ -63,6 +115,10 @@ function notifMeta(type) {
   return NOTIF_META[type] ?? { icon: Bell, className: "bg-muted text-muted-foreground" };
 }
 
+const chartConfig = {
+  value: { label: "جلسات تمرین", color: "var(--primary)" },
+};
+
 export default function CoachDashboardClient() {
   const [stats, setStats] = useState(null);
   const [statsLoading, setStatsLoading] = useState(true);
@@ -70,15 +126,18 @@ export default function CoachDashboardClient() {
   const [notifLoading, setNotifLoading] = useState(true);
   const [attention, setAttention] = useState([]);
   const [attentionLoading, setAttentionLoading] = useState(true);
+  const [recent, setRecent] = useState([]);
+  const [recentLoading, setRecentLoading] = useState(true);
+  const [top, setTop] = useState([]);
+  const [topLoading, setTopLoading] = useState(true);
+  const [series, setSeries] = useState([]);
+  const [seriesLoading, setSeriesLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
 
     async function load() {
-      const statsP = api
-        .get("/coach/dashboard/stats")
-        .then((r) => r.data)
-        .catch(() => null);
+      const statsP = api.get("/coach/dashboard/stats").then((r) => r.data).catch(() => null);
       const notifP = api
         .get("/coach/notifications", { params: { limit: 5 } })
         .then((r) => r.data?.items ?? [])
@@ -87,8 +146,20 @@ export default function CoachDashboardClient() {
         .get("/coach/tracking/students")
         .then((r) => (r.data?.items ?? []).filter((s) => (s.alerts?.length ?? 0) > 0))
         .catch(() => []);
+      const recentP = api
+        .get("/coach/dashboard/recent-students", { params: { limit: 5 } })
+        .then((r) => r.data?.items ?? [])
+        .catch(() => []);
+      const topP = api
+        .get("/coach/dashboard/top-students", { params: { limit: 3 } })
+        .then((r) => r.data?.items ?? [])
+        .catch(() => []);
+      const seriesP = api
+        .get("/coach/dashboard/progress-series", { params: { days: 30 } })
+        .then((r) => r.data?.items ?? [])
+        .catch(() => []);
 
-      const [s, n, a] = await Promise.all([statsP, notifP, attP]);
+      const [s, n, a, rc, tp, sr] = await Promise.all([statsP, notifP, attP, recentP, topP, seriesP]);
       if (cancelled) return;
       setStats(s);
       setStatsLoading(false);
@@ -96,6 +167,12 @@ export default function CoachDashboardClient() {
       setNotifLoading(false);
       setAttention(a);
       setAttentionLoading(false);
+      setRecent(rc);
+      setRecentLoading(false);
+      setTop(tp);
+      setTopLoading(false);
+      setSeries(sr);
+      setSeriesLoading(false);
     }
 
     load();
@@ -110,6 +187,7 @@ export default function CoachDashboardClient() {
         title: "درآمد این ماه",
         value: stats?.monthlySales ?? 0,
         displayValue: formatToman(stats?.monthlySales),
+        badge: deltaBadge(stats?.monthlySalesDeltaPct),
         hint: "سفارش‌های پرداخت‌شده در ماه جاری",
       },
       {
@@ -123,13 +201,40 @@ export default function CoachDashboardClient() {
         displayValue: `${formatFa(stats?.programAdherence ?? 0)}٪`,
         hint: "میانگین تکمیل تمرین‌های این هفته",
       },
+      {
+        title: "جلسات تکمیل‌شده",
+        value: stats?.completedSessions ?? 0,
+        badge: deltaBadge(stats?.completedSessionsDeltaPct),
+        hint: "تمرین‌های ثبت‌شده این ماه",
+      },
+      {
+        title: "کل شاگردان",
+        value: stats?.totalStudents ?? 0,
+        hint: "همه دانشجویان شما",
+      },
     ],
     [stats]
   );
 
   return (
     <div className="flex flex-col gap-4 md:gap-6" dir="rtl">
-      <SectionCards items={statItems} loading={statsLoading} className="@3xl/main:grid-cols-3" />
+      <div className="flex flex-col gap-1 px-1">
+        <h1 className="flex items-center gap-2 text-xl font-bold text-foreground md:text-2xl">
+          سلام مربی عزیز <span aria-hidden>👋</span>
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          امروز {jalaliLong()} — نمای کلی فعالیت‌ها و شاگردان شما
+        </p>
+      </div>
+
+      <SectionCards items={statItems} loading={statsLoading} />
+
+      <ProgressChartCard loading={seriesLoading} data={series} />
+
+      <div className="grid gap-4 md:gap-6 lg:grid-cols-2">
+        <TopStudentsCard loading={topLoading} items={top} />
+        <RecentStudentsCard loading={recentLoading} items={recent} />
+      </div>
 
       <div className="grid gap-4 md:gap-6 lg:grid-cols-2">
         <RemindersCard loading={notifLoading} items={notifications} />
@@ -174,6 +279,137 @@ function EmptyState({ icon: Icon, text }) {
       <Icon className="size-8 opacity-40" />
       <p className="text-sm">{text}</p>
     </div>
+  );
+}
+
+function ProgressChartCard({ loading, data }) {
+  const tickInterval = data.length > 6 ? Math.ceil(data.length / 6) : 0;
+  return (
+    <SectionPanel icon={TrendingUp} iconClass="text-primary" title="نمودار فعالیت شاگردان">
+      {loading ? (
+        <Skeleton className="h-[240px] w-full" />
+      ) : data.length === 0 ? (
+        <EmptyState icon={TrendingUp} text="هنوز فعالیتی ثبت نشده است." />
+      ) : (
+        <ChartContainer config={chartConfig} className="h-[240px] w-full">
+          <AreaChart data={data} margin={{ left: 0, right: 0, top: 8, bottom: 0 }}>
+            <defs>
+              <linearGradient id="fillSessions" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="var(--color-value)" stopOpacity={0.7} />
+                <stop offset="95%" stopColor="var(--color-value)" stopOpacity={0.05} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid vertical={false} strokeDasharray="3 3" />
+            <XAxis
+              dataKey="date"
+              reversed
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              interval={tickInterval}
+              tickFormatter={jalaliShort}
+            />
+            <ChartTooltip
+              cursor={false}
+              content={<ChartTooltipContent labelFormatter={(v) => jalaliShort(v)} />}
+            />
+            <Area
+              dataKey="value"
+              type="monotone"
+              stroke="var(--color-value)"
+              fill="url(#fillSessions)"
+              strokeWidth={2}
+            />
+          </AreaChart>
+        </ChartContainer>
+      )}
+    </SectionPanel>
+  );
+}
+
+const RANK_STYLE = [
+  "bg-amber-400/20 text-amber-600",
+  "bg-slate-400/20 text-slate-500",
+  "bg-orange-400/20 text-orange-600",
+];
+
+function TopStudentsCard({ loading, items }) {
+  return (
+    <SectionPanel icon={Trophy} iconClass="text-amber-500" title="شاگردان با بیشترین پیشرفت">
+      {loading ? (
+        <div className="space-y-2">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <RowSkeleton key={i} />
+          ))}
+        </div>
+      ) : items.length === 0 ? (
+        <EmptyState icon={Trophy} text="هنوز داده‌ای برای رتبه‌بندی نیست." />
+      ) : (
+        <ul className="flex flex-col gap-4">
+          {items.map((s, i) => (
+            <li key={s.studentId} className="flex items-center gap-3">
+              <span
+                className={cn(
+                  "flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-bold",
+                  RANK_STYLE[i] ?? "bg-muted text-muted-foreground"
+                )}
+              >
+                {formatFa(i + 1)}
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="truncate text-sm font-medium text-foreground">{s.fullName}</p>
+                  <span className="shrink-0 text-xs font-semibold text-muted-foreground">
+                    {formatFa(s.adherence)}٪
+                  </span>
+                </div>
+                <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-muted">
+                  <div
+                    className="h-full rounded-full bg-primary transition-all"
+                    style={{ width: `${Math.min(100, Math.max(0, s.adherence))}%` }}
+                  />
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </SectionPanel>
+  );
+}
+
+function RecentStudentsCard({ loading, items }) {
+  return (
+    <SectionPanel icon={UserPlus} iconClass="text-emerald-500" title="آخرین شاگردان اضافه‌شده">
+      {loading ? (
+        <div className="divide-y divide-border">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <RowSkeleton key={i} />
+          ))}
+        </div>
+      ) : items.length === 0 ? (
+        <EmptyState icon={UserPlus} text="شاگرد جدیدی ثبت نشده است." />
+      ) : (
+        <ul className="divide-y divide-border">
+          {items.map((s) => (
+            <li key={s.studentId}>
+              <Link
+                href={`/coach/students/${s.studentId}`}
+                className="group flex items-center gap-3 py-3 transition-colors hover:bg-muted/40"
+              >
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-sm font-semibold text-emerald-600">
+                  {s.fullName?.trim()?.charAt(0) || "؟"}
+                </span>
+                <p className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
+                  {s.fullName}
+                </p>
+                <time className="shrink-0 text-xs text-muted-foreground">{timeAgo(s.joinedAt)}</time>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </SectionPanel>
   );
 }
 

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { ClipboardList, Search } from "lucide-react";
 import { api } from "@/lib/axios/client";
-import PlanRow from "./PlanRow";
+import PlansTable from "./PlansTable";
 import FilterChip from "./FilterChip";
 import PanelPagination from "@/app/(panel)/_shared/Pagination";
 import { Badge } from "@/components/ui/badge";
@@ -113,19 +113,21 @@ export default function PlansClient() {
       </Card>
 
       <Card>
-        {loading ? (
-          <CardContent className="space-y-3 py-6">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-16 w-full rounded-lg" />
-            ))}
-          </CardContent>
-        ) : items.length === 0 ? (
-          <CardContent className="py-10 text-center text-sm text-muted-foreground">
-            پلنی یافت نشد.
-          </CardContent>
-        ) : (
-          items.map((plan) => <PlanRow key={plan.id} plan={plan} />)
-        )}
+        <CardContent className="pt-6">
+          {loading ? (
+            <div className="space-y-2">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="h-11 w-full rounded-md" />
+              ))}
+            </div>
+          ) : items.length === 0 ? (
+            <p className="py-10 text-center text-sm text-muted-foreground">
+              پلنی یافت نشد.
+            </p>
+          ) : (
+            <PlansTable items={items} basePath="/admin/plans" />
+          )}
+        </CardContent>
       </Card>
 
       <PanelPagination page={page} totalPages={totalPages} onPage={setPage} />

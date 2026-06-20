@@ -1,16 +1,30 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { ChevronLeft, UserCheck } from "lucide-react";
+import { UserCheck } from "lucide-react";
 import { api } from "@/lib/axios/client";
 import PanelPagination from "@/app/(panel)/_shared/Pagination";
+import RowActions from "@/app/(panel)/_shared/RowActions";
 import FilterChip from "@/app/(panel)/admin/plans/_components/FilterChip";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { cn } from "@/lib/utils";
+
+function planTypeLabel(type) {
+  if (type === "both") return "تمرین + تغذیه";
+  if (type === "workout") return "تمرین";
+  return "تغذیه";
+}
 
 export default function StudentsClient() {
   const [filter, setFilter] = useState("pending");
@@ -101,72 +115,68 @@ export default function StudentsClient() {
         </CardContent>
       </Card>
 
-      <div className="space-y-2">
-        {loading ? (
-          Array.from({ length: 5 }).map((_, i) => (
-            <Card key={i}>
-              <CardContent className="pt-4">
-                <Skeleton className="h-16 w-full rounded-lg" />
-              </CardContent>
-            </Card>
-          ))
-        ) : items.length === 0 ? (
-          <Card>
-            <CardContent className="py-10 text-center text-sm text-muted-foreground">
+      <Card>
+        <CardContent className="pt-6">
+          {loading ? (
+            <div className="space-y-2">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="h-11 w-full rounded-md" />
+              ))}
+            </div>
+          ) : items.length === 0 ? (
+            <p className="py-10 text-center text-sm text-muted-foreground">
               موردی یافت نشد.
-            </CardContent>
-          </Card>
-        ) : (
-          items.map((s) => (
-            <Link
-              key={s.id}
-              href={`/admin/students/${s.id}`}
-              className="block"
-            >
-              <Card className="transition-colors hover:bg-muted/40">
-                <CardContent className="flex items-center justify-between gap-3 pt-4">
-                  <div className="min-w-0 text-start">
-                    <p className="truncate text-sm font-semibold">{s.fullName}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">{s.phone}</p>
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      مربی:{" "}
-                      <span className="font-medium text-foreground">
-                        {s.coachName || "—"}
-                      </span>
-                    </p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      پلن:{" "}
-                      <span className="font-medium text-foreground">
-                        {s.planTitle || "—"}
-                      </span>
-                    </p>
-                  </div>
-                  <div className="flex shrink-0 flex-col items-end gap-2">
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        s.status === "active"
-                          ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-                          : undefined
-                      )}
-                    >
-                      {s.status === "active" ? "فعال" : "در انتظار"}
-                    </Badge>
-                    <Badge variant="secondary">
-                      {s.planType === "both"
-                        ? "تمرین + تغذیه"
-                        : s.planType === "workout"
-                          ? "تمرین"
-                          : "تغذیه"}
-                    </Badge>
-                  </div>
-                  <ChevronLeft className="size-4 shrink-0 text-muted-foreground" />
-                </CardContent>
-              </Card>
-            </Link>
-          ))
-        )}
-      </div>
+            </p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>دانشجو</TableHead>
+                  <TableHead>مربی</TableHead>
+                  <TableHead>پلن</TableHead>
+                  <TableHead>نوع</TableHead>
+                  <TableHead>وضعیت</TableHead>
+                  <TableHead className="text-end">عملیات</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {items.map((s) => (
+                  <TableRow key={s.id}>
+                    <TableCell>
+                      <p className="text-sm font-semibold">{s.fullName}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">{s.phone}</p>
+                    </TableCell>
+                    <TableCell className="text-sm">{s.coachName || "—"}</TableCell>
+                    <TableCell className="text-sm">{s.planTitle || "—"}</TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">{planTypeLabel(s.planType)}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          s.status === "active"
+                            ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                            : undefined
+                        )}
+                      >
+                        {s.status === "active" ? "فعال" : "در انتظار"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-end">
+                      <RowActions
+                        viewHref={`/admin/students/${s.id}`}
+                        editHref={`/admin/students/${s.id}`}
+                        editLabel="ویرایش"
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
 
       <PanelPagination page={page} totalPages={totalPages} onPage={setPage} />
     </div>

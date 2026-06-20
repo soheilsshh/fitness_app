@@ -4,10 +4,19 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { FiActivity, FiPlus, FiSearch } from "react-icons/fi";
 import { api } from "@/lib/axios/client";
+import RowActions from "@/app/(panel)/_shared/RowActions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 function cn(...xs) {
   return xs.filter(Boolean).join(" ");
@@ -26,6 +35,7 @@ export default function ExercisesClient() {
   const [bodyPart, setBodyPart] = useState("");
   const [equipment, setEquipment] = useState("");
   const [page, setPage] = useState(1);
+  const [refreshKey, setRefreshKey] = useState(0);
   const pageSize = 20;
 
   useEffect(() => {
@@ -59,7 +69,12 @@ export default function ExercisesClient() {
     return () => {
       cancelled = true;
     };
-  }, [page, pageSize, query, category, bodyPart, equipment]);
+  }, [page, pageSize, query, category, bodyPart, equipment, refreshKey]);
+
+  async function handleDelete(id) {
+    await api.delete(`/admin/exercises/${id}`);
+    setRefreshKey((k) => k + 1);
+  }
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
@@ -125,38 +140,63 @@ export default function ExercisesClient() {
       </Card>
 
       <Card>
-        <CardContent className="divide-y">
+        <CardContent className="pt-6">
           {loading ? (
-            <div className="space-y-2 py-1">
-              <Skeleton className="h-20 w-full" />
-              <Skeleton className="h-20 w-full" />
-              <Skeleton className="h-20 w-full" />
+            <div className="space-y-2">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="h-11 w-full rounded-md" />
+              ))}
             </div>
           ) : items.length === 0 ? (
-            <div className="py-4 text-sm text-muted-foreground">تمرینی یافت نشد.</div>
+            <p className="py-10 text-center text-sm text-muted-foreground">
+              تمرینی یافت نشد.
+            </p>
           ) : (
-            items.map((exercise) => (
-              <Link
-                key={exercise.id}
-                href={`/admin/exercises/${exercise.id}`}
-                className="block py-4 transition-colors hover:bg-muted/40"
-              >
-                <div className="flex items-center gap-3">
-                  {exercise.imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={exercise.imageUrl}
-                      alt=""
-                      className="h-14 w-14 shrink-0 rounded-lg border bg-muted object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border bg-muted text-muted-foreground">
-                      <FiActivity />
-                    </div>
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <div className="truncate text-sm font-semibold">{exercise.name}</div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>تمرین</TableHead>
+                  <TableHead>دسته / ناحیه</TableHead>
+                  <TableHead>تجهیزات</TableHead>
+                  <TableHead>وضعیت</TableHead>
+                  <TableHead className="text-end">عملیات</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {items.map((exercise) => (
+                  <TableRow key={exercise.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        {exercise.imageUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={exercise.imageUrl}
+                            alt=""
+                            className="size-10 shrink-0 rounded-lg border bg-muted object-cover"
+                          />
+                        ) : (
+                          <div className="flex size-10 shrink-0 items-center justify-center rounded-lg border bg-muted text-muted-foreground">
+                            <FiActivity />
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold">
+                            {exercise.name}
+                          </p>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            {exercise.externalId}
+                          </p>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {exercise.category || "—"}
+                      {exercise.bodyPart ? ` • ${exercise.bodyPart}` : ""}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {exercise.equipment || "—"}
+                    </TableCell>
+                    <TableCell>
                       <span
                         className={cn(
                           "rounded-full border px-2.5 py-1 text-xs font-medium",
@@ -167,22 +207,21 @@ export default function ExercisesClient() {
                       >
                         {exercise.isActive ? "فعال" : "غیرفعال"}
                       </span>
-                    </div>
-                    <div className="mt-1 text-xs text-muted-foreground">
-                      {exercise.externalId}
-                      {exercise.category ? ` • ${exercise.category}` : ""}
-                      {exercise.bodyPart ? ` • ${exercise.bodyPart}` : ""}
-                      {exercise.equipment ? ` • ${exercise.equipment}` : ""}
-                    </div>
-                    {exercise.target ? (
-                      <div className="mt-1 text-xs text-muted-foreground">
-                        هدف: {exercise.target}
-                      </div>
-                    ) : null}
-                  </div>
-                </div>
-              </Link>
-            ))
+                    </TableCell>
+                    <TableCell className="text-end">
+                      <RowActions
+                        viewHref={`/admin/exercises/${exercise.id}`}
+                        editHref={`/admin/exercises/${exercise.id}`}
+                        editLabel="ویرایش"
+                        onDelete={() => handleDelete(exercise.id)}
+                        deleteTitle="حذف تمرین"
+                        deleteDescription={`آیا از حذف تمرین «${exercise.name || ""}» مطمئن هستید؟ این عملیات قابل بازگشت نیست.`}
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           )}
         </CardContent>
       </Card>

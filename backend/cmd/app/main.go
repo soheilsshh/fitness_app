@@ -153,8 +153,14 @@ func NewServer() *Server {
 	coachTrackingController := controllers.NewCoachTrackingController(trackingService)
 	workoutHistoryService := service.NewWorkoutHistoryService(db, subscriptionRepo, servicePlanRepo, programRepo)
 	workoutHistoryController := controllers.NewWorkoutHistoryController(workoutHistoryService)
+	meDashboardService := service.NewMeDashboardService(db, subscriptionRepo)
+	meDashboardController := controllers.NewMeDashboardController(meDashboardService)
 	notificationService := service.NewNotificationService(notificationRepo)
 	notificationController := controllers.NewNotificationController(notificationService)
+	funnelLeadRepo := repository.NewFunnelLeadRepository(db)
+	funnelService := service.NewFunnelService(funnelLeadRepo)
+	funnelController := controllers.NewFunnelController(funnelService)
+	adminFunnelController := controllers.NewAdminFunnelController(funnelService)
 
 	// Auth routes
 	router.POST("/auth/register", authController.Register)
@@ -180,6 +186,10 @@ func NewServer() *Server {
 	router.GET("/coaches", publicCoachController.ListCoaches)
 	router.GET("/coaches/:slug", publicCoachController.GetCoachBySlug)
 	router.GET("/coaches/:slug/plans", publicCoachController.GetCoachPlans)
+	router.GET("/public/funnel/config", funnelController.GetConfig)
+	router.POST("/public/funnel/leads", funnelController.CreateLead)
+	router.GET("/public/funnel/checkout/:token", funnelController.GetCheckout)
+	router.POST("/public/funnel/checkout/:token/pay", funnelController.PayDemo)
 
 	// Coach panel routes
 	coachGroup := router.Group("/coach")
@@ -203,6 +213,9 @@ func NewServer() *Server {
 		coachGroup.POST("/students/:id/nutrition-programs", coachProgramController.AssignNutritionProgram)
 		coachGroup.PATCH("/students/:id/nutrition-programs/:programId", coachProgramController.UpdateNutritionProgram)
 		coachGroup.GET("/dashboard/stats", coachDashboardController.GetStats)
+		coachGroup.GET("/dashboard/recent-students", coachDashboardController.GetRecentStudents)
+		coachGroup.GET("/dashboard/top-students", coachDashboardController.GetTopStudents)
+		coachGroup.GET("/dashboard/progress-series", coachDashboardController.GetProgressSeries)
 		coachGroup.GET("/notifications", notificationController.ListRecent)
 		coachGroup.GET("/tickets", coachTicketController.ListTickets)
 		coachGroup.GET("/tickets/:id", coachTicketController.GetTicket)
@@ -228,6 +241,8 @@ func NewServer() *Server {
 		studentGroup.POST("/me/tracking/photos", trackingController.UploadTrackingPhoto)
 		studentGroup.GET("/me/workout-history", workoutHistoryController.ListHistory)
 		studentGroup.POST("/me/workout-sessions", workoutHistoryController.LogSession)
+		studentGroup.GET("/me/dashboard", meDashboardController.GetSummary)
+		studentGroup.GET("/me/records", meDashboardController.GetRecords)
 		studentGroup.POST("/me/change-password", authController.ChangePassword)
 		studentGroup.GET("/me/orders", meController.ListMyOrders)
 		studentGroup.GET("/me/orders/:id", meController.GetMyOrderByID)
@@ -272,6 +287,9 @@ func NewServer() *Server {
 		adminGroup.GET("/exercises/:id", adminExerciseController.GetExerciseByID)
 		adminGroup.PATCH("/exercises/:id", adminExerciseController.UpdateExercise)
 		adminGroup.DELETE("/exercises/:id", adminExerciseController.DeleteExercise)
+		adminGroup.GET("/funnel-leads", adminFunnelController.ListLeads)
+		adminGroup.GET("/funnel-leads/:id", adminFunnelController.GetLead)
+		adminGroup.PATCH("/funnel-leads/:id", adminFunnelController.PatchLead)
 	}
 
 	// Serve uploaded files (e.g. user body photos) at /uploads/*

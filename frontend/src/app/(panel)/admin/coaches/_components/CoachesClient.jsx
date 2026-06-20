@@ -1,14 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { ChevronLeft, Search, UserCog } from "lucide-react";
+import { Search, UserCog } from "lucide-react";
 import { api } from "@/lib/axios/client";
 import PanelPagination from "@/app/(panel)/_shared/Pagination";
+import RowActions from "@/app/(panel)/_shared/RowActions";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 
 export default function CoachesClient() {
@@ -83,62 +91,79 @@ export default function CoachesClient() {
       </Card>
 
       <Card>
-        {loading ? (
-          <CardContent className="space-y-2 py-6">
-            {Array.from({ length: 5 }).map((_, idx) => (
-              <Skeleton key={idx} className="h-16 w-full rounded-lg" />
-            ))}
-          </CardContent>
-        ) : items.length === 0 ? (
-          <CardContent className="py-10 text-center text-sm text-muted-foreground">
-            مربی‌ای یافت نشد.
-          </CardContent>
-        ) : (
-          items.map((coach) => (
-            <Link
-              key={coach.id}
-              href={`/admin/coaches/${coach.id}`}
-              className="block border-b px-4 py-4 transition-colors last:border-b-0 hover:bg-muted/40"
-            >
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold">
-                    {coach.displayName || "—"}
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {coach.title || "—"} • /{coach.slug}
-                  </p>
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant="secondary">
-                    {Number(coach.studentCount || 0).toLocaleString("fa-IR")} دانشجو
-                  </Badge>
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      coach.isPublished
-                        ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-                        : "border-border bg-muted text-muted-foreground"
-                    )}
-                  >
-                    {coach.isPublished ? "منتشر شده" : "پیش‌نویس"}
-                  </Badge>
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      coach.isActive
-                        ? "border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300"
-                        : "border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-300"
-                    )}
-                  >
-                    {coach.isActive ? "فعال" : "غیرفعال"}
-                  </Badge>
-                  <ChevronLeft className="size-4 text-muted-foreground" />
-                </div>
-              </div>
-            </Link>
-          ))
-        )}
+        <CardContent className="pt-6">
+          {loading ? (
+            <div className="space-y-2">
+              {Array.from({ length: 6 }).map((_, idx) => (
+                <Skeleton key={idx} className="h-11 w-full rounded-md" />
+              ))}
+            </div>
+          ) : items.length === 0 ? (
+            <p className="py-10 text-center text-sm text-muted-foreground">
+              مربی‌ای یافت نشد.
+            </p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>مربی</TableHead>
+                  <TableHead className="text-center">دانشجو</TableHead>
+                  <TableHead>انتشار</TableHead>
+                  <TableHead>وضعیت</TableHead>
+                  <TableHead className="text-end">عملیات</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {items.map((coach) => (
+                  <TableRow key={coach.id}>
+                    <TableCell className="max-w-xs">
+                      <p className="truncate text-sm font-semibold">
+                        {coach.displayName || "—"}
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {coach.title || "—"} • /{coach.slug}
+                      </p>
+                    </TableCell>
+                    <TableCell className="text-center tabular-nums">
+                      {Number(coach.studentCount || 0).toLocaleString("fa-IR")}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          coach.isPublished
+                            ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                            : "border-border bg-muted text-muted-foreground"
+                        )}
+                      >
+                        {coach.isPublished ? "منتشر شده" : "پیش‌نویس"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          coach.isActive
+                            ? "border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300"
+                            : "border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-300"
+                        )}
+                      >
+                        {coach.isActive ? "فعال" : "غیرفعال"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-end">
+                      <RowActions
+                        viewHref={`/admin/coaches/${coach.id}`}
+                        editHref={`/admin/coaches/${coach.id}`}
+                        editLabel="ویرایش"
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
       </Card>
 
       <PanelPagination page={page} totalPages={totalPages} onPage={setPage} />
