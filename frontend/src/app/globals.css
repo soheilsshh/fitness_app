@@ -330,7 +330,7 @@ html {
   border-radius: 1rem;
   border: 1px solid color-mix(in oklab, var(--landing-outline-variant) 40%, transparent);
   background: color-mix(in oklab, var(--landing-surface-container-high) 55%, transparent);
-  padding: 0.75rem 1rem;
+  padding: 0.75rem 1rem !important;
   font-size: 0.875rem;
   color: var(--landing-on-surface);
   outline: none;

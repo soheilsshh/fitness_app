@@ -14,6 +14,7 @@ import {
 import { api } from "@/lib/axios/client";
 import { getPostLoginPath } from "@/lib/auth/roles";
 import { persistAuthSession } from "@/lib/auth/session";
+import { Button } from "@/components/ui/button";
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -101,9 +102,14 @@ export default function RegisterForm() {
     <div>
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-extrabold">ثبت نام</h1>
-        <Link href="/auth/login" className="text-sm text-emerald-200 hover:text-emerald-100">
+        <Button
+          variant="ghost"
+          asChild
+        >
+        <Link href="/auth/login" >
           ورود
         </Link>
+        </Button>
       </div>
 
       <motion.div
@@ -115,7 +121,7 @@ export default function RegisterForm() {
         {/* Phone + Edit */}
         <div className="flex gap-2">
           <div className="relative flex-1">
-            <FiSmartphone className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant" />
+            <FiSmartphone className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant" />
             <input
               value={phone}
               onChange={(e) => setPhone(e.target.value.trim())}

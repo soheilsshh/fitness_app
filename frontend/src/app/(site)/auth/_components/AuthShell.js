@@ -36,10 +36,6 @@ export default function AuthShell({ children }) {
           <div className="site-panel rounded-[28px] p-6 shadow-lg">
             {children}
           </div>
-
-          <div className="mt-4 text-center text-[11px] text-on-surface-variant">
-            ورود امن • OTP • مدیریت حساب
-          </div>
         </div>
       </div>
       <Footer />

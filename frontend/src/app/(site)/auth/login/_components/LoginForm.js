@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { FiLock, FiSmartphone, FiKey, FiArrowLeft, FiEdit3 } from "react-icons/fi";
+import { FiSmartphone, FiKey, FiArrowLeft, FiEdit3 } from "react-icons/fi";
 import {
   isValidIranPhone,
   isValidOtp,
@@ -14,6 +14,8 @@ import {
 import { api } from "@/lib/axios/client";
 import { getPostLoginPath } from "@/lib/auth/roles";
 import { persistAuthSession } from "@/lib/auth/session";
+import { Eye, EyeClosed, Phone } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -27,6 +29,8 @@ export default function LoginForm() {
 
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState("");
+
+  const [showPassword, setShowPassword] = useState(false);
 
   const canSendOtp = useMemo(() => !otpSent && !phoneLocked, [otpSent, phoneLocked]);
 
@@ -115,12 +119,16 @@ export default function LoginForm() {
     <div>
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-extrabold">ورود</h1>
+        <Button
+        variant="ghost"
+        asChild
+        >
         <Link
           href="/auth/register"
-          className="text-sm text-surface-tint hover:opacity-80"
         >
           ثبت نام
         </Link>
+        </Button>
       </div>
 
       {/* Tabs */}
@@ -154,12 +162,12 @@ export default function LoginForm() {
         {/* Phone + Edit */}
         <div className="flex gap-2">
           <div className="relative flex-1">
-            <FiSmartphone className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant" />
+            <Phone className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant" />
             <input
               value={phone}
               onChange={(e) => setPhone(e.target.value.trim())}
               placeholder="شماره موبایل (09xxxxxxxxx)"
-              className="w-full site-input py-3 pl-4 pr-11 disabled:opacity-70"
+              className="w-full site-input py-3 pl-4 placeholder:pr-6 disabled:opacity-70 "
               inputMode="numeric"
               disabled={phoneLocked}
             />
@@ -181,14 +189,19 @@ export default function LoginForm() {
           <>
             {/* Password */}
             <div className="relative">
-              <FiLock className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant" />
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="رمز عبور"
-                className="w-full site-input py-3 pl-4 pr-11"
+                className="w-full site-input py-3 pl-4 pr-11 placeholder:pr-6 "
               />
+              <button
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute left-4 top-1/2 -translate-y-1/2"
+              >
+                {showPassword ? <EyeClosed /> : <Eye />}
+              </button>
             </div>
 
             <div className="flex items-center justify-between">
@@ -210,7 +223,7 @@ export default function LoginForm() {
             {canSendOtp && (
               <button
                 onClick={onSendOtp}
-                className="site-btn-secondary font-extrabold"
+                className="site-btn-secondary w-full font-extrabold"
               >
                 ارسال رمز <FiKey />
               </button>
