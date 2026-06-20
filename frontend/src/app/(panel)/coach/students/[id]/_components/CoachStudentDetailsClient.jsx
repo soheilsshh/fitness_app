@@ -8,8 +8,11 @@ import {
   ClipboardList,
   Coffee,
   Phone,
+  Scale,
 } from "lucide-react";
 import { api } from "@/lib/axios/client";
+import BmiStatusBadge from "@/components/health/BmiStatusBadge";
+import CalorieAnalyzerCard from "@/components/health/CalorieAnalyzerCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -131,6 +134,22 @@ export default function CoachStudentDetailsClient({ id }) {
           {student.weightKg ? (
             <InfoCard label="وزن" value={`${student.weightKg} kg`} />
           ) : null}
+          {student.age != null ? (
+            <InfoCard label="سن" value={`${student.age.toLocaleString("fa-IR")} سال`} />
+          ) : null}
+          {student.bmi != null || student.bmiStatus ? (
+            <Card size="sm" className="md:col-span-2">
+              <CardContent className="pt-4">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Scale className="size-3.5" />
+                  شاخص توده بدنی (BMI)
+                </div>
+                <div className="mt-2">
+                  <BmiStatusBadge bmi={student.bmi} bmiStatus={student.bmiStatus} />
+                </div>
+              </CardContent>
+            </Card>
+          ) : null}
           {student.remainingDays > 0 ? (
             <InfoCard
               label="روز باقی‌مانده"
@@ -139,6 +158,14 @@ export default function CoachStudentDetailsClient({ id }) {
           ) : null}
         </CardContent>
       </Card>
+
+      <CalorieAnalyzerCard
+        studentId={id}
+        defaultAge={student.age}
+        defaultGender={student.gender || "male"}
+        defaultHeightCm={student.heightCm}
+        defaultWeightKg={student.weightKg}
+      />
 
       {isPending ? (
         <Card className="border-amber-500/20 bg-amber-500/5">
