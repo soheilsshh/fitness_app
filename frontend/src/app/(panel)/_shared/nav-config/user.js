@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 
 export const userBrand = {
-  title: "FitPro",
+  title: "Fitino",
   subtitle: "پنل کاربر",
   href: "/user",
 };

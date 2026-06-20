@@ -1,7 +1,7 @@
 import CoachRegisterForm from "./_components/CoachRegisterForm";
 
 export const metadata = {
-  title: "ثبت‌نام مربی | FitPro",
+  title: "ثبت‌نام مربی | Fitino",
 };
 
 export default function CoachRegisterPage() {

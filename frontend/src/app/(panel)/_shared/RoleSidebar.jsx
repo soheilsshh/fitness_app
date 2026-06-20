@@ -69,7 +69,7 @@ export function RoleSidebar({
                 </span>
                 <div className="grid flex-1 text-start text-sm leading-tight">
                   <span className="truncate font-semibold">
-                    {brand?.title || "FitPro"}
+                    {brand?.title || "Fitino"}
                   </span>
                   {brand?.subtitle ? (
                     <span className="truncate text-xs text-muted-foreground">

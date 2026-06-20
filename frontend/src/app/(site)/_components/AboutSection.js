@@ -10,7 +10,7 @@ import {
 } from "react-icons/fi";
 import { FaDumbbell, FaAppleAlt, FaHeartbeat } from "react-icons/fa";
 
-// Gym + coaching value pillars — what FitPro actually delivers.
+// Gym + coaching value pillars — what Fitino actually delivers.
 const PILLARS = [
   {
     icon: FiAward,
@@ -120,10 +120,10 @@ export default function AboutSection({ steps }) {
           باشگاه هوشمند و مربیگری اختصاصی
         </div>
         <h2 className="text-4xl font-extrabold text-primary md:text-5xl">
-          چرا <span className="gradient-text">FitPro؟</span>
+          چرا <span className="gradient-text">Fitino؟</span>
         </h2>
         <p className="max-w-2xl text-base leading-8 text-on-surface-variant md:text-lg">
-          فیت‌پرو یک باشگاه دیجیتال است که تمرین، تغذیه و مربیگری حرفه‌ای را در یک پلتفرم
+          فیتینو یک باشگاه دیجیتال است که تمرین، تغذیه و مربیگری حرفه‌ای را در یک پلتفرم
           جمع می‌کند؛ از انتخاب مربی تا رسیدن به فرم ایده‌آل، در هر قدم کنار شما هستیم.
         </p>
       </motion.div>

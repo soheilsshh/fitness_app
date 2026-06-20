@@ -15,9 +15,9 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 
 const DEFAULT_CONTACT = {
-  address: "تهران، سعادت آباد، برج فیت‌پرو",
+  address: "تهران، سعادت آباد، برج فیتینو",
   phone: "+۹۸ ۲۱ ۲۸۴۲ ۱۰۰۰",
-  email: "info@fitpro.academy",
+  email: "info@fitino.academy",
   instagram: "https://instagram.com/",
   telegram: "https://t.me/",
   whatsapp: "https://wa.me/989000000000",
