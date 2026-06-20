@@ -2,6 +2,7 @@ import {
   ActivityIcon,
   AwardIcon,
   ClipboardListIcon,
+  FilterIcon,
   GlobeIcon,
   LayoutDashboardIcon,
   MessageCircleIcon,
@@ -25,6 +26,11 @@ export const adminNav = [
     href: "/admin/students",
     label: "همه شاگردان",
     icon: UserCheckIcon,
+  },
+  {
+    href: "/admin/funnel-leads",
+    label: "قیف فروش",
+    icon: FilterIcon,
   },
   {
     href: "/admin/coaches",
