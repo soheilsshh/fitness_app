@@ -1,6 +1,7 @@
 import axios from "axios";
 import { toast } from "sonner";
 import { clearAuthSession } from "@/lib/auth/session";
+import { translateApiError } from "@/lib/api/translateError";
 
 const baseURL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
@@ -28,6 +29,14 @@ if (typeof window !== "undefined") {
   api.interceptors.response.use(
     (response) => response,
     (error) => {
+      const data = error?.response?.data;
+      if (data && typeof data.error === "string" && data.error.trim()) {
+        data.error = translateApiError(data.error);
+      }
+      if (data && typeof data.message === "string" && data.message.trim()) {
+        data.message = translateApiError(data.message);
+      }
+
       const status = error?.response?.status;
       const url = error?.config?.url || "";
       const isAuthEndpoint = url.includes("/auth/");

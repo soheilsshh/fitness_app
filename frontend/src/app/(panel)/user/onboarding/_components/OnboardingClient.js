@@ -30,6 +30,7 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { getApiErrorMessage } from "@/lib/api/translateError";
 import { cn } from "@/lib/utils";
 
 const STEPS = [
@@ -251,8 +252,7 @@ export default function OnboardingClient() {
       );
       return res.data;
     } catch (e) {
-      const msg = e?.response?.data?.error || "ذخیره اطلاعات ناموفق بود.";
-      setError(msg);
+      setError(getApiErrorMessage(e, "ذخیره اطلاعات ناموفق بود."));
       return null;
     } finally {
       setSaving(false);
@@ -275,7 +275,7 @@ export default function OnboardingClient() {
       });
       setPhotos((prev) => ({ ...prev, [type]: res.data }));
     } catch (e) {
-      setError(e?.response?.data?.error || "آپلود عکس ناموفق بود.");
+      setError(getApiErrorMessage(e, "آپلود عکس ناموفق بود."));
     } finally {
       setUploadingType("");
     }
@@ -311,7 +311,7 @@ export default function OnboardingClient() {
           setError("هنوز برخی اطلاعات ناقص است. لطفاً همه فیلدها را بررسی کنید.");
         }
       } catch (e) {
-        setError(e?.response?.data?.error || "بررسی نهایی پروفایل ناموفق بود.");
+        setError(getApiErrorMessage(e, "بررسی نهایی پروفایل ناموفق بود."));
       } finally {
         setSaving(false);
       }
