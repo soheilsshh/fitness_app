@@ -25,10 +25,14 @@ type FunnelLead struct {
 	LastName  string `gorm:"size:60;not null"`
 	Phone     string `gorm:"size:20;index;not null"`
 
-	PrimaryGoal   string `gorm:"size:30;not null"`
-	ActivityLevel string `gorm:"size:30;not null"`
-	MainObstacle  string `gorm:"size:30;not null"`
-	Scenario      string `gorm:"size:1;not null"`
+	PrimaryGoal        string `gorm:"size:30;not null"`
+	ActivityLevel      string `gorm:"size:30;not null"`
+	TrainingEnv        string `gorm:"size:30"`
+	Experience         string `gorm:"size:30"`
+	NutritionChallenge string `gorm:"size:30"`
+	MainObstacle       string `gorm:"size:30;not null"`
+	Commitment         string `gorm:"size:30"`
+	Scenario           string `gorm:"size:1;not null"`
 
 	AnalysisTitle string `gorm:"size:255;not null"`
 	AnalysisBody  string `gorm:"type:text;not null"`

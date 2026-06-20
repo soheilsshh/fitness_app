@@ -10,44 +10,24 @@ import {
 } from "react-icons/fi";
 import { FaDumbbell, FaAppleAlt, FaHeartbeat } from "react-icons/fa";
 
-// Gym + coaching value pillars — what FitPro actually delivers.
-const PILLARS = [
-  {
-    icon: FiAward,
-    color: "text-surface-tint",
-    title: "مربیان متخصص و تاییدشده",
-    desc: "تیم مربیان حرفه‌ای و دارای مدرک، همراه شخصی شما در تمام مسیر تمرین.",
-  },
-  {
-    icon: FaDumbbell,
-    color: "text-secondary-container",
-    title: "برنامه تمرین اختصاصی",
-    desc: "هر حرکت و هر ست متناسب با بدن، سطح و هدف شما طراحی و به‌روزرسانی می‌شود.",
-  },
-  {
-    icon: FaAppleAlt,
-    color: "text-surface-tint",
-    title: "برنامه تغذیه علمی",
-    desc: "رژیم غذایی دقیق و قابل اجرا، کاملاً هماهنگ با تمرینات و سبک زندگی شما.",
-  },
-  {
-    icon: FiTrendingUp,
-    color: "text-secondary-container",
-    title: "پیگیری پیشرفت",
-    desc: "نتایج خود را با عدد و آمار دنبال کنید؛ هر هفته یک قدم به هدف نزدیک‌تر.",
-  },
-  {
-    icon: FiMessageCircle,
-    color: "text-surface-tint",
-    title: "پشتیبانی همیشگی مربی",
-    desc: "هر زمان سوال یا چالشی داشتی، مربی‌ات مستقیماً کنارت است.",
-  },
-  {
-    icon: FaHeartbeat,
-    color: "text-secondary-container",
-    title: "تمرین در باشگاه یا خانه",
-    desc: "برنامه‌ها برای هر امکانات و شرایطی قابل اجرا هستند، هرجا که باشی.",
-  },
+// Maps a pillar icon key (from the API) to its icon component.
+const PILLAR_ICONS = {
+  award: FiAward,
+  dumbbell: FaDumbbell,
+  apple: FaAppleAlt,
+  trending: FiTrendingUp,
+  message: FiMessageCircle,
+  heartbeat: FaHeartbeat,
+};
+
+// Fallback value pillars — used when the API doesn't provide custom ones.
+const DEFAULT_PILLARS = [
+  { icon: "award", title: "مربیان متخصص و تاییدشده", desc: "تیم مربیان حرفه‌ای و دارای مدرک، همراه شخصی شما در تمام مسیر تمرین." },
+  { icon: "dumbbell", title: "برنامه تمرین اختصاصی", desc: "هر حرکت و هر ست متناسب با بدن، سطح و هدف شما طراحی و به‌روزرسانی می‌شود." },
+  { icon: "apple", title: "برنامه تغذیه علمی", desc: "رژیم غذایی دقیق و قابل اجرا، کاملاً هماهنگ با تمرینات و سبک زندگی شما." },
+  { icon: "trending", title: "پیگیری پیشرفت", desc: "نتایج خود را با عدد و آمار دنبال کنید؛ هر هفته یک قدم به هدف نزدیک‌تر." },
+  { icon: "message", title: "پشتیبانی همیشگی مربی", desc: "هر زمان سوال یا چالشی داشتی، مربی‌ات مستقیماً کنارت است." },
+  { icon: "heartbeat", title: "تمرین در باشگاه یا خانه", desc: "برنامه‌ها برای هر امکانات و شرایطی قابل اجرا هستند، هرجا که باشی." },
 ];
 
 // Onboarding flow — used when the API doesn't provide custom steps.
@@ -57,8 +37,9 @@ const DEFAULT_STEPS = [
   { id: "s3", title: "شروع برنامه", text: "برنامه تمرین و تغذیه را در پنل کاربری دنبال کنید." },
 ];
 
-export default function AboutSection({ steps }) {
+export default function AboutSection({ steps, pillars }) {
   const stepItems = steps?.length ? steps : DEFAULT_STEPS;
+  const pillarItems = pillars?.length ? pillars : DEFAULT_PILLARS;
 
   return (
     <section id="about" className="mx-auto max-w-7xl scroll-mt-24 overflow-hidden px-6 py-12 md:py-16">
@@ -130,11 +111,12 @@ export default function AboutSection({ steps }) {
 
       {/* Value pillars */}
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {PILLARS.map((p, idx) => {
-          const Icon = p.icon;
+        {pillarItems.map((p, idx) => {
+          const Icon = PILLAR_ICONS[p.icon] || FiAward;
+          const color = idx % 2 === 0 ? "text-surface-tint" : "text-secondary-container";
           return (
             <motion.div
-              key={p.title}
+              key={p.id || p.title}
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.25 }}
@@ -142,7 +124,7 @@ export default function AboutSection({ steps }) {
               className="group glow-card flex h-full flex-col gap-4 rounded-2xl p-6 text-right"
             >
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted ring-1 ring-border transition-transform group-hover:scale-110">
-                <Icon className={`text-3xl ${p.color}`} />
+                <Icon className={`text-3xl ${color}`} />
               </div>
               <div>
                 <h3 className="text-xl font-semibold text-primary">{p.title}</h3>

@@ -7,6 +7,7 @@ import ImageUploader from "./ImageUploader";
 import FeatureBulletsEditor from "./FeatureBulletsEditor";
 import StatsEditor from "./StatsEditor";
 import StepsEditor from "./StepsEditor";
+import PillarsEditor from "./PillarsEditor";
 import SaveBar from "./SaveBar";
 import ContactInfoEditor from "./ContactInfoEditor";
 import {
@@ -134,6 +135,11 @@ export default function SiteSettingsClient() {
       <StepsEditor
         value={settings.steps}
         onChange={(steps) => setSettings((p) => ({ ...p, steps }))}
+      />
+
+      <PillarsEditor
+        value={settings.pillars}
+        onChange={(pillars) => setSettings((p) => ({ ...p, pillars }))}
       />
 
       <ContactInfoEditor

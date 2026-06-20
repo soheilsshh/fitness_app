@@ -22,6 +22,7 @@ type SiteSettings struct {
 	FeatureBullets json.RawMessage `gorm:"type:json"` // { title: string, items: string[] }
 	Stats          json.RawMessage `gorm:"type:json"` // [{ id, value, label }]
 	Steps          json.RawMessage `gorm:"type:json"` // [{ id, title, text }]
+	Pillars        json.RawMessage `gorm:"type:json"` // [{ id, icon, title, desc }]
 	ContactInfo    json.RawMessage `gorm:"type:json"` // { address, phone, email, instagram, telegram, whatsapp }
 }
 

@@ -37,7 +37,7 @@ export default function HomeClient() {
         </section>
         <ProgramsSection />
         <RecordsSection stats={settings?.stats} />
-        <AboutSection steps={settings?.steps} />
+        <AboutSection steps={settings?.steps} pillars={settings?.pillars} />
         <ContactSection contactInfo={settings?.contactInfo} />
         <Footer />
       </main>

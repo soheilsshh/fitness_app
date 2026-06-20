@@ -15,6 +15,7 @@ type SiteSettingsDTO struct {
 	FeatureBullets  FeatureBulletsDTO   `json:"featureBullets"`
 	Stats           []StatItemDTO       `json:"stats"`
 	Steps           []StepItemDTO       `json:"steps"`
+	Pillars         []PillarItemDTO     `json:"pillars"`
 	ContactInfo     ContactInfoDTO      `json:"contactInfo"`
 }
 
@@ -37,6 +38,15 @@ type StepItemDTO struct {
 	ID    string `json:"id"`
 	Title string `json:"title"`
 	Text  string `json:"text"`
+}
+
+// PillarItemDTO is one "why FitPro" value card. Icon is a string key the
+// frontend maps to an actual icon component (e.g. "award", "dumbbell").
+type PillarItemDTO struct {
+	ID    string `json:"id"`
+	Icon  string `json:"icon"`
+	Title string `json:"title"`
+	Desc  string `json:"desc"`
 }
 
 type ContactInfoDTO struct {
@@ -66,6 +76,14 @@ var defaultSiteSettingsDTO = SiteSettingsDTO{
 		{ID: "c1", Title: "ثبت پیشرفت", Text: "وزن، دور کمر، رکوردهای تمرینی و عکس‌های دوره‌ای رو ثبت کن."},
 		{ID: "c2", Title: "تحلیل روند", Text: "روند تغییراتت رو ببین و پلن رو بر اساس شرایطت تنظیم کن."},
 		{ID: "c3", Title: "پایداری نتیجه", Text: "با رویکرد مرحله‌ای، نتیجه رو پایدار نگه دار."},
+	},
+	Pillars: []PillarItemDTO{
+		{ID: "p1", Icon: "award", Title: "مربیان متخصص و تاییدشده", Desc: "تیم مربیان حرفه‌ای و دارای مدرک، همراه شخصی شما در تمام مسیر تمرین."},
+		{ID: "p2", Icon: "dumbbell", Title: "برنامه تمرین اختصاصی", Desc: "هر حرکت و هر ست متناسب با بدن، سطح و هدف شما طراحی و به‌روزرسانی می‌شود."},
+		{ID: "p3", Icon: "apple", Title: "برنامه تغذیه علمی", Desc: "رژیم غذایی دقیق و قابل اجرا، کاملاً هماهنگ با تمرینات و سبک زندگی شما."},
+		{ID: "p4", Icon: "trending", Title: "پیگیری پیشرفت", Desc: "نتایج خود را با عدد و آمار دنبال کنید؛ هر هفته یک قدم به هدف نزدیک‌تر."},
+		{ID: "p5", Icon: "message", Title: "پشتیبانی همیشگی مربی", Desc: "هر زمان سوال یا چالشی داشتی، مربی‌ات مستقیماً کنارت است."},
+		{ID: "p6", Icon: "heartbeat", Title: "تمرین در باشگاه یا خانه", Desc: "برنامه‌ها برای هر امکانات و شرایطی قابل اجرا هستند، هرجا که باشی."},
 	},
 	ContactInfo: ContactInfoDTO{
 		Address:   "تهران، ...",
@@ -115,6 +133,9 @@ func rowToDTO(row *models.SiteSettings) (*SiteSettingsDTO, error) {
 	if len(row.Steps) > 0 {
 		_ = json.Unmarshal(row.Steps, &dto.Steps)
 	}
+	if len(row.Pillars) > 0 {
+		_ = json.Unmarshal(row.Pillars, &dto.Pillars)
+	}
 	if len(row.ContactInfo) > 0 {
 		_ = json.Unmarshal(row.ContactInfo, &dto.ContactInfo)
 	}
@@ -126,6 +147,9 @@ func rowToDTO(row *models.SiteSettings) (*SiteSettingsDTO, error) {
 	}
 	if dto.Steps == nil {
 		dto.Steps = defaultSiteSettingsDTO.Steps
+	}
+	if dto.Pillars == nil {
+		dto.Pillars = defaultSiteSettingsDTO.Pillars
 	}
 	return dto, nil
 }
@@ -152,6 +176,9 @@ func (s *siteSettingsService) Update(ctx context.Context, dto *SiteSettingsDTO) 
 		return err
 	}
 	if row.Steps, err = json.Marshal(dto.Steps); err != nil {
+		return err
+	}
+	if row.Pillars, err = json.Marshal(dto.Pillars); err != nil {
 		return err
 	}
 	if row.ContactInfo, err = json.Marshal(dto.ContactInfo); err != nil {

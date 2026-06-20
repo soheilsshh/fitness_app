@@ -287,9 +287,11 @@ func NewServer() *Server {
 		adminGroup.GET("/exercises/:id", adminExerciseController.GetExerciseByID)
 		adminGroup.PATCH("/exercises/:id", adminExerciseController.UpdateExercise)
 		adminGroup.DELETE("/exercises/:id", adminExerciseController.DeleteExercise)
+		adminGroup.GET("/funnel-stats", adminFunnelController.Stats)
 		adminGroup.GET("/funnel-leads", adminFunnelController.ListLeads)
 		adminGroup.GET("/funnel-leads/:id", adminFunnelController.GetLead)
 		adminGroup.PATCH("/funnel-leads/:id", adminFunnelController.PatchLead)
+		adminGroup.DELETE("/funnel-leads/:id", adminFunnelController.DeleteLead)
 	}
 
 	// Serve uploaded files (e.g. user body photos) at /uploads/*

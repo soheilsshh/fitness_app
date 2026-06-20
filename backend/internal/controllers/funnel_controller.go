@@ -154,3 +154,30 @@ func (h *AdminFunnelController) PatchLead(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"ok": true})
 }
+
+func (h *AdminFunnelController) DeleteLead(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		return
+	}
+
+	if err := h.funnelService.DeleteLead(c.Request.Context(), uint(id)); err != nil {
+		if errors.Is(err, service.ErrFunnelLeadNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "lead not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"ok": true})
+}
+
+func (h *AdminFunnelController) Stats(c *gin.Context) {
+	stats, err := h.funnelService.GetStats(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, stats)
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -22,18 +22,24 @@ import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import {
   ANALYZING_MESSAGES,
+  PREPARING_MESSAGES,
   QUESTIONS,
   buildAnalysis,
 } from "../_lib/funnelConfig";
+import FunnelHero from "./FunnelHero";
+import Typewriter from "./Typewriter";
 
-const slideVariants = {
-  enter: (dir) => ({ x: dir > 0 ? 48 : -48, opacity: 0 }),
-  center: { x: 0, opacity: 1 },
-  exit: (dir) => ({ x: dir > 0 ? -48 : 48, opacity: 0 }),
-};
+const LAST_INDEX = QUESTIONS.length - 1;
 
 function formatToman(n) {
   return new Intl.NumberFormat("fa-IR").format(Number(n || 0)) + " تومان";
+}
+
+// Progress per the funnel doc: Q1-4 → up to 60%, Q5-7 → up to 85%,
+// analysis/lead capture → 95-100%.
+function quizProgress(qIndex) {
+  if (qIndex <= 3) return ((qIndex + 1) / 4) * 60;
+  return 60 + ((qIndex - 3) / 3) * 25;
 }
 
 export default function LeadFunnelWizard() {
@@ -41,74 +47,106 @@ export default function LeadFunnelWizard() {
   const searchParams = useSearchParams();
 
   const [config, setConfig] = useState(null);
-  const [step, setStep] = useState(0);
-  const [direction, setDirection] = useState(1);
+  const [stage, setStage] = useState("hero"); // hero | quiz | analyzing | result
+  const [qIndex, setQIndex] = useState(0);
+  const [phase, setPhase] = useState("typing"); // typing | options | locking | preparing
   const [answers, setAnswers] = useState({});
   const [analyzingMsg, setAnalyzingMsg] = useState(0);
+  const [prepMsg, setPrepMsg] = useState(0);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  const lockTimer = useRef(null);
+
   const utmSource = searchParams.get("utm_source") || "";
   const utmCampaign = searchParams.get("utm_campaign") || "";
 
   useEffect(() => {
-    api.get("/public/funnel/config").then((res) => setConfig(res.data)).catch(() => {
-      setConfig({
-        coachName: "علی رشید آبادی",
-        packageTitle: "پکیج مربیگری اختصاصی",
-        amount: 2500000,
+    api
+      .get("/public/funnel/config")
+      .then((res) => setConfig(res.data))
+      .catch(() => {
+        setConfig({
+          coachName: "علی رشید آبادی",
+          packageTitle: "پکیج مربیگری اختصاصی",
+          amount: 2500000,
+        });
       });
-    });
   }, []);
+
+  useEffect(() => () => clearTimeout(lockTimer.current), []);
 
   const coachName = config?.coachName || "علی رشید آبادی";
+  const currentQ = QUESTIONS[qIndex];
 
   const analysis = useMemo(() => {
-    if (step < 4 || !answers.primaryGoal) return null;
+    if (stage !== "result" || !answers.primaryGoal) return null;
     return buildAnalysis(answers, coachName);
-  }, [answers, coachName, step]);
+  }, [answers, coachName, stage]);
 
-  const totalSteps = 5;
-  const progressValue = useMemo(() => {
-    if (step <= 2) return ((step + 1) / totalSteps) * 100;
-    if (step === 3) return 80;
-    return 100;
-  }, [step]);
+  // Between-question loader → reveal next question with a typewriter title.
+  useEffect(() => {
+    if (stage !== "quiz" || phase !== "preparing") return;
+    setPrepMsg(0);
+    const rotate = setInterval(() => {
+      setPrepMsg((m) => (m + 1) % PREPARING_MESSAGES.length);
+    }, 420);
+    const advance = setTimeout(() => {
+      setQIndex((i) => Math.min(i + 1, LAST_INDEX));
+      setPhase("typing");
+    }, 1150);
+    return () => {
+      clearInterval(rotate);
+      clearTimeout(advance);
+    };
+  }, [stage, phase]);
 
-  const goNext = useCallback(() => {
-    setDirection(1);
-    setStep((s) => s + 1);
+  // Fake analysis crunch before showing the report.
+  useEffect(() => {
+    if (stage !== "analyzing") return;
+    setAnalyzingMsg(0);
+    const rotate = setInterval(() => {
+      setAnalyzingMsg((m) => (m + 1) % ANALYZING_MESSAGES.length);
+    }, 700);
+    const done = setTimeout(() => setStage("result"), 2800);
+    return () => {
+      clearInterval(rotate);
+      clearTimeout(done);
+    };
+  }, [stage]);
+
+  const startQuiz = useCallback(() => {
+    setAnswers({});
+    setQIndex(0);
+    setPhase("typing");
+    setStage("quiz");
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   }, []);
 
-  const goBack = useCallback(() => {
-    if (step <= 0 || step === 3) return;
-    setDirection(-1);
-    setStep((s) => s - 1);
-  }, [step]);
+  const onTitleDone = useCallback(() => {
+    setPhase((p) => (p === "typing" ? "options" : p));
+  }, []);
 
-  const selectOption = (questionKey, value) => {
-    setAnswers((prev) => ({ ...prev, [questionKey]: value }));
-    setTimeout(goNext, 280);
+  const selectOption = (value) => {
+    if (phase !== "options") return;
+    setAnswers((prev) => ({ ...prev, [currentQ.key]: value }));
+    setPhase("locking");
+    lockTimer.current = setTimeout(() => {
+      if (qIndex >= LAST_INDEX) setStage("analyzing");
+      else setPhase("preparing");
+    }, 320);
   };
 
-  useEffect(() => {
-    if (step !== 3) return;
-    let msgIdx = 0;
-    const msgTimer = setInterval(() => {
-      msgIdx = (msgIdx + 1) % ANALYZING_MESSAGES.length;
-      setAnalyzingMsg(msgIdx);
-    }, 700);
-    const doneTimer = setTimeout(() => {
-      setDirection(1);
-      setStep(4);
-    }, 2800);
-    return () => {
-      clearInterval(msgTimer);
-      clearTimeout(doneTimer);
-    };
-  }, [step]);
+  const goBack = () => {
+    if (phase !== "options" || qIndex <= 0) return;
+    clearTimeout(lockTimer.current);
+    setQIndex((i) => i - 1);
+    setPhase("options");
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -128,7 +166,11 @@ export default function LeadFunnelWizard() {
         phone: phone.trim(),
         primaryGoal: answers.primaryGoal,
         activityLevel: answers.activityLevel,
+        trainingEnv: answers.trainingEnv,
+        experience: answers.experience,
+        nutritionChallenge: answers.nutritionChallenge,
         mainObstacle: answers.mainObstacle,
+        commitment: answers.commitment,
         scenario: analysis.scenario,
         analysisTitle: analysis.title,
         analysisBody: analysis.sections.map((s) => `${s.title}\n${s.body}`).join("\n\n"),
@@ -146,7 +188,18 @@ export default function LeadFunnelWizard() {
     }
   };
 
+  // ---------- HERO ----------
+  if (stage === "hero") {
+    return (
+      <div className="min-h-[calc(100vh-4rem)]">
+        <FunnelHero coachName={coachName} onStart={startQuiz} />
+      </div>
+    );
+  }
+
   const scenarioColor = analysis?.meta?.color || "primary";
+  const progressValue =
+    stage === "quiz" ? quizProgress(qIndex) : stage === "analyzing" ? 92 : 96;
 
   return (
     <div dir="rtl" className="relative min-h-[calc(100vh-4rem)] overflow-hidden">
@@ -159,85 +212,161 @@ export default function LeadFunnelWizard() {
         <motion.div
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8 text-center"
+          className="mb-6 text-center"
         >
-          <Badge variant="outline" className="mb-4 gap-2 px-4 py-1.5">
+          <Badge variant="outline" className="gap-2 px-4 py-1.5">
             <Sparkles className="size-3.5 text-primary" />
             ارزیابی رایگان · استاد {coachName}
           </Badge>
-          {step <= 2 && (
-            <>
-              <h1 className="text-2xl font-extrabold text-foreground md:text-3xl">
-                {QUESTIONS[step]?.title}
-              </h1>
-              <p className="mt-2 text-sm text-muted-foreground md:text-base">
-                {QUESTIONS[step]?.subtitle}
-              </p>
-            </>
-          )}
         </motion.div>
 
-        {step <= 2 && (
+        {/* progress bar */}
+        {stage !== "result" && (
           <div className="mb-8 space-y-2">
             <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>مرحله {step + 1} از {totalSteps}</span>
-              <span>{Math.round(progressValue)}٪</span>
+              <span>
+                {stage === "quiz"
+                  ? `سوال ${qIndex + 1} از ${QUESTIONS.length}`
+                  : "در حال تحلیل"}
+              </span>
+              <span className="tabular-nums">{Math.round(progressValue)}٪</span>
             </div>
             <Progress value={progressValue} className="h-2" />
           </div>
         )}
 
-        <AnimatePresence mode="wait" custom={direction}>
-          {step <= 2 && (
+        <AnimatePresence mode="wait">
+          {/* ---------- QUIZ: preparing loader ---------- */}
+          {stage === "quiz" && phase === "preparing" && (
             <motion.div
-              key={`q-${step}`}
-              custom={direction}
-              variants={slideVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{ duration: 0.35, ease: "easeOut" }}
-              className="grid gap-3"
+              key="preparing"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="flex flex-col items-center py-20 text-center"
             >
-              {QUESTIONS[step].options.map((opt, i) => {
-                const selected = answers[QUESTIONS[step].key] === opt.value;
-                return (
-                  <motion.button
-                    key={opt.value}
-                    type="button"
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.07 }}
-                    onClick={() => selectOption(QUESTIONS[step].key, opt.value)}
-                    className={cn(
-                      "group flex w-full items-center gap-4 rounded-2xl border p-5 text-start transition-all duration-200",
-                      "hover:border-primary/50 hover:bg-primary/5 hover:shadow-md",
-                      selected
-                        ? "border-primary bg-primary/10 shadow-md ring-2 ring-primary/20"
-                        : "border-border bg-card/60 backdrop-blur-sm"
-                    )}
-                  >
-                    <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-muted text-2xl transition-transform group-hover:scale-110">
-                      {opt.emoji}
-                    </span>
-                    <span className="flex-1 text-sm font-medium leading-7 text-foreground md:text-base">
-                      {opt.label}
-                    </span>
-                    <ArrowLeft className="size-5 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
-                  </motion.button>
-                );
-              })}
-
-              {step > 0 && (
-                <Button type="button" variant="ghost" onClick={goBack} className="mt-2 self-start">
-                  <ArrowRight className="size-4" />
-                  سوال قبل
-                </Button>
-              )}
+              <div className="relative mb-6">
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1.4, repeat: Infinity, ease: "linear" }}
+                  className="size-14 rounded-full border-2 border-primary/20 border-t-primary"
+                />
+              </div>
+              <AnimatePresence mode="wait">
+                <motion.p
+                  key={prepMsg}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  className="text-sm font-medium text-foreground"
+                >
+                  {PREPARING_MESSAGES[prepMsg]}
+                </motion.p>
+              </AnimatePresence>
             </motion.div>
           )}
 
-          {step === 3 && (
+          {/* ---------- QUIZ: question ---------- */}
+          {stage === "quiz" && phase !== "preparing" && (
+            <motion.div
+              key={`q-${qIndex}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0, x: -40 }}
+              transition={{ duration: 0.3 }}
+              className="min-h-[20rem]"
+            >
+              <div className="mb-8 text-center">
+                <h1 className="min-h-[3.5rem] text-2xl font-extrabold leading-relaxed text-foreground md:text-3xl">
+                  {phase === "typing" ? (
+                    <Typewriter
+                      key={`tw-${qIndex}`}
+                      text={currentQ.title}
+                      speed={36}
+                      onDone={onTitleDone}
+                    />
+                  ) : (
+                    currentQ.title
+                  )}
+                </h1>
+                <AnimatePresence>
+                  {phase !== "typing" && (
+                    <motion.p
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="mt-2 text-sm text-muted-foreground md:text-base"
+                    >
+                      {currentQ.subtitle}
+                    </motion.p>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* options reveal after the title finishes typing */}
+              <AnimatePresence>
+                {phase !== "typing" && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="grid gap-3"
+                  >
+                    {currentQ.options.map((opt, i) => {
+                      const selected = answers[currentQ.key] === opt.value;
+                      const locked = phase === "locking";
+                      return (
+                        <motion.button
+                          key={opt.value}
+                          type="button"
+                          disabled={locked}
+                          initial={{ opacity: 0, y: 18 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: i * 0.12, duration: 0.35 }}
+                          onClick={() => selectOption(opt.value)}
+                          className={cn(
+                            "group flex w-full items-center gap-4 rounded-2xl border p-5 text-start transition-all duration-200",
+                            "hover:border-primary/50 hover:bg-primary/5 hover:shadow-md hover:shadow-primary/10",
+                            !locked && "hover:scale-[1.02]",
+                            selected
+                              ? "border-primary bg-primary/10 shadow-md shadow-primary/20 ring-2 ring-primary/30"
+                              : "border-border bg-card/60 backdrop-blur-sm"
+                          )}
+                        >
+                          <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-muted text-2xl transition-transform group-hover:scale-110">
+                            {opt.emoji}
+                          </span>
+                          <span className="flex-1 text-sm font-medium leading-7 text-foreground md:text-base">
+                            {opt.label}
+                          </span>
+                          {selected ? (
+                            <CheckCircle2 className="size-5 shrink-0 text-primary" />
+                          ) : (
+                            <ArrowLeft className="size-5 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+                          )}
+                        </motion.button>
+                      );
+                    })}
+
+                    {qIndex > 0 && phase === "options" && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={goBack}
+                        className="mt-1 self-start text-muted-foreground"
+                      >
+                        <ArrowRight className="size-4" />
+                        سوال قبل
+                      </Button>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          )}
+
+          {/* ---------- ANALYZING ---------- */}
+          {stage === "analyzing" && (
             <motion.div
               key="analyzing"
               initial={{ opacity: 0, scale: 0.96 }}
@@ -278,7 +407,8 @@ export default function LeadFunnelWizard() {
             </motion.div>
           )}
 
-          {step === 4 && analysis && (
+          {/* ---------- RESULT: analysis + lead capture ---------- */}
+          {stage === "result" && analysis && (
             <motion.div
               key="analysis"
               initial={{ opacity: 0, y: 24 }}
@@ -287,12 +417,17 @@ export default function LeadFunnelWizard() {
               className="space-y-6"
             >
               <Card className="overflow-hidden border-primary/20 bg-card/80 py-0 shadow-xl backdrop-blur-sm">
-                <div className={cn(
-                  "bg-linear-to-l px-6 py-5",
-                  scenarioColor === "rose" && "from-rose-500/20 via-rose-500/10 to-transparent",
-                  scenarioColor === "emerald" && "from-emerald-500/20 via-emerald-500/10 to-transparent",
-                  scenarioColor === "sky" && "from-sky-500/20 via-sky-500/10 to-transparent",
-                )}>
+                <div
+                  className={cn(
+                    "bg-linear-to-l px-6 py-5",
+                    scenarioColor === "rose" &&
+                      "from-rose-500/20 via-rose-500/10 to-transparent",
+                    scenarioColor === "emerald" &&
+                      "from-emerald-500/20 via-emerald-500/10 to-transparent",
+                    scenarioColor === "sky" &&
+                      "from-sky-500/20 via-sky-500/10 to-transparent"
+                  )}
+                >
                   <Badge className="mb-3">{analysis.meta.badge}</Badge>
                   <h2 className="text-xl font-extrabold text-foreground md:text-2xl">
                     {analysis.title}
@@ -333,7 +468,10 @@ export default function LeadFunnelWizard() {
                     <h3 className="mb-3 text-sm font-bold text-foreground">پیشنهادهای کلیدی</h3>
                     <ul className="space-y-2">
                       {analysis.recommendations.map((rec) => (
-                        <li key={rec} className="flex items-start gap-2 text-sm text-muted-foreground">
+                        <li
+                          key={rec}
+                          className="flex items-start gap-2 text-sm text-muted-foreground"
+                        >
                           <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" />
                           {rec}
                         </li>
@@ -382,6 +520,7 @@ export default function LeadFunnelWizard() {
                       <Input
                         id="phone"
                         type="tel"
+                        inputMode="numeric"
                         dir="ltr"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
@@ -394,7 +533,9 @@ export default function LeadFunnelWizard() {
                     {config?.amount && (
                       <div className="rounded-xl border border-border bg-muted/30 px-4 py-3 text-sm">
                         <span className="text-muted-foreground">مبلغ پکیج: </span>
-                        <span className="font-bold text-foreground">{formatToman(config.amount)}</span>
+                        <span className="font-bold text-foreground">
+                          {formatToman(config.amount)}
+                        </span>
                       </div>
                     )}
 
