@@ -60,10 +60,18 @@ const cartSlice = createSlice({
       state.coachName = "";
       state.coachSlug = "";
     },
+    hydrateCart(state, action) {
+      const payload = action.payload;
+      if (!payload || typeof payload !== "object") return;
+      state.coachId = payload.coachId ?? null;
+      state.coachName = payload.coachName ?? "";
+      state.coachSlug = payload.coachSlug ?? "";
+      state.items = Array.isArray(payload.items) ? payload.items : [];
+    },
   },
 });
 
-export const { addToCart, removeFromCart, clearCart } = cartSlice.actions;
+export const { addToCart, removeFromCart, clearCart, hydrateCart } = cartSlice.actions;
 
 export const selectCartItems = (s) => s.cart.items;
 

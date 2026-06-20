@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { FiUser, FiSmartphone, FiKey, FiLock, FiArrowLeft, FiEdit3 } from "react-icons/fi";
 import {
@@ -12,12 +12,19 @@ import {
   toastSuccess,
 } from "../../_components/helpers";
 import { api } from "@/lib/axios/client";
-import { getPostLoginPath } from "@/lib/auth/roles";
 import { persistAuthSession } from "@/lib/auth/session";
+import {
+  buildAuthUrl,
+  readRedirectParam,
+  resolvePostAuthPath,
+} from "@/lib/auth/postAuthRedirect";
 import { Button } from "@/components/ui/button";
 
 export default function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnPath = readRedirectParam(searchParams);
+  const loginHref = buildAuthUrl("/auth/login", returnPath);
 
   const [phone, setPhone] = useState("");
   const [phoneLocked, setPhoneLocked] = useState(false);
@@ -67,7 +74,12 @@ export default function RegisterForm() {
 
   const handleAuthSuccess = (data) => {
     persistAuthSession(data);
-    router.replace(getPostLoginPath(data?.user?.role, data?.user?.isProfileComplete));
+    const target = resolvePostAuthPath({
+      role: data?.user?.role,
+      isProfileComplete: data?.user?.isProfileComplete,
+      nextPath: returnPath,
+    });
+    router.replace(target);
   };
 
   const submitRegister = async () => {
@@ -106,7 +118,7 @@ export default function RegisterForm() {
           variant="ghost"
           asChild
         >
-        <Link href="/auth/login" >
+        <Link href={loginHref} >
           ورود
         </Link>
         </Button>

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { FiSmartphone, FiKey, FiArrowLeft, FiEdit3 } from "react-icons/fi";
 import {
@@ -12,13 +12,20 @@ import {
   toastSuccess,
 } from "../../_components/helpers";
 import { api } from "@/lib/axios/client";
-import { getPostLoginPath } from "@/lib/auth/roles";
 import { persistAuthSession } from "@/lib/auth/session";
+import {
+  buildAuthUrl,
+  readRedirectParam,
+  resolvePostAuthPath,
+} from "@/lib/auth/postAuthRedirect";
 import { Eye, EyeClosed, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnPath = readRedirectParam(searchParams);
+  const registerHref = buildAuthUrl("/auth/register", returnPath);
 
   const [mode, setMode] = useState("password"); // "password" | "otp"
 
@@ -42,7 +49,12 @@ export default function LoginForm() {
 
   const handleAuthSuccess = (data) => {
     persistAuthSession(data);
-    router.replace(getPostLoginPath(data?.user?.role, data?.user?.isProfileComplete));
+    const target = resolvePostAuthPath({
+      role: data?.user?.role,
+      isProfileComplete: data?.user?.isProfileComplete,
+      nextPath: returnPath,
+    });
+    router.replace(target);
   };
 
   const onSendOtp = async () => {
@@ -124,7 +136,7 @@ export default function LoginForm() {
         asChild
         >
         <Link
-          href="/auth/register"
+          href={registerHref}
         >
           ثبت نام
         </Link>
