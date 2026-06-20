@@ -1,12 +1,16 @@
 "use client";
 
-import { FiMail, FiPhone, FiUser } from "react-icons/fi";
+import { FiMail, FiPhone } from "react-icons/fi";
+import RowActions from "@/app/(panel)/_shared/RowActions";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-
-function cn(...xs) {
-  return xs.filter(Boolean).join(" ");
-}
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 function formatDateFa(iso) {
   try {
@@ -23,54 +27,58 @@ export default function FeedbackList({ items, onSelect }) {
         لیست پیام‌ها
       </CardContent>
 
-      <CardContent className="divide-y">
+      <CardContent className="pt-4">
         {items.length === 0 ? (
-          <div className="py-5 text-sm text-muted-foreground">پیامی وجود ندارد.</div>
+          <p className="py-6 text-center text-sm text-muted-foreground">
+            پیامی وجود ندارد.
+          </p>
         ) : (
-          items.map((x) => (
-            <Button
-              key={x.id}
-              type="button"
-              variant="ghost"
-              onClick={() => onSelect?.(x.id)}
-              className={cn(
-                "block h-auto w-full justify-start whitespace-normal rounded-none px-0 py-4 text-right"
-              )}
-            >
-              <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="inline-flex items-center gap-1 rounded-full border bg-muted/30 px-3 py-1 text-xs">
-                      <FiUser />
-                      {x.fullName}
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>فرستنده</TableHead>
+                <TableHead>تماس</TableHead>
+                <TableHead>پیام</TableHead>
+                <TableHead>تاریخ</TableHead>
+                <TableHead className="text-end">عملیات</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {items.map((x) => (
+                <TableRow key={x.id}>
+                  <TableCell className="text-sm font-medium">{x.fullName}</TableCell>
+                  <TableCell>
+                    <div className="flex flex-col gap-1 text-xs text-muted-foreground">
+                      {x.phone ? (
+                        <span className="inline-flex items-center gap-1">
+                          <FiPhone className="size-3" />
+                          {x.phone}
+                        </span>
+                      ) : null}
+                      {x.email ? (
+                        <span className="inline-flex items-center gap-1">
+                          <FiMail className="size-3" />
+                          <span className="max-w-[200px] truncate">{x.email}</span>
+                        </span>
+                      ) : null}
+                      {!x.phone && !x.email ? "—" : null}
+                    </div>
+                  </TableCell>
+                  <TableCell className="max-w-xs">
+                    <span className="line-clamp-2 text-sm text-foreground">
+                      {x.message}
                     </span>
-
-                    {x.phone ? (
-                      <span className="inline-flex items-center gap-1 rounded-full border bg-muted/30 px-3 py-1 text-xs">
-                        <FiPhone />
-                        {x.phone}
-                      </span>
-                    ) : null}
-
-                    {x.email ? (
-                      <span className="inline-flex items-center gap-1 rounded-full border bg-muted/30 px-3 py-1 text-xs">
-                        <FiMail />
-                        <span className="max-w-[220px] truncate">{x.email}</span>
-                      </span>
-                    ) : null}
-                  </div>
-
-                  <div className="mt-2 line-clamp-2 text-sm text-foreground">
-                    {x.message}
-                  </div>
-                </div>
-
-                <div className="shrink-0 text-xs text-muted-foreground">
-                  {formatDateFa(x.createdAt)}
-                </div>
-              </div>
-            </Button>
-          ))
+                  </TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
+                    {formatDateFa(x.createdAt)}
+                  </TableCell>
+                  <TableCell className="text-end">
+                    <RowActions onView={() => onSelect?.(x.id)} />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         )}
       </CardContent>
     </Card>

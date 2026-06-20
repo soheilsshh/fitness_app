@@ -1,15 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { AlertTriangle, ChevronLeft, Users } from "lucide-react";
+import { AlertTriangle, Users } from "lucide-react";
 import { api } from "@/lib/axios/client";
 import PanelPagination from "@/app/(panel)/_shared/Pagination";
+import RowActions from "@/app/(panel)/_shared/RowActions";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 const PAGE_SIZE = 20;
 
@@ -79,62 +86,71 @@ export default function CoachTrackingClient() {
         </CardContent>
       </Card>
 
-      <div className="space-y-2">
-        {loading ? (
-          Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-20 w-full rounded-xl" />
-          ))
-        ) : items.length === 0 ? (
-          <Card>
-            <CardContent className="py-10 text-center text-sm text-muted-foreground">
+      <Card>
+        <CardContent className="pt-6">
+          {loading ? (
+            <div className="space-y-2">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="h-11 w-full rounded-md" />
+              ))}
+            </div>
+          ) : items.length === 0 ? (
+            <p className="py-10 text-center text-sm text-muted-foreground">
               موردی یافت نشد.
-            </CardContent>
-          </Card>
-        ) : (
-          items.map((student) => (
-            <Link
-              key={student.id}
-              href={`/coach/tracking/${student.id}`}
-              className="block"
-            >
-              <Card
-                className={cn(
-                  "transition-colors hover:bg-muted/40",
-                  student.maxOverdueDays > 0 && "border-amber-500/40"
-                )}
-              >
-                <CardContent className="flex items-center justify-between gap-3 pt-4">
-                  <div className="min-w-0 text-start">
-                    <p className="truncate text-sm font-semibold">{student.fullName}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">{student.phone}</p>
-                    {student.alerts?.length > 0 && (
-                      <p className="mt-2 flex items-start gap-1 text-xs text-amber-700 dark:text-amber-300">
-                        <AlertTriangle className="mt-0.5 size-3 shrink-0" />
-                        {student.alerts[0].message}
+            </p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>دانشجو</TableHead>
+                  <TableHead>وضعیت پایش</TableHead>
+                  <TableHead>هشدار</TableHead>
+                  <TableHead className="text-end">عملیات</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {items.map((student) => (
+                  <TableRow key={student.id}>
+                    <TableCell>
+                      <p className="text-sm font-semibold">{student.fullName}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {student.phone}
                       </p>
-                    )}
-                  </div>
-                  <div className="flex shrink-0 flex-col items-end gap-2">
-                    {student.maxOverdueDays > 0 ? (
-                      <Badge variant="destructive" className="bg-amber-600">
-                        {student.maxOverdueDays.toLocaleString("fa-IR")} روز تأخیر
-                      </Badge>
-                    ) : (
-                      <Badge
-                        variant="outline"
-                        className="border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-                      >
-                        به‌روز
-                      </Badge>
-                    )}
-                  </div>
-                  <ChevronLeft className="size-4 shrink-0 text-muted-foreground" />
-                </CardContent>
-              </Card>
-            </Link>
-          ))
-        )}
-      </div>
+                    </TableCell>
+                    <TableCell>
+                      {student.maxOverdueDays > 0 ? (
+                        <Badge variant="destructive" className="bg-amber-600">
+                          {student.maxOverdueDays.toLocaleString("fa-IR")} روز تأخیر
+                        </Badge>
+                      ) : (
+                        <Badge
+                          variant="outline"
+                          className="border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                        >
+                          به‌روز
+                        </Badge>
+                      )}
+                    </TableCell>
+                    <TableCell className="max-w-xs">
+                      {student.alerts?.length > 0 ? (
+                        <span className="flex items-start gap-1 text-xs text-amber-700 dark:text-amber-300">
+                          <AlertTriangle className="mt-0.5 size-3 shrink-0" />
+                          {student.alerts[0].message}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-end">
+                      <RowActions viewHref={`/coach/tracking/${student.id}`} />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
 
       <PanelPagination page={page} totalPages={totalPages} onPage={setPage} />
     </div>

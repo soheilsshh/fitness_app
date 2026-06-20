@@ -6,6 +6,7 @@ import { Search, Users } from "lucide-react";
 import { api } from "@/lib/axios/client";
 import FilterChip from "@/app/(panel)/admin/plans/_components/FilterChip";
 import PanelPagination from "@/app/(panel)/_shared/Pagination";
+import RowActions from "@/app/(panel)/_shared/RowActions";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -163,7 +164,8 @@ export default function UsersClient() {
                   <TableHead>شماره</TableHead>
                   <TableHead className="text-center">دوره‌ها</TableHead>
                   <TableHead className="text-center">سفارش‌ها</TableHead>
-                  <TableHead className="text-end">وضعیت</TableHead>
+                  <TableHead>وضعیت</TableHead>
+                  <TableHead className="text-end">عملیات</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -186,7 +188,7 @@ export default function UsersClient() {
                     <TableCell className="text-center tabular-nums">
                       {Number(u.ordersCount || 0).toLocaleString("fa-IR")}
                     </TableCell>
-                    <TableCell className="text-end">
+                    <TableCell>
                       <Badge
                         variant="outline"
                         className={cn(
@@ -197,6 +199,9 @@ export default function UsersClient() {
                       >
                         {u.activeProgram ? "فعال" : "غیرفعال"}
                       </Badge>
+                    </TableCell>
+                    <TableCell className="text-end">
+                      <RowActions viewHref={`/admin/users/${u.id}`} />
                     </TableCell>
                   </TableRow>
                 ))}

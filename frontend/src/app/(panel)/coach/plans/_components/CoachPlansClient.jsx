@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ClipboardList, Plus, Search } from "lucide-react";
 import { api } from "@/lib/axios/client";
-import PlanRow from "@/app/(panel)/admin/plans/_components/PlanRow";
+import PlansTable from "@/app/(panel)/admin/plans/_components/PlansTable";
 import FilterChip from "@/app/(panel)/admin/plans/_components/FilterChip";
 import Pagination from "@/app/(panel)/admin/plans/_components/Pagination";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +22,7 @@ export default function CoachPlansClient() {
   const [query, setQuery] = useState("");
   const [tag, setTag] = useState("all");
   const [page, setPage] = useState(1);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -47,7 +48,12 @@ export default function CoachPlansClient() {
     return () => {
       cancelled = true;
     };
-  }, [page, query, tag]);
+  }, [page, query, tag, refreshKey]);
+
+  async function handleDelete(id) {
+    await api.delete(`/coach/plans/${id}`);
+    setRefreshKey((k) => k + 1);
+  }
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
@@ -112,21 +118,25 @@ export default function CoachPlansClient() {
       </Card>
 
       <Card>
-        {loading ? (
-          <CardContent className="space-y-3 py-6">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-16 w-full rounded-lg" />
-            ))}
-          </CardContent>
-        ) : items.length === 0 ? (
-          <CardContent className="py-10 text-center text-sm text-muted-foreground">
-            پلنی یافت نشد.
-          </CardContent>
-        ) : (
-          items.map((plan) => (
-            <PlanRow key={plan.id} plan={plan} basePath="/coach/plans" />
-          ))
-        )}
+        <CardContent className="pt-6">
+          {loading ? (
+            <div className="space-y-2">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="h-11 w-full rounded-md" />
+              ))}
+            </div>
+          ) : items.length === 0 ? (
+            <p className="py-10 text-center text-sm text-muted-foreground">
+              پلنی یافت نشد.
+            </p>
+          ) : (
+            <PlansTable
+              items={items}
+              basePath="/coach/plans"
+              onDelete={handleDelete}
+            />
+          )}
+        </CardContent>
       </Card>
 
       <Pagination page={page} totalPages={totalPages} onChange={setPage} />

@@ -1,14 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { MessageSquare } from "lucide-react";
 import { api } from "@/lib/axios/client";
 import PanelPagination from "@/app/(panel)/_shared/Pagination";
+import RowActions from "@/app/(panel)/_shared/RowActions";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 const PAGE_SIZE = 8;
@@ -44,20 +51,6 @@ function priorityLabel(priority) {
     default:
       return { label: "معمولی", variant: "secondary" };
   }
-}
-
-function RowSkeleton() {
-  return (
-    <Card size="sm">
-      <CardContent className="flex items-center justify-between gap-3 pt-4">
-        <div className="flex-1 space-y-2">
-          <Skeleton className="h-4 w-48" />
-          <Skeleton className="h-3 w-32" />
-        </div>
-        <Skeleton className="h-5 w-20 rounded-full" />
-      </CardContent>
-    </Card>
-  );
 }
 
 export default function CoachTicketsClient() {
@@ -144,45 +137,64 @@ export default function CoachTicketsClient() {
         </Card>
       ) : null}
 
-      {loading ? (
-        <div className="space-y-2">
-          <RowSkeleton />
-          <RowSkeleton />
-          <RowSkeleton />
-        </div>
-      ) : items.length === 0 ? (
-        <Card>
-          <CardContent className="py-10 text-center text-sm text-muted-foreground">
-            تیکتی برای نمایش وجود ندارد.
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-2">
-          {items.map((t) => {
-            const st = statusLabel(t.status);
-            const pr = priorityLabel(t.priority);
-            return (
-              <Card key={t.id} size="sm" className="transition-colors hover:bg-muted/20">
-                <CardContent className="flex flex-col gap-3 pt-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="min-w-0 text-start">
-                    <div className="truncate text-sm font-medium">{t.title}</div>
-                    <div className="mt-1 text-xs text-muted-foreground">
-                      {t.studentName || "دانشجو"} • {faDate(t.createdAt)}
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant={st.variant}>{st.label}</Badge>
-                    <Badge variant={pr.variant}>{pr.label}</Badge>
-                    <Button asChild size="sm" variant="outline">
-                      <Link href={`/coach/tickets/${t.id}`}>مشاهده</Link>
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      )}
+      <Card>
+        <CardContent className="pt-6">
+          {loading ? (
+            <div className="space-y-2">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="h-11 w-full rounded-md" />
+              ))}
+            </div>
+          ) : items.length === 0 ? (
+            <p className="py-10 text-center text-sm text-muted-foreground">
+              تیکتی برای نمایش وجود ندارد.
+            </p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>عنوان</TableHead>
+                  <TableHead>دانشجو</TableHead>
+                  <TableHead>تاریخ</TableHead>
+                  <TableHead>وضعیت</TableHead>
+                  <TableHead>اولویت</TableHead>
+                  <TableHead className="text-end">عملیات</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {items.map((t) => {
+                  const st = statusLabel(t.status);
+                  const pr = priorityLabel(t.priority);
+                  return (
+                    <TableRow key={t.id}>
+                      <TableCell className="max-w-xs">
+                        <span className="block truncate text-sm font-medium">
+                          {t.title}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {t.studentName || "دانشجو"}
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {faDate(t.createdAt)}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={st.variant}>{st.label}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={pr.variant}>{pr.label}</Badge>
+                      </TableCell>
+                      <TableCell className="text-end">
+                        <RowActions viewHref={`/coach/tickets/${t.id}`} />
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
 
       <PanelPagination page={page} totalPages={totalPages} onPage={setPage} />
     </div>

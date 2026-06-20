@@ -1,31 +1,31 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { ChevronLeft, UserCheck } from "lucide-react";
+import { UserCheck } from "lucide-react";
 import { api } from "@/lib/axios/client";
 import PanelPagination from "@/app/(panel)/_shared/Pagination";
+import RowActions from "@/app/(panel)/_shared/RowActions";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
 
 const PAGE_SIZE = 20;
 
-function StudentRowSkeleton() {
-  return (
-    <Card size="sm">
-      <CardContent className="flex items-center justify-between gap-3 pt-4">
-        <div className="flex-1 space-y-2">
-          <Skeleton className="h-4 w-40" />
-          <Skeleton className="h-3 w-28" />
-        </div>
-        <Skeleton className="h-5 w-16 rounded-full" />
-      </CardContent>
-    </Card>
-  );
+function planTypeLabel(type) {
+  if (type === "both") return "تمرین + تغذیه";
+  if (type === "workout") return "تمرین";
+  return "تغذیه";
 }
 
 export default function CoachStudentsClient() {
@@ -113,56 +113,68 @@ export default function CoachStudentsClient() {
         </CardContent>
       </Card>
 
-      <div className="space-y-2">
-        {loading ? (
-          Array.from({ length: 5 }).map((_, i) => <StudentRowSkeleton key={i} />)
-        ) : items.length === 0 ? (
-          <Card>
-            <CardContent className="py-10 text-center text-sm text-muted-foreground">
+      <Card>
+        <CardContent className="pt-6">
+          {loading ? (
+            <div className="space-y-2">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="h-11 w-full rounded-md" />
+              ))}
+            </div>
+          ) : items.length === 0 ? (
+            <p className="py-10 text-center text-sm text-muted-foreground">
               موردی یافت نشد.
-            </CardContent>
-          </Card>
-        ) : (
-          items.map((student) => (
-            <Link key={student.id} href={`/coach/students/${student.id}`} className="block">
-              <Card className="transition-colors hover:bg-muted/40">
-                <CardContent className="flex items-center justify-between gap-3 pt-4">
-                  <div className="min-w-0 text-start">
-                    <p className="truncate text-sm font-semibold">{student.fullName}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">{student.phone}</p>
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      پلن:{" "}
-                      <span className="font-medium text-foreground">
-                        {student.planTitle || "—"}
-                      </span>
-                    </p>
-                  </div>
-                  <div className="flex shrink-0 flex-col items-end gap-2">
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        student.status === "active"
-                          ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-                          : undefined
-                      )}
-                    >
-                      {student.status === "active" ? "فعال" : "در انتظار"}
-                    </Badge>
-                    <Badge variant="secondary">
-                      {student.planType === "both"
-                        ? "تمرین + تغذیه"
-                        : student.planType === "workout"
-                          ? "تمرین"
-                          : "تغذیه"}
-                    </Badge>
-                  </div>
-                  <ChevronLeft className="size-4 shrink-0 text-muted-foreground" />
-                </CardContent>
-              </Card>
-            </Link>
-          ))
-        )}
-      </div>
+            </p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>دانشجو</TableHead>
+                  <TableHead>پلن</TableHead>
+                  <TableHead>نوع</TableHead>
+                  <TableHead>وضعیت</TableHead>
+                  <TableHead className="text-end">عملیات</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {items.map((student) => (
+                  <TableRow key={student.id}>
+                    <TableCell>
+                      <p className="text-sm font-semibold">{student.fullName}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {student.phone}
+                      </p>
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {student.planTitle || "—"}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">
+                        {planTypeLabel(student.planType)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          student.status === "active"
+                            ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                            : undefined
+                        )}
+                      >
+                        {student.status === "active" ? "فعال" : "در انتظار"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-end">
+                      <RowActions viewHref={`/coach/students/${student.id}`} />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
 
       <PanelPagination page={page} totalPages={totalPages} onPage={setPage} />
     </div>
