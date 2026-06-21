@@ -24,6 +24,8 @@ func AllModels() []any {
 		&Ticket{},
 		&OtpCode{},
 		&Exercise{},
+		&Food{},
+		&DailyFoodLog{},
 		&WorkoutSession{},
 		&FunnelLead{},
 		&WorkoutSetLog{},

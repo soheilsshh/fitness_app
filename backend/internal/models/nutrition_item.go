@@ -8,8 +8,10 @@ type NutritionItem struct {
 	DayNumber          int     `gorm:"not null"`
 	MealNumber         int     `gorm:"not null"`
 	OrderIndex         int     `gorm:"not null"`
+	FoodID             *uint   `gorm:"index"`
 	Food               string  `gorm:"size:255;not null"`
 	Quantity           string  `gorm:"size:100"`
+	Multiplier         float64 `gorm:"not null;default:1"`
 	Calories           int
 	Protein            float64
 	Carbs              float64

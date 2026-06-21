@@ -44,6 +44,7 @@ type coachProgramService struct {
 	subRepo         repository.SubscriptionRepository
 	programRepo     repository.ProgramRepository
 	exerciseRepo    repository.ExerciseRepository
+	foodRepo        repository.FoodRepository
 	coachStudentSvc CoachStudentService
 }
 
@@ -52,6 +53,7 @@ func NewCoachProgramService(
 	subRepo repository.SubscriptionRepository,
 	programRepo repository.ProgramRepository,
 	exerciseRepo repository.ExerciseRepository,
+	foodRepo repository.FoodRepository,
 	coachStudentSvc CoachStudentService,
 ) CoachProgramService {
 	return &coachProgramService{
@@ -59,12 +61,14 @@ func NewCoachProgramService(
 		subRepo:         subRepo,
 		programRepo:     programRepo,
 		exerciseRepo:    exerciseRepo,
+		foodRepo:        foodRepo,
 		coachStudentSvc: coachStudentSvc,
 	}
 }
 
 func (s *coachProgramService) finalizePlan(ctx context.Context, planByDay map[string]MeDayPlanDTO, schedule *MeScheduleDTO) (map[string]MeDayPlanDTO, *MeScheduleDTO) {
 	planByDay = enrichWorkoutPlan(ctx, s.exerciseRepo, planByDay)
+	planByDay = enrichNutritionPlan(ctx, s.foodRepo, planByDay)
 	return planByDay, schedule
 }
 
@@ -312,6 +316,7 @@ func (s *coachProgramService) createNutritionProgram(ctx context.Context, coachI
 
 	loadedItems, _ := s.programRepo.FindNutritionItemsByProgramID(ctx, createdID)
 	resultPlan := nutritionItemsToPlanByDay(loadedItems)
+	resultPlan, _ = s.finalizePlan(ctx, resultPlan, nil)
 	return &CoachStudentProgramsResponse{
 		NutritionProgramID: createdID,
 		PlanByDay:          resultPlan,
@@ -360,6 +365,7 @@ func (s *coachProgramService) UpdateNutritionProgram(ctx context.Context, coachI
 
 	loaded, _ := s.programRepo.FindNutritionItemsByProgramID(ctx, program.ID)
 	planByDay := nutritionItemsToPlanByDay(loaded)
+	planByDay, _ = s.finalizePlan(ctx, planByDay, nil)
 	return &CoachStudentProgramsResponse{
 		NutritionProgramID: program.ID,
 		PlanByDay:          planByDay,

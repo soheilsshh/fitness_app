@@ -1,4 +1,5 @@
 import {
+  BookOpen,
   ClipboardListIcon,
   Contact,
   HistoryIcon,
@@ -29,6 +30,11 @@ export const userNav = [
     href: "/user/my-programs",
     label: "برنامه‌های من",
     icon: ClipboardListIcon,
+  },
+  {
+    href: "/user/food-diary",
+    label: "کالری‌شمار من",
+    icon: BookOpen,
   },
   {
     href: "/user/workout-history",

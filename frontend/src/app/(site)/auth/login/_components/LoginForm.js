@@ -179,7 +179,7 @@ export default function LoginForm() {
               value={phone}
               onChange={(e) => setPhone(e.target.value.trim())}
               placeholder="شماره موبایل (09xxxxxxxxx)"
-              className="w-full site-input py-3 pl-4 placeholder:pr-6 disabled:opacity-70 "
+              className="w-full site-input disabled:opacity-70 "
               inputMode="numeric"
               disabled={phoneLocked}
             />
@@ -206,7 +206,7 @@ export default function LoginForm() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="رمز عبور"
-                className="w-full site-input py-3 pl-4 pr-11 placeholder:pr-6 "
+                className="w-full site-input"
               />
               <button
                 onClick={() => setShowPassword(!showPassword)}

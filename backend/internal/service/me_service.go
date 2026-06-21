@@ -178,8 +178,18 @@ type MeNutritionDTO struct {
 }
 
 type MeMealDTO struct {
-	Title  string `json:"title"`
-	Detail string `json:"detail"`
+	Title      string   `json:"title"`
+	Detail     string   `json:"detail"`
+	FoodID     uint     `json:"foodId,omitempty"`
+	Multiplier float64  `json:"multiplier,omitempty"`
+	Unit       string   `json:"unit,omitempty"`
+	Amount     float64  `json:"amount,omitempty"`
+	Calories   float64  `json:"calories,omitempty"`
+	Protein    float64  `json:"protein,omitempty"`
+	Carbs      float64  `json:"carbs,omitempty"`
+	Fat        float64  `json:"fat,omitempty"`
+	Fiber      *float64 `json:"fiber,omitempty"`
+	Sugar      *float64 `json:"sugar,omitempty"`
 }
 
 type MeService interface {
@@ -201,6 +211,7 @@ type meService struct {
 	planRepo     repository.ServicePlanRepository
 	programRepo  repository.ProgramRepository
 	exerciseRepo repository.ExerciseRepository
+	foodRepo     repository.FoodRepository
 }
 
 func NewMeService(
@@ -211,6 +222,7 @@ func NewMeService(
 	planRepo repository.ServicePlanRepository,
 	programRepo repository.ProgramRepository,
 	exerciseRepo repository.ExerciseRepository,
+	foodRepo repository.FoodRepository,
 ) MeService {
 	return &meService{
 		db:           db,
@@ -220,6 +232,7 @@ func NewMeService(
 		planRepo:     planRepo,
 		programRepo:  programRepo,
 		exerciseRepo: exerciseRepo,
+		foodRepo:     foodRepo,
 	}
 }
 
@@ -722,6 +735,7 @@ func (s *meService) GetMyProgramByID(ctx context.Context, userID uint, programID
 	}
 	planByDay, schedule := buildFullPlanByDay(workoutItems, nutritionItems)
 	planByDay = enrichWorkoutPlan(ctx, s.exerciseRepo, planByDay)
+	planByDay = enrichNutritionPlan(ctx, s.foodRepo, planByDay)
 	if schedule == nil {
 		schedule = &MeScheduleDTO{Weekly: []string{}, RestDays: []string{}}
 	}
