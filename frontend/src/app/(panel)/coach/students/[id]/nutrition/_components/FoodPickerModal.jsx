@@ -34,7 +34,15 @@ function formatBaseServing(food) {
   return `${amount.toLocaleString("fa-IR")} ${unit}`.trim();
 }
 
-export default function FoodPickerModal({ open, onClose, onAdd, dayLabel }) {
+export default function FoodPickerModal({
+  open,
+  onClose,
+  onAdd,
+  dayLabel,
+  foodsPath,
+  primaryAddLabel = "افزودن به برنامه",
+  secondaryAddLabel = "افزودن و ادامه",
+}) {
   const [query, setQuery] = useState("");
   const [items, setItems] = useState([]);
   const [page, setPage] = useState(1);
@@ -46,6 +54,7 @@ export default function FoodPickerModal({ open, onClose, onAdd, dayLabel }) {
   const [servingAmount, setServingAmount] = useState("");
 
   const hasMore = items.length < total;
+  const foodsEndpoint = foodsPath || COACH_FOODS_PATH;
 
   const fetchFoods = useCallback(async (searchQuery, pageNum, append) => {
     if (append) {
@@ -55,7 +64,7 @@ export default function FoodPickerModal({ open, onClose, onAdd, dayLabel }) {
     }
     setError("");
     try {
-      const res = await api.get(COACH_FOODS_PATH, {
+      const res = await api.get(foodsEndpoint, {
         params: {
           query: searchQuery.trim() || undefined,
           page: pageNum,
@@ -74,7 +83,7 @@ export default function FoodPickerModal({ open, onClose, onAdd, dayLabel }) {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, []);
+  }, [foodsEndpoint]);
 
   useEffect(() => {
     if (!open) {
@@ -132,14 +141,18 @@ export default function FoodPickerModal({ open, onClose, onAdd, dayLabel }) {
     fetchFoods(query, page + 1, true);
   };
 
-  const handleAdd = (andContinue) => {
+  const handleAdd = async (andContinue) => {
     if (!selected) return;
     const serving = Number(servingAmount);
     if (!Number.isFinite(serving) || serving <= 0) {
       setError("مقدار مصرفی باید بزرگ‌تر از صفر باشد.");
       return;
     }
-    onAdd?.(mealFromCatalogFood(selected, serving));
+    try {
+      await onAdd?.(mealFromCatalogFood(selected, serving));
+    } catch {
+      return;
+    }
     if (andContinue) {
       setSelected(null);
       setServingAmount("");
@@ -300,10 +313,10 @@ export default function FoodPickerModal({ open, onClose, onAdd, dayLabel }) {
                   className="flex-1"
                   onClick={() => handleAdd(true)}
                 >
-                  افزودن و ادامه
+                  {secondaryAddLabel}
                 </Button>
                 <Button type="button" className="flex-1" onClick={() => handleAdd(false)}>
-                  افزودن به برنامه
+                  {primaryAddLabel}
                 </Button>
               </div>
             </div>

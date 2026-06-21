@@ -15,7 +15,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { mealFromManualEntry } from "../../../_components/nutritionHelpers";
 
-export default function ManualFoodModal({ open, onClose, onAdd, dayLabel }) {
+export default function ManualFoodModal({
+  open,
+  onClose,
+  onAdd,
+  dayLabel,
+  primaryAddLabel = "افزودن به برنامه",
+  secondaryAddLabel = "افزودن و ادامه",
+}) {
   const [error, setError] = useState("");
   const [title, setTitle] = useState("");
   const [detail, setDetail] = useState("");
@@ -46,23 +53,27 @@ export default function ManualFoodModal({ open, onClose, onAdd, dayLabel }) {
     setError("");
   };
 
-  const handleSubmit = (andContinue) => {
+  const handleSubmit = async (andContinue) => {
     const trimmedTitle = title.trim();
     if (!trimmedTitle) {
       setError("نام غذا الزامی است.");
       return;
     }
 
-    onAdd?.(
-      mealFromManualEntry({
-        title: trimmedTitle,
-        detail,
-        calories,
-        protein,
-        carbs,
-        fat,
-      })
-    );
+    try {
+      await onAdd?.(
+        mealFromManualEntry({
+          title: trimmedTitle,
+          detail,
+          calories,
+          protein,
+          carbs,
+          fat,
+        })
+      );
+    } catch {
+      return;
+    }
 
     if (andContinue) {
       resetForm();
@@ -169,10 +180,10 @@ export default function ManualFoodModal({ open, onClose, onAdd, dayLabel }) {
 
         <DialogFooter className="gap-2 border-t px-5 py-4 sm:justify-start">
           <Button type="button" variant="outline" className="flex-1" onClick={() => handleSubmit(true)}>
-            افزودن و ادامه
+            {secondaryAddLabel}
           </Button>
           <Button type="button" className="flex-1" onClick={() => handleSubmit(false)}>
-            افزودن به برنامه
+            {primaryAddLabel}
           </Button>
         </DialogFooter>
       </DialogContent>

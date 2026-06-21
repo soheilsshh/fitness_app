@@ -103,6 +103,7 @@ func NewServer() *Server {
 	coachProfileRepo := repository.NewCoachProfileRepository(db)
 	exerciseRepo := repository.NewExerciseRepository(db)
 	foodRepo := repository.NewFoodRepository(db)
+	dailyFoodLogRepo := repository.NewDailyFoodLogRepository(db)
 	notificationRepo := repository.NewNotificationRepository(db)
 
 	// Initialize services
@@ -156,6 +157,8 @@ func NewServer() *Server {
 	coachTrackingController := controllers.NewCoachTrackingController(trackingService)
 	workoutHistoryService := service.NewWorkoutHistoryService(db, subscriptionRepo, servicePlanRepo, programRepo)
 	workoutHistoryController := controllers.NewWorkoutHistoryController(workoutHistoryService)
+	dailyFoodLogService := service.NewDailyFoodLogService(dailyFoodLogRepo, foodRepo)
+	dailyFoodLogController := controllers.NewDailyFoodLogController(dailyFoodLogService)
 	meDashboardService := service.NewMeDashboardService(db, subscriptionRepo)
 	meDashboardController := controllers.NewMeDashboardController(meDashboardService)
 	notificationService := service.NewNotificationService(notificationRepo)
@@ -245,6 +248,10 @@ func NewServer() *Server {
 		studentGroup.POST("/me/tracking/photos", trackingController.UploadTrackingPhoto)
 		studentGroup.GET("/me/workout-history", workoutHistoryController.ListHistory)
 		studentGroup.POST("/me/workout-sessions", workoutHistoryController.LogSession)
+		studentGroup.POST("/user/food-logs", dailyFoodLogController.CreateLog)
+		studentGroup.GET("/user/food-logs", dailyFoodLogController.ListByDate)
+		studentGroup.DELETE("/user/food-logs/:id", dailyFoodLogController.DeleteLog)
+		studentGroup.GET("/user/foods", coachFoodController.ListFoods)
 		studentGroup.GET("/me/dashboard", meDashboardController.GetSummary)
 		studentGroup.GET("/me/records", meDashboardController.GetRecords)
 		studentGroup.POST("/me/change-password", authController.ChangePassword)
