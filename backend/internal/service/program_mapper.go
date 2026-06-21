@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 
@@ -119,10 +120,6 @@ func workoutItemsToPlanByDay(items []models.ProgramItem) (map[string]MeDayPlanDT
 
 func nutritionItemsToPlanByDay(items []models.NutritionItem) map[string]MeDayPlanDTO {
 	planByDay := make(map[string]MeDayPlanDTO)
-	targetsByDay := map[int]struct {
-		calories int
-		protein  string
-	}{}
 
 	for _, it := range items {
 		key, ok := dayNumberToKey[it.DayNumber]
@@ -133,33 +130,10 @@ func nutritionItemsToPlanByDay(items []models.NutritionItem) map[string]MeDayPla
 		if day.Nutrition == nil {
 			day.Nutrition = &MeNutritionDTO{Meals: []MeMealDTO{}}
 		}
-		detail := strings.TrimSpace(it.Quantity)
-		if it.Calories > 0 {
-			if detail != "" {
-				detail += " — "
-			}
-			detail += fmt.Sprintf("%d کالری", it.Calories)
-		}
-		day.Nutrition.Meals = append(day.Nutrition.Meals, MeMealDTO{
-			Title:  it.Food,
-			Detail: detail,
-		})
-		if it.Calories > 0 {
-			t := targetsByDay[it.DayNumber]
-			t.calories += it.Calories
-			targetsByDay[it.DayNumber] = t
-		}
+		day.Nutrition.Meals = append(day.Nutrition.Meals, nutritionItemToMealDTO(it))
 		planByDay[key] = day
 	}
 
-	for dayNum, t := range targetsByDay {
-		key := dayNumberToKey[dayNum]
-		day := planByDay[key]
-		if day.Nutrition != nil && t.calories > 0 {
-			day.Nutrition.CaloriesTarget = t.calories
-			planByDay[key] = day
-		}
-	}
 	return planByDay
 }
 
@@ -236,13 +210,25 @@ func planByDayToNutritionItems(planByDay map[string]MeDayPlanDTO) []models.Nutri
 			if title == "" {
 				continue
 			}
-			items = append(items, models.NutritionItem{
+
+			multiplier := mealMultiplier(meal.Multiplier)
+			item := models.NutritionItem{
 				DayNumber:  dayNum,
 				MealNumber: i + 1,
 				OrderIndex: i + 1,
 				Food:       title,
 				Quantity:   strings.TrimSpace(meal.Detail),
-			})
+				Multiplier: multiplier,
+				Calories:   int(math.Round(meal.Calories)),
+				Protein:    meal.Protein,
+				Carbs:      meal.Carbs,
+				Fat:        meal.Fat,
+			}
+			if meal.FoodID > 0 {
+				id := meal.FoodID
+				item.FoodID = &id
+			}
+			items = append(items, item)
 		}
 	}
 	return items

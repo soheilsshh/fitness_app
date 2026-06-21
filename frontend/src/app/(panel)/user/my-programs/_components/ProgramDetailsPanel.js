@@ -1,15 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Calendar, CheckCircle2, ClipboardList, Coffee, Dumbbell, Info } from "lucide-react";
+import { Calendar, CheckCircle2, Coffee, Dumbbell, Info } from "lucide-react";
 import { api } from "@/lib/axios/client";
 import WorkoutExerciseCards from "@/components/workout/WorkoutExerciseCards";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -25,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { formatDateFa, shortRemaining } from "./helpers";
+import NutritionDayView from "./NutritionDayView";
 
 const DAYS = [
   { key: "sat", label: "شنبه" },
@@ -350,53 +345,7 @@ export default function ProgramDetailsPanel({ program, timeline }) {
                 </div>
               </CardHeader>
               <CardContent>
-                {!nutrition ? (
-                  <p className="rounded-lg border border-dashed p-4 text-center text-sm text-muted-foreground">
-                    برای این روز برنامه غذایی تعریف نشده.
-                  </p>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-3">
-                      <Card size="sm">
-                        <CardContent className="pt-4">
-                          <p className="text-xs text-muted-foreground">کالری هدف</p>
-                          <p className="mt-1 text-sm font-semibold tabular-nums">
-                            {nutrition.caloriesTarget} kcal
-                          </p>
-                        </CardContent>
-                      </Card>
-                      <Card size="sm">
-                        <CardContent className="pt-4">
-                          <p className="text-xs text-muted-foreground">پروتئین هدف</p>
-                          <p className="mt-1 text-sm font-semibold">
-                            {nutrition.proteinTarget}
-                          </p>
-                        </CardContent>
-                      </Card>
-                    </div>
-
-                    {(nutrition.meals || []).length ? (
-                      <Accordion type="multiple" className="w-full rounded-lg border px-3">
-                        {(nutrition.meals || []).map((meal, index) => (
-                          <AccordionItem
-                            key={`${selectedDay}-meal-${index}`}
-                            value={`${selectedDay}-meal-${index}`}
-                          >
-                            <AccordionTrigger className="hover:no-underline">
-                              <span className="flex items-center gap-2 text-start">
-                                <ClipboardList className="size-4 shrink-0 text-muted-foreground" />
-                                {meal.title}
-                              </span>
-                            </AccordionTrigger>
-                            <AccordionContent className="text-muted-foreground">
-                              {meal.detail}
-                            </AccordionContent>
-                          </AccordionItem>
-                        ))}
-                      </Accordion>
-                    ) : null}
-                  </div>
-                )}
+                <NutritionDayView nutrition={nutrition} dayKey={selectedDay} />
               </CardContent>
             </Card>
           </TabsContent>

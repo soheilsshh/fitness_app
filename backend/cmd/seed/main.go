@@ -18,6 +18,11 @@ import (
 	"github.com/yourusername/fitness-management/internal/seed"
 )
 
+const (
+	defaultExercisesFile = "data/exercises.fa.json"
+	defaultFoodsFile     = "data/Persian_food_facts.csv"
+)
+
 type datasetExercise struct {
 	ID               string          `json:"id"`
 	Name             string          `json:"name"`
@@ -35,7 +40,8 @@ type datasetExercise struct {
 
 func main() {
 	devFlag := flag.Bool("dev", false, "load development/UI test fixtures (coaches, students, orders, programs)")
-	fileFlag := flag.String("file", "exercises-dataset-main/data/exercises.fa.json", "path to exercises JSON (ignored when -dev is set)")
+	foodsFlag := flag.Bool("foods", false, "import food facts from CSV (default: data/Persian_food_facts.csv)")
+	fileFlag := flag.String("file", "", "path to dataset file (default depends on import mode)")
 	flag.Parse()
 
 	if err := godotenv.Load(); err != nil {
@@ -57,19 +63,40 @@ func main() {
 		return
 	}
 
-	filePath := *fileFlag
+	if *foodsFlag {
+		filePath := resolveDatasetPath(*fileFlag, defaultFoodsFile)
+		if err := importFoodsCSV(db, filePath); err != nil {
+			log.Fatalf("food import failed: %v", err)
+		}
+		return
+	}
+
+	filePath := resolveDatasetPath(*fileFlag, defaultExercisesFile)
+	if err := importExercisesJSON(db, filePath); err != nil {
+		log.Fatalf("exercise import failed: %v", err)
+	}
+}
+
+func resolveDatasetPath(fileFlag, defaultPath string) string {
+	filePath := strings.TrimSpace(fileFlag)
+	if filePath == "" {
+		filePath = defaultPath
+	}
 	if !filepath.IsAbs(filePath) {
 		filePath = filepath.Join(".", filePath)
 	}
+	return filePath
+}
 
+func importExercisesJSON(db *gorm.DB, filePath string) error {
 	raw, err := os.ReadFile(filePath)
 	if err != nil {
-		log.Fatalf("failed to read %s: %v", filePath, err)
+		return err
 	}
 
 	var items []datasetExercise
 	if err := json.Unmarshal(raw, &items); err != nil {
-		log.Fatalf("failed to parse JSON: %v", err)
+		return err
 	}
 
 	repo := repository.NewExerciseRepository(db)
@@ -99,7 +126,8 @@ func main() {
 		}
 	}
 
-	log.Printf("seed complete: total=%d created=%d updated=%d failed=%d", len(items), created, updated, failed)
+	log.Printf("exercise seed complete: total=%d created=%d updated=%d failed=%d", len(items), created, updated, failed)
+	return nil
 }
 
 func seedDevData(db *gorm.DB) error {

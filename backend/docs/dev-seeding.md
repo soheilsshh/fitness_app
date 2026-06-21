@@ -1,344 +1,121 @@
-# Development Data Seeding
+# Development Data Seeding & Datasets Guide
 
 ## Overview
 
-This project includes a development seeding system built on top of `gorm-seed`.
+This project includes a robust data seeding and dataset import system built on top of `gorm-seed` and custom CSV/JSON parsers. 
 
-The goal is to populate a local development database with realistic sample data for:
+In **Fitino**, data seeding is split into two distinct categories:
+1. **Global Reference Catalogs (Production & Dev):** Core datasets required for the application's core features (Exercises and Food nutrition facts).
+2. **Development Fixtures (Dev-only):** Realistic sample data (Coaches, Students, Subscriptions, and Active Programs) used for UI development, QA testing, and local demos.
 
-* UI development
-* QA testing
-* Demo environments
-* Local onboarding
-
-The seed process is idempotent and can be executed multiple times safely.
+The seeding process is completely **idempotent** and can be safely executed multiple times without duplicating database records.
 
 ---
 
-## Quick start (local development)
+## Directory Structure
 
-### 1) Create your `.env`
-
-- If you already have `.env`, keep it.
-- If you don't, you can create it from `env.example`:
-
-```bash
-cp env.example .env
-```
-
-On Windows you can also just run `run.bat` which will create `.env` from `env.example` automatically when missing.
-
-### 2) Start the API server
-
-From `backend/`:
-
-```bash
-./run.sh
-```
-
-Or on Windows:
+All raw dataset files must be stored in the centralized `data` directory at the root of the backend:
 
 ```text
-run.bat
-```
-
-Both scripts validate:
-- Go version (>= 1.24)
-- MySQL reachability based on `.env`
-- `go mod download` + a basic build check
+backend/
+├── cmd/
+│   └── seed/
+│       └── main.go              # CLI Entrypoint for seeding
+├── data/                        # Centralized Dataset Storage
+│   ├── exercises.fa.json        # Global Exercise Catalog
+│   └── Persian_food_facts.csv    # Global Food Nutrition Dataset
+└── internal/
+    └── seed/                    # Dev fixtures logic & registry
 
 ---
 
-## Available Seed Modes
+## 1. Global Reference Catalogs (Core Datasets)
+
+These commands import production-ready reference catalogs that the application relies on for coach auto-completions and system-wide lookups.
 
 ### Exercise Dataset Import
 
-Imports the exercise catalog from a JSON dataset.
+Imports the system-wide exercise catalog from the localized JSON dataset.
 
 ```bash
+cd backend
 go run ./cmd/seed
+
 ```
 
-Or:
+* **Default Path:** `data/exercises.fa.json`
+* **Custom Path:** Use the `-file` flag (e.g., `go run ./cmd/seed -file=custom/path.json`)
+
+### Food Facts Dataset Import (New)
+
+Parses and imports the comprehensive Persian food facts dataset, mapping macronutrients (Calories, Protein, Carbs, Fat, and nullable Sugar/Fiber).
 
 ```bash
-go run ./cmd/seed -file=path/to/exercises.json
+cd backend
+go run ./cmd/seed -foods
+
 ```
 
-This command only imports exercise definitions.
+* **Default Path:** `data/Persian_food_facts.csv`
+* **Idempotency Logic:** Uses a unique `ExternalID` generated from a deterministic SHA-256 hash of `lowercase(Name|Unit|Amount)`. Running this multiple times performs an **Upsert** (inserts missing items, updates existing ones).
+* **Data Normalization:** The parser automatically sanitizes Persian decimal points (`٫`), commas, and converts missing/hyphenated values (`—`) into database `NULL` pointers.
 
 ---
 
-### Development Fixtures
+## 2. Development Fixtures (Mock Data)
 
-Loads realistic demo data for the application.
+To populate a local development database with mock relationships for authentication, UI building, and feature testing, use the `-dev` flag:
 
 ```bash
+cd backend
 go run ./cmd/seed -dev
+
 ```
 
-The development fixtures include:
+### What gets seeded in Dev Mode?
 
-* Coaches
-* Students
-* Coach profiles
-* Service plans
-* Subscriptions
-* Orders
-* Workout programs
-* Nutrition programs
-* Program items
-* Transactions
-* Notifications
-* Feedbacks
-* Site settings
+* **Users & Roles:** Admin, Coach, and Student accounts with pre-configured login credentials.
+* **Core Flows:** Realistic subscription tracking, payment orders, support tickets, and active coach-student assignments.
+* **Nutrition & Workout Programs:** Pre-assigned sample program items generated for UI testing.
 
 ---
 
-## Development Accounts
+## Complete Seeding Workflow for New Developers
 
-Password for all fixture accounts:
-
-```text
-12345678
-```
-
-### Coaches
-
-```text
-coach.ali@fitness.dev
-coach.sara@fitness.dev
-```
-
-### Students
-
-```text
-student.reza@fitness.dev
-student.maryam@fitness.dev
-student.amir@fitness.dev
-student.neda@fitness.dev
-```
-
-### Admin
-
-```text
-admin@gmail.com
-```
-
----
-
-## Safety Guards
-
-The development seed is protected against accidental execution in production.
-
-The seed process is blocked when:
-
-```env
-APP_ENV=production
-```
-
-or
-
-```env
-APP_ENV=prod
-```
-
-Production environments must never enable development fixtures.
-
----
-
-## Idempotency
-
-Development fixtures are designed to be idempotent.
-
-Running:
+When setting up the local environment for the first time, follow this exact sequence:
 
 ```bash
+# 1. Navigate to the backend directory
+cd backend
+
+# 2. Run database Auto-Migrations (starts the API server temporarily)
+# This ensures all tables (including `exercises` and `foods`) are created by GORM.
+./run.sh  # or run.bat on Windows
+
+# 3. Seed Global Exercises Catalog
+go run ./cmd/seed
+
+# 4. Seed Global Food Facts Catalog (7,300+ items)
+go run ./cmd/seed -foods
+
+# 5. (Optional) Seed Local Development Mock Data for UI/QA
 go run ./cmd/seed -dev
+
 ```
-
-multiple times will not create duplicate records.
-
-Example:
-
-```bash
-go run ./cmd/seed -dev
-go run ./cmd/seed -dev
-```
-
-The second execution should be a no-op for existing fixture data.
 
 ---
 
-## Database Requirements
+## Maintenance: Adding or Modifying Seed Data
 
-The development seed is intended for:
+### Modifying Food / Exercise Datasets
 
-* Local development databases
-* Dedicated development environments
-* Fresh databases
+Simply edit or replace the files inside `backend/data/`. Since the script uses the `Upsert` strategy, you can re-run `go run ./cmd/seed -foods` or `go run ./cmd/seed` at any time to sync the changes without losing or duplicating existing data.
 
-The seed uses predefined fixture identities and validation checks.
+### Adding New Dev Fixtures (Code Structure)
 
-If the database already contains conflicting data, the seed process will abort with a validation error.
+To add a new seeded entity to the `-dev` flow:
 
-Example:
-
-```text
-user id=2 is occupied by a non-dev account
-```
-
-In such cases:
-
-* Use a fresh development database
-* Or remove conflicting records
-
----
-
-## Fixture Storage
-
-Fixtures are stored as embedded JSON files.
-
-```text
-internal/seed/fixtures/
-```
-
-Example:
-
-```text
-internal/seed/fixtures/users.json
-internal/seed/fixtures/subscriptions.json
-internal/seed/fixtures/orders.json
-```
-
-These files are embedded into the binary using `go:embed`.
-
----
-
-## Architecture
-
-The seeding system is implemented in:
-
-```text
-internal/seed/
-```
-
-Key components:
-
-```text
-internal/seed/
-├── seed.go
-├── registry.go
-├── validate.go
-├── guard.go
-├── embed.go
-└── fixtures/
-```
-
-### Responsibilities
-
-* `seed.go` → entry point for development seeding
-* `registry.go` → fixture registration and load ordering
-* `validate.go` → pre-seed validation checks
-* `guard.go` → environment and safety restrictions
-* `embed.go` → embedded fixture loading
-
----
-
-## Adding New Fixtures
-
-To add a new seeded entity:
-
-### 1. Register the model
-
-Add the model to:
-
-```go
-models.AllModels()
-```
-
-### 2. Create a fixture file
-
-Example:
-
-```text
-internal/seed/fixtures/new_entity.json
-```
-
-### 3. Register the fixture
-
-Update:
-
-```go
-internal/seed/registry.go
-```
-
-Add:
-
-* fixture registration
-* dependency ordering (if required)
-
-### 4. Test
-
-Run:
-
-```bash
-go run ./cmd/seed -dev
-```
-
-Verify:
-
-* no errors occur
-* no duplicate records are created on subsequent runs
-
----
-
-## Verification Checklist
-
-After running:
-
-```bash
-go run ./cmd/seed -dev
-```
-
-Verify:
-
-### Authentication
-
-* Coach login works
-* Student login works
-* Admin login works
-
-### UI
-
-* Coach list contains records
-* Coach profile pages load correctly
-* Orders are visible
-* Subscriptions are visible
-* Notifications are visible
-* Programs contain items
-
-### Idempotency
-
-Run the command twice and confirm record counts do not increase unexpectedly.
-
----
-
-## Recommended Usage
-
-For local development:
-
-```bash
-go run ./cmd/seed -dev
-go run ./cmd/app
-```
-
-Recommended workflow:
-
-1. Create a fresh local database
-2. Run migrations
-3. Execute development seed
-4. Start the application
-5. Use fixture accounts for UI testing
-
-This is the preferred approach over manually inserting test records.
+1. Register the new GORM model inside `models.AllModels()` to enable auto-migration.
+2. Create a new JSON fixture file under `internal/seed/fixtures/your_entity.json`.
+3. Register the fixture and its execution order/dependencies inside `internal/seed/registry.go`.
+4. Test the idempotency by running `go run ./cmd/seed -dev` twice and verifying that no duplicate records are created.

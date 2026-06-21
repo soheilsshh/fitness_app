@@ -138,7 +138,7 @@ export default function RegisterForm() {
               value={phone}
               onChange={(e) => setPhone(e.target.value.trim())}
               placeholder="شماره موبایل (09xxxxxxxxx)"
-              className="w-full site-input py-3 pl-4 pr-11 disabled:opacity-70"
+              className="w-full site-input disabled:opacity-70"
               inputMode="numeric"
               disabled={phoneLocked}
             />
@@ -170,8 +170,11 @@ export default function RegisterForm() {
         {otpSent && !otpVerified && (
           <>
             <div className="relative">
-              <FiKey className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant" />
+              <FiKey 
+                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant" 
+              />
               <input
+                
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.trim())}
                 placeholder="کد OTP"
@@ -181,7 +184,7 @@ export default function RegisterForm() {
             </div>
 
             <div className="flex items-center justify-between">
-              <button onClick={sendOtp} className="text-xs text-emerald-200 hover:text-emerald-100">
+              <button onClick={sendOtp} className="text-xs">
                 ارسال مجدد
               </button>
               <button onClick={verifyOtp} className="text-xs text-on-surface-variant hover:text-on-surface">
@@ -194,13 +197,13 @@ export default function RegisterForm() {
         {/* After OTP verified: show fields */}
         {otpVerified && (
           <>
-            <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-100">
-              شماره موبایل تایید شد ✅
+            <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/10 px-4 py-3 text-sm">
+              شماره موبایل تایید شد.
             </div>
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="relative">
-                <FiUser className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant" />
+                <FiUser className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant" />
                 <input
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
@@ -218,7 +221,7 @@ export default function RegisterForm() {
             </div>
 
             <div className="relative">
-              <FiLock className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant" />
+              <FiLock className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant" />
               <input
                 type="password"
                 value={password}
