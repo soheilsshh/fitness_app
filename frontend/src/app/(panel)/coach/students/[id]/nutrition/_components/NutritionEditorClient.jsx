@@ -229,12 +229,19 @@ export default function NutritionEditorClient({ studentId }) {
   return (
     <div className="flex flex-col gap-4 md:gap-6" dir="rtl">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <Button variant="outline" size="sm" asChild>
-          <Link href={`/coach/students/${studentId}`}>
-            <ChevronLeft data-icon="inline-start" />
-            بازگشت
-          </Link>
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" size="sm" asChild>
+            <Link href={`/coach/students/${studentId}`}>
+              <ChevronLeft data-icon="inline-start" />
+              پروفایل دانشجو
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" asChild>
+            <Link href={`/coach/students/${studentId}/workout`}>
+              برنامه تمرین
+            </Link>
+          </Button>
+        </div>
         <Button type="button" onClick={handleSave} disabled={saving}>
           <Save data-icon="inline-start" />
           {saving ? "در حال ذخیره..." : "ذخیره برنامه"}

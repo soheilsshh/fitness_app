@@ -36,6 +36,52 @@ function jsDayToKey(jsDay) {
   return map[jsDay] || "sat";
 }
 
+function hasWorkoutOnDay(program, key) {
+  const workout = program?.planByDay?.[key]?.workout;
+  return Boolean(
+    workout &&
+      ((workout.exercises?.length || 0) > 0 || (workout.steps?.length || 0) > 0)
+  );
+}
+
+function hasNutritionOnDay(program, key) {
+  const nutrition = program?.planByDay?.[key]?.nutrition;
+  if (!nutrition) return false;
+  return (nutrition.meals?.length || 0) > 0 || nutrition.caloriesTarget > 0;
+}
+
+function programHasNutrition(program) {
+  return DAYS.some((d) => hasNutritionOnDay(program, d.key));
+}
+
+function programHasWorkout(program) {
+  return DAYS.some((d) => hasWorkoutOnDay(program, d.key));
+}
+
+function defaultTabForProgram(program) {
+  if (program?.type === "nutrition") return "nutrition";
+  if (!programHasWorkout(program) && programHasNutrition(program)) return "nutrition";
+  return "workout";
+}
+
+function defaultDayForTab(program, tab, restSet) {
+  if (!program) return "sat";
+
+  if (tab === "nutrition") {
+    const todayKey = jsDayToKey(new Date().getDay());
+    if (hasNutritionOnDay(program, todayKey)) return todayKey;
+    const first = DAYS.find((d) => hasNutritionOnDay(program, d.key));
+    return first?.key || "sat";
+  }
+
+  const todayKey = jsDayToKey(new Date().getDay());
+  if (!restSet.has(todayKey) && hasWorkoutOnDay(program, todayKey)) return todayKey;
+  const first = DAYS.find(
+    (d) => !restSet.has(d.key) && hasWorkoutOnDay(program, d.key)
+  );
+  return first?.key || "sat";
+}
+
 // firstInt extracts the leading integer from a reps string like "12" or "8-10".
 function firstInt(value) {
   const m = String(value ?? "").match(/\d+/);
@@ -90,26 +136,29 @@ export default function ProgramDetailsPanel({ program, timeline }) {
     [program?.id, program?.schedule?.weekly]
   );
 
-  const defaultDay = useMemo(() => {
-    if (!program) return "sat";
+  const defaultTab = useMemo(() => defaultTabForProgram(program), [program]);
 
-    const todayKey = jsDayToKey(new Date().getDay());
-    if (!restSet.has(todayKey) && program.planByDay?.[todayKey]) return todayKey;
+  const defaultDay = useMemo(
+    () => defaultDayForTab(program, defaultTab, restSet),
+    [program, defaultTab, restSet]
+  );
 
-    const firstSelectable = DAYS.find(
-      (d) => !restSet.has(d.key) && program.planByDay?.[d.key]
-    );
-    return firstSelectable?.key || "sat";
-  }, [program, restSet]);
-
+  const [activeTab, setActiveTab] = useState(defaultTab);
   const [selectedDay, setSelectedDay] = useState(defaultDay);
   const [loggingWorkout, setLoggingWorkout] = useState(false);
   // weights maps an exercise name to the weight (kg) the user lifted today.
   const [weights, setWeights] = useState({});
 
   useEffect(() => {
+    setActiveTab(defaultTab);
     setSelectedDay(defaultDay);
-  }, [defaultDay]);
+  }, [defaultTab, defaultDay]);
+
+  const handleTabChange = (nextTab) => {
+    if (!nextTab) return;
+    setActiveTab(nextTab);
+    setSelectedDay(defaultDayForTab(program, nextTab, restSet));
+  };
 
   // Reset entered weights whenever the selected day changes.
   useEffect(() => {
@@ -154,16 +203,26 @@ export default function ProgramDetailsPanel({ program, timeline }) {
   const selectedDayLabel = DAYS.find((x) => x.key === selectedDay)?.label;
 
   const canSelectDay = (key) => {
+    if (activeTab === "nutrition") {
+      return hasNutritionOnDay(program, key);
+    }
     if (restSet.has(key)) return false;
-    if (!program.planByDay?.[key]) return false;
-    return true;
+    return hasWorkoutOnDay(program, key);
   };
 
   const dayHint = (key) => {
+    if (activeTab === "nutrition") {
+      return hasNutritionOnDay(program, key) ? "غذا" : "—";
+    }
     if (restSet.has(key)) return "استراحت";
     if (activeSet.has(key)) return "فعال";
     return "—";
   };
+
+  const dayPickerHint =
+    activeTab === "nutrition"
+      ? "فقط روزهایی که برنامه غذایی دارند قابل انتخاب هستند"
+      : "روزهای استراحت تمرین غیرقابل انتخاب هستند";
 
   return (
     <Card
@@ -193,9 +252,7 @@ export default function ProgramDetailsPanel({ program, timeline }) {
         <div className="rounded-lg border bg-muted/30 p-4">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <p className="text-sm font-medium">انتخاب روز هفته</p>
-            <p className="text-xs text-muted-foreground">
-              روزهای استراحت غیرقابل انتخاب هستند
-            </p>
+            <p className="text-xs text-muted-foreground">{dayPickerHint}</p>
           </div>
 
           <ToggleGroup
@@ -231,7 +288,7 @@ export default function ProgramDetailsPanel({ program, timeline }) {
           </ToggleGroup>
         </div>
 
-        <Tabs defaultValue="workout" className="w-full">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <TabsList className="w-full sm:w-auto">
             <TabsTrigger value="workout" className="gap-1.5">
               <Dumbbell className="size-3.5" />
@@ -240,6 +297,9 @@ export default function ProgramDetailsPanel({ program, timeline }) {
             <TabsTrigger value="nutrition" className="gap-1.5">
               <Coffee className="size-3.5" />
               تغذیه
+              {programHasNutrition(program) ? (
+                <span className="ms-1 inline-flex size-1.5 rounded-full bg-primary" />
+              ) : null}
             </TabsTrigger>
           </TabsList>
 
@@ -353,7 +413,9 @@ export default function ProgramDetailsPanel({ program, timeline }) {
 
         <div className="flex items-start gap-2 rounded-lg border bg-muted/30 p-4 text-xs text-muted-foreground">
           <Info className="mt-0.5 size-3.5 shrink-0" />
-          نکته: روزهای استراحت قابل انتخاب نیستند.
+          {activeTab === "nutrition"
+            ? "برای مشاهده برنامه غذایی، روزی را که مربی برای آن غذا تعریف کرده انتخاب کنید."
+            : "روزهای استراحت تمرین در این بخش غیرفعال هستند؛ برای تغذیه به تب «تغذیه» بروید."}
         </div>
       </CardContent>
     </Card>

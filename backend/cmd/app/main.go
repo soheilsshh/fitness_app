@@ -226,9 +226,9 @@ func NewServer() *Server {
 		coachGroup.PATCH("/tickets/:id/status", coachTicketController.UpdateTicketStatus)
 		coachGroup.GET("/exercises/categories", coachExerciseController.ListCategories)
 		coachGroup.GET("/exercises", coachExerciseController.ListExercises)
+		coachGroup.GET("/foods", coachFoodController.ListFoods)
 		coachGroup.POST("/exercises", coachExerciseController.CreateExercise)
 		coachGroup.GET("/exercises/:id", coachExerciseController.GetExerciseByID)
-		coachGroup.GET("/foods", coachFoodController.ListFoods)
 		coachGroup.GET("/tracking/students", coachTrackingController.ListStudents)
 		coachGroup.GET("/tracking/students/:id", coachTrackingController.GetStudentTracking)
 	}

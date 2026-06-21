@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Apple, Loader2, Search } from "lucide-react";
 import { api } from "@/lib/axios/client";
+import { COACH_FOODS_PATH } from "@/lib/api/coach";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -54,7 +55,7 @@ export default function FoodPickerModal({ open, onClose, onAdd, dayLabel }) {
     }
     setError("");
     try {
-      const res = await api.get("/coach/foods", {
+      const res = await api.get(COACH_FOODS_PATH, {
         params: {
           query: searchQuery.trim() || undefined,
           page: pageNum,
