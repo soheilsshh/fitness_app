@@ -15,7 +15,11 @@
 
 # next.js
 /.next/
+/.spa-build-env/
+/.dist-staging*/
+/dist-new/
 /out/
+/dist/
 
 # production
 /build

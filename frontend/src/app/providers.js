@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { DirectionProvider } from "@/components/ui/direction";
 import { store } from "@/store/store";
 import { hydrateCart } from "@/store/slices/cartSlice";
+import CoachLegacyUrlRedirect from "@/components/CoachLegacyUrlRedirect";
 
 const CART_STORAGE_KEY = "fitino_cart_v1";
 
@@ -33,7 +34,10 @@ export default function Providers({ children }) {
   return (
     <Provider store={store}>
       <ThemeProvider>
-        <DirectionProvider direction="rtl">{children}</DirectionProvider>
+        <DirectionProvider direction="rtl">
+          <CoachLegacyUrlRedirect />
+          {children}
+        </DirectionProvider>
       </ThemeProvider>
     </Provider>
   );

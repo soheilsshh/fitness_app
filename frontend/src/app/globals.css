@@ -4,85 +4,48 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* ---START---- IranSans --------- */
+/* ---START---- IranSans (local woff2 — bundled with the app, no external CDN) --- */
 @font-face {
-  font-family: "IranianSansDemiBold";
+  font-family: "IranianSansRegular";
   font-display: swap;
-  src: url("../assets/fonts/IRANSans/IRANSansXFaNum-DemiBold.woff2")
-    format("woff2");
-}
-
-@font-face {
-  font-family: "IranianSansBlack";
-  font-display: swap;
-  src: url("../assets/fonts/IRANSans/IRANSansXFaNum-Black.woff2")
-    format("woff2");
-}
-
-@font-face {
-  font-family: "IranianSansExtraBlack";
-  font-display: swap;
-  src: url("../assets/fonts/IRANSans/IRANSansXFaNum-ExtraBlack.woff2")
-    format("woff2");
+  font-weight: 400;
+  src: url("../assets/fonts/IRANSans/IRANSansXFaNum-Regular.woff2") format("woff2");
 }
 
 @font-face {
   font-family: "IranianSansMedium";
   font-display: swap;
-  src: url("../assets/fonts/IRANSans/IRANSansXFaNum-Medium.woff2")
-    format("woff2");
+  font-weight: 500;
+  src: url("../assets/fonts/IRANSans/IRANSansXFaNum-Medium.woff2") format("woff2");
 }
 
 @font-face {
-  font-family: "IranianSansLight";
+  font-family: "IranianSansDemiBold";
   font-display: swap;
-  src: url("../assets/fonts/IRANSans/IRANSansXFaNum-Light.woff2")
-    format("woff2");
+  font-weight: 600;
+  src: url("../assets/fonts/IRANSans/IRANSansXFaNum-DemiBold.woff2") format("woff2");
 }
 
 @font-face {
-  font-family: "IranianSansUltraLight";
+  font-family: "IranianSansBlack";
   font-display: swap;
-  src: url("../assets/fonts/IRANSans/IRANSansXFaNum-UltraLight.woff2")
-    format("woff2");
-}
-
-@font-face {
-  font-family: "IranianSansRegular";
-  font-display: swap;
-  src: url("../assets/fonts/IRANSans/IRANSansXFaNum-Regular.woff2")
-    format("woff2");
-}
-
-@font-face {
-  font-family: "IranianSansXRegular";
-  font-display: swap;
-  src: url("../assets/fonts/IRANSansX-Regular.ttf") format("truetype");
-}
-
-@font-face {
-  font-family: "IranianSansHeavy";
-  font-display: swap;
-  src: url("../assets/fonts/IRANSans/IRANSansXFaNum-Heavy.woff2")
-    format("woff2");
+  font-weight: 800;
+  src: url("../assets/fonts/IRANSans/IRANSansXFaNum-Black.woff2") format("woff2");
 }
 
 /* ---END---- IranSans --------- */
 
 @theme {
-  --font-iranianSansBlack: IranianSansBlack;
-  --font-iranianSansExtraBlack: IranianSansExtraBlack;
-  --font-iranianSansDemiBold: IranianSansDemiBold;
-  --font-iranianSansMedium: IranianSansMedium;
-  --font-iranianSansLight: IranianSansLight;
-  --font-iranianUltraLight: IranianSansUltraLight;
   --font-iranianSansRegular: IranianSansRegular;
-  --font-iranianSansXRegular: IranianSansXRegular;
-  --font-iranianSansHeavy: IranianSansHeavy;
+  --font-iranianSansMedium: IranianSansMedium;
+  --font-iranianSansDemiBold: IranianSansDemiBold;
+  --font-iranianSansBlack: IranianSansBlack;
+  /* legacy aliases used in a few places */
+  --font-iranianSansXRegular: IranianSansRegular;
 }
 
 body {
-  @apply font-iranianSansXRegular;
+  @apply font-iranianSansRegular;
   /* Plain fallbacks so text stays light-on-dark even before the
      @theme CSS variables apply (avoids a dark-text flash on first paint). */
   /* background-color: #131313;
@@ -93,7 +56,7 @@ body {
    Persian font so toast text (e.g. session-expiry) matches the rest of the UI. */
 .cn-toast,
 .cn-toast * {
-  font-family: "IranianSansXRegular", sans-serif;
+  font-family: "IranianSansRegular", sans-serif;
 }
 
 html {

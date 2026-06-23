@@ -1,4 +1,10 @@
-import WorkoutEditorClient from "./_components/WorkoutEditorClient";
+import { lazyPage } from "@/lib/lazy-page";
+
+const WorkoutEditorClient = lazyPage(() => import("./_components/WorkoutEditorClient"));
+
+export async function generateStaticParams() {
+  return [{ id: "placeholder" }];
+}
 
 export default async function WorkoutEditorPage({ params }) {
   const { id } = await params;

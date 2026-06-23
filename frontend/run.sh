@@ -1,13 +1,11 @@
 #!/bin/bash
 
-# Exit immediately if a command exits with a non-zero status
 set -e
 
 echo "Installing dependencies..."
 npm install
 
-echo "Building the Next.js application (this will fully compile the app)..."
+echo "Building static SPA export into dist/..."
 npm run build
 
-echo "Starting the production server..."
-npm run start
+echo "Done. Serve frontend/dist with nginx (see nginx.conf.example)."

@@ -1,5 +1,7 @@
 import { Suspense } from "react";
-import BankPaymentClient from "./_components/BankPaymentClient";
+import { lazyPage } from "@/lib/lazy-page";
+
+const BankPaymentClient = lazyPage(() => import("./_components/BankPaymentClient"));
 
 export default function BankGatewayPage() {
   return (

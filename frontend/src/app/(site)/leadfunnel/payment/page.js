@@ -1,5 +1,7 @@
 import { Suspense } from "react";
-import FunnelPaymentClient from "./_components/FunnelPaymentClient";
+import { lazyPage } from "@/lib/lazy-page";
+
+const FunnelPaymentClient = lazyPage(() => import("./_components/FunnelPaymentClient"));
 
 export const metadata = {
   title: "پرداخت | قیف فروش",

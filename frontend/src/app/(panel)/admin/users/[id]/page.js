@@ -1,4 +1,10 @@
-import UserDetailsClient from "./_components/UserDetailsClient";
+import { lazyPage } from "@/lib/lazy-page";
+
+const UserDetailsClient = lazyPage(() => import("./_components/UserDetailsClient"));
+
+export async function generateStaticParams() {
+  return [{ id: "placeholder" }];
+}
 
 export default async function AdminUserDetailsPage({ params }) {
   const resolvedParams = await params;

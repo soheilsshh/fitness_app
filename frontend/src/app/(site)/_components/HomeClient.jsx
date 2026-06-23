@@ -1,15 +1,45 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MotionConfig } from "framer-motion";
+import dynamic from "next/dynamic";
 import { api } from "@/lib/axios/client";
 import Hero from "./Hero";
-import ProgramsSection from "./ProgramsSection";
-import RecordsSection from "./RecordsSection";
-import AboutSection from "./AboutSection";
-import ContactSection from "./ContactSection";
-import Footer from "./Footer";
-import { ScrollProgress } from "./landingEffects";
+import { SectionLoader } from "@/components/ui/page-loader";
+
+const MotionConfig = dynamic(
+  () => import("framer-motion").then((mod) => mod.MotionConfig),
+  { ssr: false }
+);
+
+const ScrollProgress = dynamic(
+  () => import("./landingEffects").then((mod) => mod.ScrollProgress),
+  { ssr: false }
+);
+
+const ProgramsSection = dynamic(() => import("./ProgramsSection"), {
+  loading: () => <SectionLoader />,
+  ssr: false,
+});
+
+const RecordsSection = dynamic(() => import("./RecordsSection"), {
+  loading: () => <SectionLoader className="min-h-[420px]" />,
+  ssr: false,
+});
+
+const AboutSection = dynamic(() => import("./AboutSection"), {
+  loading: () => <SectionLoader className="min-h-[360px]" />,
+  ssr: false,
+});
+
+const ContactSection = dynamic(() => import("./ContactSection"), {
+  loading: () => <SectionLoader className="min-h-[320px]" />,
+  ssr: false,
+});
+
+const Footer = dynamic(() => import("./Footer"), {
+  loading: () => <SectionLoader className="min-h-[200px]" />,
+  ssr: false,
+});
 
 export default function HomeClient() {
   const [settings, setSettings] = useState(null);
@@ -25,7 +55,9 @@ export default function HomeClient() {
       }
     }
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return (

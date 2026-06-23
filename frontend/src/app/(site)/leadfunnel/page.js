@@ -1,5 +1,7 @@
 import { Suspense } from "react";
-import LeadFunnelWizard from "./_components/LeadFunnelWizard";
+import { lazyPage } from "@/lib/lazy-page";
+
+const LeadFunnelWizard = lazyPage(() => import("./_components/LeadFunnelWizard"));
 
 export const metadata = {
   title: "ارزیابی رایگان | قیف فروش",

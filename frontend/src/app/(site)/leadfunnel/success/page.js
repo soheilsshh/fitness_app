@@ -1,5 +1,7 @@
 import { Suspense } from "react";
-import FunnelSuccessClient from "./_components/FunnelSuccessClient";
+import { lazyPage } from "@/lib/lazy-page";
+
+const FunnelSuccessClient = lazyPage(() => import("./_components/FunnelSuccessClient"));
 
 export const metadata = {
   title: "پرداخت موفق | قیف فروش",
