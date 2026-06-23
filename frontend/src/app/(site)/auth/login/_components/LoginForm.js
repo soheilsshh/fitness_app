@@ -3,8 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { motion } from "framer-motion";
-import { FiSmartphone, FiKey, FiArrowLeft, FiEdit3 } from "react-icons/fi";
+import { ArrowLeft, Eye, EyeOff, KeyRound, Pencil, Phone } from "lucide-react";
 import {
   isValidIranPhone,
   isValidOtp,
@@ -18,8 +17,23 @@ import {
   readRedirectParam,
   resolvePostAuthPath,
 } from "@/lib/auth/postAuthRedirect";
-import { Eye, EyeClosed, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -27,7 +41,7 @@ export default function LoginForm() {
   const returnPath = readRedirectParam(searchParams);
   const registerHref = buildAuthUrl("/auth/register", returnPath);
 
-  const [mode, setMode] = useState("password"); // "password" | "otp"
+  const [mode, setMode] = useState("password");
 
   const [phone, setPhone] = useState("");
   const [phoneLocked, setPhoneLocked] = useState(false);
@@ -38,6 +52,8 @@ export default function LoginForm() {
   const [otp, setOtp] = useState("");
 
   const [showPassword, setShowPassword] = useState(false);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   const canSendOtp = useMemo(() => !otpSent && !phoneLocked, [otpSent, phoneLocked]);
 
@@ -62,6 +78,7 @@ export default function LoginForm() {
       return toastError("شماره نامعتبر", "شماره موبایل را با فرمت 09xxxxxxxxx وارد کنید.");
     }
 
+    setIsSendingOtp(true);
     try {
       await api.post("/auth/otp/request", { phone });
       setOtpSent(true);
@@ -71,6 +88,8 @@ export default function LoginForm() {
     } catch (error) {
       const msg = error?.response?.data?.error || "خطا در ارسال کد.";
       return toastError("خطا", msg);
+    } finally {
+      setIsSendingOtp(false);
     }
   };
 
@@ -82,6 +101,7 @@ export default function LoginForm() {
       return toastError("رمز عبور کوتاه است", "رمز عبور باید حداقل ۶ کاراکتر باشد.");
     }
 
+    setIsLoggingIn(true);
     try {
       const res = await api.post("/auth/login/password", {
         identifier: phone,
@@ -92,6 +112,8 @@ export default function LoginForm() {
     } catch (error) {
       const msg = error?.response?.data?.error || "ورود ناموفق بود.";
       return toastError("خطا در ورود", msg);
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
@@ -106,6 +128,7 @@ export default function LoginForm() {
       return toastError("کد نامعتبر", "کد را به صورت عددی وارد کنید.");
     }
 
+    setIsLoggingIn(true);
     try {
       const res = await api.post("/auth/otp/verify", {
         phone,
@@ -116,172 +139,180 @@ export default function LoginForm() {
     } catch (error) {
       const msg = error?.response?.data?.error || "کد وارد شده صحیح نیست یا منقضی شده است.";
       return toastError("OTP نامعتبر", msg);
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
   const switchMode = (nextMode) => {
     setMode(nextMode);
-
-    // Reset mode-specific states
     setPassword("");
     resetOtpFlow();
   };
 
   return (
-    <div>
-      <div className="flex items-center justify-between">
-        <h1 className="text-lg font-extrabold">ورود</h1>
-        <Button
-        variant="ghost"
-        asChild
-        >
-        <Link
-          href={registerHref}
-        >
-          ثبت نام
-        </Link>
-        </Button>
-      </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>ورود</CardTitle>
+        <CardDescription>برای ورود به حساب خود شماره موبایل را وارد کنید</CardDescription>
+        <CardAction>
+          <Button variant="ghost" size="sm" asChild>
+            <Link href={registerHref}>ثبت نام</Link>
+          </Button>
+        </CardAction>
+      </CardHeader>
 
-      {/* Tabs */}
-      <div className="site-segmented mt-5">
-        <button
-          onClick={() => switchMode("password")}
-          className={[
-            "site-segmented-item",
-            mode === "password" ? "site-segmented-item-active" : "",
-          ].join(" ")}
-        >
-          ورود با رمز
-        </button>
-        <button
-          onClick={() => switchMode("otp")}
-          className={[
-            "site-segmented-item",
-            mode === "otp" ? "site-segmented-item-active" : "",
-          ].join(" ")}
-        >
-          ورود با OTP
-        </button>
-      </div>
+      <CardContent>
+        <Tabs value={mode} onValueChange={switchMode}>
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="password">ورود با رمز</TabsTrigger>
+            <TabsTrigger value="otp">ورود با OTP</TabsTrigger>
+          </TabsList>
 
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35 }}
-        className="mt-5 space-y-3"
-      >
-        {/* Phone + Edit */}
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <Phone className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant" />
-            <input
-              value={phone}
-              onChange={(e) => setPhone(e.target.value.trim())}
-              placeholder="شماره موبایل (09xxxxxxxxx)"
-              className="w-full site-input disabled:opacity-70 "
-              inputMode="numeric"
-              disabled={phoneLocked}
-            />
-          </div>
-
-          {phoneLocked && (
-            <button
-              onClick={resetOtpFlow}
-              className="site-btn-secondary px-3"
-              aria-label="ویرایش شماره موبایل"
-              title="ویرایش شماره"
-            >
-              <FiEdit3 />
-            </button>
-          )}
-        </div>
-
-        {mode === "password" ? (
-          <>
-            {/* Password */}
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="رمز عبور"
-                className="w-full site-input"
-              />
-              <button
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute left-4 top-1/2 -translate-y-1/2"
-              >
-                {showPassword ? <EyeClosed /> : <Eye />}
-              </button>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <Link href="/auth/forgot" className="text-xs text-on-surface-variant hover:text-on-surface">
-                فراموشی رمز عبور؟
-              </Link>
-            </div>
-
-            <button
-              onClick={onLoginPassword}
-              className="site-btn-primary"
-            >
-              ورود <FiArrowLeft />
-            </button>
-          </>
-        ) : (
-          <>
-            {/* Send OTP (hidden after sending) */}
-            {canSendOtp && (
-              <button
-                onClick={onSendOtp}
-                className="site-btn-secondary w-full font-extrabold"
-              >
-                ارسال رمز <FiKey />
-              </button>
-            )}
-
-            {/* OTP input (shown after sending) */}
-            {otpSent && (
-              <div className="relative">
-                <FiKey className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant" />
-                <input
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value.trim())}
-                  placeholder="کد OTP"
-                  className="w-full site-input py-3 pl-4 pr-11"
-                  inputMode="numeric"
-                />
-                <div className="mt-2 text-[11px] site-muted">
-                  Demo OTP: <span className="text-on-surface-variant">12345</span>
+          <FieldGroup className="mt-4 gap-4">
+            <Field>
+              <FieldLabel htmlFor="login-phone">شماره موبایل</FieldLabel>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Phone className="pointer-events-none absolute start-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id="login-phone"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value.trim())}
+                    placeholder="09xxxxxxxxx"
+                    className="ps-9"
+                    inputMode="numeric"
+                    disabled={phoneLocked || isLoggingIn}
+                  />
                 </div>
+                {phoneLocked && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={resetOtpFlow}
+                    disabled={isSendingOtp || isLoggingIn}
+                    aria-label="ویرایش شماره موبایل"
+                    title="ویرایش شماره"
+                  >
+                    <Pencil />
+                  </Button>
+                )}
               </div>
-            )}
+            </Field>
 
-            <div className="flex items-center justify-between">
-              <Link href="/auth/forgot" className="text-xs text-on-surface-variant hover:text-on-surface">
-                فراموشی رمز عبور؟
-              </Link>
+            <TabsContent value="password" className="mt-0 space-y-4">
+              <Field>
+                <FieldLabel htmlFor="login-password">رمز عبور</FieldLabel>
+                <div className="relative">
+                  <Input
+                    id="login-password"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="رمز عبور"
+                    className="pe-9"
+                    disabled={isLoggingIn}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-xs"
+                    className="absolute end-1 top-1/2 -translate-y-1/2"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? "مخفی کردن رمز" : "نمایش رمز"}
+                  >
+                    {showPassword ? <EyeOff /> : <Eye />}
+                  </Button>
+                </div>
+              </Field>
+
+              <div className="flex items-center justify-between">
+                <Button variant="link" size="sm" className="h-auto p-0 text-xs" asChild>
+                  <Link href="/auth/forgot">فراموشی رمز عبور؟</Link>
+                </Button>
+              </div>
+
+              <Button
+                type="button"
+                className="w-full"
+                size="lg"
+                onClick={onLoginPassword}
+                disabled={isLoggingIn}
+              >
+                {isLoggingIn ? "در حال ورود..." : "ورود"}
+                {!isLoggingIn && <ArrowLeft />}
+              </Button>
+            </TabsContent>
+
+            <TabsContent value="otp" className="mt-0 space-y-4">
+              {canSendOtp && (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="w-full"
+                  size="lg"
+                  onClick={onSendOtp}
+                  disabled={isSendingOtp || isLoggingIn}
+                >
+                  {isSendingOtp ? "در حال ارسال..." : "ارسال رمز"}
+                  {!isSendingOtp && <KeyRound />}
+                </Button>
+              )}
 
               {otpSent && (
-                <button
-                  onClick={onSendOtp}
-                  className="text-xs text-surface-tint hover:opacity-80"
-                >
-                  ارسال مجدد
-                </button>
+                <Field>
+                  <FieldLabel htmlFor="login-otp">کد OTP</FieldLabel>
+                  <div className="relative">
+                    <KeyRound className="pointer-events-none absolute start-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      id="login-otp"
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value.trim())}
+                      placeholder="کد OTP"
+                      className="ps-9"
+                      inputMode="numeric"
+                      disabled={isLoggingIn}
+                    />
+                  </div>
+                  <FieldDescription>
+                    Demo OTP: <span className="text-foreground">12345</span>
+                  </FieldDescription>
+                </Field>
               )}
-            </div>
 
-            <button
-              onClick={onLoginOtp}
-              className="site-btn-primary"
-            >
-              ورود با OTP <FiArrowLeft />
-            </button>
-          </>
-        )}
-      </motion.div>
-    </div>
+              <div className="flex items-center justify-between">
+                <Button variant="link" size="sm" className="h-auto p-0 text-xs" asChild>
+                  <Link href="/auth/forgot">فراموشی رمز عبور؟</Link>
+                </Button>
+                {otpSent && (
+                  <Button
+                    type="button"
+                    variant="link"
+                    size="sm"
+                    className="h-auto p-0 text-xs"
+                    onClick={onSendOtp}
+                    disabled={isSendingOtp || isLoggingIn}
+                  >
+                    {isSendingOtp ? "در حال ارسال..." : "ارسال مجدد"}
+                  </Button>
+                )}
+              </div>
+
+              <Button
+                type="button"
+                className="w-full"
+                size="lg"
+                onClick={onLoginOtp}
+                disabled={isLoggingIn || !otpSent}
+              >
+                {isLoggingIn ? "در حال ورود..." : "ورود با OTP"}
+                {!isLoggingIn && <ArrowLeft />}
+              </Button>
+            </TabsContent>
+          </FieldGroup>
+        </Tabs>
+      </CardContent>
+    </Card>
   );
 }

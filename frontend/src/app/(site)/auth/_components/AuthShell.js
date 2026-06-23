@@ -33,9 +33,7 @@ export default function AuthShell({ children }) {
             </div>
           </div>
 
-          <div className="site-panel rounded-[28px] p-6 shadow-lg">
-            {children}
-          </div>
+          {children}
         </div>
       </div>
       <Footer />

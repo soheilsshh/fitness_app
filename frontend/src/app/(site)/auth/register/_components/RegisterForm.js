@@ -3,8 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { motion } from "framer-motion";
-import { FiUser, FiSmartphone, FiKey, FiLock, FiArrowLeft, FiEdit3 } from "react-icons/fi";
+import { ArrowLeft, KeyRound, Lock, Pencil, Phone, User } from "lucide-react";
 import {
   isValidIranPhone,
   isValidOtp,
@@ -19,6 +18,21 @@ import {
   resolvePostAuthPath,
 } from "@/lib/auth/postAuthRedirect";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -37,6 +51,9 @@ export default function RegisterForm() {
   const [lastName, setLastName] = useState("");
   const [password, setPassword] = useState("");
 
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
+
   const resetOtpFlow = () => {
     setOtpSent(false);
     setOtpVerified(false);
@@ -49,7 +66,7 @@ export default function RegisterForm() {
       return toastError("شماره نامعتبر", "شماره موبایل را با فرمت 09xxxxxxxxx وارد کنید.");
     }
 
-    // در نسخه فعلی، OTP سمت سرور تولید و لاگ می‌شود.
+    setIsSendingOtp(true);
     try {
       await api.post("/auth/otp/request", { phone });
       setOtpSent(true);
@@ -59,6 +76,8 @@ export default function RegisterForm() {
     } catch (error) {
       const msg = error?.response?.data?.error || "خطا در ارسال کد.";
       return toastError("خطا", msg);
+    } finally {
+      setIsSendingOtp(false);
     }
   };
 
@@ -66,8 +85,6 @@ export default function RegisterForm() {
     if (!otpSent) return toastError("کد ارسال نشده", "ابتدا روی «ارسال رمز» بزنید.");
     if (!isValidOtp(otp)) return toastError("کد نامعتبر", "کد را صحیح وارد کنید.");
 
-    // در این مرحله فقط سمت کلاینت تأیید اولیه انجام می‌دهیم؛
-    // رمز نهایی هنگام ثبت‌نام در بک‌اند بررسی می‌شود.
     setOtpVerified(true);
     return toastSuccess("تایید شد", "شماره شما تایید شد. حالا اطلاعات را کامل کنید.");
   };
@@ -92,9 +109,9 @@ export default function RegisterForm() {
     }
 
     const name = `${firstName.trim()} ${lastName.trim()}`.trim();
-    // ایمیل را بر اساس شماره به‌صورت داخلی می‌سازیم تا با بک‌اند سازگار باشد.
     const email = `${phone}@phone.local`;
 
+    setIsRegistering(true);
     try {
       const res = await api.post("/auth/register", {
         name,
@@ -107,143 +124,180 @@ export default function RegisterForm() {
     } catch (error) {
       const msg = error?.response?.data?.error || "ثبت‌نام ناموفق بود.";
       return toastError("خطا در ثبت‌نام", msg);
+    } finally {
+      setIsRegistering(false);
     }
   };
 
   return (
-    <div>
-      <div className="flex items-center justify-between">
-        <h1 className="text-lg font-extrabold">ثبت نام</h1>
-        <Button
-          variant="ghost"
-          asChild
-        >
-        <Link href={loginHref} >
-          ورود
-        </Link>
-        </Button>
-      </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>ثبت نام</CardTitle>
+        <CardDescription>برای ساخت حساب جدید شماره موبایل خود را وارد کنید</CardDescription>
+        <CardAction>
+          <Button variant="ghost" size="sm" asChild>
+            <Link href={loginHref}>ورود</Link>
+          </Button>
+        </CardAction>
+      </CardHeader>
 
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35 }}
-        className="mt-5 space-y-3"
-      >
-        {/* Phone + Edit */}
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <FiSmartphone className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant" />
-            <input
-              value={phone}
-              onChange={(e) => setPhone(e.target.value.trim())}
-              placeholder="شماره موبایل (09xxxxxxxxx)"
-              className="w-full site-input disabled:opacity-70"
-              inputMode="numeric"
-              disabled={phoneLocked}
-            />
-          </div>
-
-          {phoneLocked && !otpVerified && (
-            <button
-              onClick={resetOtpFlow}
-              className="site-btn-secondary px-3"
-              aria-label="ویرایش شماره موبایل"
-              title="ویرایش شماره"
-            >
-              <FiEdit3 />
-            </button>
-          )}
-        </div>
-
-        {/* Send OTP (hidden after sending) */}
-        {!otpSent && !otpVerified && (
-          <button
-            onClick={sendOtp}
-            className="site-btn-secondary w-full font-extrabold"
-          >
-            ارسال رمز <FiKey />
-          </button>
-        )}
-
-        {/* OTP input (shown after sending, before verification) */}
-        {otpSent && !otpVerified && (
-          <>
-            <div className="relative">
-              <FiKey 
-                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant" 
-              />
-              <input
-                
-                value={otp}
-                onChange={(e) => setOtp(e.target.value.trim())}
-                placeholder="کد OTP"
-                className="w-full site-input py-3 pl-4 pr-11"
-                inputMode="numeric"
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <button onClick={sendOtp} className="text-xs">
-                ارسال مجدد
-              </button>
-              <button onClick={verifyOtp} className="text-xs text-on-surface-variant hover:text-on-surface">
-                تایید کد
-              </button>
-            </div>
-          </>
-        )}
-
-        {/* After OTP verified: show fields */}
-        {otpVerified && (
-          <>
-            <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/10 px-4 py-3 text-sm">
-              شماره موبایل تایید شد.
-            </div>
-
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div className="relative">
-                <FiUser className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant" />
-                <input
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  placeholder="نام"
-                  className="w-full site-input py-3 pl-4 pr-11"
+      <CardContent>
+        <FieldGroup className="gap-4">
+          <Field>
+            <FieldLabel htmlFor="register-phone">شماره موبایل</FieldLabel>
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Phone className="pointer-events-none absolute start-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  id="register-phone"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value.trim())}
+                  placeholder="09xxxxxxxxx"
+                  className="ps-9"
+                  inputMode="numeric"
+                  disabled={phoneLocked || isRegistering}
                 />
               </div>
-
-              <input
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                placeholder="نام خانوادگی"
-                className="w-full site-input px-4 py-3"
-              />
+              {phoneLocked && !otpVerified && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={resetOtpFlow}
+                  disabled={isSendingOtp || isRegistering}
+                  aria-label="ویرایش شماره موبایل"
+                  title="ویرایش شماره"
+                >
+                  <Pencil />
+                </Button>
+              )}
             </div>
+          </Field>
 
-            <div className="relative">
-              <FiLock className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant" />
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="رمز عبور (حداقل ۶ کاراکتر)"
-                className="w-full site-input py-3 pl-4 pr-11"
-              />
-            </div>
-
-            <button
-              onClick={submitRegister}
-              className="site-btn-primary"
+          {!otpSent && !otpVerified && (
+            <Button
+              type="button"
+              variant="secondary"
+              className="w-full"
+              size="lg"
+              onClick={sendOtp}
+              disabled={isSendingOtp || isRegistering}
             >
-              ساخت حساب <FiArrowLeft />
-            </button>
-          </>
-        )}
+              {isSendingOtp ? "در حال ارسال..." : "ارسال رمز"}
+              {!isSendingOtp && <KeyRound />}
+            </Button>
+          )}
 
-        <div className="text-center text-[11px] site-muted">
-          با ثبت نام، قوانین و حریم خصوصی را می‌پذیرید.
-        </div>
-      </motion.div>
-    </div>
+          {otpSent && !otpVerified && (
+            <>
+              <Field>
+                <FieldLabel htmlFor="register-otp">کد OTP</FieldLabel>
+                <div className="relative">
+                  <KeyRound className="pointer-events-none absolute start-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id="register-otp"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value.trim())}
+                    placeholder="کد OTP"
+                    className="ps-9"
+                    inputMode="numeric"
+                  />
+                </div>
+              </Field>
+
+              <div className="flex items-center justify-between">
+                <Button
+                  type="button"
+                  variant="link"
+                  size="sm"
+                  className="h-auto p-0 text-xs"
+                  onClick={sendOtp}
+                  disabled={isSendingOtp}
+                >
+                  {isSendingOtp ? "در حال ارسال..." : "ارسال مجدد"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="link"
+                  size="sm"
+                  className="h-auto p-0 text-xs"
+                  onClick={verifyOtp}
+                >
+                  تایید کد
+                </Button>
+              </div>
+            </>
+          )}
+
+          {otpVerified && (
+            <>
+              <div className="rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-foreground">
+                شماره موبایل تایید شد.
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Field>
+                  <FieldLabel htmlFor="register-first-name">نام</FieldLabel>
+                  <div className="relative">
+                    <User className="pointer-events-none absolute start-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      id="register-first-name"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      placeholder="نام"
+                      className="ps-9"
+                      disabled={isRegistering}
+                    />
+                  </div>
+                </Field>
+
+                <Field>
+                  <FieldLabel htmlFor="register-last-name">نام خانوادگی</FieldLabel>
+                  <Input
+                    id="register-last-name"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    placeholder="نام خانوادگی"
+                    disabled={isRegistering}
+                  />
+                </Field>
+              </div>
+
+              <Field>
+                <FieldLabel htmlFor="register-password">رمز عبور</FieldLabel>
+                <div className="relative">
+                  <Lock className="pointer-events-none absolute start-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id="register-password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="حداقل ۶ کاراکتر"
+                    className="ps-9"
+                    disabled={isRegistering}
+                  />
+                </div>
+                <FieldDescription>رمز عبور باید حداقل ۶ کاراکتر باشد.</FieldDescription>
+              </Field>
+
+              <Button
+                type="button"
+                className="w-full"
+                size="lg"
+                onClick={submitRegister}
+                disabled={isRegistering}
+              >
+                {isRegistering ? "در حال ساخت حساب..." : "ساخت حساب"}
+                {!isRegistering && <ArrowLeft />}
+              </Button>
+            </>
+          )}
+
+          <FieldDescription className="text-center">
+            با ثبت نام، قوانین و حریم خصوصی را می‌پذیرید.
+          </FieldDescription>
+        </FieldGroup>
+      </CardContent>
+    </Card>
   );
 }
