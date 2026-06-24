@@ -1,5 +1,5 @@
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.fitinoo.ir";
 
 const VIDEO_EXT = /\.(mp4|webm|mov|m4v)(\?.*)?$/i;
 

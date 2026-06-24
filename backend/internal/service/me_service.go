@@ -12,6 +12,7 @@ import (
 
 	"gorm.io/gorm"
 
+	"github.com/yourusername/fitness-management/config"
 	"github.com/yourusername/fitness-management/internal/models"
 	"github.com/yourusername/fitness-management/internal/repository"
 )
@@ -542,7 +543,7 @@ func (s *meService) UploadBodyPhoto(ctx context.Context, userID uint, file io.Re
 }
 
 func meGetUploadDir() string {
-	dir := os.Getenv("UPLOAD_DIR")
+	dir := config.GetUploadDir()
 	if dir == "" {
 		dir = "uploads"
 	}

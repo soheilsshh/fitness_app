@@ -1,0 +1,61 @@
+# Fitino backend configuration
+# Copy to config.yaml and adjust for your environment:
+#   cp config.yaml.example config.yaml
+#
+# Priority (highest first):
+#   1. Environment variables (PORT, DB_HOST, JWT_SECRET, ...)
+#   2. config.yaml
+#   3. Built-in defaults
+#
+# Legacy: FRONTEND_ORIGIN (comma-separated) still overrides cors.allowed_origins.
+
+app:
+  # development | staging | production
+  env: development
+
+server:
+  host: "0.0.0.0"
+  port: 8088
+
+cors:
+  # Origins allowed to call this API from the browser.
+  allowed_origins:
+    - https://fitinoo.ir
+    - https://www.fitinoo.ir
+    - http://fitinoo.ir
+    - http://www.fitinoo.ir
+    # local Next.js dev (optional — remove in production if not needed)
+    - http://localhost:3000
+    - http://localhost:3001
+    - http://localhost:3002
+  # Also allow any http://localhost:<port> and 127.0.0.1 (useful in development)
+  allow_localhost: true
+  # JWT is sent via Authorization header, not cookies — keep false unless you change auth
+  allow_credentials: false
+
+database:
+  host: localhost
+  port: 3306
+  user: root
+  password: ""
+  name: fitness_db
+
+jwt:
+  secret: change-me-in-production
+  access_token_duration_minutes: 15
+  refresh_token_duration_days: 7
+
+upload:
+  dir: uploads
+
+seed:
+  # Load development fixtures on API startup (blocked when app.env=production).
+  # Prefer: go run ./cmd/seed -dev
+  dev_data: false
+
+funnel:
+  # Optional overrides for the public sales funnel (leave empty to use DB defaults)
+  coach_name: ""
+  coach_id: ""
+  amount: ""
+  package_title: ""

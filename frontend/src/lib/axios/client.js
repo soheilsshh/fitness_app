@@ -4,7 +4,7 @@ import { clearAuthSession } from "@/lib/auth/session";
 import { translateApiError } from "@/lib/api/translateError";
 
 const baseURL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.fitinoo.ir";
 
 export const api = axios.create({
   baseURL,

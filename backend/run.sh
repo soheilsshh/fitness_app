@@ -134,7 +134,7 @@ DB_HOST="$(read_env_var DB_HOST localhost)"
 DB_PORT="$(read_env_var DB_PORT 3306)"
 DB_USER="$(read_env_var DB_USER root)"
 DB_NAME="$(read_env_var DB_NAME fitness_db)"
-PORT="$(read_env_var PORT 8080)"
+PORT="$(read_env_var PORT 8088)"
 
 # 5. MySQL reachable
 step "Checking MySQL server (${DB_HOST}:${DB_PORT})"

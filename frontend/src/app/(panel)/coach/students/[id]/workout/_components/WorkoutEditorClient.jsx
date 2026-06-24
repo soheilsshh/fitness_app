@@ -39,7 +39,7 @@ import ExercisePickerModal from "./ExercisePickerModal";
 import ManualExerciseModal from "./ManualExerciseModal";
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.fitinoo.ir";
 
 function mediaUrl(path) {
   if (!path) return null;

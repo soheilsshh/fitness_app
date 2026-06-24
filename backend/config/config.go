@@ -1,51 +1,282 @@
 package config
 
 import (
+	"fmt"
 	"log"
+	"os"
+	"regexp"
+	"strings"
 	"sync"
 	"time"
 
+	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
 )
 
+// Config holds application settings loaded from config.yaml with optional env overrides.
+type Config struct {
+	App struct {
+		Env string `mapstructure:"env"`
+	} `mapstructure:"app"`
+
+	Server struct {
+		Host string `mapstructure:"host"`
+		Port string `mapstructure:"port"`
+	} `mapstructure:"server"`
+
+	CORS struct {
+		AllowedOrigins   []string `mapstructure:"allowed_origins"`
+		AllowLocalhost   bool     `mapstructure:"allow_localhost"`
+		AllowCredentials bool     `mapstructure:"allow_credentials"`
+	} `mapstructure:"cors"`
+
+	Database struct {
+		Host     string `mapstructure:"host"`
+		Port     string `mapstructure:"port"`
+		User     string `mapstructure:"user"`
+		Password string `mapstructure:"password"`
+		Name     string `mapstructure:"name"`
+	} `mapstructure:"database"`
+
+	JWT struct {
+		Secret                     string `mapstructure:"secret"`
+		AccessTokenDurationMinutes int    `mapstructure:"access_token_duration_minutes"`
+		RefreshTokenDurationDays   int    `mapstructure:"refresh_token_duration_days"`
+	} `mapstructure:"jwt"`
+
+	Upload struct {
+		Dir string `mapstructure:"dir"`
+	} `mapstructure:"upload"`
+
+	Seed struct {
+		DevData bool `mapstructure:"dev_data"`
+	} `mapstructure:"seed"`
+
+	Funnel struct {
+		CoachName    string `mapstructure:"coach_name"`
+		CoachID      string `mapstructure:"coach_id"`
+		Amount       string `mapstructure:"amount"`
+		PackageTitle string `mapstructure:"package_title"`
+	} `mapstructure:"funnel"`
+}
+
 var (
-	configOnce sync.Once
+	cfg     Config
+	cfgOnce sync.Once
+	loadErr error
 )
 
-func initViper() {
-	configOnce.Do(func() {
-		// Read from environment variables
-		viper.AutomaticEnv()
+// Load reads config.yaml (if present), then applies environment variable overrides.
+func Load() error {
+	cfgOnce.Do(func() {
+		loadErr = loadConfig()
 	})
+	return loadErr
+}
+
+// MustLoad panics when configuration cannot be loaded.
+func MustLoad() {
+	if err := Load(); err != nil {
+		log.Fatalf("config: %v", err)
+	}
+}
+
+// Get returns the loaded configuration.
+func Get() Config {
+	MustLoad()
+	return cfg
+}
+
+func loadConfig() error {
+	_ = godotenv.Load()
+
+	viper.SetConfigName("config")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath(".")
+
+	setDefaults()
+	bindEnvKeys()
+
+	if err := viper.ReadInConfig(); err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+			return fmt.Errorf("read config.yaml: %w", err)
+		}
+		log.Println("config: config.yaml not found — using defaults and environment variables")
+	} else {
+		log.Printf("config: loaded %s", viper.ConfigFileUsed())
+	}
+
+	viper.AutomaticEnv()
+
+	if err := viper.Unmarshal(&cfg); err != nil {
+		return fmt.Errorf("parse config: %w", err)
+	}
+
+	applyLegacyOverrides(&cfg)
+	normalize(&cfg)
+	syncProcessEnv(&cfg)
+
+	return nil
+}
+
+// syncProcessEnv mirrors selected yaml values into the process environment so
+// legacy code paths that still read os.Getenv remain consistent with config.yaml.
+func syncProcessEnv(c *Config) {
+	_ = os.Setenv("APP_ENV", c.App.Env)
+	if c.Seed.DevData {
+		_ = os.Setenv("SEED_DEV_DATA", "true")
+	} else {
+		_ = os.Unsetenv("SEED_DEV_DATA")
+	}
+	_ = os.Setenv("UPLOAD_DIR", c.Upload.Dir)
+}
+
+func setDefaults() {
+	viper.SetDefault("app.env", "development")
+	viper.SetDefault("server.host", "0.0.0.0")
+	viper.SetDefault("server.port", "8088")
+	viper.SetDefault("cors.allowed_origins", []string{
+		"https://fitinoo.ir",
+		"https://www.fitinoo.ir",
+		"http://fitinoo.ir",
+		"http://www.fitinoo.ir",
+		"http://localhost:3000",
+	})
+	viper.SetDefault("cors.allow_localhost", true)
+	viper.SetDefault("cors.allow_credentials", false)
+	viper.SetDefault("database.host", "localhost")
+	viper.SetDefault("database.port", "3306")
+	viper.SetDefault("database.user", "root")
+	viper.SetDefault("database.password", "")
+	viper.SetDefault("database.name", "fitness_db")
+	viper.SetDefault("jwt.secret", "dev-secret-change-me")
+	viper.SetDefault("jwt.access_token_duration_minutes", 15)
+	viper.SetDefault("jwt.refresh_token_duration_days", 7)
+	viper.SetDefault("upload.dir", "uploads")
+	viper.SetDefault("seed.dev_data", false)
+}
+
+func bindEnvKeys() {
+	_ = viper.BindEnv("app.env", "APP_ENV")
+	_ = viper.BindEnv("server.port", "PORT")
+	_ = viper.BindEnv("database.host", "DB_HOST")
+	_ = viper.BindEnv("database.port", "DB_PORT")
+	_ = viper.BindEnv("database.user", "DB_USER")
+	_ = viper.BindEnv("database.password", "DB_PASSWORD")
+	_ = viper.BindEnv("database.name", "DB_NAME")
+	_ = viper.BindEnv("jwt.secret", "JWT_SECRET")
+	_ = viper.BindEnv("jwt.access_token_duration_minutes", "ACCESS_TOKEN_DURATION_MINUTES")
+	_ = viper.BindEnv("jwt.refresh_token_duration_days", "REFRESH_TOKEN_DURATION_DAYS")
+	_ = viper.BindEnv("upload.dir", "UPLOAD_DIR")
+	_ = viper.BindEnv("seed.dev_data", "SEED_DEV_DATA")
+	_ = viper.BindEnv("funnel.coach_name", "FUNNEL_COACH_NAME")
+	_ = viper.BindEnv("funnel.coach_id", "FUNNEL_COACH_ID")
+	_ = viper.BindEnv("funnel.amount", "FUNNEL_AMOUNT")
+	_ = viper.BindEnv("funnel.package_title", "FUNNEL_PACKAGE_TITLE")
+}
+
+func applyLegacyOverrides(c *Config) {
+	if env := strings.TrimSpace(os.Getenv("FRONTEND_ORIGIN")); env != "" {
+		origins := splitCSV(env)
+		if len(origins) > 0 {
+			c.CORS.AllowedOrigins = origins
+		}
+	}
+}
+
+func normalize(c *Config) {
+	c.Server.Port = strings.TrimSpace(c.Server.Port)
+	if c.Server.Port == "" {
+		c.Server.Port = "8088"
+	}
+
+	if c.JWT.Secret == "" {
+		log.Println("warning: jwt.secret is empty; using an insecure default for development")
+		c.JWT.Secret = "dev-secret-change-me"
+	}
+	if c.JWT.AccessTokenDurationMinutes <= 0 {
+		c.JWT.AccessTokenDurationMinutes = 15
+	}
+	if c.JWT.RefreshTokenDurationDays <= 0 {
+		c.JWT.RefreshTokenDurationDays = 7
+	}
+
+	if c.Upload.Dir == "" {
+		c.Upload.Dir = "uploads"
+	}
+}
+
+func splitCSV(value string) []string {
+	parts := strings.Split(value, ",")
+	out := make([]string, 0, len(parts))
+	for _, part := range parts {
+		if part = strings.TrimSpace(part); part != "" {
+			out = append(out, part)
+		}
+	}
+	return out
+}
+
+// ServerAddr returns the listen address (e.g. ":8088").
+func ServerAddr() string {
+	c := Get()
+	return ":" + c.Server.Port
+}
+
+// GetUploadDir returns the directory for user-uploaded files.
+func GetUploadDir() string {
+	return Get().Upload.Dir
+}
+
+// CORSAllowedOrigins returns the configured browser origins.
+func CORSAllowedOrigins() []string {
+	return Get().CORS.AllowedOrigins
+}
+
+// CORSAllowLocalhost reports whether local dev origins are accepted.
+func CORSAllowLocalhost() bool {
+	return Get().CORS.AllowLocalhost
+}
+
+// CORSAllowCredentials reports whether credentialed cross-origin requests are allowed.
+func CORSAllowCredentials() bool {
+	return Get().CORS.AllowCredentials
+}
+
+var localOriginRe = regexp.MustCompile(`^https?://(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$`)
+
+// IsOriginAllowed checks whether an Origin header may access the API.
+func IsOriginAllowed(origin string) bool {
+	if origin == "" {
+		return false
+	}
+
+	for _, allowed := range CORSAllowedOrigins() {
+		if origin == allowed {
+			return true
+		}
+	}
+
+	if CORSAllowLocalhost() && localOriginRe.MatchString(origin) {
+		return true
+	}
+
+	return false
 }
 
 // GetJWTSecret returns the JWT secret key from configuration.
 func GetJWTSecret() []byte {
-	initViper()
-	secret := viper.GetString("JWT_SECRET")
-	if secret == "" {
-		log.Println("warning: JWT_SECRET is not set; using an insecure default value for development")
-		secret = "dev-secret-change-me"
-	}
-	return []byte(secret)
+	return []byte(Get().JWT.Secret)
 }
 
 // GetAccessTokenDuration returns the configured access token lifetime.
 func GetAccessTokenDuration() time.Duration {
-	initViper()
-	minutes := viper.GetInt("ACCESS_TOKEN_DURATION_MINUTES")
-	if minutes <= 0 {
-		minutes = 15
-	}
+	minutes := Get().JWT.AccessTokenDurationMinutes
 	return time.Duration(minutes) * time.Minute
 }
 
 // GetRefreshTokenDuration returns the configured refresh token lifetime.
 func GetRefreshTokenDuration() time.Duration {
-	initViper()
-	days := viper.GetInt("REFRESH_TOKEN_DURATION_DAYS")
-	if days <= 0 {
-		days = 7
-	}
+	days := Get().JWT.RefreshTokenDurationDays
 	return time.Duration(days) * 24 * time.Hour
 }

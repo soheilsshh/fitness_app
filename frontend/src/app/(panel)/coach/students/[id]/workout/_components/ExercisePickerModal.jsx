@@ -19,7 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.fitinoo.ir";
 
 function mediaUrl(path) {
   if (!path) return null;

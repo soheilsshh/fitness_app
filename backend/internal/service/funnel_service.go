@@ -6,12 +6,13 @@ import (
 	"encoding/hex"
 	"errors"
 	"math"
-	"os"
 	"strconv"
 	"strings"
 	"time"
 
 	"gorm.io/gorm"
+
+	"github.com/yourusername/fitness-management/config"
 
 	"github.com/yourusername/fitness-management/internal/models"
 	"github.com/yourusername/fitness-management/internal/repository"
@@ -145,14 +146,14 @@ func NewFunnelService(repo repository.FunnelLeadRepository) FunnelService {
 }
 
 func funnelCoachName() string {
-	if v := strings.TrimSpace(os.Getenv("FUNNEL_COACH_NAME")); v != "" {
+	if v := strings.TrimSpace(config.Get().Funnel.CoachName); v != "" {
 		return v
 	}
 	return "علی رشید آبادی"
 }
 
 func funnelCoachID() uint {
-	if v := strings.TrimSpace(os.Getenv("FUNNEL_COACH_ID")); v != "" {
+	if v := strings.TrimSpace(config.Get().Funnel.CoachID); v != "" {
 		if id, err := strconv.ParseUint(v, 10, 64); err == nil {
 			return uint(id)
 		}
@@ -161,7 +162,7 @@ func funnelCoachID() uint {
 }
 
 func funnelAmount() int64 {
-	if v := strings.TrimSpace(os.Getenv("FUNNEL_AMOUNT")); v != "" {
+	if v := strings.TrimSpace(config.Get().Funnel.Amount); v != "" {
 		if n, err := strconv.ParseInt(v, 10, 64); err == nil && n > 0 {
 			return n
 		}
@@ -170,7 +171,7 @@ func funnelAmount() int64 {
 }
 
 func funnelPackageTitle() string {
-	if v := strings.TrimSpace(os.Getenv("FUNNEL_PACKAGE_TITLE")); v != "" {
+	if v := strings.TrimSpace(config.Get().Funnel.PackageTitle); v != "" {
 		return v
 	}
 	return "پکیج مربیگری اختصاصی"

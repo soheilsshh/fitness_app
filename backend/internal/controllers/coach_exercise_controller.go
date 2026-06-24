@@ -13,6 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
+	"github.com/yourusername/fitness-management/config"
 	"github.com/yourusername/fitness-management/internal/middleware"
 	"github.com/yourusername/fitness-management/internal/service"
 )
@@ -125,7 +126,7 @@ func isAnimatedExerciseMedia(ext string) bool {
 }
 
 func coachExerciseUploadDir(coachID uint) string {
-	baseDir := os.Getenv("UPLOAD_DIR")
+	baseDir := config.GetUploadDir()
 	if baseDir == "" {
 		baseDir = "uploads"
 	}

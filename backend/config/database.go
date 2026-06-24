@@ -3,13 +3,8 @@ package config
 import (
 	"fmt"
 	"log"
-	"os"
 	"regexp"
 	"time"
-
-	"golang.org/x/crypto/bcrypt"
-
-	"github.com/yourusername/fitness-management/internal/models"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -27,11 +22,27 @@ import (
 var dbNamePattern = regexp.MustCompile(`^[a-zA-Z0-9_]+$`)
 
 func NewMySQLGORM() (*gorm.DB, error) {
-	host := getEnv("DB_HOST", "localhost")
-	port := getEnv("DB_PORT", "3306")
-	user := getEnv("DB_USER", "root")
-	password := getEnv("DB_PASSWORD", "")
-	dbName := getEnv("DB_NAME", "fitness_db")
+	MustLoad()
+	dbCfg := Get().Database
+
+	host := dbCfg.Host
+	port := dbCfg.Port
+	user := dbCfg.User
+	password := dbCfg.Password
+	dbName := dbCfg.Name
+
+	if host == "" {
+		host = "localhost"
+	}
+	if port == "" {
+		port = "3306"
+	}
+	if user == "" {
+		user = "root"
+	}
+	if dbName == "" {
+		dbName = "fitness_db"
+	}
 
 	if !dbNamePattern.MatchString(dbName) {
 		return nil, fmt.Errorf("invalid DB_NAME %q: use only letters, numbers, and underscores", dbName)
@@ -75,63 +86,6 @@ func NewMySQLGORM() (*gorm.DB, error) {
 	return db, nil
 }
 
-// SetupDatabase applies database migrations for all core models.
-func SetupDatabase(db *gorm.DB) error {
-	log.Println("starting GORM AutoMigrate for core models")
-	err := db.AutoMigrate(models.AllModels()...)
-	if err != nil {
-		log.Printf("AutoMigrate encountered an error: %v\n", err)
-		return err
-	}
-	log.Println("GORM AutoMigrate completed successfully")
-
-	// Backfill invalid empty JSON values for existing users.
-	if err := db.Exec("UPDATE users SET goals = '[]' WHERE goals IS NULL OR goals = ''").Error; err != nil {
-		log.Printf("failed backfilling users.goals: %v\n", err)
-		return err
-	}
-
-	// Seed default admin user (hard‑coded for initial setup).
-	const (
-		adminName     = "admin"
-		adminEmail    = "admin@gmail.com"
-		adminPhone    = "09150000000"
-		adminPassword = "12345678"
-	)
-
-	var count int64
-	if err := db.Model(&models.User{}).Where("email = ?", adminEmail).Count(&count).Error; err != nil {
-		log.Printf("failed counting admin user: %v\n", err)
-		return err
-	}
-
-	if count == 0 {
-		hashed, err := bcrypt.GenerateFromPassword([]byte(adminPassword), bcrypt.DefaultCost)
-		if err != nil {
-			log.Printf("failed hashing admin password: %v\n", err)
-			return err
-		}
-
-		admin := &models.User{
-			Name:     adminName,
-			Email:    adminEmail,
-			Phone:    adminPhone,
-			Password: string(hashed),
-			Role:     models.RoleAdmin,
-		}
-
-		if err := db.Create(admin).Error; err != nil {
-			log.Printf("failed creating admin user: %v\n", err)
-			return err
-		}
-		log.Println("seeded default admin user with email admin@gmail.com")
-	} else {
-		log.Println("admin user already exists, skipping seeding")
-	}
-
-	return nil
-}
-
 // ensureDatabaseExists connects to the MySQL server (without a default schema) and
 // creates the target database when it does not already exist.
 func ensureDatabaseExists(host, port, user, password, dbName string) error {
@@ -169,11 +123,4 @@ func ensureDatabaseExists(host, port, user, password, dbName string) error {
 
 	log.Printf("database %q ready (created if it did not exist)", dbName)
 	return nil
-}
-
-func getEnv(key, fallback string) string {
-	if value, ok := os.LookupEnv(key); ok {
-		return value
-	}
-	return fallback
 }

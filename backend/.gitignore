@@ -34,6 +34,7 @@ logs/
 # Environment / secrets
 .env
 .env.*
+config.yaml
 
 # Coverage and profiling
 coverage.out

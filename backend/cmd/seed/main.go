@@ -9,10 +9,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/joho/godotenv"
 	"gorm.io/gorm"
 
 	"github.com/yourusername/fitness-management/config"
+	"github.com/yourusername/fitness-management/internal/bootstrap"
 	"github.com/yourusername/fitness-management/internal/models"
 	"github.com/yourusername/fitness-management/internal/repository"
 	"github.com/yourusername/fitness-management/internal/seed"
@@ -44,16 +44,16 @@ func main() {
 	fileFlag := flag.String("file", "", "path to dataset file (default depends on import mode)")
 	flag.Parse()
 
-	if err := godotenv.Load(); err != nil {
-		log.Println("no .env file found, using environment variables")
+	if err := config.Load(); err != nil {
+		log.Fatalf("failed to load configuration: %v", err)
 	}
 
 	db, err := config.NewMySQLGORM()
 	if err != nil {
 		log.Fatalf("database connection failed: %v", err)
 	}
-	if err := config.SetupDatabase(db); err != nil {
-		log.Fatalf("database migration failed: %v", err)
+	if err := bootstrap.PrepareDatabase(db); err != nil {
+		log.Fatalf("database bootstrap failed: %v", err)
 	}
 
 	if *devFlag {

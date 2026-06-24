@@ -1,22 +1,24 @@
 package main
 
 import (
+	"context"
 	"log"
-	"os"
-	"regexp"
 	"strings"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 
 	"github.com/yourusername/fitness-management/config"
 	_ "github.com/yourusername/fitness-management/docs"
 	"github.com/yourusername/fitness-management/internal/controllers"
 	"github.com/yourusername/fitness-management/internal/middleware"
+	"github.com/yourusername/fitness-management/internal/models"
 	"github.com/yourusername/fitness-management/internal/repository"
+	"github.com/yourusername/fitness-management/internal/seed"
 	"github.com/yourusername/fitness-management/internal/service"
 )
 
@@ -35,58 +37,20 @@ type Server struct {
 }
 
 // NewServer constructs a new Server with all dependencies initialized.
-func NewServer() *Server {
+func NewServer(db *gorm.DB) *Server {
 	// Initialize Gin router
 	router := gin.Default()
 
-	// CORS configuration for frontend <-> backend communication.
-	// FRONTEND_ORIGIN may be a comma-separated list. When unset, default to the
-	// common Next.js dev ports (3000-3002) so a dev-server port bounce doesn't
-	// break preflight with a 403.
-	var allowOrigins []string
-	if env := os.Getenv("FRONTEND_ORIGIN"); env != "" {
-		for _, o := range strings.Split(env, ",") {
-			if o = strings.TrimSpace(o); o != "" {
-				allowOrigins = append(allowOrigins, o)
-			}
-		}
-	} else {
-		allowOrigins = []string{
-			"http://localhost:3000",
-			"http://localhost:3001",
-			"http://localhost:3002",
-		}
-	}
-	// Allow any local port so a dev-server port bounce never breaks preflight.
-	localOriginRe := regexp.MustCompile(`^https?://(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$`)
-	allowed := make(map[string]struct{}, len(allowOrigins))
-	for _, o := range allowOrigins {
-		allowed[o] = struct{}{}
-	}
+	// CORS — origins from config.yaml (cors.allowed_origins) or FRONTEND_ORIGIN env.
 	router.Use(cors.New(cors.Config{
 		AllowOriginFunc: func(origin string) bool {
-			if _, ok := allowed[origin]; ok {
-				return true
-			}
-			return localOriginRe.MatchString(origin)
+			return config.IsOriginAllowed(origin)
 		},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: false, // we send JWT via Authorization header, not cookies
+		AllowCredentials: config.CORSAllowCredentials(),
 	}))
-
-	// Initialize database
-	db, err := config.NewMySQLGORM()
-	if err != nil {
-		log.Fatalf("failed to initialize database: %v", err)
-	}
-	if err := config.SetupDatabase(db); err != nil {
-		log.Fatalf("failed to migrate database: %v", err)
-	}
-	if err := config.MaybeSeedDevData(db); err != nil {
-		log.Fatalf("failed to seed development data: %v", err)
-	}
 
 	// Initialize repositories
 	userRepo := repository.NewUserRepository(db)
@@ -319,28 +283,114 @@ func NewServer() *Server {
 
 // Run starts the HTTP server.
 func (s *Server) Run() {
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-	}
-	if err := s.engine.Run(":" + port); err != nil {
+	addr := config.ServerAddr()
+	log.Printf("API listening on %s", addr)
+	if err := s.engine.Run(addr); err != nil {
 		log.Fatalf("failed to run server: %v", err)
 	}
 }
 
 func main() {
-	if err := godotenv.Load(); err != nil {
-		log.Println("no .env file found or failed to load, falling back to existing environment variables")
-	} else {
-		log.Println(".env file loaded successfully")
-		log.Printf("DB_HOST=%s DB_PORT=%s DB_USER=%s DB_NAME=%s\n",
-			os.Getenv("DB_HOST"),
-			os.Getenv("DB_PORT"),
-			os.Getenv("DB_USER"),
-			os.Getenv("DB_NAME"),
-		)
+	if err := config.Load(); err != nil {
+		log.Fatalf("failed to load configuration: %v", err)
 	}
 
-	server := NewServer()
+	cfg := config.Get()
+	log.Printf("config: app.env=%s server.port=%s db=%s@%s:%s/%s cors_origins=%d",
+		cfg.App.Env,
+		cfg.Server.Port,
+		cfg.Database.User,
+		cfg.Database.Host,
+		cfg.Database.Port,
+		cfg.Database.Name,
+		len(cfg.CORS.AllowedOrigins),
+	)
+
+	db, err := config.NewMySQLGORM()
+	if err != nil {
+		log.Fatalf("failed to initialize database: %v", err)
+	}
+
+	if err := runMigrations(db); err != nil {
+		log.Fatalf("failed to migrate database: %v", err)
+	}
+	if err := seedDefaultAdmin(db); err != nil {
+		log.Fatalf("failed to seed default admin: %v", err)
+	}
+	if err := maybeSeedDevData(db); err != nil {
+		log.Fatalf("failed to seed development data: %v", err)
+	}
+
+	server := NewServer(db)
 	server.Run()
+}
+
+func runMigrations(db *gorm.DB) error {
+	log.Println("starting GORM AutoMigrate for core models")
+	if err := db.AutoMigrate(models.AllModels()...); err != nil {
+		log.Printf("AutoMigrate encountered an error: %v", err)
+		return err
+	}
+	log.Println("GORM AutoMigrate completed successfully")
+
+	if err := db.Exec("UPDATE users SET goals = '[]' WHERE goals IS NULL OR goals = ''").Error; err != nil {
+		log.Printf("failed backfilling users.goals: %v", err)
+		return err
+	}
+
+	return nil
+}
+
+func seedDefaultAdmin(db *gorm.DB) error {
+	const (
+		adminName     = "admin"
+		adminEmail    = "admin@gmail.com"
+		adminPhone    = "09150000000"
+		adminPassword = "12345678"
+	)
+
+	var count int64
+	if err := db.Model(&models.User{}).Where("email = ?", adminEmail).Count(&count).Error; err != nil {
+		log.Printf("failed counting admin user: %v", err)
+		return err
+	}
+
+	if count > 0 {
+		log.Println("admin user already exists, skipping seeding")
+		return nil
+	}
+
+	hashed, err := bcrypt.GenerateFromPassword([]byte(adminPassword), bcrypt.DefaultCost)
+	if err != nil {
+		log.Printf("failed hashing admin password: %v", err)
+		return err
+	}
+
+	admin := &models.User{
+		Name:     adminName,
+		Email:    adminEmail,
+		Phone:    adminPhone,
+		Password: string(hashed),
+		Role:     models.RoleAdmin,
+	}
+
+	if err := db.Create(admin).Error; err != nil {
+		log.Printf("failed creating admin user: %v", err)
+		return err
+	}
+
+	log.Println("seeded default admin user with email admin@gmail.com")
+	return nil
+}
+
+func maybeSeedDevData(db *gorm.DB) error {
+	if !config.Get().Seed.DevData {
+		return nil
+	}
+
+	_, err := seed.RunDev(context.Background(), db, seed.RunDevOptions{})
+	if err != nil && strings.Contains(err.Error(), "dev seed blocked") {
+		return nil
+	}
+	return err
 }

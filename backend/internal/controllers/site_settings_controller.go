@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/yourusername/fitness-management/config"
 	"github.com/yourusername/fitness-management/internal/middleware"
 	"github.com/yourusername/fitness-management/internal/service"
 )
@@ -110,7 +111,7 @@ func (h *SiteSettingsController) UploadHeroImage(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "file is required"})
 		return
 	}
-	baseDir := os.Getenv("UPLOAD_DIR")
+	baseDir := config.GetUploadDir()
 	if baseDir == "" {
 		baseDir = "uploads"
 	}

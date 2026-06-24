@@ -11,6 +11,7 @@ import (
 
 	"gorm.io/gorm"
 
+	"github.com/yourusername/fitness-management/config"
 	"github.com/yourusername/fitness-management/internal/models"
 	"github.com/yourusername/fitness-management/internal/repository"
 )
@@ -413,7 +414,7 @@ func (s *adminUserService) GetUserBody(ctx context.Context, id uint) (*AdminUser
 
 // getUploadDir returns the base directory for uploads (from env or default).
 func getUploadDir() string {
-	dir := os.Getenv("UPLOAD_DIR")
+	dir := config.GetUploadDir()
 	if dir == "" {
 		dir = "uploads"
 	}
