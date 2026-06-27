@@ -6,6 +6,9 @@ import Providers from "./providers";
 export const metadata = {
   title: "Fitino",
   description: "پلتفرم مربیگری و تناسب اندام Fitino",
+  other: {
+    enamad: "780027",
+  },
 }
 
 export default function RootLayout({ children }) {
