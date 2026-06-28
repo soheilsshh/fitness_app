@@ -30,6 +30,21 @@ class ProfileRepository {
     }
   }
 
+  /// Uploads one body photo (multipart `file` + `type`) and returns the
+  /// created [MePhoto]. Mirrors web's `POST /me/body-photos`.
+  Future<MePhoto> uploadBodyPhoto(String type, String filePath) async {
+    try {
+      final form = FormData.fromMap({
+        'type': type,
+        'file': await MultipartFile.fromFile(filePath),
+      });
+      final res = await _dio.post(ApiPaths.bodyPhotos, data: form);
+      return MePhoto.fromJson(Map<String, dynamic>.from(res.data as Map));
+    } on DioException catch (e) {
+      throw ApiException.fromDio(e);
+    }
+  }
+
   Future<void> changePassword(String current, String next) async {
     try {
       await _dio.post(ApiPaths.changePassword, data: {

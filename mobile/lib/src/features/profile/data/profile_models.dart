@@ -3,8 +3,8 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'profile_models.freezed.dart';
 part 'profile_models.g.dart';
 
-/// Subset of `GET /me` (MeProfileDTO) that the mobile profile screen shows.
-/// Unknown keys are ignored by json_serializable.
+/// Subset of `GET /me` (MeProfileDTO) used by the mobile profile screen and
+/// the onboarding wizard. Unknown keys are ignored by json_serializable.
 @freezed
 abstract class MeProfile with _$MeProfile {
   const factory MeProfile({
@@ -15,9 +15,19 @@ abstract class MeProfile with _$MeProfile {
     @Default('') String email,
     double? heightCm,
     double? weightKg,
+    String? birthDate,
+    @Default('') String nationalId,
+    @Default('') String gender,
+    @Default(<String>[]) List<String> goals,
     @Default('') String primaryGoal,
     double? targetWeightKg,
+    @Default('') String bodyCondition,
+    double? bodyFatPercent,
+    @Default('') String medicalHistory,
+    @Default('') String injuries,
+    @Default('') String physicalLimitations,
     @JsonKey(name: 'isProfileComplete') @Default(false) bool isProfileComplete,
+    @Default(<MePhoto>[]) List<MePhoto> photos,
     @Default(0) int programsCount,
     @Default(0) int ordersCount,
     @Default('') String assignedCoachName,
@@ -29,4 +39,18 @@ abstract class MeProfile with _$MeProfile {
   const MeProfile._();
 
   String get fullName => '$firstName $lastName'.trim();
+}
+
+/// A body photo slot (`MePhotoDTO`): one of front / right / back / left.
+@freezed
+abstract class MePhoto with _$MePhoto {
+  const factory MePhoto({
+    @Default(0) int id,
+    @Default('') String url,
+    @Default('') String name,
+    @Default('') String type,
+  }) = _MePhoto;
+
+  factory MePhoto.fromJson(Map<String, dynamic> json) =>
+      _$MePhotoFromJson(json);
 }
