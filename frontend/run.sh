@@ -5,7 +5,8 @@ set -e
 echo "Installing dependencies..."
 npm install
 
-echo "Building static SPA export into dist/..."
+echo "Building Next.js static export into dist/..."
 npm run build
 
-echo "Done. Serve frontend/dist with nginx (see nginx.conf.example)."
+echo "Done. Upload frontend/dist/ to the server:"
+echo "  rsync -av --delete dist/ root@fitinoo.ir:/var/www/fitinoo/frontend/dist/"
