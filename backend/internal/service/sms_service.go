@@ -1,7 +1,6 @@
 package service
 
 import (
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -42,28 +41,14 @@ type kavenegarResponse struct {
 	Entries  []kavenegarEntry `json:"entries"`
 }
 
-var (
-	hexKeyPattern    = regexp.MustCompile(`^[0-9A-Fa-f]+$`)
-	invalidTokenChar = regexp.MustCompile(`[\s_\n\r\t]`)
-)
+var invalidTokenChar = regexp.MustCompile(`[\s_\n\r\t]`)
 
 func normalizeKavenegarAPIKey(raw string) string {
-	key := strings.TrimSpace(raw)
-	if key == "" {
-		return ""
-	}
-	if len(key) >= 32 && len(key)%2 == 0 && hexKeyPattern.MatchString(key) {
-		decoded, err := hex.DecodeString(key)
-		if err == nil {
-			if decodedKey := strings.TrimSpace(string(decoded)); decodedKey != "" {
-				return decodedKey
-			}
-		}
-	}
-	return key
+	// Use the key exactly as provided in config (often a long hex string from Kavenegar).
+	return strings.TrimSpace(raw)
 }
 
-// escapeAPIKeyForPath keeps "=" intact; only "/" breaks the REST path segment.
+// escapeAPIKeyForPath hex keys have no slashes; keep helper for rare keys with "/".
 func escapeAPIKeyForPath(apiKey string) string {
 	return strings.ReplaceAll(apiKey, "/", "%2F")
 }
@@ -156,6 +141,8 @@ func persianKavenegarError(status int, providerMessage, template string) string 
 	switch status {
 	case 404:
 		return "کلید API کاوه‌نگار نامعتبر است یا آدرس درخواست اشتباه است. api_key را از پنل کاوه‌نگار بررسی کنید."
+	case 416:
+		return "IP سرور در پنل کاوه‌نگار مجاز نیست. از بخش تنظیمات API، IP سرور را به لیست مجاز اضافه کنید."
 	case 418:
 		return "اعتبار حساب کاوه‌نگار کافی نیست."
 	case 422:
