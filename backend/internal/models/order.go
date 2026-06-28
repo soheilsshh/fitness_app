@@ -32,6 +32,11 @@ type Order struct {
 
 	// PaidAt is set when payment succeeds.
 	PaidAt *time.Time
+
+	// Payment gateway fields (ZarinPal)
+	PaymentGateway   string `gorm:"size:30;index"`
+	GatewayAuthority string `gorm:"size:100;index"`
+	GatewayRefID     string `gorm:"size:100"`
 }
 
 // OrderItem represents a single line item inside an order.

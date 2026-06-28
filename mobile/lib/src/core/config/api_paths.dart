@@ -31,6 +31,9 @@ class ApiPaths {
   static const userFoodLogs = '/user/food-logs';
   static const subscriptionsCurrent = '/subscriptions/current';
   static const ordersCheckout = '/orders/checkout';
+  static const zarinpalRequest = '/payments/zarinpal/request';
+
+  static String coachPlans(String slug) => '/coaches/$slug/plans';
 
   // Public
   static const coaches = '/coaches';

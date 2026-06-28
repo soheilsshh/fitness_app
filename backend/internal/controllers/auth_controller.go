@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -101,6 +103,22 @@ type changePasswordRequest struct {
 }
 
 // Handlers
+
+func (h *AuthController) handleOTPRequestError(c *gin.Context, err error) bool {
+	var cooldownErr *service.OTPCooldownError
+	if errors.As(err, &cooldownErr) {
+		c.JSON(http.StatusTooManyRequests, gin.H{
+			"error":               fmt.Sprintf("لطفاً %d ثانیه دیگر دوباره تلاش کنید", cooldownErr.RetryAfterSeconds),
+			"retry_after_seconds": cooldownErr.RetryAfterSeconds,
+		})
+		return true
+	}
+	if errors.Is(err, service.ErrSMSSendFailed) {
+		c.JSON(http.StatusBadGateway, gin.H{"error": "ارسال پیامک با خطا مواجه شد"})
+		return true
+	}
+	return false
+}
 
 func (h *AuthController) buildAuthUserResponse(c *gin.Context, user *models.User) (authUserResponse, error) {
 	complete, err := h.meService.IsProfileComplete(c.Request.Context(), user)
@@ -246,7 +264,7 @@ func (h *AuthController) LoginWithPassword(c *gin.Context) {
 
 // RequestOTP godoc
 // @Summary Request OTP for phone
-// @Description Request a 6-digit OTP sent to the given phone (currently logged only)
+// @Description Request a 6-digit OTP sent to the given phone via Kavenegar Verify Lookup
 // @Tags auth
 // @Accept json
 // @Produce json
@@ -263,6 +281,9 @@ func (h *AuthController) RequestOTP(c *gin.Context) {
 	}
 
 	if err := h.authService.RequestOTP(c.Request.Context(), req.Phone); err != nil {
+		if h.handleOTPRequestError(c, err) {
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -321,6 +342,9 @@ func (h *AuthController) ForgotSendOTP(c *gin.Context) {
 	}
 
 	if err := h.authService.RequestPasswordResetOTP(c.Request.Context(), req.Phone); err != nil {
+		if h.handleOTPRequestError(c, err) {
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

@@ -54,6 +54,8 @@ func (h *CheckoutController) Checkout(c *gin.Context) {
 			errors.Is(err, service.ErrCheckoutMultipleItems),
 			errors.Is(err, service.ErrCheckoutInvalidQty):
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		case errors.Is(err, service.ErrPaymentGatewayFailed):
+			c.JSON(http.StatusBadGateway, gin.H{"error": "خطا در اتصال به درگاه پرداخت"})
 		default:
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		}

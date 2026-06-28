@@ -10,6 +10,7 @@ import {
   toastError,
   toastSuccess,
 } from "../../_components/helpers";
+import { useOtpResendCooldown } from "../../_components/useOtpResendCooldown";
 import { api } from "@/lib/axios/client";
 
 export default function ForgotForm() {
@@ -22,6 +23,9 @@ export default function ForgotForm() {
 
   const [newPass, setNewPass] = useState("");
   const [newPass2, setNewPass2] = useState("");
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const { secondsLeft, canResend, startCooldown, syncFromResponse, resetCooldown } =
+    useOtpResendCooldown();
 
   const resetOtpFlow = () => {
     setOtpSent(false);
@@ -30,6 +34,7 @@ export default function ForgotForm() {
     setPhoneLocked(false);
     setNewPass("");
     setNewPass2("");
+    resetCooldown();
   };
 
   const sendOtp = async () => {
@@ -37,15 +42,20 @@ export default function ForgotForm() {
       return toastError("شماره نامعتبر", "شماره موبایل را با فرمت 09xxxxxxxxx وارد کنید.");
     }
 
+    setIsSendingOtp(true);
     try {
       await api.post("/auth/forgot/send-otp", { phone });
       setOtpSent(true);
       setPhoneLocked(true);
       setOtp("");
+      startCooldown();
       return toastSuccess("ارسال شد", "کد بازیابی ارسال شد.");
     } catch (error) {
+      syncFromResponse(error);
       const msg = error?.response?.data?.error || "خطا در ارسال کد.";
       return toastError("خطا", msg);
+    } finally {
+      setIsSendingOtp(false);
     }
   };
 
@@ -143,8 +153,16 @@ export default function ForgotForm() {
             </div>
 
             <div className="flex items-center justify-between">
-              <button onClick={sendOtp} className="text-xs text-emerald-200 hover:text-emerald-100">
-                ارسال مجدد
+              <button
+                onClick={sendOtp}
+                disabled={isSendingOtp || !canResend}
+                className="text-xs text-emerald-200 hover:text-emerald-100 disabled:opacity-50 disabled:hover:text-emerald-200"
+              >
+                {isSendingOtp
+                  ? "در حال ارسال..."
+                  : secondsLeft > 0
+                    ? `ارسال مجدد (${secondsLeft})`
+                    : "ارسال مجدد"}
               </button>
               <button onClick={verifyOtp} className="text-xs text-zinc-200 hover:text-white">
                 تایید کد

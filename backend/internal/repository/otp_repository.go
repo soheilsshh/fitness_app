@@ -12,7 +12,9 @@ import (
 type OtpRepository interface {
 	Create(ctx context.Context, code *models.OtpCode) error
 	FindValidByPhoneAndPurpose(ctx context.Context, phone, purpose string, now time.Time) (*models.OtpCode, error)
+	FindLatestByPhoneAndPurpose(ctx context.Context, phone, purpose string) (*models.OtpCode, error)
 	MarkUsed(ctx context.Context, id uint, usedAt time.Time) error
+	InvalidatePrevious(ctx context.Context, phone, purpose string, usedAt time.Time) error
 }
 
 type otpRepository struct {
@@ -39,10 +41,29 @@ func (r *otpRepository) FindValidByPhoneAndPurpose(ctx context.Context, phone, p
 	return &otp, nil
 }
 
+func (r *otpRepository) FindLatestByPhoneAndPurpose(ctx context.Context, phone, purpose string) (*models.OtpCode, error) {
+	var otp models.OtpCode
+	err := r.db.WithContext(ctx).
+		Where("phone = ? AND purpose = ?", phone, purpose).
+		Order("created_at DESC").
+		First(&otp).Error
+	if err != nil {
+		return nil, err
+	}
+	return &otp, nil
+}
+
 func (r *otpRepository) MarkUsed(ctx context.Context, id uint, usedAt time.Time) error {
 	return r.db.WithContext(ctx).
 		Model(&models.OtpCode{}).
 		Where("id = ?", id).
+		Update("used_at", usedAt).Error
+}
+
+func (r *otpRepository) InvalidatePrevious(ctx context.Context, phone, purpose string, usedAt time.Time) error {
+	return r.db.WithContext(ctx).
+		Model(&models.OtpCode{}).
+		Where("phone = ? AND purpose = ? AND used_at IS NULL", phone, purpose).
 		Update("used_at", usedAt).Error
 }
 

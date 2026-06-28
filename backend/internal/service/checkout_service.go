@@ -7,12 +7,9 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"time"
 
-	"gorm.io/gorm"
-
-	"github.com/yourusername/fitness-management/internal/models"
 	"github.com/yourusername/fitness-management/internal/repository"
+	"gorm.io/gorm"
 )
 
 var (
@@ -49,12 +46,10 @@ type CheckoutService interface {
 }
 
 type checkoutService struct {
-	db       *gorm.DB
-	userRepo repository.UserRepository
-	planRepo repository.ServicePlanRepository
-	orderRepo repository.OrderRepository
-	subRepo  repository.SubscriptionRepository
-	coachRepo repository.CoachProfileRepository
+	paymentService PaymentService
+	orderRepo      repository.OrderRepository
+	coachRepo      repository.CoachProfileRepository
+	userRepo       repository.UserRepository
 }
 
 func NewCheckoutService(
@@ -64,160 +59,36 @@ func NewCheckoutService(
 	orderRepo repository.OrderRepository,
 	subRepo repository.SubscriptionRepository,
 	coachRepo repository.CoachProfileRepository,
+	paymentService PaymentService,
 ) CheckoutService {
+	if paymentService == nil {
+		paymentService = NewPaymentService(db, userRepo, planRepo, orderRepo, subRepo)
+	}
 	return &checkoutService{
-		db:        db,
-		userRepo:  userRepo,
-		planRepo:  planRepo,
-		orderRepo: orderRepo,
-		subRepo:   subRepo,
-		coachRepo: coachRepo,
+		paymentService: paymentService,
+		orderRepo:      orderRepo,
+		coachRepo:      coachRepo,
+		userRepo:       userRepo,
 	}
 }
 
 func (s *checkoutService) Checkout(ctx context.Context, userID uint, req *CheckoutRequest) (*CheckoutResponse, error) {
-	if req == nil || len(req.Items) == 0 {
-		return nil, ErrCheckoutEmptyCart
-	}
-	if len(req.Items) > 1 {
-		return nil, ErrCheckoutMultipleItems
-	}
-
-	user, err := s.userRepo.FindByID(ctx, userID)
+	prepared, err := s.paymentService.PrepareCheckoutOrder(ctx, userID, req)
 	if err != nil {
 		return nil, err
 	}
-	if user.Role != models.RoleStudent {
-		return nil, ErrCheckoutNotStudent
-	}
-	if user.AssignedCoachID != nil && *user.AssignedCoachID > 0 {
-		return nil, ErrCheckoutAlreadyHasCoach
-	}
 
-	now := time.Now()
-	hasActive, err := s.subRepo.HasActiveSubscription(ctx, userID, now)
-	if err != nil {
-		return nil, err
-	}
-	if hasActive {
-		return nil, ErrCheckoutAlreadyHasCoach
-	}
-
-	type line struct {
-		plan *models.ServicePlan
-		qty  int
-	}
-	lines := make([]line, 0, len(req.Items))
-	var coachID uint
-
-	for _, item := range req.Items {
-		if item.PlanID == 0 {
-			return nil, ErrCheckoutInvalidPlan
-		}
-		qty := item.Qty
-		if qty <= 0 {
-			qty = 1
-		}
-		if qty != 1 {
-			return nil, ErrCheckoutInvalidQty
-		}
-		plan, err := s.planRepo.FindByID(ctx, item.PlanID)
-		if err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return nil, ErrCheckoutInvalidPlan
-			}
-			return nil, err
-		}
-		if !plan.IsActive || plan.CoachID == 0 {
-			return nil, ErrCheckoutPlanInactive
-		}
-		if coachID == 0 {
-			coachID = plan.CoachID
-		} else if coachID != plan.CoachID {
-			return nil, ErrCheckoutMixedCoaches
-		}
-		lines = append(lines, line{plan: plan, qty: qty})
-	}
-
-	var total int64
-	var maxDurationDays int
-	orderItems := make([]models.OrderItem, 0, len(lines))
-	for _, ln := range lines {
-		unit := ln.plan.PriceCents
-		if ln.plan.DiscountPriceCents > 0 {
-			unit = ln.plan.DiscountPriceCents
-		}
-		lineTotal := unit
-		total += lineTotal
-		if ln.plan.DurationDays > maxDurationDays {
-			maxDurationDays = ln.plan.DurationDays
-		}
-		orderItems = append(orderItems, models.OrderItem{
-			ItemType:       "program",
-			PlanID:         ln.plan.ID,
-			RefID:          fmt.Sprintf("p%d", ln.plan.ID),
-			Title:          ln.plan.Name,
-			Qty:            ln.qty,
-			UnitPriceCents: unit,
-			LineTotalCents: lineTotal,
-		})
-	}
-
-	trackingCode := generateTrackingCode()
-	paidAt := now
-	var createdOrder models.Order
-
-	err = s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		order := &models.Order{
-			UserID:           userID,
-			CoachID:          coachID,
-			Status:           "paid",
-			PaymentMethod:    "درگاه آنلاین (دمو)",
-			TrackingCode:     trackingCode,
-			TotalAmountCents: total,
-			PaidAt:           &paidAt,
-		}
-		if err := tx.Create(order).Error; err != nil {
-			return err
-		}
-		createdOrder = *order
-
-		for i := range orderItems {
-			orderItems[i].OrderID = order.ID
-		}
-		if err := tx.Create(&orderItems).Error; err != nil {
-			return err
-		}
-
-		endsAt := now.AddDate(0, 0, maxDurationDays)
-		nextDue := now.AddDate(0, 0, models.DefaultCheckinFrequencyDays)
-		sub := &models.Subscription{
-			UserID:               userID,
-			CoachID:              coachID,
-			ServicePlanID:        lines[0].plan.ID,
-			StartsAt:             now,
-			EndsAt:               &endsAt,
-			NextCheckInDueDate:   &nextDue,
-			CheckinFrequencyDays: models.DefaultCheckinFrequencyDays,
-		}
-		if err := tx.Create(sub).Error; err != nil {
-			return err
-		}
-
-		coachIDCopy := coachID
-		return tx.Model(&models.User{}).Where("id = ?", userID).
-			Update("assigned_coach_id", coachIDCopy).Error
-	})
+	zarin, err := s.paymentService.RequestZarinpalForOrder(ctx, userID, prepared.OrderID)
 	if err != nil {
 		return nil, err
 	}
 
 	return &CheckoutResponse{
-		OrderID:           createdOrder.ID,
-		TrackingCode:      trackingCode,
-		Amount:            total,
-		PaymentGatewayURL: fmt.Sprintf("/payment/bank?orderId=%d", createdOrder.ID),
-		CoachID:           coachID,
+		OrderID:           prepared.OrderID,
+		TrackingCode:      prepared.TrackingCode,
+		Amount:            prepared.Amount,
+		PaymentGatewayURL: zarin.PaymentURL,
+		CoachID:           prepared.CoachID,
 	}, nil
 }
 
