@@ -498,7 +498,7 @@ export default function LeadFunnelWizard() {
                           id="firstName"
                           value={firstName}
                           onChange={(e) => setFirstName(e.target.value)}
-                          placeholder="مثلاً سهیل"
+                          placeholder="نام"
                           className="h-11"
                           required
                         />
@@ -509,7 +509,7 @@ export default function LeadFunnelWizard() {
                           id="lastName"
                           value={lastName}
                           onChange={(e) => setLastName(e.target.value)}
-                          placeholder="مثلاً شورورزی"
+                          placeholder="نام خانوادگی"
                           className="h-11"
                           required
                         />
@@ -524,7 +524,7 @@ export default function LeadFunnelWizard() {
                         dir="ltr"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        placeholder="09150000000"
+                        placeholder="09123456789"
                         className="h-11 text-start"
                         required
                       />

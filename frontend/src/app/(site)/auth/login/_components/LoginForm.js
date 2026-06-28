@@ -262,22 +262,19 @@ export default function LoginForm() {
 
               {otpSent && (
                 <Field>
-                  <FieldLabel htmlFor="login-otp">کد OTP</FieldLabel>
+                  <FieldLabel htmlFor="login-otp">کد تایید</FieldLabel>
                   <div className="relative">
                     <KeyRound className="pointer-events-none absolute start-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
                       id="login-otp"
                       value={otp}
                       onChange={(e) => setOtp(e.target.value.trim())}
-                      placeholder="کد OTP"
+                      placeholder="کد تایید"
                       className="ps-9"
                       inputMode="numeric"
                       disabled={isLoggingIn}
                     />
                   </div>
-                  <FieldDescription>
-                    Demo OTP: <span className="text-foreground">12345</span>
-                  </FieldDescription>
                 </Field>
               )}
 
