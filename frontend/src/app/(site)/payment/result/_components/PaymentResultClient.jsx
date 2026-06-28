@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { FiCheckCircle, FiXCircle } from "react-icons/fi";
 import { api } from "@/lib/axios/client";
-import Footer from "../../_components/Footer";
+import Footer from "../../../_components/Footer";
 
 export default function PaymentResultClient() {
   const router = useRouter();
