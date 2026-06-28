@@ -39,7 +39,7 @@ final class AuthControllerProvider
   AuthController create() => AuthController();
 }
 
-String _$authControllerHash() => r'e050f919808adec54bb247c6394ec61a29607f88';
+String _$authControllerHash() => r'071d4edf74596b257ee0172f81de207866ecec2c';
 
 /// Holds the auth state (`Session?`). `null` data means unauthenticated.
 /// On build it hydrates from secure storage so a returning user stays logged in.

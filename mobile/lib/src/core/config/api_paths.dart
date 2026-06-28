@@ -17,6 +17,7 @@ class ApiPaths {
   static const me = '/me';
   static const authMe = '/auth/me';
   static const changePassword = '/me/change-password';
+  static const bodyPhotos = '/me/body-photos';
 
   // Student
   static const meDashboard = '/me/dashboard';

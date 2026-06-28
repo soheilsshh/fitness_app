@@ -68,6 +68,22 @@ class AuthController extends _$AuthController {
     );
   }
 
+  /// Re-fetches `/auth/me` and republishes the session. Used after onboarding
+  /// completes so the router picks up `isProfileComplete == true`.
+  Future<void> refreshSession() async {
+    final store = ref.read(tokenStoreProvider);
+    final token = await store.accessToken();
+    if (token == null || token.isEmpty) return;
+    final user = await ref.read(authRepositoryProvider).me();
+    await store.save(
+      accessToken: token,
+      role: user.role,
+      name: user.name,
+      isProfileComplete: user.isProfileComplete,
+    );
+    state = AsyncData(_sessionFromUser(user));
+  }
+
   Future<void> logout() async {
     final store = ref.read(tokenStoreProvider);
     final refresh = await store.refreshToken();

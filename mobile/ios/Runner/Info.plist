@@ -4,6 +4,10 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>برای آپلود عکس‌های بدن در آنبوردینگ به گالری شما دسترسی لازم است.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>برای ثبت عکس‌های بدن به دوربین شما دسترسی لازم است.</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
