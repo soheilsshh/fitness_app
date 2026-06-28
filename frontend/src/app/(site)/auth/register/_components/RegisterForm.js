@@ -80,8 +80,10 @@ export default function RegisterForm() {
       return toastSuccess("ارسال شد", "کد تایید ارسال شد.");
     } catch (error) {
       syncFromResponse(error);
-      const msg = error?.response?.data?.error || "خطا در ارسال کد.";
-      return toastError("خطا", msg);
+      const msg =
+        error?.response?.data?.error ||
+        "خطا در ارسال کد. لطفاً چند لحظه دیگر دوباره تلاش کنید.";
+      return toastError("ارسال پیامک", msg);
     } finally {
       setIsSendingOtp(false);
     }

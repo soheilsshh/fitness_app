@@ -114,7 +114,7 @@ func (h *AuthController) handleOTPRequestError(c *gin.Context, err error) bool {
 		return true
 	}
 	if errors.Is(err, service.ErrSMSSendFailed) {
-		c.JSON(http.StatusBadGateway, gin.H{"error": "ارسال پیامک با خطا مواجه شد"})
+		c.JSON(http.StatusBadGateway, gin.H{"error": service.SMSErrorMessage(err)})
 		return true
 	}
 	return false

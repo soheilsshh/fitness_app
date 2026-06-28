@@ -92,8 +92,10 @@ export default function LoginForm() {
       return toastSuccess("ارسال شد", "کد یکبار مصرف ارسال شد.");
     } catch (error) {
       syncFromResponse(error);
-      const msg = error?.response?.data?.error || "خطا در ارسال کد.";
-      return toastError("خطا", msg);
+      const msg =
+        error?.response?.data?.error ||
+        "خطا در ارسال کد. لطفاً چند لحظه دیگر دوباره تلاش کنید.";
+      return toastError("ارسال پیامک", msg);
     } finally {
       setIsSendingOtp(false);
     }
