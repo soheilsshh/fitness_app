@@ -1,7 +1,9 @@
 # Local task notes (not for version control)
 task.txt
 
-
+# crul — only exercise_templates.json is tracked
+crul/output/images/
+crul/output/videos/
 
 uploads/
 node_modules
