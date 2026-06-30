@@ -172,7 +172,7 @@ export default function UsersClient() {
                 {items.map((u) => (
                   <TableRow key={u.id} className="group cursor-pointer">
                     <TableCell>
-                      <Link href={`/admin/users/${u.id}`} className="block min-w-0">
+                      <Link href={`/admin/users/detail?id=${encodeURIComponent(u.id)}`} className="block min-w-0">
                         <p className="truncate text-sm font-semibold">
                           {u.firstName} {u.lastName}
                         </p>
@@ -201,7 +201,7 @@ export default function UsersClient() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-end">
-                      <RowActions viewHref={`/admin/users/${u.id}`} />
+                      <RowActions viewHref={`/admin/users/detail?id=${encodeURIComponent(u.id)}`} />
                     </TableCell>
                   </TableRow>
                 ))}

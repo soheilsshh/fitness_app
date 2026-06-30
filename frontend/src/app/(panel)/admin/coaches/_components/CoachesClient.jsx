@@ -153,8 +153,8 @@ export default function CoachesClient() {
                     </TableCell>
                     <TableCell className="text-end">
                       <RowActions
-                        viewHref={`/admin/coaches/${coach.id}`}
-                        editHref={`/admin/coaches/${coach.id}`}
+                        viewHref={`/admin/coaches/detail?id=${encodeURIComponent(coach.id)}`}
+                        editHref={`/admin/coaches/detail?id=${encodeURIComponent(coach.id)}`}
                         editLabel="ویرایش"
                       />
                     </TableCell>

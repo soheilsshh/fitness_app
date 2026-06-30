@@ -185,7 +185,7 @@ export default function CoachTicketsClient() {
                         <Badge variant={pr.variant}>{pr.label}</Badge>
                       </TableCell>
                       <TableCell className="text-end">
-                        <RowActions viewHref={`/coach/tickets/${t.id}`} />
+                        <RowActions viewHref={`/coach/tickets/detail?id=${encodeURIComponent(t.id)}`} />
                       </TableCell>
                     </TableRow>
                   );

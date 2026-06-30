@@ -177,8 +177,10 @@ func (s *coachProgramService) createWorkoutProgram(ctx context.Context, coachID,
 			items[i].WorkoutProgramID = program.ID
 		}
 		if len(items) > 0 {
-			if err := tx.Create(&items).Error; err != nil {
-				return err
+			for i := range items {
+				if err := tx.Create(&items[i]).Error; err != nil {
+					return err
+				}
 			}
 		}
 		return nil

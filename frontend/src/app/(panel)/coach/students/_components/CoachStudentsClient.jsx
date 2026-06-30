@@ -166,7 +166,7 @@ export default function CoachStudentsClient() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-end">
-                      <RowActions viewHref={`/coach/students/${student.id}`} />
+                      <RowActions viewHref={`/coach/students/detail?id=${encodeURIComponent(student.id)}`} />
                     </TableCell>
                   </TableRow>
                 ))}

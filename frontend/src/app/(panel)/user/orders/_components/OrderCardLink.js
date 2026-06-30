@@ -33,7 +33,7 @@ export default function OrderCardLink({ order }) {
 
   return (
     <Link
-      href={`/user/orders/${encodeURIComponent(order.id)}`}
+      href={`/user/orders/detail?id=${encodeURIComponent(order.id)}`}
       className="group block h-full"
     >
       <Card

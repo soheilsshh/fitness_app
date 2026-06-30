@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { api } from "@/lib/axios/client";
 import { Button } from "@/components/ui/button";
@@ -51,8 +51,8 @@ function EmptyState({ href, backLabel, message }) {
 }
 
 export default function OrderDetailsClient() {
-  const params = useParams();
-  const rawId = params?.id;
+  const searchParams = useSearchParams();
+  const rawId = searchParams.get("id");
   const id = decodeURIComponent(String(rawId || "")).trim();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);

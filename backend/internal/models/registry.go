@@ -14,6 +14,7 @@ func AllModels() []any {
 		&WorkoutProgram{},
 		&NutritionProgram{},
 		&ProgramItem{},
+		&ProgramItemSet{},
 		&NutritionItem{},
 		&CheckIn{},
 		&Notification{},

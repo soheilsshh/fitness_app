@@ -16,7 +16,7 @@ export default function NewCoachPlanClient() {
     try {
       const res = await api.post("/coach/plans", values);
       toastSuccess("ذخیره شد", "پلن جدید ساخته شد");
-      router.push(`/coach/plans/${res.data.id}`);
+      router.push(`/coach/plans/detail?id=${encodeURIComponent(res.data.id)}`);
     } catch (error) {
       toastError("خطا", error?.response?.data?.error || "ساخت پلن ناموفق بود");
     }

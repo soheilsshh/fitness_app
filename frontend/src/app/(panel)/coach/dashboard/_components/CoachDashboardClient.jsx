@@ -394,7 +394,7 @@ function RecentStudentsCard({ loading, items }) {
           {items.map((s) => (
             <li key={s.studentId}>
               <Link
-                href={`/coach/students/${s.studentId}`}
+                href={`/coach/students/detail?id=${encodeURIComponent(s.studentId)}`}
                 className="group flex items-center gap-3 py-3 transition-colors hover:bg-muted/40"
               >
                 <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-sm font-semibold text-emerald-600">
@@ -485,7 +485,7 @@ function AttentionCard({ loading, items }) {
           {items.map((s) => (
             <li key={s.id}>
               <Link
-                href={`/coach/tracking/${s.id}`}
+                href={`/coach/tracking/detail?id=${encodeURIComponent(s.id)}`}
                 className="group flex items-center gap-3 py-3 transition-colors hover:bg-muted/40"
               >
                 <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-amber-500/10 text-sm font-semibold text-amber-600">

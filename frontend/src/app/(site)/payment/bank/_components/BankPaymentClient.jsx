@@ -40,7 +40,7 @@ export default function BankPaymentClient() {
 
   const onConfirm = () => {
     if (orderId) {
-      router.push(`/user/orders/${orderId}`);
+      router.push(`/user/orders/detail?id=${encodeURIComponent(orderId)}`);
       return;
     }
     toastError("خطا", "شناسه سفارش یافت نشد");

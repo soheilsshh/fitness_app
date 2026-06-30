@@ -55,9 +55,10 @@ func enrichWorkoutPlan(ctx context.Context, exerciseRepo repository.ExerciseRepo
 					continue
 				}
 				exercises = append(exercises, MeWorkoutExerciseDTO{
-					Name: name,
-					Sets: sets,
-					Reps: reps,
+					Name:        name,
+					Sets:        sets,
+					Reps:        reps,
+					SetsDetails: setsDetailsToDTO(legacySetsToDetails(sets, reps)),
 				})
 			}
 			day.Workout.Exercises = exercises
@@ -118,6 +119,9 @@ func enrichWorkoutPlan(ctx context.Context, exerciseRepo repository.ExerciseRepo
 			}
 			if model != nil {
 				dto := exerciseModelToWorkoutDTO(model, ex.Sets, ex.Reps)
+				dto.SetsDetails = ex.SetsDetails
+				dto.SupersetID = ex.SupersetID
+				dto.WorkoutSystemType = ex.WorkoutSystemType
 				enriched = append(enriched, dto)
 			} else {
 				enriched = append(enriched, ex)

@@ -36,7 +36,7 @@ export default function NewExerciseClient() {
         background: "#0a0a0a",
         color: "#fff",
       });
-      router.push(`/admin/exercises/${res.data.id}`);
+      router.push(`/admin/exercises/detail?id=${encodeURIComponent(res.data.id)}`);
     } catch (err) {
       const message =
         err?.response?.data?.error || "ایجاد تمرین انجام نشد.";

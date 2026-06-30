@@ -41,7 +41,7 @@ function statusBadgeProps(timeline) {
 
 export default function ProgramCardLink({ program, timeline }) {
   const status = statusBadgeProps(timeline);
-  const href = `/user/my-programs/${encodeURIComponent(String(program.id))}`;
+  const href = `/user/my-programs/detail?id=${encodeURIComponent(String(program.id))}`;
 
   const anyPlan = getAnyPlan(program);
   const hasWorkout = !!anyPlan?.workout;
