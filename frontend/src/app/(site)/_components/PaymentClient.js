@@ -66,6 +66,10 @@ export default function PaymentClient() {
       dispatch(clearCart());
       const target =
         paymentGatewayUrl || (orderId ? `/payment/bank?orderId=${orderId}` : "/payment/bank");
+      if (typeof target === "string" && /^https?:\/\//i.test(target)) {
+        window.location.href = target;
+        return;
+      }
       router.push(target);
     } catch (error) {
       const status = error?.response?.status;
@@ -194,14 +198,14 @@ export default function PaymentClient() {
               {paying
                 ? "در حال ثبت سفارش..."
                 : loggedIn
-                  ? "ادامه به درگاه (دمو)"
+                  ? "ادامه به درگاه زرین‌پال"
                   : "ورود و ادامه پرداخت"}
             </button>
 
             <div className="mt-3 text-[11px] text-zinc-500">
               {loggedIn
-                ? "پرداخت فعلاً به صورت دمو است."
-                : "برای خرید باید با حساب دانشجو وارد شده باشید. پرداخت فعلاً به صورت دمو است."}
+                ? "پرداخت از طریق درگاه امن زرین‌پال انجام می‌شود."
+                : "برای خرید باید با حساب دانشجو وارد شده باشید. پرداخت از طریق زرین‌پال انجام می‌شود."}
             </div>
           </div>
         </div>

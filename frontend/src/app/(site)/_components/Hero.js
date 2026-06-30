@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 const HERO_VIDEO = "/landing/statue.mp4";
+const HERO_POSTER = "/landing/statue-poster.jpg";
 
 const DEFAULT_FEATURES = [
   "برنامه غذایی اختصاصی",
@@ -85,7 +86,7 @@ export default function Hero({ settings }) {
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, delay: 0.15 }}
-        className="relative flex h-[600px] w-full flex-1 items-center justify-center"
+        className="relative flex h-[60vh] max-h-[600px] min-h-[360px] w-full shrink-0 grow-0 basis-auto items-center justify-center md:h-[600px] md:max-h-none md:flex-1"
       >
         <div className="absolute inset-0 rounded-full bg-primary/5 blur-[100px]" />
 
@@ -93,11 +94,12 @@ export default function Hero({ settings }) {
           <CardContent className="relative h-full p-0">
             <video
               src={HERO_VIDEO}
+              poster={HERO_POSTER}
               autoPlay
               loop
               muted
               playsInline
-              preload="auto"
+              preload="metadata"
               aria-label="مجسمه مرمری یونانی"
               className="absolute inset-0 z-10 h-full w-full rounded-3xl object-cover object-center"
             />

@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"log"
+	"os"
 	"regexp"
 	"time"
 
@@ -58,8 +59,18 @@ func NewMySQLGORM() (*gorm.DB, error) {
 		user, password, host, port, dbName,
 	)
 
+	gormLogger := logger.New(
+		log.New(os.Stdout, "\r\n", log.LstdFlags),
+		logger.Config{
+			SlowThreshold:             time.Second,
+			LogLevel:                  logger.Info,
+			IgnoreRecordNotFoundError: true,
+			Colorful:                  true,
+		},
+	)
+
 	gormConfig := &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
+		Logger: gormLogger,
 	}
 
 	db, err := gorm.Open(mysql.Open(dsn), gormConfig)

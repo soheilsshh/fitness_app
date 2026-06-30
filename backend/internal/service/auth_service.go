@@ -6,13 +6,13 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 
+	"github.com/yourusername/fitness-management/config"
 	"github.com/yourusername/fitness-management/internal/auth"
 	"github.com/yourusername/fitness-management/internal/models"
 	"github.com/yourusername/fitness-management/internal/pkg/slug"
@@ -46,7 +46,17 @@ type authService struct {
 	refreshTokenRepo repository.RefreshTokenRepository
 	otpRepo          repository.OtpRepository
 	otpTTL           time.Duration
+	otpResendCooldown time.Duration
 	defaultUserRole  string
+}
+
+// OTPCooldownError is returned when OTP resend is requested before the cooldown expires.
+type OTPCooldownError struct {
+	RetryAfterSeconds int
+}
+
+func (e *OTPCooldownError) Error() string {
+	return "otp resend cooldown"
 }
 
 var (
@@ -65,12 +75,21 @@ func NewAuthService(
 	refreshTokenRepo repository.RefreshTokenRepository,
 	otpRepo repository.OtpRepository,
 ) AuthService {
+	ttlMinutes := config.Get().SMS.OtpTTLMinutes
+	if ttlMinutes <= 0 {
+		ttlMinutes = 10
+	}
+	cooldownSeconds := config.Get().SMS.OtpResendCooldownSeconds
+	if cooldownSeconds <= 0 {
+		cooldownSeconds = 60
+	}
 	return &authService{
 		userRepo:         userRepo,
 		coachProfileRepo: coachProfileRepo,
 		refreshTokenRepo: refreshTokenRepo,
 		otpRepo:          otpRepo,
-		otpTTL:           2 * time.Minute,
+		otpTTL:           time.Duration(ttlMinutes) * time.Minute,
+		otpResendCooldown: time.Duration(cooldownSeconds) * time.Second,
 		defaultUserRole:  models.RoleStudent,
 	}
 }
@@ -209,28 +228,7 @@ func (s *authService) RequestOTP(ctx context.Context, phone string) error {
 	if phone == "" {
 		return errors.New("phone is required")
 	}
-
-	code, err := generateOTPCode()
-	if err != nil {
-		return err
-	}
-
-	expiresAt := time.Now().Add(s.otpTTL)
-
-	otp := &models.OtpCode{
-		Phone:    phone,
-		Code:     code,
-		Purpose:  "login",
-		ExpiresAt: expiresAt,
-	}
-	if err := s.otpRepo.Create(ctx, otp); err != nil {
-		return err
-	}
-
-	// for now just log it
-	log.Printf("OTP code for phone %s is %s\n", phone, code)
-
-	return nil
+	return s.sendOTP(ctx, phone, "login")
 }
 
 func (s *authService) VerifyOTP(ctx context.Context, phone, code string) (*AuthResult, error) {
@@ -338,25 +336,7 @@ func (s *authService) RequestPasswordResetOTP(ctx context.Context, phone string)
 	if phone == "" {
 		return errors.New("phone is required")
 	}
-
-	code, err := generateOTPCode()
-	if err != nil {
-		return err
-	}
-
-	expiresAt := time.Now().Add(s.otpTTL)
-	otp := &models.OtpCode{
-		Phone:    phone,
-		Code:     code,
-		Purpose:  "password_reset",
-		ExpiresAt: expiresAt,
-	}
-	if err := s.otpRepo.Create(ctx, otp); err != nil {
-		return err
-	}
-
-	log.Printf("Password reset OTP for phone %s is %s\n", phone, code)
-	return nil
+	return s.sendOTP(ctx, phone, "password_reset")
 }
 
 func (s *authService) ResetPasswordWithOTP(ctx context.Context, phone, code, newPassword string) error {
@@ -449,5 +429,47 @@ func generateOTPCode() (string, error) {
 	// Use high-entropy random number, then mod to 6 digits.
 	n := binary.BigEndian.Uint64(b[:]) % 1000000
 	return fmt.Sprintf("%06d", n), nil
+}
+
+func (s *authService) sendOTP(ctx context.Context, phone, purpose string) error {
+	if latest, err := s.otpRepo.FindLatestByPhoneAndPurpose(ctx, phone, purpose); err == nil {
+		elapsed := time.Since(latest.CreatedAt)
+		if elapsed < s.otpResendCooldown {
+			retryAfter := int((s.otpResendCooldown - elapsed + time.Second - 1) / time.Second)
+			if retryAfter < 1 {
+				retryAfter = 1
+			}
+			return &OTPCooldownError{RetryAfterSeconds: retryAfter}
+		}
+	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return err
+	}
+
+	code, err := generateOTPCode()
+	if err != nil {
+		return err
+	}
+
+	template := strings.TrimSpace(config.Get().SMS.OtpPattern)
+	if template == "" {
+		template = "fittino-otp"
+	}
+
+	if _, err := SendVerification(phone, code, template); err != nil {
+		return err
+	}
+
+	now := time.Now()
+	if err := s.otpRepo.InvalidatePrevious(ctx, phone, purpose, now); err != nil {
+		return err
+	}
+
+	otp := &models.OtpCode{
+		Phone:     phone,
+		Code:      code,
+		Purpose:   purpose,
+		ExpiresAt: now.Add(s.otpTTL),
+	}
+	return s.otpRepo.Create(ctx, otp)
 }
 

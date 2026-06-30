@@ -58,6 +58,24 @@ type Config struct {
 		Amount       string `mapstructure:"amount"`
 		PackageTitle string `mapstructure:"package_title"`
 	} `mapstructure:"funnel"`
+
+	SMS struct {
+		APIKey                   string `mapstructure:"api_key"`
+		Originator               string `mapstructure:"originator"`
+		OtpPattern               string `mapstructure:"otp_pattern_code"`
+		OtpTTLMinutes            int    `mapstructure:"otp_ttl_minutes"`
+		OtpResendCooldownSeconds int    `mapstructure:"otp_resend_cooldown_seconds"`
+	} `mapstructure:"sms"`
+
+	Payments struct {
+		Zarinpal struct {
+			MerchantID       string `mapstructure:"merchant_id"`
+			Sandbox          bool   `mapstructure:"sandbox"`
+			CallbackBaseURL  string `mapstructure:"callback_base_url"`
+			WebResultURL     string `mapstructure:"web_result_url"`
+			MobileDeepLink   string `mapstructure:"mobile_deep_link_scheme"`
+		} `mapstructure:"zarinpal"`
+	} `mapstructure:"payments"`
 }
 
 var (
@@ -154,6 +172,11 @@ func setDefaults() {
 	viper.SetDefault("jwt.refresh_token_duration_days", 7)
 	viper.SetDefault("upload.dir", "uploads")
 	viper.SetDefault("seed.dev_data", false)
+	viper.SetDefault("sms.otp_pattern_code", "fittino-otp")
+	viper.SetDefault("sms.otp_ttl_minutes", 10)
+	viper.SetDefault("sms.otp_resend_cooldown_seconds", 60)
+	viper.SetDefault("payments.zarinpal.sandbox", true)
+	viper.SetDefault("payments.zarinpal.mobile_deep_link_scheme", "fitinoo")
 }
 
 func bindEnvKeys() {
@@ -173,6 +196,16 @@ func bindEnvKeys() {
 	_ = viper.BindEnv("funnel.coach_id", "FUNNEL_COACH_ID")
 	_ = viper.BindEnv("funnel.amount", "FUNNEL_AMOUNT")
 	_ = viper.BindEnv("funnel.package_title", "FUNNEL_PACKAGE_TITLE")
+	_ = viper.BindEnv("sms.api_key", "SMS_API_KEY")
+	_ = viper.BindEnv("sms.originator", "SMS_ORIGINATOR")
+	_ = viper.BindEnv("sms.otp_pattern_code", "SMS_OTP_PATTERN_CODE")
+	_ = viper.BindEnv("sms.otp_ttl_minutes", "SMS_OTP_TTL_MINUTES")
+	_ = viper.BindEnv("sms.otp_resend_cooldown_seconds", "SMS_OTP_RESEND_COOLDOWN_SECONDS")
+	_ = viper.BindEnv("payments.zarinpal.merchant_id", "ZARINPAL_MERCHANT_ID")
+	_ = viper.BindEnv("payments.zarinpal.sandbox", "ZARINPAL_SANDBOX")
+	_ = viper.BindEnv("payments.zarinpal.callback_base_url", "ZARINPAL_CALLBACK_BASE_URL")
+	_ = viper.BindEnv("payments.zarinpal.web_result_url", "ZARINPAL_WEB_RESULT_URL")
+	_ = viper.BindEnv("payments.zarinpal.mobile_deep_link_scheme", "ZARINPAL_MOBILE_DEEP_LINK_SCHEME")
 }
 
 func applyLegacyOverrides(c *Config) {
@@ -203,6 +236,20 @@ func normalize(c *Config) {
 
 	if c.Upload.Dir == "" {
 		c.Upload.Dir = "uploads"
+	}
+
+	if c.SMS.OtpPattern == "" {
+		c.SMS.OtpPattern = "fittino-otp"
+	}
+	if c.SMS.OtpTTLMinutes <= 0 {
+		c.SMS.OtpTTLMinutes = 10
+	}
+	if c.SMS.OtpResendCooldownSeconds <= 0 {
+		c.SMS.OtpResendCooldownSeconds = 60
+	}
+
+	if c.Payments.Zarinpal.MobileDeepLink == "" {
+		c.Payments.Zarinpal.MobileDeepLink = "fitinoo"
 	}
 }
 

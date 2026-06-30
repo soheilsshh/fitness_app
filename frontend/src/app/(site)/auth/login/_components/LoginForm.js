@@ -10,6 +10,7 @@ import {
   toastError,
   toastSuccess,
 } from "../../_components/helpers";
+import { useOtpResendCooldown } from "../../_components/useOtpResendCooldown";
 import { api } from "@/lib/axios/client";
 import { persistAuthSession } from "@/lib/auth/session";
 import {
@@ -54,6 +55,8 @@ export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const { secondsLeft, canResend, startCooldown, syncFromResponse, resetCooldown } =
+    useOtpResendCooldown();
 
   const canSendOtp = useMemo(() => !otpSent && !phoneLocked, [otpSent, phoneLocked]);
 
@@ -61,6 +64,7 @@ export default function LoginForm() {
     setOtpSent(false);
     setOtp("");
     setPhoneLocked(false);
+    resetCooldown();
   };
 
   const handleAuthSuccess = (data) => {
@@ -84,10 +88,14 @@ export default function LoginForm() {
       setOtpSent(true);
       setPhoneLocked(true);
       setOtp("");
+      startCooldown();
       return toastSuccess("ارسال شد", "کد یکبار مصرف ارسال شد.");
     } catch (error) {
-      const msg = error?.response?.data?.error || "خطا در ارسال کد.";
-      return toastError("خطا", msg);
+      syncFromResponse(error);
+      const msg =
+        error?.response?.data?.error ||
+        "خطا در ارسال کد. لطفاً چند لحظه دیگر دوباره تلاش کنید.";
+      return toastError("ارسال پیامک", msg);
     } finally {
       setIsSendingOtp(false);
     }
@@ -289,9 +297,13 @@ export default function LoginForm() {
                     size="sm"
                     className="h-auto p-0 text-xs"
                     onClick={onSendOtp}
-                    disabled={isSendingOtp || isLoggingIn}
+                    disabled={isSendingOtp || isLoggingIn || !canResend}
                   >
-                    {isSendingOtp ? "در حال ارسال..." : "ارسال مجدد"}
+                    {isSendingOtp
+                      ? "در حال ارسال..."
+                      : secondsLeft > 0
+                        ? `ارسال مجدد (${secondsLeft})`
+                        : "ارسال مجدد"}
                   </Button>
                 )}
               </div>

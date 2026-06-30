@@ -74,7 +74,8 @@ func NewServer(db *gorm.DB) *Server {
 	authService := service.NewAuthService(userRepo, coachProfileRepo, refreshTokenRepo, otpRepo)
 	coachProfileService := service.NewCoachProfileService(coachProfileRepo, servicePlanRepo)
 	coachPlanService := service.NewCoachPlanService(servicePlanRepo)
-	checkoutService := service.NewCheckoutService(db, userRepo, servicePlanRepo, orderRepo, subscriptionRepo, coachProfileRepo)
+	paymentService := service.NewPaymentService(db, userRepo, servicePlanRepo, orderRepo, subscriptionRepo)
+	checkoutService := service.NewCheckoutService(db, userRepo, servicePlanRepo, orderRepo, subscriptionRepo, coachProfileRepo, paymentService)
 	studentService := service.NewStudentService(userRepo, subscriptionRepo, servicePlanRepo, programRepo)
 	meService := service.NewMeService(db, userRepo, orderRepo, subscriptionRepo, servicePlanRepo, programRepo, exerciseRepo, foodRepo)
 	adminUserService := service.NewAdminUserService(db, subscriptionRepo, txRepo)
@@ -116,6 +117,7 @@ func NewServer(db *gorm.DB) *Server {
 	coachFoodController := controllers.NewCoachFoodController(coachFoodService)
 	coachTicketController := controllers.NewCoachTicketController(ticketService)
 	checkoutController := controllers.NewCheckoutController(checkoutService)
+	paymentController := controllers.NewPaymentController(paymentService)
 	trackingService := service.NewTrackingService(db, subscriptionRepo, coachStudentService)
 	trackingController := controllers.NewTrackingController(trackingService)
 	coachTrackingController := controllers.NewCoachTrackingController(trackingService)
@@ -160,6 +162,8 @@ func NewServer(db *gorm.DB) *Server {
 	router.POST("/public/funnel/leads", funnelController.CreateLead)
 	router.GET("/public/funnel/checkout/:token", funnelController.GetCheckout)
 	router.POST("/public/funnel/checkout/:token/pay", funnelController.PayDemo)
+	router.GET("/payments/zarinpal/callback", paymentController.ZarinpalCallback)
+	router.GET("/payments/result", paymentController.PaymentsResultPage)
 
 	// Coach panel routes
 	coachGroup := router.Group("/coach")
@@ -231,6 +235,7 @@ func NewServer(db *gorm.DB) *Server {
 		studentGroup.GET("/programs/current", studentController.GetCurrentPrograms)
 		studentGroup.POST("/orders/checkout", checkoutController.Checkout)
 		studentGroup.GET("/orders/:id/status", checkoutController.GetOrderStatus)
+		studentGroup.POST("/payments/zarinpal/request", paymentController.ZarinpalRequest)
 	}
 
 	// Admin routes - protected and admin-only

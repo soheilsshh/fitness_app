@@ -10,6 +10,7 @@ import {
   toastError,
   toastSuccess,
 } from "../../_components/helpers";
+import { useOtpResendCooldown } from "../../_components/useOtpResendCooldown";
 import { api } from "@/lib/axios/client";
 import { persistAuthSession } from "@/lib/auth/session";
 import {
@@ -53,12 +54,15 @@ export default function RegisterForm() {
 
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
+  const { secondsLeft, canResend, startCooldown, syncFromResponse, resetCooldown } =
+    useOtpResendCooldown();
 
   const resetOtpFlow = () => {
     setOtpSent(false);
     setOtpVerified(false);
     setOtp("");
     setPhoneLocked(false);
+    resetCooldown();
   };
 
   const sendOtp = async () => {
@@ -72,10 +76,14 @@ export default function RegisterForm() {
       setOtpSent(true);
       setPhoneLocked(true);
       setOtp("");
+      startCooldown();
       return toastSuccess("ارسال شد", "کد تایید ارسال شد.");
     } catch (error) {
-      const msg = error?.response?.data?.error || "خطا در ارسال کد.";
-      return toastError("خطا", msg);
+      syncFromResponse(error);
+      const msg =
+        error?.response?.data?.error ||
+        "خطا در ارسال کد. لطفاً چند لحظه دیگر دوباره تلاش کنید.";
+      return toastError("ارسال پیامک", msg);
     } finally {
       setIsSendingOtp(false);
     }
@@ -212,9 +220,13 @@ export default function RegisterForm() {
                   size="sm"
                   className="h-auto p-0 text-xs"
                   onClick={sendOtp}
-                  disabled={isSendingOtp}
+                  disabled={isSendingOtp || isRegistering || !canResend}
                 >
-                  {isSendingOtp ? "در حال ارسال..." : "ارسال مجدد"}
+                  {isSendingOtp
+                    ? "در حال ارسال..."
+                    : secondsLeft > 0
+                      ? `ارسال مجدد (${secondsLeft})`
+                      : "ارسال مجدد"}
                 </Button>
                 <Button
                   type="button"
