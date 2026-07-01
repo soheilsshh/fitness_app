@@ -64,7 +64,12 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
           foregroundColor: AppColors.onPrimary,
-          minimumSize: const Size.fromHeight(52),
+          // Height-only minimum. Full-width CTAs come from the parent's
+          // stretch constraint (forms use CrossAxisAlignment.stretch), so we
+          // must NOT demand infinite width here — an infinite min width crashes
+          // (`hasSize`) whenever a button lands in an unbounded-width parent
+          // like a Row, dialog `actions` (OverflowBar), or Wrap.
+          minimumSize: const Size(0, 52),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),

@@ -3,6 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../config/app_config.dart';
 import 'auth_interceptor.dart';
+import 'logging_interceptor.dart';
 
 part 'dio_provider.g.dart';
 
@@ -19,5 +20,7 @@ Dio dio(Ref ref) {
     ),
   );
   dio.interceptors.add(AuthInterceptor(ref));
+  // Added last so it logs the final outgoing request (with auth header applied).
+  dio.interceptors.add(LoggingInterceptor());
   return dio;
 }

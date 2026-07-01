@@ -59,5 +59,14 @@ class TokenStore {
 
 @Riverpod(keepAlive: true)
 TokenStore tokenStore(Ref ref) {
-  return TokenStore(const FlutterSecureStorage());
+  return TokenStore(
+    const FlutterSecureStorage(
+      // Explicit options so the session survives a cold restart. Without
+      // `encryptedSharedPreferences` the default Android backend can lose its
+      // KeyStore master key across relaunches and read back null; `first_unlock`
+      // keeps the iOS keychain item readable after the first post-boot unlock.
+      aOptions: AndroidOptions(encryptedSharedPreferences: true),
+      iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock),
+    ),
+  );
 }
