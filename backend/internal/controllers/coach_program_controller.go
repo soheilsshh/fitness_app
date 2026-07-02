@@ -100,6 +100,80 @@ func (h *CoachProgramController) UpdateNutritionProgram(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+func (h *CoachProgramController) ListWorkoutTemplates(c *gin.Context) {
+	if _, err := middleware.GetUserID(c); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	resp, err := h.programService.ListWorkoutTemplates(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, resp)
+}
+
+func (h *CoachProgramController) ListNutritionTemplates(c *gin.Context) {
+	if _, err := middleware.GetUserID(c); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	resp, err := h.programService.ListNutritionTemplates(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, resp)
+}
+
+func (h *CoachProgramController) AssignWorkoutFromTemplate(c *gin.Context) {
+	coachID, err := middleware.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	studentID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid student id"})
+		return
+	}
+	templateID, err := strconv.ParseUint(c.Param("templateId"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid template id"})
+		return
+	}
+	resp, err := h.programService.AssignWorkoutFromTemplate(c.Request.Context(), coachID, uint(studentID), uint(templateID))
+	if err != nil {
+		h.handleProgramError(c, err)
+		return
+	}
+	c.JSON(http.StatusCreated, resp)
+}
+
+func (h *CoachProgramController) AssignNutritionFromTemplate(c *gin.Context) {
+	coachID, err := middleware.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	studentID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid student id"})
+		return
+	}
+	templateID, err := strconv.ParseUint(c.Param("templateId"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid template id"})
+		return
+	}
+	resp, err := h.programService.AssignNutritionFromTemplate(c.Request.Context(), coachID, uint(studentID), uint(templateID))
+	if err != nil {
+		h.handleProgramError(c, err)
+		return
+	}
+	c.JSON(http.StatusCreated, resp)
+}
+
 func (h *CoachProgramController) parseAssignRequest(c *gin.Context) (uint, uint, *service.ProgramAssignRequest, bool) {
 	coachID, err := middleware.GetUserID(c)
 	if err != nil {
@@ -127,6 +201,8 @@ func (h *CoachProgramController) handleProgramError(c *gin.Context, err error) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	case errors.Is(err, service.ErrCoachProgramNotFound):
 		c.JSON(http.StatusNotFound, gin.H{"error": "program not found"})
+	case errors.Is(err, service.ErrCoachTemplateNotFound):
+		c.JSON(http.StatusNotFound, gin.H{"error": "template not found"})
 	default:
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}

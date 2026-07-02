@@ -30,5 +30,11 @@ func AllModels() []any {
 		&WorkoutSession{},
 		&FunnelLead{},
 		&WorkoutSetLog{},
+		&WorkoutTemplate{},
+		&TemplateProgramItem{},
+		&TemplateProgramItemSet{},
+		&NutritionTemplate{},
+		&TemplateMeal{},
+		&TemplateMealItem{},
 	}
 }

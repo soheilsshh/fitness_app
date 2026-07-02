@@ -41,6 +41,7 @@ type datasetExercise struct {
 func main() {
 	devFlag := flag.Bool("dev", false, "load development/UI test fixtures (coaches, students, orders, programs)")
 	foodsFlag := flag.Bool("foods", false, "import food facts from CSV (default: data/Persian_food_facts.csv)")
+	templatesFlag := flag.Bool("templates", false, "import workout/nutrition templates from crul/output JSON files")
 	fileFlag := flag.String("file", "", "path to dataset file (default depends on import mode)")
 	flag.Parse()
 
@@ -59,6 +60,13 @@ func main() {
 	if *devFlag {
 		if err := seedDevData(db); err != nil {
 			log.Fatalf("dev seed failed: %v", err)
+		}
+		return
+	}
+
+	if *templatesFlag {
+		if err := seed.SeedTemplatesFromCrul(context.Background(), db); err != nil {
+			log.Fatalf("template seed failed: %v", err)
 		}
 		return
 	}
