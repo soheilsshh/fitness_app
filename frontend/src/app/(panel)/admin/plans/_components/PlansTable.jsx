@@ -96,7 +96,7 @@ export default function PlansTable({ items, basePath = "/admin/plans", onDelete 
               </TableCell>
               <TableCell className="text-end">
                 <RowActions
-                  viewHref={`${basePath}/${plan.id}`}
+                  viewHref={`${basePath}/detail?id=${encodeURIComponent(plan.id)}`}
                   onDelete={onDelete ? () => onDelete(plan.id) : undefined}
                   deleteTitle="حذف پلن"
                   deleteDescription={`آیا از حذف پلن «${plan.title || ""}» مطمئن هستید؟ این عملیات قابل بازگشت نیست.`}

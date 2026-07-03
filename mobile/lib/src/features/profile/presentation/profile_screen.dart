@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/async_value_widget.dart';
@@ -65,6 +66,12 @@ class _Body extends ConsumerWidget {
         _infoRow('مربی', profile.assignedCoachName.isEmpty ? '—' : profile.assignedCoachName),
         _infoRow('برنامه‌ها', '${profile.programsCount}'),
         const SizedBox(height: 24),
+        OutlinedButton.icon(
+          onPressed: () => context.push('/student/subscribe'),
+          icon: const Icon(Icons.payment),
+          label: const Text('خرید اشتراک'),
+        ),
+        const SizedBox(height: 12),
         OutlinedButton.icon(
           onPressed: () => showDialog(
             context: context,

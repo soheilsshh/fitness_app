@@ -7,9 +7,15 @@
     "OrderIndex": 1,
     "Exercise": "اسکوات",
     "Sets": 4,
-    "Reps": "10-12",
+    "Reps": "12/10/10/AMRAP",
     "RestTime": "90s",
-    "Notes": "عمق کامل"
+    "Notes": "عمق کامل",
+    "SetsDetails": [
+      { "ID": 1, "ProgramItemID": 1, "SetNumber": 1, "Reps": "12", "IsAMRAP": false },
+      { "ID": 2, "ProgramItemID": 1, "SetNumber": 2, "Reps": "10", "IsAMRAP": false },
+      { "ID": 3, "ProgramItemID": 1, "SetNumber": 3, "Reps": "10", "IsAMRAP": false },
+      { "ID": 4, "ProgramItemID": 1, "SetNumber": 4, "Reps": "", "IsAMRAP": true }
+    ]
   },
   {
     "ID": 2,
@@ -19,8 +25,15 @@
     "OrderIndex": 2,
     "Exercise": "پرس سینه",
     "Sets": 3,
-    "Reps": "10",
-    "RestTime": "90s"
+    "Reps": "10/10/10",
+    "RestTime": "90s",
+    "SupersetID": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "WorkoutSystemType": "superset",
+    "SetsDetails": [
+      { "ID": 5, "ProgramItemID": 2, "SetNumber": 1, "Reps": "10", "IsAMRAP": false },
+      { "ID": 6, "ProgramItemID": 2, "SetNumber": 2, "Reps": "10", "IsAMRAP": false },
+      { "ID": 7, "ProgramItemID": 2, "SetNumber": 3, "Reps": "10", "IsAMRAP": false }
+    ]
   },
   {
     "ID": 3,
@@ -31,7 +44,14 @@
     "Exercise": "ددلیفت رومانیایی",
     "Sets": 3,
     "Reps": "12",
-    "RestTime": "75s"
+    "RestTime": "75s",
+    "SupersetID": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "WorkoutSystemType": "superset",
+    "SetsDetails": [
+      { "ID": 8, "ProgramItemID": 3, "SetNumber": 1, "Reps": "12", "IsAMRAP": false },
+      { "ID": 9, "ProgramItemID": 3, "SetNumber": 2, "Reps": "12", "IsAMRAP": false },
+      { "ID": 10, "ProgramItemID": 3, "SetNumber": 3, "Reps": "12", "IsAMRAP": false }
+    ]
   },
   {
     "ID": 4,
@@ -43,7 +63,10 @@
     "Sets": 1,
     "Reps": "20 دقیقه",
     "RestTime": "-",
-    "Notes": "HR zone 2"
+    "Notes": "HR zone 2",
+    "SetsDetails": [
+      { "ID": 11, "ProgramItemID": 4, "SetNumber": 1, "Reps": "20 دقیقه", "IsAMRAP": false }
+    ]
   },
   {
     "ID": 5,
@@ -75,9 +98,16 @@
     "OrderIndex": 1,
     "Exercise": "اسکوات",
     "Sets": 5,
-    "Reps": "6-8",
+    "Reps": "8/8/6/6/AMRAP",
     "RestTime": "120s",
-    "Tempo": "3010"
+    "Tempo": "3010",
+    "SetsDetails": [
+      { "ID": 12, "ProgramItemID": 7, "SetNumber": 1, "Reps": "8", "IsAMRAP": false },
+      { "ID": 13, "ProgramItemID": 7, "SetNumber": 2, "Reps": "8", "IsAMRAP": false },
+      { "ID": 14, "ProgramItemID": 7, "SetNumber": 3, "Reps": "6", "IsAMRAP": false },
+      { "ID": 15, "ProgramItemID": 7, "SetNumber": 4, "Reps": "6", "IsAMRAP": false },
+      { "ID": 16, "ProgramItemID": 7, "SetNumber": 5, "Reps": "", "IsAMRAP": true }
+    ]
   },
   {
     "ID": 8,

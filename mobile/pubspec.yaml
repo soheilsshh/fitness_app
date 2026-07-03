@@ -24,6 +24,10 @@ dependencies:
   # Networking
   dio: ^5.7.0
 
+  # Payment / deep links
+  url_launcher: ^6.3.0
+  app_links: ^6.4.0
+
   # Secure storage for tokens
   flutter_secure_storage: ^9.2.4
 

@@ -167,11 +167,11 @@ export default function TrackingClient({ showWeightChart = true }) {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className={"justify-between"}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <Camera className="size-4 text-primary" />
-              آپلود عکس‌های پایش
+                آپلود عکس‌های پایش
             </CardTitle>
             <CardDescription>عکس جلو، پشت و بغل بدن</CardDescription>
           </CardHeader>

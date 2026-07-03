@@ -104,7 +104,7 @@ export default function TicketsList({ loading, error, items }) {
                 <Badge variant={pr.variant}>{pr.label}</Badge>
               </TableCell>
               <TableCell className="text-end">
-                <RowActions viewHref={`/user/contact/${t.id}`} viewLabel="جزئیات" />
+                <RowActions viewHref={`/user/contact/detail?id=${encodeURIComponent(t.id)}`} viewLabel="جزئیات" />
               </TableCell>
             </TableRow>
           );

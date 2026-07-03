@@ -210,8 +210,8 @@ export default function ExercisesClient() {
                     </TableCell>
                     <TableCell className="text-end">
                       <RowActions
-                        viewHref={`/admin/exercises/${exercise.id}`}
-                        editHref={`/admin/exercises/${exercise.id}`}
+                        viewHref={`/admin/exercises/detail?id=${encodeURIComponent(exercise.id)}`}
+                        editHref={`/admin/exercises/detail?id=${encodeURIComponent(exercise.id)}`}
                         editLabel="ویرایش"
                         onDelete={() => handleDelete(exercise.id)}
                         deleteTitle="حذف تمرین"

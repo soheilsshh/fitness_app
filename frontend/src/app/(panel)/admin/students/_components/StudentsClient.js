@@ -165,8 +165,8 @@ export default function StudentsClient() {
                     </TableCell>
                     <TableCell className="text-end">
                       <RowActions
-                        viewHref={`/admin/students/${s.id}`}
-                        editHref={`/admin/students/${s.id}`}
+                        viewHref={`/admin/students/detail?id=${encodeURIComponent(s.id)}`}
+                        editHref={`/admin/students/detail?id=${encodeURIComponent(s.id)}`}
                         editLabel="ویرایش"
                       />
                     </TableCell>

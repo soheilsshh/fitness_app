@@ -172,7 +172,7 @@ export default function FunnelPaymentClient() {
                 ) : (
                   <>
                     <CheckCircle2 className="size-5" />
-                    پرداخت (دمو)
+                    پرداخت
                   </>
                 )}
               </Button>

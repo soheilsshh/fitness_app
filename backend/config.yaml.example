@@ -59,3 +59,25 @@ funnel:
   coach_id: ""
   amount: ""
   package_title: ""
+
+sms:
+  # Kavenegar Verify Lookup (اعتبارسنجی) — https://kavenegar.com
+  # Plain API key from panel (not hex). Keys containing "/" are supported.
+  # Originator is NOT needed for verify/lookup — Kavenegar picks the sender.
+  api_key: "YOUR_KAVENEGAR_API_KEY"
+  originator: ""
+  # Template name in panel — must include %token% placeholder, e.g.:
+  #   کد تایید فیتینو: %token%
+  otp_pattern_code: "fittino-otp"
+  otp_ttl_minutes: 10
+  otp_resend_cooldown_seconds: 60
+
+payments:
+  zarinpal:
+    merchant_id: "YOUR-ZARINPAL-MERCHANT-UUID"
+    sandbox: true
+    # Public URL where ZarinPal redirects after payment (proxied to this API)
+    callback_base_url: "https://api.fitinoo.ir"
+    # Web app payment result page
+    web_result_url: "https://fitinoo.ir/payment/result"
+    mobile_deep_link_scheme: "fitinoo"

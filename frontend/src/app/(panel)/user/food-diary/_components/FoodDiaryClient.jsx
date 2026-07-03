@@ -13,8 +13,8 @@ import {
 } from "lucide-react";
 import { api } from "@/lib/axios/client";
 import { USER_FOOD_LOGS_PATH, USER_FOODS_PATH } from "@/lib/api/user";
-import FoodPickerModal from "@/app/(panel)/coach/students/[id]/nutrition/_components/FoodPickerModal";
-import ManualFoodModal from "@/app/(panel)/coach/students/[id]/nutrition/_components/ManualFoodModal";
+import FoodPickerModal from "@/app/(panel)/coach/students/nutrition/_components/FoodPickerModal";
+import ManualFoodModal from "@/app/(panel)/coach/students/nutrition/_components/ManualFoodModal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {

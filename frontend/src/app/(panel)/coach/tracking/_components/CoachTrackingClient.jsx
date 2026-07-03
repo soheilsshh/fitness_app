@@ -142,7 +142,7 @@ export default function CoachTrackingClient() {
                       )}
                     </TableCell>
                     <TableCell className="text-end">
-                      <RowActions viewHref={`/coach/tracking/${student.id}`} />
+                      <RowActions viewHref={`/coach/tracking/detail?id=${encodeURIComponent(student.id)}`} />
                     </TableCell>
                   </TableRow>
                 ))}

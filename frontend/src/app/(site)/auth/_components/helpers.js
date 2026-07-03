@@ -1,33 +1,23 @@
-import Swal from "sweetalert2";
+import { toast } from "sonner";
 
 export function isValidIranPhone(phone) {
   return /^09\d{9}$/.test(phone);
 }
 
 export function isValidOtp(otp) {
-  return /^\d{4,6}$/.test(otp); 
+  return /^\d{4,6}$/.test(otp);
 }
 
 export function toastSuccess(title, text) {
-  return Swal.fire({
-    icon: "success",
-    title,
-    text,
-    confirmButtonText: "باشه",
-    background: "#fff",
-    color: "#000",
-    confirmButtonColor: "#15173D",
-  });
+  if (text) {
+    return toast.success(title, { description: text });
+  }
+  return toast.success(title);
 }
 
 export function toastError(title, text) {
-  return Swal.fire({
-    icon: "error",
-    title,
-    text,
-    confirmButtonText: "متوجه شدم",
-    background: "#fff",
-    color: "#000",
-    confirmButtonColor: "#15173D",
-  });
+  if (text) {
+    return toast.error(title, { description: text });
+  }
+  return toast.error(title);
 }

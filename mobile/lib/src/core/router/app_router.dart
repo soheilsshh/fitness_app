@@ -9,6 +9,9 @@ import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
 import '../../features/onboarding/onboarding_screen.dart';
 import '../../features/programs/presentation/program_detail_screen.dart';
+import '../../features/subscription/data/subscription_models.dart';
+import '../../features/subscription/presentation/payment_result_screen.dart';
+import '../../features/subscription/presentation/subscribe_screen.dart';
 import '../../features/shell/coach_shell.dart';
 import '../../features/shell/student_shell.dart';
 
@@ -63,6 +66,18 @@ GoRouter router(Ref ref) {
         builder: (_, state) => ProgramDetailScreen(
           id: int.tryParse(state.pathParameters['id'] ?? '') ?? 0,
         ),
+      ),
+      GoRoute(path: '/student/subscribe', builder: (_, _) => const SubscribeScreen()),
+      GoRoute(
+        path: '/student/payment-result',
+        builder: (_, state) {
+          final success = state.uri.queryParameters['status'] == 'success';
+          final txId = int.tryParse(state.uri.queryParameters['tx_id'] ?? '') ?? 0;
+          final refId = state.uri.queryParameters['ref_id'];
+          return PaymentResultScreen(
+            result: PaymentResult(success: success, txId: txId, refId: refId),
+          );
+        },
       ),
       GoRoute(path: '/coach', builder: (_, _) => const CoachShell()),
     ],

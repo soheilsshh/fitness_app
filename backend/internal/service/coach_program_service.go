@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
@@ -14,6 +15,7 @@ import (
 var (
 	ErrCoachNoActiveSubscription = errors.New("student has no active subscription with this coach")
 	ErrCoachProgramNotFound      = errors.New("program not found")
+	ErrCoachTemplateNotFound     = errors.New("template not found")
 )
 
 type ProgramAssignRequest struct {
@@ -31,18 +33,50 @@ type CoachStudentProgramsResponse struct {
 	PlanByDay          map[string]MeDayPlanDTO `json:"planByDay,omitempty"`
 }
 
+type WorkoutTemplateSummary struct {
+	ID       uint   `json:"id"`
+	Title    string `json:"title"`
+	Type     string `json:"type,omitempty"`
+	Gender   string `json:"gender,omitempty"`
+	Location string `json:"location,omitempty"`
+	DayCount int    `json:"dayCount"`
+	Target   string `json:"target,omitempty"`
+	Level    string `json:"level,omitempty"`
+	Injury   string `json:"injury,omitempty"`
+}
+
+type NutritionTemplateSummary struct {
+	ID         uint   `json:"id"`
+	Title      string `json:"title"`
+	Type       string `json:"type,omitempty"`
+	Gender     string `json:"gender,omitempty"`
+	Target     string `json:"target,omitempty"`
+	Limitation string `json:"limitation,omitempty"`
+	Calorie    int    `json:"calorie"`
+}
+
+type TemplateListResponse struct {
+	Items []any `json:"items"`
+	Total int   `json:"total"`
+}
+
 type CoachProgramService interface {
 	GetStudentPrograms(ctx context.Context, coachID, studentID uint) (*CoachStudentProgramsResponse, error)
 	AssignWorkoutProgram(ctx context.Context, coachID, studentID uint, req *ProgramAssignRequest) (*CoachStudentProgramsResponse, error)
 	UpdateWorkoutProgram(ctx context.Context, coachID, studentID, programID uint, req *ProgramAssignRequest) (*CoachStudentProgramsResponse, error)
 	AssignNutritionProgram(ctx context.Context, coachID, studentID uint, req *ProgramAssignRequest) (*CoachStudentProgramsResponse, error)
 	UpdateNutritionProgram(ctx context.Context, coachID, studentID, programID uint, req *ProgramAssignRequest) (*CoachStudentProgramsResponse, error)
+	ListWorkoutTemplates(ctx context.Context) (*TemplateListResponse, error)
+	ListNutritionTemplates(ctx context.Context) (*TemplateListResponse, error)
+	AssignWorkoutFromTemplate(ctx context.Context, coachID, studentID, templateID uint) (*CoachStudentProgramsResponse, error)
+	AssignNutritionFromTemplate(ctx context.Context, coachID, studentID, templateID uint) (*CoachStudentProgramsResponse, error)
 }
 
 type coachProgramService struct {
 	db              *gorm.DB
 	subRepo         repository.SubscriptionRepository
 	programRepo     repository.ProgramRepository
+	templateRepo    repository.TemplateRepository
 	exerciseRepo    repository.ExerciseRepository
 	foodRepo        repository.FoodRepository
 	coachStudentSvc CoachStudentService
@@ -52,6 +86,7 @@ func NewCoachProgramService(
 	db *gorm.DB,
 	subRepo repository.SubscriptionRepository,
 	programRepo repository.ProgramRepository,
+	templateRepo repository.TemplateRepository,
 	exerciseRepo repository.ExerciseRepository,
 	foodRepo repository.FoodRepository,
 	coachStudentSvc CoachStudentService,
@@ -60,6 +95,7 @@ func NewCoachProgramService(
 		db:              db,
 		subRepo:         subRepo,
 		programRepo:     programRepo,
+		templateRepo:    templateRepo,
 		exerciseRepo:    exerciseRepo,
 		foodRepo:        foodRepo,
 		coachStudentSvc: coachStudentSvc,
@@ -177,8 +213,10 @@ func (s *coachProgramService) createWorkoutProgram(ctx context.Context, coachID,
 			items[i].WorkoutProgramID = program.ID
 		}
 		if len(items) > 0 {
-			if err := tx.Create(&items).Error; err != nil {
-				return err
+			for i := range items {
+				if err := tx.Create(&items[i]).Error; err != nil {
+					return err
+				}
 			}
 		}
 		return nil
@@ -370,4 +408,98 @@ func (s *coachProgramService) UpdateNutritionProgram(ctx context.Context, coachI
 		NutritionProgramID: program.ID,
 		PlanByDay:          planByDay,
 	}, nil
+}
+
+func (s *coachProgramService) ListWorkoutTemplates(ctx context.Context) (*TemplateListResponse, error) {
+	templates, err := s.templateRepo.ListWorkoutTemplates(ctx)
+	if err != nil {
+		return nil, err
+	}
+	items := make([]any, 0, len(templates))
+	for _, t := range templates {
+		items = append(items, WorkoutTemplateSummary{
+			ID:       t.ID,
+			Title:    t.Title,
+			Type:     t.Type,
+			Gender:   t.Gender,
+			Location: t.Location,
+			DayCount: t.DayCount,
+			Target:   t.Target,
+			Level:    t.Level,
+			Injury:   t.Injury,
+		})
+	}
+	return &TemplateListResponse{Items: items, Total: len(items)}, nil
+}
+
+func (s *coachProgramService) ListNutritionTemplates(ctx context.Context) (*TemplateListResponse, error) {
+	templates, err := s.templateRepo.ListNutritionTemplates(ctx)
+	if err != nil {
+		return nil, err
+	}
+	items := make([]any, 0, len(templates))
+	for _, t := range templates {
+		items = append(items, NutritionTemplateSummary{
+			ID:         t.ID,
+			Title:      t.Title,
+			Type:       t.Type,
+			Gender:     t.Gender,
+			Target:     t.Target,
+			Limitation: t.Limitation,
+			Calorie:    t.Calorie,
+		})
+	}
+	return &TemplateListResponse{Items: items, Total: len(items)}, nil
+}
+
+func (s *coachProgramService) AssignWorkoutFromTemplate(ctx context.Context, coachID, studentID, templateID uint) (*CoachStudentProgramsResponse, error) {
+	sub, err := s.resolveActiveSubscription(ctx, coachID, studentID)
+	if err != nil {
+		return nil, err
+	}
+
+	template, err := s.templateRepo.FindWorkoutTemplateByID(ctx, templateID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrCoachTemplateNotFound
+		}
+		return nil, err
+	}
+
+	planByDay := workoutTemplateToPlanByDay(template)
+	durationWeeks := template.DayCount
+	if durationWeeks <= 0 {
+		durationWeeks = 4
+	}
+
+	title := strings.TrimSpace(template.Title)
+	if title == "" {
+		title = "برنامه تمرین"
+	}
+
+	return s.createWorkoutProgram(ctx, coachID, sub.ID, title, durationWeeks, "", planByDay)
+}
+
+func (s *coachProgramService) AssignNutritionFromTemplate(ctx context.Context, coachID, studentID, templateID uint) (*CoachStudentProgramsResponse, error) {
+	sub, err := s.resolveActiveSubscription(ctx, coachID, studentID)
+	if err != nil {
+		return nil, err
+	}
+
+	template, err := s.templateRepo.FindNutritionTemplateByID(ctx, templateID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrCoachTemplateNotFound
+		}
+		return nil, err
+	}
+
+	planByDay := nutritionTemplateToPlanByDay(template)
+	title := strings.TrimSpace(template.Title)
+	if title == "" {
+		title = "برنامه غذایی"
+	}
+	notes := strings.TrimSpace(template.Description)
+
+	return s.createNutritionProgram(ctx, coachID, sub.ID, title, 4, notes, planByDay)
 }

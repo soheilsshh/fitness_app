@@ -29,6 +29,7 @@ const EXACT = {
   "slug already in use": "این نامک قبلاً استفاده شده است.",
   "name, email, phone and password are required": "نام، ایمیل، شماره و رمز عبور الزامی است.",
   "phone is required": "شماره موبایل الزامی است.",
+  "ارسال پیامک با خطا مواجه شد": "ارسال پیامک با خطا مواجه شد.",
   "new password must be at least 8 characters": "رمز عبور جدید باید حداقل ۸ کاراکتر باشد.",
   "file is required": "انتخاب فایل الزامی است.",
   "type is required": "نوع فایل الزامی است.",
@@ -207,6 +208,12 @@ export function translateApiError(message) {
   if (normalized.includes("forbidden")) return "دسترسی مجاز نیست.";
   if (normalized.includes("timeout") || normalized.includes("deadline exceeded")) {
     return "زمان درخواست به پایان رسید. دوباره تلاش کنید.";
+  }
+  if (normalized.includes("kavenegar") || normalized.includes("کاوه")) {
+    return raw;
+  }
+  if (normalized.includes("api") && normalized.includes("نامعتبر")) {
+    return raw;
   }
   if (normalized.includes("connection refused") || normalized.includes("network")) {
     return "ارتباط با سرور برقرار نشد.";

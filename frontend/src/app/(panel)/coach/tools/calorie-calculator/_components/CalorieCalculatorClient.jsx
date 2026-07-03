@@ -93,7 +93,7 @@ export default function CalorieCalculatorClient() {
   const handleApplyToNutrition = () => {
     if (!selectedStudentId || !result?.recommended) return;
     router.push(
-      `/coach/students/${selectedStudentId}/nutrition?calories=${result.recommended}`
+      `/coach/students/nutrition?id=${encodeURIComponent(selectedStudentId)}&calories=${result.recommended}`
     );
   };
 

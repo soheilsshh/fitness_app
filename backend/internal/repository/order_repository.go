@@ -15,6 +15,7 @@ type OrderRepository interface {
 	GetOrderItems(ctx context.Context, orderID uint) ([]models.OrderItem, error)
 	Create(ctx context.Context, order *models.Order) error
 	CreateItems(ctx context.Context, items []models.OrderItem) error
+	Save(ctx context.Context, order *models.Order) error
 	SumPaidAmountByCoachIDInMonth(ctx context.Context, coachID uint, year, month int) (int64, error)
 }
 
@@ -74,6 +75,10 @@ func (r *orderRepository) CreateItems(ctx context.Context, items []models.OrderI
 		return nil
 	}
 	return r.db.WithContext(ctx).Create(&items).Error
+}
+
+func (r *orderRepository) Save(ctx context.Context, order *models.Order) error {
+	return r.db.WithContext(ctx).Save(order).Error
 }
 
 func (r *orderRepository) GetOrderItems(ctx context.Context, orderID uint) ([]models.OrderItem, error) {

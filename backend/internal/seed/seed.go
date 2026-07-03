@@ -56,7 +56,7 @@ func RunDev(ctx context.Context, db *gorm.DB, opts RunDevOptions) (*gormseed.Res
 func syncAutoIncrement(ctx context.Context, db *gorm.DB) error {
 	tables := []string{
 		"users", "coach_profiles", "service_plans", "subscriptions",
-		"orders", "order_items", "workout_programs", "program_items",
+		"orders", "order_items", "workout_programs", "program_item_sets", "program_items",
 		"nutrition_programs", "nutrition_items", "site_settings",
 		"feedbacks", "check_ins", "workout_sessions", "transactions", "notifications",
 	}

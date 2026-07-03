@@ -61,6 +61,9 @@ func (r *programRepository) FindActiveNutritionBySubscriptionID(ctx context.Cont
 func (r *programRepository) FindWorkoutItemsByProgramID(ctx context.Context, programID uint) ([]models.ProgramItem, error) {
 	var items []models.ProgramItem
 	err := r.db.WithContext(ctx).
+		Preload("SetsDetails", func(db *gorm.DB) *gorm.DB {
+			return db.Order("set_number ASC")
+		}).
 		Where("workout_program_id = ?", programID).
 		Order("week_number ASC, day_number ASC, order_index ASC").
 		Find(&items).Error
@@ -116,13 +119,35 @@ func (r *programRepository) UpdateNutritionProgram(ctx context.Context, program 
 
 func (r *programRepository) UpsertWorkoutItems(ctx context.Context, programID uint, items []models.ProgramItem) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		var itemIDs []uint
+		if err := tx.Model(&models.ProgramItem{}).
+			Where("workout_program_id = ?", programID).
+			Pluck("id", &itemIDs).Error; err != nil {
+			return err
+		}
+		if len(itemIDs) > 0 {
+			if err := tx.Where("program_item_id IN ?", itemIDs).Delete(&models.ProgramItemSet{}).Error; err != nil {
+				return err
+			}
+		}
 		if err := tx.Where("workout_program_id = ?", programID).Delete(&models.ProgramItem{}).Error; err != nil {
 			return err
 		}
 		if len(items) == 0 {
 			return nil
 		}
-		return tx.Create(&items).Error
+		for i := range items {
+			items[i].ID = 0
+			items[i].WorkoutProgramID = programID
+			for j := range items[i].SetsDetails {
+				items[i].SetsDetails[j].ID = 0
+				items[i].SetsDetails[j].ProgramItemID = 0
+			}
+			if err := tx.Create(&items[i]).Error; err != nil {
+				return err
+			}
+		}
+		return nil
 	})
 }
 

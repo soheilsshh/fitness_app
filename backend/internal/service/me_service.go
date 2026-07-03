@@ -149,11 +149,20 @@ type MeDayPlanDTO struct {
 	Nutrition *MeNutritionDTO `json:"nutrition,omitempty"`
 }
 
+type MeWorkoutSetDTO struct {
+	SetNumber int    `json:"setNumber"`
+	Reps      string `json:"reps,omitempty"`
+	IsAMRAP   bool   `json:"isAmrap,omitempty"`
+}
+
 type MeWorkoutExerciseDTO struct {
-	ExerciseID       uint     `json:"exerciseId,omitempty"`
-	Name             string   `json:"name"`
-	Sets             int      `json:"sets,omitempty"`
-	Reps             string   `json:"reps,omitempty"`
+	ExerciseID        uint              `json:"exerciseId,omitempty"`
+	Name              string            `json:"name"`
+	Sets              int               `json:"sets,omitempty"`
+	Reps              string            `json:"reps,omitempty"`
+	SetsDetails       []MeWorkoutSetDTO `json:"setsDetails,omitempty"`
+	SupersetID        *string           `json:"supersetId,omitempty"`
+	WorkoutSystemType string            `json:"workoutSystemType,omitempty"`
 	ImageURL         string   `json:"imageUrl,omitempty"`
 	GifURL           string   `json:"gifUrl,omitempty"`
 	Category         string   `json:"category,omitempty"`

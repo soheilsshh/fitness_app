@@ -62,6 +62,149 @@ func formatWorkoutStep(name string, sets int, reps string) string {
 	return strings.Join(parts, " — ")
 }
 
+func summarizeSetReps(details []models.ProgramItemSet) string {
+	parts := make([]string, 0, len(details))
+	for _, d := range details {
+		if d.IsAMRAP {
+			parts = append(parts, "AMRAP")
+			continue
+		}
+		if r := strings.TrimSpace(d.Reps); r != "" {
+			parts = append(parts, r)
+		}
+	}
+	return strings.Join(parts, "/")
+}
+
+func legacySetsToDetails(sets int, reps string) []models.ProgramItemSet {
+	if sets <= 0 {
+		return nil
+	}
+	reps = strings.TrimSpace(reps)
+	details := make([]models.ProgramItemSet, 0, sets)
+	for i := 1; i <= sets; i++ {
+		details = append(details, models.ProgramItemSet{
+			SetNumber: i,
+			Reps:      reps,
+		})
+	}
+	return details
+}
+
+func setsDetailsToDTO(details []models.ProgramItemSet) []MeWorkoutSetDTO {
+	out := make([]MeWorkoutSetDTO, 0, len(details))
+	for _, d := range details {
+		out = append(out, MeWorkoutSetDTO{
+			SetNumber: d.SetNumber,
+			Reps:      strings.TrimSpace(d.Reps),
+			IsAMRAP:   d.IsAMRAP,
+		})
+	}
+	return out
+}
+
+func normalizeSetDTOs(dtos []MeWorkoutSetDTO) []MeWorkoutSetDTO {
+	out := make([]MeWorkoutSetDTO, 0, len(dtos))
+	for i, d := range dtos {
+		setNum := d.SetNumber
+		if setNum <= 0 {
+			setNum = i + 1
+		}
+		out = append(out, MeWorkoutSetDTO{
+			SetNumber: setNum,
+			Reps:      strings.TrimSpace(d.Reps),
+			IsAMRAP:   d.IsAMRAP,
+		})
+	}
+	return out
+}
+
+func setsDetailsFromDTO(dtos []MeWorkoutSetDTO) []models.ProgramItemSet {
+	normalized := normalizeSetDTOs(dtos)
+	out := make([]models.ProgramItemSet, 0, len(normalized))
+	for _, d := range normalized {
+		out = append(out, models.ProgramItemSet{
+			SetNumber: d.SetNumber,
+			Reps:      d.Reps,
+			IsAMRAP:   d.IsAMRAP,
+		})
+	}
+	return out
+}
+
+func syncLegacySetFields(item *models.ProgramItem) {
+	if len(item.SetsDetails) == 0 {
+		return
+	}
+	item.Sets = len(item.SetsDetails)
+	item.Reps = summarizeSetReps(item.SetsDetails)
+}
+
+func normalizeWorkoutSystemType(value string) string {
+	value = strings.TrimSpace(strings.ToLower(value))
+	if value == "" {
+		return "normal"
+	}
+	return value
+}
+
+func programItemToExerciseDTO(it models.ProgramItem) MeWorkoutExerciseDTO {
+	name := strings.TrimSpace(it.Exercise)
+	sets := it.Sets
+	reps := strings.TrimSpace(it.Reps)
+	if name == "" {
+		name, sets, reps = parseWorkoutStep(it.Exercise)
+	}
+
+	exDTO := MeWorkoutExerciseDTO{
+		Name:              name,
+		Sets:              sets,
+		Reps:              reps,
+		SupersetID:        it.SupersetID,
+		WorkoutSystemType: normalizeWorkoutSystemType(it.WorkoutSystemType),
+	}
+	if it.ExerciseID != nil && *it.ExerciseID > 0 {
+		exDTO.ExerciseID = *it.ExerciseID
+	}
+
+	if len(it.SetsDetails) > 0 {
+		exDTO.SetsDetails = setsDetailsToDTO(it.SetsDetails)
+		exDTO.Sets = len(it.SetsDetails)
+		exDTO.Reps = summarizeSetReps(it.SetsDetails)
+	} else if sets > 0 {
+		exDTO.SetsDetails = setsDetailsToDTO(legacySetsToDetails(sets, reps))
+	}
+
+	return exDTO
+}
+
+func exerciseDTOToProgramItem(ex MeWorkoutExerciseDTO, dayNum, orderIndex int) models.ProgramItem {
+	name := strings.TrimSpace(ex.Name)
+	item := models.ProgramItem{
+		WeekNumber:        1,
+		DayNumber:         dayNum,
+		OrderIndex:        orderIndex,
+		Exercise:          name,
+		Sets:              ex.Sets,
+		Reps:              strings.TrimSpace(ex.Reps),
+		SupersetID:        ex.SupersetID,
+		WorkoutSystemType: normalizeWorkoutSystemType(ex.WorkoutSystemType),
+	}
+	if ex.ExerciseID > 0 {
+		id := ex.ExerciseID
+		item.ExerciseID = &id
+	}
+
+	if len(ex.SetsDetails) > 0 {
+		item.SetsDetails = setsDetailsFromDTO(ex.SetsDetails)
+		syncLegacySetFields(&item)
+	} else if ex.Sets > 0 {
+		item.SetsDetails = legacySetsToDetails(ex.Sets, ex.Reps)
+	}
+
+	return item
+}
+
 func workoutItemsToPlanByDay(items []models.ProgramItem) (map[string]MeDayPlanDTO, *MeScheduleDTO) {
 	planByDay := make(map[string]MeDayPlanDTO)
 	if len(items) == 0 {
@@ -81,26 +224,13 @@ func workoutItemsToPlanByDay(items []models.ProgramItem) (map[string]MeDayPlanDT
 			day.Workout = &MeWorkoutDTO{Steps: []string{}, Exercises: []MeWorkoutExerciseDTO{}}
 		}
 
-		name := strings.TrimSpace(it.Exercise)
-		sets := it.Sets
-		reps := strings.TrimSpace(it.Reps)
-		if name == "" {
-			name, sets, reps = parseWorkoutStep(it.Exercise)
-		}
+		exDTO := programItemToExerciseDTO(it)
 
-		step := formatWorkoutStep(name, sets, reps)
+		step := formatWorkoutStep(exDTO.Name, exDTO.Sets, exDTO.Reps)
 		if step != "" {
 			day.Workout.Steps = append(day.Workout.Steps, step)
 		}
 
-		exDTO := MeWorkoutExerciseDTO{
-			Name: name,
-			Sets: sets,
-			Reps: reps,
-		}
-		if it.ExerciseID != nil && *it.ExerciseID > 0 {
-			exDTO.ExerciseID = *it.ExerciseID
-		}
 		day.Workout.Exercises = append(day.Workout.Exercises, exDTO)
 		planByDay[key] = day
 	}
@@ -155,19 +285,7 @@ func planByDayToWorkoutItems(planByDay map[string]MeDayPlanDTO) []models.Program
 				if name == "" {
 					continue
 				}
-				item := models.ProgramItem{
-					WeekNumber: 1,
-					DayNumber:  dayNum,
-					OrderIndex: i + 1,
-					Exercise:   name,
-					Sets:       ex.Sets,
-					Reps:       strings.TrimSpace(ex.Reps),
-				}
-				if ex.ExerciseID > 0 {
-					id := ex.ExerciseID
-					item.ExerciseID = &id
-				}
-				items = append(items, item)
+				items = append(items, exerciseDTOToProgramItem(ex, dayNum, i+1))
 			}
 			continue
 		}
@@ -181,14 +299,18 @@ func planByDayToWorkoutItems(planByDay map[string]MeDayPlanDTO) []models.Program
 			if name == "" {
 				name = step
 			}
-			items = append(items, models.ProgramItem{
+			item := models.ProgramItem{
 				WeekNumber: 1,
 				DayNumber:  dayNum,
 				OrderIndex: i + 1,
 				Exercise:   name,
 				Sets:       sets,
 				Reps:       reps,
-			})
+			}
+			if sets > 0 {
+				item.SetsDetails = legacySetsToDetails(sets, reps)
+			}
+			items = append(items, item)
 		}
 	}
 	return items

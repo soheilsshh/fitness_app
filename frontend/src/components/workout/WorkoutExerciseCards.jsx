@@ -1,8 +1,16 @@
 "use client";
 
-import { useState } from "react";
-import { ChevronLeft, PlayCircle } from "lucide-react";
-import { parseExerciseStep } from "@/app/(panel)/coach/students/_components/exerciseHelpers";
+import { Fragment, useState } from "react";
+import { ChevronDown, ChevronLeft, PlayCircle, Plus } from "lucide-react";
+import {
+  getWorkoutSystemLabel,
+  groupExercisesForDisplay,
+  normalizeSetsDetails,
+  normalizeSupersetId,
+  normalizeWorkoutSystemType,
+  parseExerciseStep,
+  summarizeSetReps,
+} from "@/app/(panel)/coach/students/_components/exerciseHelpers";
 import {
   Accordion,
   AccordionContent,
@@ -19,12 +27,20 @@ import ExerciseDetailModal from "./ExerciseDetailModal";
 function normalizeExercises(workout) {
   if (!workout) return [];
   if (workout.exercises?.length) {
-    return workout.exercises.map((ex, i) => ({
-      key: `${ex.exerciseId || ex.name}-${i}`,
-      ...ex,
-      sets: ex.sets ?? 0,
-      reps: ex.reps ?? "",
-    }));
+    return workout.exercises.map((ex, i) => {
+      const setsDetails = normalizeSetsDetails(ex.setsDetails ?? ex.sets_details);
+      return {
+        key: `${ex.exerciseId || ex.name}-${i}`,
+        ...ex,
+        sets: setsDetails.length || (ex.sets ?? 0),
+        reps: setsDetails.length ? summarizeSetReps(setsDetails) : ex.reps ?? "",
+        setsDetails,
+        supersetId: normalizeSupersetId(ex.supersetId ?? ex.superset_id),
+        workoutSystemType: normalizeWorkoutSystemType(
+          ex.workoutSystemType ?? ex.workout_system_type
+        ),
+      };
+    });
   }
   return (workout.steps || []).map((step, i) => {
     const parsed = parseExerciseStep(step);
@@ -33,13 +49,23 @@ function normalizeExercises(workout) {
       name: parsed.name || step,
       sets: parseInt(parsed.sets, 10) || 0,
       reps: parsed.reps || "",
+      setsDetails: parsed.setsDetails || [],
+      supersetId: null,
+      workoutSystemType: "normal",
       imageUrl: "",
       gifUrl: "",
     };
   });
 }
 
+function formatSetDetailLabel(set) {
+  if (set.isAmrap) return "AMRAP";
+  return String(set.reps || "").trim();
+}
+
 function ExerciseBadges({ exercise }) {
+  const setsDetails = normalizeSetsDetails(exercise.setsDetails);
+
   return (
     <div className="flex flex-wrap gap-2">
       {exercise.sets > 0 ? (
@@ -47,7 +73,17 @@ function ExerciseBadges({ exercise }) {
           {Number(exercise.sets).toLocaleString("fa-IR")} ست
         </Badge>
       ) : null}
-      {exercise.reps ? (
+      {setsDetails.length > 0 ? (
+        setsDetails.map((set) => (
+          <Badge
+            key={`set-${set.setNumber}`}
+            variant={set.isAmrap ? "default" : "secondary"}
+            className="tabular-nums"
+          >
+            {set.setNumber.toLocaleString("fa-IR")}: {formatSetDetailLabel(set)}
+          </Badge>
+        ))
+      ) : exercise.reps ? (
         <Badge variant="secondary">{exercise.reps} تکرار</Badge>
       ) : null}
       {exercise.category ? (
@@ -89,14 +125,29 @@ function ExerciseThumb({ exercise, index }) {
           {(index + 1).toLocaleString("fa-IR")}
         </div>
       )}
-      <span className="absolute bottom-1 end-1 rounded bg-background/80 px-1.5 py-0.5 text-[10px] font-medium tabular-nums">
+      <span className="absolute bottom-1 inset-e-1 rounded bg-background/80 px-1.5 py-0.5 text-[10px] font-medium tabular-nums">
         {(index + 1).toLocaleString("fa-IR")}
       </span>
     </div>
   );
 }
 
-function ExerciseCardRow({ exercise, index, clickable, onSelect }) {
+function GroupConnector({ workoutSystemType }) {
+  if (workoutSystemType === "circuit") {
+    return (
+      <div className="flex justify-center py-1" aria-hidden>
+        <ChevronDown className="size-4 text-primary" />
+      </div>
+    );
+  }
+  return (
+    <div className="flex justify-center py-1" aria-hidden>
+      <Plus className="size-4 text-primary" />
+    </div>
+  );
+}
+
+function ExerciseCardRow({ exercise, index, clickable, onSelect, compact = false }) {
   const Wrapper = clickable ? "button" : "div";
 
   return (
@@ -104,7 +155,8 @@ function ExerciseCardRow({ exercise, index, clickable, onSelect }) {
       type={clickable ? "button" : undefined}
       onClick={clickable ? () => onSelect?.(exercise) : undefined}
       className={cn(
-        "flex w-full items-center gap-3 rounded-lg border bg-card p-3 text-start transition-colors",
+        "flex w-full items-center gap-3 text-start transition-colors",
+        compact ? "rounded-lg bg-card/60 p-2" : "rounded-lg border bg-card p-3",
         clickable && "cursor-pointer hover:bg-muted/50"
       )}
     >
@@ -120,6 +172,88 @@ function ExerciseCardRow({ exercise, index, clickable, onSelect }) {
   );
 }
 
+function LinkedExerciseGroup({
+  group,
+  dayKey,
+  clickable,
+  onSelect,
+  variant,
+}) {
+  const { workoutSystemType, exercises } = group;
+
+  if (variant === "accordion") {
+    return (
+      <Card className="border-s-4 border-s-primary bg-muted/20 shadow-none">
+        <CardContent className="space-y-2 pt-4">
+          <Badge variant="default" className="text-xs">
+            {getWorkoutSystemLabel(workoutSystemType)}
+          </Badge>
+          <Accordion type="multiple" className="w-full rounded-lg border px-3">
+            {exercises.map((exercise, index) => (
+              <Fragment key={`${dayKey}-${exercise.key}`}>
+                {index > 0 ? <GroupConnector workoutSystemType={workoutSystemType} /> : null}
+                <AccordionItem value={exercise.key}>
+                  <AccordionTrigger className="hover:no-underline">
+                    <span className="flex flex-1 items-center gap-3 pe-2 text-start">
+                      <ExerciseThumb exercise={exercise} index={index} />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-medium">
+                          {exercise.name}
+                        </span>
+                        <span className="mt-2 block">
+                          <ExerciseBadges exercise={exercise} />
+                        </span>
+                      </span>
+                    </span>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    {clickable ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onSelect?.(exercise)}
+                      >
+                        <PlayCircle data-icon="inline-start" />
+                        مشاهده جزئیات و انیمیشن
+                      </Button>
+                    ) : null}
+                  </AccordionContent>
+                </AccordionItem>
+              </Fragment>
+            ))}
+          </Accordion>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="border-s-4 border-s-primary bg-muted/20 shadow-none">
+      <CardContent className="space-y-1 pt-4">
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <Badge variant="default" className="text-xs">
+            {getWorkoutSystemLabel(workoutSystemType)}
+          </Badge>
+          <p className="text-xs text-muted-foreground">بدون استراحت بین حرکات</p>
+        </div>
+        {exercises.map((exercise, index) => (
+          <Fragment key={`${dayKey}-${exercise.key}`}>
+            {index > 0 ? <GroupConnector workoutSystemType={workoutSystemType} /> : null}
+            <ExerciseCardRow
+              exercise={exercise}
+              index={index}
+              clickable={clickable}
+              onSelect={onSelect}
+              compact
+            />
+          </Fragment>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function WorkoutExerciseCards({
   workout,
   dayKey = "day",
@@ -128,6 +262,7 @@ export default function WorkoutExerciseCards({
 }) {
   const [selected, setSelected] = useState(null);
   const exercises = normalizeExercises(workout);
+  const displayGroups = groupExercisesForDisplay(exercises);
 
   if (exercises.length === 0) {
     return (
@@ -142,45 +277,55 @@ export default function WorkoutExerciseCards({
   if (variant === "accordion") {
     return (
       <>
-        <Accordion type="multiple" className="w-full rounded-lg border px-3">
-          {exercises.map((exercise, index) => (
-            <AccordionItem key={`${dayKey}-${exercise.key}`} value={exercise.key}>
-              <AccordionTrigger className="hover:no-underline">
-                <span className="flex flex-1 items-center gap-3 pe-2 text-start">
-                  <ExerciseThumb exercise={exercise} index={index} />
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-medium">
-                      {exercise.name}
+        <div className="space-y-3">
+          {displayGroups.map((group) =>
+            group.kind === "group" ? (
+              <LinkedExerciseGroup
+                key={group.supersetId}
+                group={group}
+                dayKey={dayKey}
+                clickable={clickable}
+                onSelect={setSelected}
+                variant="accordion"
+              />
+            ) : (
+              <Accordion
+                key={group.exercises[0].key}
+                type="multiple"
+                className="w-full rounded-lg border px-3"
+              >
+                <AccordionItem value={group.exercises[0].key}>
+                  <AccordionTrigger className="hover:no-underline">
+                    <span className="flex flex-1 items-center gap-3 pe-2 text-start">
+                      <ExerciseThumb exercise={group.exercises[0]} index={0} />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-medium">
+                          {group.exercises[0].name}
+                        </span>
+                        <span className="mt-2 block">
+                          <ExerciseBadges exercise={group.exercises[0]} />
+                        </span>
+                      </span>
                     </span>
-                    <span className="mt-2 block">
-                      <ExerciseBadges exercise={exercise} />
-                    </span>
-                  </span>
-                </span>
-              </AccordionTrigger>
-              <AccordionContent>
-                <div className="space-y-3 ps-1">
-                  {exercise.category ? (
-                    <p className="text-xs text-muted-foreground">
-                      دسته: {exercise.category}
-                    </p>
-                  ) : null}
-                  {clickable ? (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setSelected(exercise)}
-                    >
-                      <PlayCircle data-icon="inline-start" />
-                      مشاهده جزئیات و انیمیشن
-                    </Button>
-                  ) : null}
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    {clickable ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setSelected(group.exercises[0])}
+                      >
+                        <PlayCircle data-icon="inline-start" />
+                        مشاهده جزئیات و انیمیشن
+                      </Button>
+                    ) : null}
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            )
+          )}
+        </div>
 
         {clickable ? (
           <ExerciseDetailModal
@@ -196,15 +341,26 @@ export default function WorkoutExerciseCards({
   return (
     <>
       <div className="space-y-3">
-        {exercises.map((exercise, index) => (
-          <ExerciseCardRow
-            key={`${dayKey}-${exercise.key}`}
-            exercise={exercise}
-            index={index}
-            clickable={clickable}
-            onSelect={setSelected}
-          />
-        ))}
+        {displayGroups.map((group) =>
+          group.kind === "group" ? (
+            <LinkedExerciseGroup
+              key={group.supersetId}
+              group={group}
+              dayKey={dayKey}
+              clickable={clickable}
+              onSelect={setSelected}
+              variant="cards"
+            />
+          ) : (
+            <ExerciseCardRow
+              key={`${dayKey}-${group.exercises[0].key}`}
+              exercise={group.exercises[0]}
+              index={0}
+              clickable={clickable}
+              onSelect={setSelected}
+            />
+          )
+        )}
       </div>
 
       {clickable ? (

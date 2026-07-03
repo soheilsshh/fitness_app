@@ -1,7 +1,10 @@
 # Local task notes (not for version control)
 task.txt
 
-
+# crul large generated media (do not upload)
+crul/output/food/images/
+crul/output/exercise/images/
+crul/output/exercise/videos/
 
 uploads/
 node_modules
