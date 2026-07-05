@@ -13,6 +13,7 @@ import BorderGlow from "@/components/ui/BorderGlow";
 import ContainerTextFlip from "@/components/ui/ContainerTextFlip";
 import AuroraBackground from "@/components/ui/aurora-background";
 import BlurTextAnimation from "@/components/ui/blur-text-animation";
+import CoachAchievementsSection from "./CoachAchievementsSection";
 
 const HERO_PIXEL_COLORS = ["#34d399", "#6ee7b7", "#a7f3d0", "#ecfdf5", "#ffffff"];
 
@@ -148,6 +149,8 @@ export default function CoachLandingClient({ slug }) {
     .split(/[،,]/)
     .map((s) => s.trim())
     .filter(Boolean);
+  const achievements = coach.achievements || [];
+  const hasAchievements = achievements.length > 0;
 
   const socialLinks = coach.social?.phone ? (
     <a
@@ -225,12 +228,12 @@ export default function CoachLandingClient({ slug }) {
             <div className="relative flex flex-wrap items-center justify-start gap-2">{socialLinks}</div>
 
             <a
-              href="#about"
+              href={hasAchievements ? "#achievements" : "#about"}
               dir="rtl"
               className="relative self-start inline-flex items-center justify-center gap-2 rounded-2xl bg-zinc-800/65 px-6 py-3.5 text-base font-bold text-white ring-1 ring-white/25 backdrop-blur transition-colors hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
             >
               <FiChevronDown className="text-lg" />
-              آشنایی بیشتر با مربی
+              {hasAchievements ? "مدارک و افتخارات" : "آشنایی بیشتر با مربی"}
             </a>
             </div>
           </AuroraBackground>
@@ -290,6 +293,8 @@ export default function CoachLandingClient({ slug }) {
             )}
           </section>
         )}
+
+        <CoachAchievementsSection achievements={achievements} />
 
         <section id="plans" className="mt-10 scroll-mt-20">
           <h2 className="mb-4 text-xl font-extrabold text-white md:text-2xl">پلن‌های قابل خرید</h2>

@@ -21,6 +21,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import CoachAchievementsEditor from "./CoachAchievementsEditor";
 
 function ImageUploadBox({ label, url, onUpload, uploading }) {
   return (
@@ -360,6 +361,8 @@ export default function ProfileClient() {
           />
         </CardContent>
       </Card>
+
+      <CoachAchievementsEditor />
 
       <Card>
         <CardContent className="flex items-start gap-3 pt-6">

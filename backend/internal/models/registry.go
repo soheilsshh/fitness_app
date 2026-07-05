@@ -6,6 +6,7 @@ func AllModels() []any {
 	return []any{
 		&User{},
 		&CoachProfile{},
+		&CoachAchievement{},
 		&ServicePlan{},
 		&Subscription{},
 		&Transaction{},

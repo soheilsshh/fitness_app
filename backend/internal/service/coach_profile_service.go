@@ -69,16 +69,17 @@ type SlugCheckResponse struct {
 
 // PublicCoachDTO for GET /coaches/:slug.
 type PublicCoachDTO struct {
-	CoachID      uint             `json:"coachId"`
-	Slug         string           `json:"slug"`
-	DisplayName  string           `json:"displayName"`
-	Title        string           `json:"title"`
-	Bio          string           `json:"bio"`
-	AboutCoach   string           `json:"aboutCoach"`
-	Specialty    string           `json:"specialty"`
-	AvatarURL    string           `json:"avatarUrl"`
-	CoverImageURL string          `json:"coverImageUrl"`
-	Social       CoachSocialLinks `json:"social"`
+	CoachID       uint                   `json:"coachId"`
+	Slug          string                 `json:"slug"`
+	DisplayName   string                 `json:"displayName"`
+	Title         string                 `json:"title"`
+	Bio           string                 `json:"bio"`
+	AboutCoach    string                 `json:"aboutCoach"`
+	Specialty     string                 `json:"specialty"`
+	AvatarURL     string                 `json:"avatarUrl"`
+	CoverImageURL string                 `json:"coverImageUrl"`
+	Social        CoachSocialLinks       `json:"social"`
+	Achievements  []PublicAchievementDTO `json:"achievements"`
 }
 
 // PublicPlanDTO for public coach landing plans.
@@ -125,17 +126,20 @@ type CoachProfileService interface {
 }
 
 type coachProfileService struct {
-	coachRepo repository.CoachProfileRepository
-	planRepo  repository.ServicePlanRepository
+	coachRepo         repository.CoachProfileRepository
+	planRepo          repository.ServicePlanRepository
+	achievementRepo   repository.CoachAchievementRepository
 }
 
 func NewCoachProfileService(
 	coachRepo repository.CoachProfileRepository,
 	planRepo repository.ServicePlanRepository,
+	achievementRepo repository.CoachAchievementRepository,
 ) CoachProfileService {
 	return &coachProfileService{
-		coachRepo: coachRepo,
-		planRepo:  planRepo,
+		coachRepo:       coachRepo,
+		planRepo:        planRepo,
+		achievementRepo: achievementRepo,
 	}
 }
 
@@ -263,7 +267,11 @@ func (s *coachProfileService) GetPublicProfile(ctx context.Context, slugParam st
 		}
 		return nil, err
 	}
-	return toPublicCoachDTO(profile), nil
+	achievements, err := s.achievementRepo.ListVisibleByCoachUserID(ctx, profile.UserID)
+	if err != nil {
+		return nil, err
+	}
+	return toPublicCoachDTO(profile, achievements), nil
 }
 
 func (s *coachProfileService) ListPublishedCoaches(ctx context.Context, page, pageSize int) (*PublicCoachListResponse, error) {
@@ -343,7 +351,11 @@ func toCoachProfileDTO(p *models.CoachProfile) *CoachProfileDTO {
 	}
 }
 
-func toPublicCoachDTO(p *models.CoachProfile) *PublicCoachDTO {
+func toPublicCoachDTO(p *models.CoachProfile, achievements []models.CoachAchievement) *PublicCoachDTO {
+	achievementDTOs := make([]PublicAchievementDTO, 0, len(achievements))
+	for i := range achievements {
+		achievementDTOs = append(achievementDTOs, toPublicAchievementDTO(&achievements[i]))
+	}
 	return &PublicCoachDTO{
 		CoachID:       p.UserID,
 		Slug:          p.Slug,
@@ -361,6 +373,7 @@ func toPublicCoachDTO(p *models.CoachProfile) *PublicCoachDTO {
 			WhatsApp:  p.WhatsApp,
 			Website:   p.Website,
 		},
+		Achievements: achievementDTOs,
 	}
 }
 

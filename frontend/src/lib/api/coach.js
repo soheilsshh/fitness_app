@@ -62,3 +62,45 @@ export async function assignNutritionTemplateToStudent(studentId, templateId) {
     `/coach/students/${studentId}/nutrition-programs/templates/${templateId}`,
   );
 }
+
+/**
+ * @typedef {{
+ *   id: number;
+ *   type: "certificate" | "honor" | "medal" | "qualification";
+ *   title: string;
+ *   issuer?: string;
+ *   year?: number;
+ *   description?: string;
+ *   imageUrl?: string;
+ *   sortOrder?: number;
+ *   isVisible?: boolean;
+ * }} CoachAchievement
+ */
+
+export async function getAchievements() {
+  const res = await api.get("/coach/profile/achievements");
+  return res.data?.items || [];
+}
+
+export async function createAchievement(data) {
+  const res = await api.post("/coach/profile/achievements", data);
+  return res.data;
+}
+
+export async function updateAchievement(id, data) {
+  const res = await api.put(`/coach/profile/achievements/${id}`, data);
+  return res.data;
+}
+
+export async function deleteAchievement(id) {
+  return api.delete(`/coach/profile/achievements/${id}`);
+}
+
+export async function uploadAchievementImage(file) {
+  const fd = new FormData();
+  fd.append("file", file);
+  const res = await api.post("/coach/profile/achievements/image", fd, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return res.data?.url || "";
+}
