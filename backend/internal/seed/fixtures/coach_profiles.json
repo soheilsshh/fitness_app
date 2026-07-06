@@ -12,6 +12,9 @@
     "Instagram": "https://instagram.com/coach.ali.dev",
     "Telegram": "https://t.me/coach_ali_dev",
     "WhatsApp": "989121111111",
+    "NationalID": "1111111111",
+    "City": "تهران",
+    "Status": "approved",
     "IsPublished": true,
     "IsActive": true
   },
@@ -27,6 +30,9 @@
     "ContactPhone": "09122222222",
     "Instagram": "https://instagram.com/coach.sara.dev",
     "Telegram": "https://t.me/coach_sara_dev",
+    "NationalID": "2222222222",
+    "City": "مشهد",
+    "Status": "approved",
     "IsPublished": true,
     "IsActive": true
   }

@@ -7,6 +7,7 @@ import {
   LayoutDashboardIcon,
   MessageCircleIcon,
   UserCheckIcon,
+  UserPlusIcon,
   UsersIcon,
 } from "lucide-react";
 
@@ -36,6 +37,11 @@ export const adminNav = [
     href: "/admin/coaches",
     label: "مربی‌ها",
     icon: AwardIcon,
+  },
+  {
+    href: "/admin/coaches/requests",
+    label: "درخواست‌های مربی",
+    icon: UserPlusIcon,
   },
   {
     href: "/admin/users",

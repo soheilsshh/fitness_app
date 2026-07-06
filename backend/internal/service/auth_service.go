@@ -189,9 +189,10 @@ func (s *authService) RegisterCoach(ctx context.Context, name, email, phone, pas
 	}
 
 	profile := &models.CoachProfile{
-		UserID:      user.ID,
-		Slug:        coachSlug,
-		DisplayName: displayName,
+		UserID:       user.ID,
+		Slug:         coachSlug,
+		DisplayName:  displayName,
+		Status:       models.CoachProfileStatusPending,
 		ContactPhone: phone,
 		IsPublished: false,
 	}

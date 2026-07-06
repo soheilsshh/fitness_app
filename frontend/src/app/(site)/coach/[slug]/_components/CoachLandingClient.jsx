@@ -217,7 +217,7 @@ export default function CoachLandingClient({ slug }) {
                       key={i}
                       className="flex items-start justify-start gap-2 text-sm leading-7 text-zinc-300 md:text-base"
                     >
-                      <span className="mt-2 inline-block h-1.5 w-1.5 flex-shrink-0 rounded-full bg-amber-500" />
+                      <span className="mt-2 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" />
                       <span>{line}</span>
                     </li>
                   ))}

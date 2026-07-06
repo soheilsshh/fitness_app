@@ -104,3 +104,44 @@ export async function uploadAchievementImage(file) {
   });
   return res.data?.url || "";
 }
+
+/**
+ * @typedef {{
+ *   slug?: string;
+ *   displayName?: string;
+ *   title?: string;
+ *   bio?: string;
+ *   aboutCoach?: string;
+ *   specialty?: string;
+ *   nationalId?: string;
+ *   city?: string;
+ *   status?: "pending" | "reviewing" | "approved";
+ *   isPublished?: boolean;
+ *   avatarUrl?: string;
+ *   coverImageUrl?: string;
+ *   publicUrl?: string;
+ *   social?: {
+ *     phone?: string;
+ *     instagram?: string;
+ *     telegram?: string;
+ *     whatsapp?: string;
+ *     website?: string;
+ *   };
+ * }} CoachProfile
+ */
+
+export async function getCoachProfile() {
+  const res = await api.get("/coach/profile");
+  return res.data;
+}
+
+export async function updateCoachProfile(data) {
+  const res = await api.put("/coach/profile", data);
+  return res.data;
+}
+
+/** @returns {Promise<{ status: string; message?: string }>} */
+export async function submitProfileRequest() {
+  const res = await api.post("/coach/profile/submit-request");
+  return res.data;
+}

@@ -15,7 +15,7 @@ type CoachProfileRepository interface {
 	Create(ctx context.Context, profile *models.CoachProfile) error
 	Update(ctx context.Context, profile *models.CoachProfile) error
 	SlugExists(ctx context.Context, slug string, excludeUserID uint) (bool, error)
-	ListCoaches(ctx context.Context, page, pageSize int, query string) ([]models.CoachProfile, int64, error)
+	ListCoaches(ctx context.Context, page, pageSize int, query, status string) ([]models.CoachProfile, int64, error)
 	ListPublished(ctx context.Context, page, pageSize int) ([]models.CoachProfile, int64, error)
 	CountCoaches(ctx context.Context) (int64, error)
 	CountActiveCoaches(ctx context.Context) (int64, error)
@@ -49,7 +49,8 @@ func (r *coachProfileRepository) FindBySlug(ctx context.Context, slug string) (*
 func (r *coachProfileRepository) FindPublishedBySlug(ctx context.Context, slug string) (*models.CoachProfile, error) {
 	var profile models.CoachProfile
 	if err := r.db.WithContext(ctx).
-		Where("slug = ? AND is_published = ? AND is_active = ?", slug, true, true).
+		Where("slug = ? AND is_published = ? AND is_active = ? AND status = ?",
+			slug, true, true, models.CoachProfileStatusApproved).
 		First(&profile).Error; err != nil {
 		return nil, err
 	}
@@ -79,7 +80,7 @@ func (r *coachProfileRepository) SlugExists(ctx context.Context, slug string, ex
 	return count > 0, nil
 }
 
-func (r *coachProfileRepository) ListCoaches(ctx context.Context, page, pageSize int, query string) ([]models.CoachProfile, int64, error) {
+func (r *coachProfileRepository) ListCoaches(ctx context.Context, page, pageSize int, query, status string) ([]models.CoachProfile, int64, error) {
 	if page <= 0 {
 		page = 1
 	}
@@ -90,6 +91,9 @@ func (r *coachProfileRepository) ListCoaches(ctx context.Context, page, pageSize
 	if query != "" {
 		like := "%" + query + "%"
 		db = db.Where("display_name LIKE ? OR slug LIKE ? OR title LIKE ?", like, like, like)
+	}
+	if status != "" && models.IsValidCoachProfileStatus(status) {
+		db = db.Where("status = ?", status)
 	}
 	var total int64
 	if err := db.Count(&total).Error; err != nil {
@@ -111,7 +115,8 @@ func (r *coachProfileRepository) ListPublished(ctx context.Context, page, pageSi
 		pageSize = 20
 	}
 	db := r.db.WithContext(ctx).Model(&models.CoachProfile{}).
-		Where("is_published = ? AND is_active = ?", true, true)
+		Where("is_published = ? AND is_active = ? AND status = ?",
+			true, true, models.CoachProfileStatusApproved)
 	var total int64
 	if err := db.Count(&total).Error; err != nil {
 		return nil, 0, err

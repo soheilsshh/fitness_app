@@ -28,6 +28,7 @@ func NewAdminCoachController(s service.AdminCoachService) *AdminCoachController 
 // @Param page query int false "Page number"
 // @Param pageSize query int false "Page size"
 // @Param query query string false "Search by name, slug or title"
+// @Param status query string false "Filter by status (pending, reviewing, approved)"
 // @Success 200 {object} service.AdminCoachListResponse
 // @Failure 401 {object} map[string]string
 // @Failure 403 {object} map[string]string
@@ -50,7 +51,7 @@ func (h *AdminCoachController) ListCoaches(c *gin.Context) {
 		}
 	}
 
-	resp, err := h.coachService.ListCoaches(c.Request.Context(), page, pageSize, c.Query("query"))
+	resp, err := h.coachService.ListCoaches(c.Request.Context(), page, pageSize, c.Query("query"), c.Query("status"))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -94,7 +95,7 @@ func (h *AdminCoachController) GetCoachByID(c *gin.Context) {
 
 // PatchCoach godoc
 // @Summary Update coach flags (admin)
-// @Description PATCH body: isPublished?, isActive?
+// @Description PATCH body: isPublished?, isActive?, status?
 // @Tags admin-coaches
 // @Accept json
 // @Produce json
@@ -122,13 +123,21 @@ func (h *AdminCoachController) PatchCoach(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid body"})
 		return
 	}
-	if req.IsPublished == nil && req.IsActive == nil {
+	if req.IsPublished == nil && req.IsActive == nil && req.Status == nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "no fields to update"})
 		return
 	}
 
 	detail, err := h.coachService.UpdateCoach(c.Request.Context(), uint(id), &req)
 	if err != nil {
+		if err.Error() == "invalid status" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid status"})
+			return
+		}
+		if err.Error() == "coach must be approved before publishing" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
 		if errors.Is(err, service.ErrCoachProfileNotFound) || errors.Is(err, gorm.ErrRecordNotFound) {
 			c.JSON(http.StatusNotFound, gin.H{"error": "coach not found"})
 			return

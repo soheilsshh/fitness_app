@@ -42,6 +42,13 @@ const EXACT = {
   "student not found": "شاگرد یافت نشد.",
   "coach not found": "مربی یافت نشد.",
   "coach profile not found": "پروفایل مربی یافت نشد.",
+  "coach profile is incomplete":
+    "پروفایل ناقص است. لطفاً نام، کد ملی، شهر، شماره تماس و سایر اطلاعات الزامی را تکمیل کنید.",
+  "coach profile is already under review": "پروفایل شما در حال بررسی است.",
+  "coach profile is already approved": "پروفایل شما قبلاً تأیید شده است.",
+  "invalid national id": "کد ملی وارد شده معتبر نیست.",
+  "Profile is under review or incomplete":
+    "پروفایل شما در حال بررسی است یا هنوز تکمیل نشده است.",
   "achievement not found": "افتخار یافت نشد.",
   "invalid achievement type": "نوع افتخار نامعتبر است.",
   "achievement does not belong to this coach": "این مورد متعلق به شما نیست.",

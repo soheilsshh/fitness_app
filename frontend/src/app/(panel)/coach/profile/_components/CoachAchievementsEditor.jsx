@@ -249,7 +249,7 @@ function AchievementFormFields({ form, onChange, uploadingImage, onImageUpload, 
   );
 }
 
-export default function CoachAchievementsEditor() {
+export default function CoachAchievementsEditor({ readOnly = false }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -399,7 +399,7 @@ export default function CoachAchievementsEditor() {
             گواهینامه‌ها، مدال‌ها و مدارک خود را برای نمایش در لندینگ عمومی اضافه کنید.
           </CardDescription>
         </div>
-        <Button type="button" size="sm" onClick={openCreateDialog}>
+        <Button type="button" size="sm" onClick={openCreateDialog} disabled={readOnly}>
           <Plus data-icon="inline-start" />
           افزودن مورد جدید
         </Button>
@@ -422,7 +422,7 @@ export default function CoachAchievementsEditor() {
               گواهینامه‌ها، افتخارات، مدال‌ها و مدارک خود را اضافه کنید تا در صفحه
               عمومی شما نمایش داده شوند.
             </p>
-            <Button type="button" size="sm" className="mt-4" onClick={openCreateDialog}>
+            <Button type="button" size="sm" className="mt-4" onClick={openCreateDialog} disabled={readOnly}>
               <Plus data-icon="inline-start" />
               اولین مورد را اضافه کنید
             </Button>
@@ -484,30 +484,34 @@ export default function CoachAchievementsEditor() {
                     </div>
 
                     <div className="flex flex-wrap gap-2 pt-1">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openEditDialog(item)}
-                      >
-                        <Pencil data-icon="inline-start" />
-                        ویرایش
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="text-destructive hover:text-destructive"
-                        disabled={deletingId === item.id}
-                        onClick={() => handleDelete(item)}
-                      >
-                        {deletingId === item.id ? (
-                          <Loader2 className="size-4 animate-spin" data-icon="inline-start" />
-                        ) : (
-                          <Trash2 data-icon="inline-start" />
-                        )}
-                        حذف
-                      </Button>
+                      {!readOnly ? (
+                        <>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openEditDialog(item)}
+                          >
+                            <Pencil data-icon="inline-start" />
+                            ویرایش
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="text-destructive hover:text-destructive"
+                            disabled={deletingId === item.id}
+                            onClick={() => handleDelete(item)}
+                          >
+                            {deletingId === item.id ? (
+                              <Loader2 className="size-4 animate-spin" data-icon="inline-start" />
+                            ) : (
+                              <Trash2 data-icon="inline-start" />
+                            )}
+                            حذف
+                          </Button>
+                        </>
+                      ) : null}
                     </div>
                   </CardContent>
                 </Card>

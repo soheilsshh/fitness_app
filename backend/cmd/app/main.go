@@ -85,7 +85,7 @@ func NewServer(db *gorm.DB) *Server {
 	adminDashboardService := service.NewAdminDashboardService(db, subscriptionRepo, txRepo, coachProfileRepo)
 	adminStudentService := service.NewAdminStudentService(db, userRepo, subscriptionRepo, servicePlanRepo, coachProfileRepo)
 	adminPlanService := service.NewAdminPlanService(servicePlanRepo, coachProfileRepo)
-	adminCoachService := service.NewAdminCoachService(coachProfileRepo)
+	adminCoachService := service.NewAdminCoachService(coachProfileRepo, coachAchievementRepo)
 	adminExerciseService := service.NewAdminExerciseService(exerciseRepo)
 	siteSettingsService := service.NewSiteSettingsService(siteSettingsRepo)
 	feedbackService := service.NewFeedbackService(feedbackRepo)
@@ -173,8 +173,10 @@ func NewServer(db *gorm.DB) *Server {
 	coachGroup := router.Group("/coach")
 	coachGroup.Use(middleware.AuthMiddleware(), middleware.CoachOnly())
 	{
+		// Accessible before approval (profile completion flow)
 		coachGroup.GET("/profile", coachProfileController.GetProfile)
 		coachGroup.PUT("/profile", coachProfileController.UpdateProfile)
+		coachGroup.POST("/profile/submit-request", coachProfileController.SubmitRequest)
 		coachGroup.GET("/profile/slug/check", coachProfileController.CheckSlug)
 		coachGroup.POST("/profile/avatar", coachProfileController.UploadAvatar)
 		coachGroup.POST("/profile/cover", coachProfileController.UploadCover)
@@ -183,38 +185,47 @@ func NewServer(db *gorm.DB) *Server {
 		coachGroup.POST("/profile/achievements", coachAchievementController.CreateAchievement)
 		coachGroup.PUT("/profile/achievements/:id", coachAchievementController.UpdateAchievement)
 		coachGroup.DELETE("/profile/achievements/:id", coachAchievementController.DeleteAchievement)
-		coachGroup.GET("/plans", coachPlanController.ListPlans)
-		coachGroup.POST("/plans", coachPlanController.CreatePlan)
-		coachGroup.GET("/plans/:id", coachPlanController.GetPlanByID)
-		coachGroup.PATCH("/plans/:id", coachPlanController.UpdatePlan)
-		coachGroup.DELETE("/plans/:id", coachPlanController.DeletePlan)
-		coachGroup.GET("/students", coachStudentController.ListStudents)
-		coachGroup.GET("/students/:id", coachStudentController.GetStudentByID)
-		coachGroup.GET("/students/:id/programs", coachProgramController.GetStudentPrograms)
-		coachGroup.POST("/students/:id/workout-programs", coachProgramController.AssignWorkoutProgram)
-		coachGroup.PATCH("/students/:id/workout-programs/:programId", coachProgramController.UpdateWorkoutProgram)
-		coachGroup.POST("/students/:id/workout-programs/templates/:templateId", coachProgramController.AssignWorkoutFromTemplate)
-		coachGroup.POST("/students/:id/nutrition-programs", coachProgramController.AssignNutritionProgram)
-		coachGroup.PATCH("/students/:id/nutrition-programs/:programId", coachProgramController.UpdateNutritionProgram)
-		coachGroup.POST("/students/:id/nutrition-programs/templates/:templateId", coachProgramController.AssignNutritionFromTemplate)
-		coachGroup.GET("/workout-templates", coachProgramController.ListWorkoutTemplates)
-		coachGroup.GET("/nutrition-templates", coachProgramController.ListNutritionTemplates)
-		coachGroup.GET("/dashboard/stats", coachDashboardController.GetStats)
-		coachGroup.GET("/dashboard/recent-students", coachDashboardController.GetRecentStudents)
-		coachGroup.GET("/dashboard/top-students", coachDashboardController.GetTopStudents)
-		coachGroup.GET("/dashboard/progress-series", coachDashboardController.GetProgressSeries)
-		coachGroup.GET("/notifications", notificationController.ListRecent)
-		coachGroup.GET("/tickets", coachTicketController.ListTickets)
-		coachGroup.GET("/tickets/:id", coachTicketController.GetTicket)
-		coachGroup.PATCH("/tickets/:id/answer", coachTicketController.AnswerTicket)
-		coachGroup.PATCH("/tickets/:id/status", coachTicketController.UpdateTicketStatus)
-		coachGroup.GET("/exercises/categories", coachExerciseController.ListCategories)
-		coachGroup.GET("/exercises", coachExerciseController.ListExercises)
-		coachGroup.GET("/foods", coachFoodController.ListFoods)
-		coachGroup.POST("/exercises", coachExerciseController.CreateExercise)
-		coachGroup.GET("/exercises/:id", coachExerciseController.GetExerciseByID)
-		coachGroup.GET("/tracking/students", coachTrackingController.ListStudents)
-		coachGroup.GET("/tracking/students/:id", coachTrackingController.GetStudentTracking)
+	}
+
+	approvedCoachGroup := router.Group("/coach")
+	approvedCoachGroup.Use(
+		middleware.AuthMiddleware(),
+		middleware.CoachOnly(),
+		middleware.ApprovedCoachOnly(coachProfileRepo),
+	)
+	{
+		approvedCoachGroup.GET("/plans", coachPlanController.ListPlans)
+		approvedCoachGroup.POST("/plans", coachPlanController.CreatePlan)
+		approvedCoachGroup.GET("/plans/:id", coachPlanController.GetPlanByID)
+		approvedCoachGroup.PATCH("/plans/:id", coachPlanController.UpdatePlan)
+		approvedCoachGroup.DELETE("/plans/:id", coachPlanController.DeletePlan)
+		approvedCoachGroup.GET("/students", coachStudentController.ListStudents)
+		approvedCoachGroup.GET("/students/:id", coachStudentController.GetStudentByID)
+		approvedCoachGroup.GET("/students/:id/programs", coachProgramController.GetStudentPrograms)
+		approvedCoachGroup.POST("/students/:id/workout-programs", coachProgramController.AssignWorkoutProgram)
+		approvedCoachGroup.PATCH("/students/:id/workout-programs/:programId", coachProgramController.UpdateWorkoutProgram)
+		approvedCoachGroup.POST("/students/:id/workout-programs/templates/:templateId", coachProgramController.AssignWorkoutFromTemplate)
+		approvedCoachGroup.POST("/students/:id/nutrition-programs", coachProgramController.AssignNutritionProgram)
+		approvedCoachGroup.PATCH("/students/:id/nutrition-programs/:programId", coachProgramController.UpdateNutritionProgram)
+		approvedCoachGroup.POST("/students/:id/nutrition-programs/templates/:templateId", coachProgramController.AssignNutritionFromTemplate)
+		approvedCoachGroup.GET("/workout-templates", coachProgramController.ListWorkoutTemplates)
+		approvedCoachGroup.GET("/nutrition-templates", coachProgramController.ListNutritionTemplates)
+		approvedCoachGroup.GET("/dashboard/stats", coachDashboardController.GetStats)
+		approvedCoachGroup.GET("/dashboard/recent-students", coachDashboardController.GetRecentStudents)
+		approvedCoachGroup.GET("/dashboard/top-students", coachDashboardController.GetTopStudents)
+		approvedCoachGroup.GET("/dashboard/progress-series", coachDashboardController.GetProgressSeries)
+		approvedCoachGroup.GET("/notifications", notificationController.ListRecent)
+		approvedCoachGroup.GET("/tickets", coachTicketController.ListTickets)
+		approvedCoachGroup.GET("/tickets/:id", coachTicketController.GetTicket)
+		approvedCoachGroup.PATCH("/tickets/:id/answer", coachTicketController.AnswerTicket)
+		approvedCoachGroup.PATCH("/tickets/:id/status", coachTicketController.UpdateTicketStatus)
+		approvedCoachGroup.GET("/exercises/categories", coachExerciseController.ListCategories)
+		approvedCoachGroup.GET("/exercises", coachExerciseController.ListExercises)
+		approvedCoachGroup.GET("/foods", coachFoodController.ListFoods)
+		approvedCoachGroup.POST("/exercises", coachExerciseController.CreateExercise)
+		approvedCoachGroup.GET("/exercises/:id", coachExerciseController.GetExerciseByID)
+		approvedCoachGroup.GET("/tracking/students", coachTrackingController.ListStudents)
+		approvedCoachGroup.GET("/tracking/students/:id", coachTrackingController.GetStudentTracking)
 	}
 
 	// Student (user panel) routes - all protected
@@ -353,6 +364,26 @@ func runMigrations(db *gorm.DB) error {
 
 	if err := db.Exec("UPDATE users SET goals = '[]' WHERE goals IS NULL OR goals = ''").Error; err != nil {
 		log.Printf("failed backfilling users.goals: %v", err)
+		return err
+	}
+
+	if err := db.Exec(
+		"UPDATE coach_profiles SET status = ? WHERE status IS NULL OR status = ''",
+		models.CoachProfileStatusPending,
+	).Error; err != nil {
+		log.Printf("failed normalizing coach_profiles.status: %v", err)
+		return err
+	}
+
+	// Legacy coaches that were already published before approval workflow existed.
+	if err := db.Exec(
+		"UPDATE coach_profiles SET status = ? WHERE status = ? AND is_published = ? AND is_active = ?",
+		models.CoachProfileStatusApproved,
+		models.CoachProfileStatusPending,
+		true,
+		true,
+	).Error; err != nil {
+		log.Printf("failed backfilling coach_profiles.status: %v", err)
 		return err
 	}
 

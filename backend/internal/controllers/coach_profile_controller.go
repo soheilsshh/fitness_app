@@ -56,6 +56,10 @@ func (h *CoachProfileController) UpdateProfile(c *gin.Context) {
 		switch err {
 		case service.ErrSlugTaken, service.ErrInvalidSlug:
 			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+		case service.ErrInvalidCoachNationalID, service.ErrCoachProfileIncomplete:
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		case service.ErrCoachProfileAlreadyReviewing:
+			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 		case service.ErrCoachProfileNotFound:
 			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		default:
@@ -76,6 +80,29 @@ func (h *CoachProfileController) CheckSlug(c *gin.Context) {
 	resp, err := h.coachService.CheckSlugAvailable(c.Request.Context(), slugParam, userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, resp)
+}
+
+func (h *CoachProfileController) SubmitRequest(c *gin.Context) {
+	userID, err := middleware.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	resp, err := h.coachService.SubmitProfileRequest(c.Request.Context(), userID)
+	if err != nil {
+		switch err {
+		case service.ErrCoachProfileNotFound:
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		case service.ErrCoachProfileIncomplete,
+			service.ErrCoachProfileAlreadyReviewing,
+			service.ErrCoachProfileAlreadyApproved:
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
 		return
 	}
 	c.JSON(http.StatusOK, resp)

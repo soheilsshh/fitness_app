@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
@@ -13,10 +14,14 @@ import (
 )
 
 var (
-	ErrCoachProfileNotFound = errors.New("coach profile not found")
-	ErrCoachNotPublished    = errors.New("coach profile is not published")
-	ErrSlugTaken            = errors.New("slug already in use")
-	ErrInvalidSlug          = errors.New("invalid slug")
+	ErrCoachProfileNotFound       = errors.New("coach profile not found")
+	ErrCoachNotPublished          = errors.New("coach profile is not published")
+	ErrSlugTaken                  = errors.New("slug already in use")
+	ErrInvalidSlug                = errors.New("invalid slug")
+	ErrCoachProfileIncomplete     = errors.New("coach profile is incomplete")
+	ErrCoachProfileAlreadyReviewing = errors.New("coach profile is already under review")
+	ErrCoachProfileAlreadyApproved  = errors.New("coach profile is already approved")
+	ErrInvalidCoachNationalID     = errors.New("invalid national id")
 )
 
 // CoachSocialLinks groups public social/contact fields.
@@ -30,19 +35,22 @@ type CoachSocialLinks struct {
 
 // CoachProfileDTO is the authenticated coach's full profile for editing.
 type CoachProfileDTO struct {
-	UserID       uint             `json:"userId"`
-	Slug         string           `json:"slug"`
-	DisplayName  string           `json:"displayName"`
-	Title        string           `json:"title"`
-	Bio          string           `json:"bio"`
-	AboutCoach   string           `json:"aboutCoach"`
-	Specialty    string           `json:"specialty"`
-	AvatarURL    string           `json:"avatarUrl"`
-	CoverImageURL string          `json:"coverImageUrl"`
-	Social       CoachSocialLinks `json:"social"`
-	IsPublished  bool             `json:"isPublished"`
-	PublicURL    string           `json:"publicUrl"`
-	UpdatedAt    time.Time        `json:"updatedAt"`
+	UserID        uint             `json:"userId"`
+	Slug          string           `json:"slug"`
+	DisplayName   string           `json:"displayName"`
+	Title         string           `json:"title"`
+	Bio           string           `json:"bio"`
+	AboutCoach    string           `json:"aboutCoach"`
+	Specialty     string           `json:"specialty"`
+	NationalID    string           `json:"nationalId"`
+	City          string           `json:"city"`
+	Status        string           `json:"status"`
+	AvatarURL     string           `json:"avatarUrl"`
+	CoverImageURL string           `json:"coverImageUrl"`
+	Social        CoachSocialLinks `json:"social"`
+	IsPublished   bool             `json:"isPublished"`
+	PublicURL     string           `json:"publicUrl"`
+	UpdatedAt     time.Time        `json:"updatedAt"`
 }
 
 // CoachProfileUpdateRequest for PUT /coach/profile.
@@ -53,12 +61,20 @@ type CoachProfileUpdateRequest struct {
 	Bio           *string `json:"bio"`
 	AboutCoach    *string `json:"aboutCoach"`
 	Specialty     *string `json:"specialty"`
+	NationalID    *string `json:"nationalId"`
+	City          *string `json:"city"`
 	ContactPhone  *string `json:"contactPhone"`
 	Instagram     *string `json:"instagram"`
 	Telegram      *string `json:"telegram"`
 	WhatsApp      *string `json:"whatsapp"`
 	Website       *string `json:"website"`
 	IsPublished   *bool   `json:"isPublished"`
+}
+
+// CoachProfileSubmitResponse for POST /coach/profile/submit-request.
+type CoachProfileSubmitResponse struct {
+	Status  string `json:"status"`
+	Message string `json:"message"`
 }
 
 // SlugCheckResponse for GET /coach/profile/slug/check.
@@ -120,6 +136,7 @@ type CoachProfileService interface {
 	CheckSlugAvailable(ctx context.Context, slugInput string, coachUserID uint) (*SlugCheckResponse, error)
 	UpdateAvatarURL(ctx context.Context, coachUserID uint, url string) (*CoachProfileDTO, error)
 	UpdateCoverURL(ctx context.Context, coachUserID uint, url string) (*CoachProfileDTO, error)
+	SubmitProfileRequest(ctx context.Context, coachUserID uint) (*CoachProfileSubmitResponse, error)
 	GetPublicProfile(ctx context.Context, slug string) (*PublicCoachDTO, error)
 	ListPublicPlans(ctx context.Context, slug string) ([]PublicPlanDTO, error)
 	ListPublishedCoaches(ctx context.Context, page, pageSize int) (*PublicCoachListResponse, error)
@@ -163,6 +180,10 @@ func (s *coachProfileService) UpdateProfile(ctx context.Context, coachUserID uin
 		return nil, err
 	}
 
+	if profile.Status == models.CoachProfileStatusReviewing {
+		return nil, ErrCoachProfileAlreadyReviewing
+	}
+
 	if req.Slug != nil {
 		normalized := slug.Normalize(*req.Slug)
 		if normalized == "" {
@@ -192,6 +213,16 @@ func (s *coachProfileService) UpdateProfile(ctx context.Context, coachUserID uin
 	if req.Specialty != nil {
 		profile.Specialty = *req.Specialty
 	}
+	if req.NationalID != nil {
+		nid := strings.TrimSpace(*req.NationalID)
+		if nid != "" && !models.IsValidIranNationalID(nid) {
+			return nil, ErrInvalidCoachNationalID
+		}
+		profile.NationalID = nid
+	}
+	if req.City != nil {
+		profile.City = strings.TrimSpace(*req.City)
+	}
 	if req.ContactPhone != nil {
 		profile.ContactPhone = *req.ContactPhone
 	}
@@ -208,6 +239,9 @@ func (s *coachProfileService) UpdateProfile(ctx context.Context, coachUserID uin
 		profile.Website = *req.Website
 	}
 	if req.IsPublished != nil {
+		if profile.Status != models.CoachProfileStatusApproved {
+			return nil, ErrCoachProfileIncomplete
+		}
 		profile.IsPublished = *req.IsPublished
 	}
 
@@ -215,6 +249,58 @@ func (s *coachProfileService) UpdateProfile(ctx context.Context, coachUserID uin
 		return nil, err
 	}
 	return toCoachProfileDTO(profile), nil
+}
+
+func (s *coachProfileService) SubmitProfileRequest(ctx context.Context, coachUserID uint) (*CoachProfileSubmitResponse, error) {
+	profile, err := s.coachRepo.FindByUserID(ctx, coachUserID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrCoachProfileNotFound
+		}
+		return nil, err
+	}
+
+	switch profile.Status {
+	case models.CoachProfileStatusReviewing:
+		return nil, ErrCoachProfileAlreadyReviewing
+	case models.CoachProfileStatusApproved:
+		return nil, ErrCoachProfileAlreadyApproved
+	}
+
+	if missing := coachProfileSubmissionMissingFields(profile); len(missing) > 0 {
+		return nil, ErrCoachProfileIncomplete
+	}
+
+	profile.Status = models.CoachProfileStatusReviewing
+	if err := s.coachRepo.Update(ctx, profile); err != nil {
+		return nil, err
+	}
+
+	return &CoachProfileSubmitResponse{
+		Status:  profile.Status,
+		Message: "profile submitted for admin review",
+	}, nil
+}
+
+func coachProfileSubmissionMissingFields(p *models.CoachProfile) []string {
+	missing := make([]string, 0, 5)
+	if strings.TrimSpace(p.DisplayName) == "" {
+		missing = append(missing, "displayName")
+	}
+	if strings.TrimSpace(p.Title) == "" {
+		missing = append(missing, "title")
+	}
+	if strings.TrimSpace(p.City) == "" {
+		missing = append(missing, "city")
+	}
+	if strings.TrimSpace(p.ContactPhone) == "" {
+		missing = append(missing, "contactPhone")
+	}
+	nid := strings.TrimSpace(p.NationalID)
+	if nid == "" || !models.IsValidIranNationalID(nid) {
+		missing = append(missing, "nationalId")
+	}
+	return missing
 }
 
 func (s *coachProfileService) CheckSlugAvailable(ctx context.Context, slugInput string, coachUserID uint) (*SlugCheckResponse, error) {
@@ -328,6 +414,10 @@ func (s *coachProfileService) ListPublicPlans(ctx context.Context, slugParam str
 }
 
 func toCoachProfileDTO(p *models.CoachProfile) *CoachProfileDTO {
+	status := p.Status
+	if status == "" {
+		status = models.CoachProfileStatusPending
+	}
 	return &CoachProfileDTO{
 		UserID:        p.UserID,
 		Slug:          p.Slug,
@@ -336,6 +426,9 @@ func toCoachProfileDTO(p *models.CoachProfile) *CoachProfileDTO {
 		Bio:           p.Bio,
 		AboutCoach:    p.AboutCoach,
 		Specialty:     p.Specialty,
+		NationalID:    p.NationalID,
+		City:          p.City,
+		Status:        status,
 		AvatarURL:     p.AvatarURL,
 		CoverImageURL: p.CoverImageURL,
 		Social: CoachSocialLinks{
