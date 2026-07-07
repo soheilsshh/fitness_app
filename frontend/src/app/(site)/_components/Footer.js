@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { FiInstagram, FiSend, FiMail } from "react-icons/fi";
+import Enamad from "@/components/enamad";
 
 const QUICK_LINKS = [
   { id: "home", label: "صفحه اصلی" },
@@ -82,6 +83,7 @@ export default function Footer() {
         <p className="text-sm text-muted-foreground">
           © {new Date().getFullYear()} فیتینو. تمامی حقوق برای آکادمی مجسمه‌سازی بدن محفوظ است.
         </p>
+        <Enamad />
       </div>
     </footer>
   );

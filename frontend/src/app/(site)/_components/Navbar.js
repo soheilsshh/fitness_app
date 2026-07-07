@@ -4,13 +4,12 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { FiMenu, FiUser, FiLogOut } from "react-icons/fi";
-import { FaDumbbell } from "react-icons/fa";
 import MobileDrawer from "./MobileDrawer";
 import CartButton from "./CartButton";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { getAuthSession, logout } from "@/lib/auth/session";
 import { getDashboardPath } from "@/lib/auth/roles";
-import { Dumbbell } from "lucide-react";
+import { Logo } from "@/components/Logo";
 
 const NAV_ITEMS = [
   { id: "programs", label: "برنامه‌ها", type: "section" },
@@ -92,7 +91,7 @@ export default function Navbar() {
 
             <Link href="/" className="flex min-w-0 items-center gap-2">
               <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 ring-1 ring-border">
-                <Dumbbell className="text-primary rotate-45" />
+                <Logo />
               </span>
               <span className="hidden text-2xl font-extrabold gradient-text sm:block">Fitino</span>
             </Link>

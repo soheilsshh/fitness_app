@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { FaDumbbell } from "react-icons/fa";
 import Footer from "../../_components/Footer";
+import { Logo } from "@/components/Logo";
 
 export default function AuthShell({ children }) {
   return (
@@ -24,7 +25,7 @@ export default function AuthShell({ children }) {
 
             <div className="flex items-center gap-2">
               <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-surface-tint/25 to-secondary-container/15 ring-1 ring-outline-variant/30">
-                <FaDumbbell className="text-surface-tint" />
+                <Logo />
               </span>
               <div className="leading-tight">
                 <div className="text-sm font-extrabold">Fitino</div>

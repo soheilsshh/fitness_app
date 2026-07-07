@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DumbbellIcon } from "lucide-react";
+import { Logo } from "@/components/Logo";
 
 function NavUserPlaceholder() {
   return (
@@ -65,7 +66,7 @@ export function RoleSidebar({
             >
               <Link href={brand?.href || "/"}>
                 <span className="flex size-8 items-center justify-center rounded-lg bg-primary/15 text-primary ring-1 ring-sidebar-border">
-                  <BrandIcon className="size-4" />
+                  <Logo />
                 </span>
                 <div className="grid flex-1 text-start text-sm leading-tight">
                   <span className="truncate font-semibold">
