@@ -30,6 +30,8 @@ const COACH_PANEL_SEGMENTS = new Set([
 const PROFILE_HREF = "/coach/profile";
 
 function isCoachPanelPath(pathname) {
+  // During static export prerender, usePathname() can be empty; this layout only serves /coach.
+  if (!pathname) return true;
   if (pathname === "/coach") return true;
   if (!pathname?.startsWith("/coach/")) return false;
   const segment = pathname.split("/")[2];

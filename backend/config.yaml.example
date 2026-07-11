@@ -62,7 +62,7 @@ funnel:
 
 sms:
   # Kavenegar Verify Lookup (اعتبارسنجی) — https://kavenegar.com
-  # Plain API key from panel (not hex). Keys containing "/" are supported.
+  # API key exactly as shown in Kavenegar panel (do not decode or modify).
   # Originator is NOT needed for verify/lookup — Kavenegar picks the sender.
   api_key: "YOUR_KAVENEGAR_API_KEY"
   originator: ""
