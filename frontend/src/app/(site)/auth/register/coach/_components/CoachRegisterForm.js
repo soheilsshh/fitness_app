@@ -18,6 +18,7 @@ import { api } from "@/lib/axios/client";
 import { persistAuthSession } from "@/lib/auth/session";
 import {
   isValidIranPhone,
+  normalizeIranPhone,
   toastError,
   toastSuccess,
 } from "../../../_components/helpers";
@@ -63,7 +64,8 @@ export default function CoachRegisterForm() {
     if (!form.name.trim() || !form.phone.trim() || !form.password.trim()) {
       return toastError("اطلاعات ناقص", "نام، موبایل و رمز عبور را پر کنید");
     }
-    if (!isValidIranPhone(form.phone.trim())) {
+    const phone = normalizeIranPhone(form.phone);
+    if (!isValidIranPhone(phone)) {
       return toastError("شماره نامعتبر", "شماره موبایل را با فرمت 09xxxxxxxxx وارد کنید.");
     }
     if (form.password.length < 6) {
@@ -76,7 +78,7 @@ export default function CoachRegisterForm() {
         name: form.name.trim(),
         displayName: form.displayName.trim() || form.name.trim(),
         slug: form.slug.trim() || undefined,
-        phone: form.phone.trim(),
+        phone,
         password: form.password,
       });
       persistAuthSession(res.data);
@@ -160,7 +162,10 @@ export default function CoachRegisterForm() {
                   id={`${formId}-phone`}
                   value={form.phone}
                   onChange={(e) =>
-                    setForm((p) => ({ ...p, phone: e.target.value.trim() }))
+                    setForm((p) => ({
+                      ...p,
+                      phone: normalizeIranPhone(e.target.value),
+                    }))
                   }
                   placeholder="09xxxxxxxxx"
                   className={cn(inputClass, "tracking-wide")}

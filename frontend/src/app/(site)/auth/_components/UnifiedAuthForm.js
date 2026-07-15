@@ -19,6 +19,8 @@ import {
 import {
   isValidIranPhone,
   isValidOtp,
+  normalizeIranPhone,
+  toEnglishDigits,
   toastError,
   toastSuccess,
 } from "./helpers";
@@ -112,13 +114,15 @@ export default function UnifiedAuthForm() {
 
   const onContinueWithPhone = async (e) => {
     e?.preventDefault?.();
-    if (!isValidIranPhone(phone)) {
+    const normalizedPhone = normalizeIranPhone(phone);
+    if (!isValidIranPhone(normalizedPhone)) {
       return toastError("شماره نامعتبر", "شماره موبایل را با فرمت 09xxxxxxxxx وارد کنید.");
     }
+    setPhone(normalizedPhone);
 
     setIsChecking(true);
     try {
-      const res = await api.post("/auth/check-phone", { phone });
+      const res = await api.post("/auth/check-phone", { phone: normalizedPhone });
       const exists = Boolean(res.data?.exists);
       resetBranchState();
       setStep(exists ? "login" : "register");
@@ -132,13 +136,15 @@ export default function UnifiedAuthForm() {
   };
 
   const onSendOtp = async () => {
-    if (!isValidIranPhone(phone)) {
+    const normalizedPhone = normalizeIranPhone(phone);
+    if (!isValidIranPhone(normalizedPhone)) {
       return toastError("شماره نامعتبر", "شماره موبایل را درست وارد کنید.");
     }
+    setPhone(normalizedPhone);
 
     setIsSendingOtp(true);
     try {
-      await api.post("/auth/otp/request", { phone });
+      await api.post("/auth/otp/request", { phone: normalizedPhone });
       setOtpSent(true);
       setOtp("");
       startCooldown();
@@ -163,7 +169,7 @@ export default function UnifiedAuthForm() {
     setIsSubmitting(true);
     try {
       const res = await api.post("/auth/login/password", {
-        identifier: phone,
+        identifier: normalizeIranPhone(phone),
         password,
       });
       handleAuthSuccess(res.data, "ورود موفق");
@@ -180,13 +186,17 @@ export default function UnifiedAuthForm() {
     if (!otpSent) {
       return toastError("کد ارسال نشده", "ابتدا کد را دریافت کنید.");
     }
-    if (!isValidOtp(otp)) {
+    const code = toEnglishDigits(otp).trim();
+    if (!isValidOtp(code)) {
       return toastError("کد نامعتبر", "کد را به صورت عددی وارد کنید.");
     }
 
     setIsSubmitting(true);
     try {
-      const res = await api.post("/auth/otp/verify", { phone, code: otp });
+      const res = await api.post("/auth/otp/verify", {
+        phone: normalizeIranPhone(phone),
+        code,
+      });
       handleAuthSuccess(res.data, "ورود موفق");
     } catch (error) {
       const msg =
@@ -202,7 +212,8 @@ export default function UnifiedAuthForm() {
     if (!otpSent) {
       return toastError("کد ارسال نشده", "ابتدا کد تایید را دریافت کنید.");
     }
-    if (!isValidOtp(otp)) {
+    const code = toEnglishDigits(otp).trim();
+    if (!isValidOtp(code)) {
       return toastError("کد نامعتبر", "کد تایید را صحیح وارد کنید.");
     }
     if (!firstName.trim() || !lastName.trim()) {
@@ -218,9 +229,9 @@ export default function UnifiedAuthForm() {
     try {
       const res = await api.post("/auth/register", {
         name,
-        phone,
+        phone: normalizeIranPhone(phone),
         password,
-        code: otp,
+        code,
       });
       handleAuthSuccess(res.data, "ثبت‌نام موفق");
     } catch (error) {
@@ -250,13 +261,13 @@ export default function UnifiedAuthForm() {
 
   return (
     <Card className="rounded-2xl border-0 bg-card/90 shadow-lg shadow-black/5 ring-1 ring-border/60 backdrop-blur-sm">
-      <CardHeader className="space-y-4 pb-2">
+      <CardHeader className="space-y-4 pb-2 text-center">
         <StepIndicator step={step} />
         <div className="space-y-1.5">
           <CardTitle className="font-iranianSansBlack text-xl sm:text-2xl">
             {current.title}
           </CardTitle>
-          <CardDescription className="text-pretty text-sm leading-relaxed">
+          <CardDescription className="mx-auto max-w-sm text-pretty text-sm leading-relaxed">
             {current.description}
           </CardDescription>
         </div>
@@ -548,12 +559,15 @@ function StepIndicator({ step }) {
   const activeIndex = step === "phone" ? 0 : 1;
 
   return (
-    <nav aria-label="مراحل احراز هویت" className="flex items-center gap-2">
+    <nav
+      aria-label="مراحل احراز هویت"
+      className="flex items-center justify-center gap-2"
+    >
       {steps.map((s, index) => {
         const active = index === activeIndex;
         const done = index < activeIndex;
         return (
-          <div key={s.id} className="flex flex-1 items-center gap-2">
+          <div key={s.id} className="flex items-center gap-2">
             <div
               className={cn(
                 "flex h-9 min-w-9 items-center justify-center rounded-full px-3 text-xs font-iranianSansMedium transition-colors duration-200",
@@ -568,7 +582,7 @@ function StepIndicator({ step }) {
             {index < steps.length - 1 && (
               <div
                 className={cn(
-                  "h-px flex-1 transition-colors duration-200",
+                  "h-px w-10 transition-colors duration-200 sm:w-14",
                   done ? "bg-primary/40" : "bg-border"
                 )}
               />
@@ -614,7 +628,7 @@ function PhoneField({ id, phone, onChange, disabled, autoFocus }) {
         <Input
           id={id}
           value={phone}
-          onChange={(e) => onChange(e.target.value.trim())}
+          onChange={(e) => onChange(normalizeIranPhone(e.target.value))}
           placeholder="09xxxxxxxxx"
           className={cn(inputClass, "tracking-wide")}
           inputMode="numeric"
@@ -638,7 +652,7 @@ function OtpField({ id, value, onChange, disabled, autoFocus }) {
         <Input
           id={id}
           value={value}
-          onChange={(e) => onChange(e.target.value.trim())}
+          onChange={(e) => onChange(toEnglishDigits(e.target.value).trim())}
           placeholder="کد پیامک‌شده"
           className={cn(inputClass, "tracking-[0.25em]")}
           inputMode="numeric"

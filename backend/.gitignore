@@ -10,6 +10,7 @@
 
 # Output of the go build tool
 *.out
+/server
 
 # Go workspace files
 go.work

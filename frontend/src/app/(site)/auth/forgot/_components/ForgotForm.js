@@ -14,6 +14,8 @@ import {
 import {
   isValidIranPhone,
   isValidOtp,
+  normalizeIranPhone,
+  toEnglishDigits,
   toastError,
   toastSuccess,
 } from "../../_components/helpers";
@@ -69,13 +71,15 @@ export default function ForgotForm() {
   };
 
   const sendOtp = async () => {
-    if (!isValidIranPhone(phone)) {
+    const normalizedPhone = normalizeIranPhone(phone);
+    if (!isValidIranPhone(normalizedPhone)) {
       return toastError("شماره نامعتبر", "شماره موبایل را با فرمت 09xxxxxxxxx وارد کنید.");
     }
+    setPhone(normalizedPhone);
 
     setIsSendingOtp(true);
     try {
-      await api.post("/auth/forgot/send-otp", { phone });
+      await api.post("/auth/forgot/send-otp", { phone: normalizedPhone });
       setOtpSent(true);
       setPhoneLocked(true);
       setOtp("");
@@ -94,7 +98,9 @@ export default function ForgotForm() {
 
   const verifyOtp = async () => {
     if (!otpSent) return toastError("کد ارسال نشده", "ابتدا کد را دریافت کنید.");
-    if (!isValidOtp(otp)) return toastError("کد نامعتبر", "کد را صحیح وارد کنید.");
+    const code = toEnglishDigits(otp).trim();
+    if (!isValidOtp(code)) return toastError("کد نامعتبر", "کد را صحیح وارد کنید.");
+    setOtp(code);
     setOtpVerified(true);
     toastSuccess("تایید شد", "حالا رمز جدید را تعیین کنید.");
   };
@@ -108,8 +114,8 @@ export default function ForgotForm() {
     setIsResetting(true);
     try {
       await api.post("/auth/reset-password", {
-        phone,
-        code: otp,
+        phone: normalizeIranPhone(phone),
+        code: toEnglishDigits(otp).trim(),
         new_password: newPass,
       });
       toastSuccess("موفق", "رمز عبور با موفقیت تغییر کرد.");
@@ -143,7 +149,7 @@ export default function ForgotForm() {
                 <Input
                   id={`${formId}-phone`}
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value.trim())}
+                  onChange={(e) => setPhone(normalizeIranPhone(e.target.value))}
                   placeholder="09xxxxxxxxx"
                   className={cn(inputClass, "tracking-wide")}
                   inputMode="numeric"
@@ -193,7 +199,7 @@ export default function ForgotForm() {
                   <Input
                     id={`${formId}-otp`}
                     value={otp}
-                    onChange={(e) => setOtp(e.target.value.trim())}
+                    onChange={(e) => setOtp(toEnglishDigits(e.target.value).trim())}
                     placeholder="کد پیامک‌شده"
                     className={cn(inputClass, "tracking-[0.25em]")}
                     inputMode="numeric"

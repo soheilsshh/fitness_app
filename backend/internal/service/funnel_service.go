@@ -15,6 +15,7 @@ import (
 	"github.com/yourusername/fitness-management/config"
 
 	"github.com/yourusername/fitness-management/internal/models"
+	"github.com/yourusername/fitness-management/internal/pkg/digits"
 	"github.com/yourusername/fitness-management/internal/repository"
 )
 
@@ -464,10 +465,7 @@ func generateFunnelTrackingCode() string {
 }
 
 func normalizePhone(phone string) string {
-	p := strings.TrimSpace(phone)
-	p = strings.ReplaceAll(p, " ", "")
-	p = strings.ReplaceAll(p, "-", "")
-	return p
+	return digits.NormalizePhone(phone)
 }
 
 func isValidPrimaryGoal(v string) bool {

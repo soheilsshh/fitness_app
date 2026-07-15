@@ -15,6 +15,7 @@ import (
 	"github.com/yourusername/fitness-management/config"
 	"github.com/yourusername/fitness-management/internal/auth"
 	"github.com/yourusername/fitness-management/internal/models"
+	"github.com/yourusername/fitness-management/internal/pkg/digits"
 	"github.com/yourusername/fitness-management/internal/pkg/slug"
 	"github.com/yourusername/fitness-management/internal/repository"
 )
@@ -96,7 +97,7 @@ func NewAuthService(
 }
 
 func (s *authService) CheckPhone(ctx context.Context, phone string) (bool, error) {
-	phone = strings.TrimSpace(phone)
+	phone = digits.NormalizePhone(phone)
 	if phone == "" {
 		return false, errors.New("phone is required")
 	}
@@ -113,8 +114,8 @@ func (s *authService) CheckPhone(ctx context.Context, phone string) (bool, error
 func (s *authService) Register(ctx context.Context, name, email, phone, password, otpCode string) (*AuthResult, error) {
 	name = strings.TrimSpace(name)
 	email = strings.TrimSpace(strings.ToLower(email))
-	phone = strings.TrimSpace(phone)
-	otpCode = strings.TrimSpace(otpCode)
+	phone = digits.NormalizePhone(phone)
+	otpCode = digits.ToEnglish(strings.TrimSpace(otpCode))
 
 	if name == "" || phone == "" || password == "" {
 		return nil, errors.New("name, phone and password are required")
@@ -165,7 +166,7 @@ func (s *authService) Register(ctx context.Context, name, email, phone, password
 func (s *authService) RegisterCoach(ctx context.Context, name, email, phone, password, displayName, slugInput string) (*AuthResult, error) {
 	name = strings.TrimSpace(name)
 	email = strings.TrimSpace(strings.ToLower(email))
-	phone = strings.TrimSpace(phone)
+	phone = digits.NormalizePhone(phone)
 	displayName = strings.TrimSpace(displayName)
 	if displayName == "" {
 		displayName = name
@@ -234,7 +235,7 @@ func (s *authService) RegisterCoach(ctx context.Context, name, email, phone, pas
 }
 
 func (s *authService) LoginWithPassword(ctx context.Context, identifier, password string) (*AuthResult, error) {
-	identifier = strings.TrimSpace(strings.ToLower(identifier))
+	identifier = digits.ToEnglish(strings.TrimSpace(strings.ToLower(identifier)))
 	if identifier == "" || password == "" {
 		return nil, ErrInvalidCredentials
 	}
@@ -255,7 +256,7 @@ func (s *authService) LoginWithPassword(ctx context.Context, identifier, passwor
 }
 
 func (s *authService) RequestOTP(ctx context.Context, phone string) error {
-	phone = strings.TrimSpace(phone)
+	phone = digits.NormalizePhone(phone)
 	if phone == "" {
 		return errors.New("phone is required")
 	}
@@ -263,8 +264,8 @@ func (s *authService) RequestOTP(ctx context.Context, phone string) error {
 }
 
 func (s *authService) VerifyOTP(ctx context.Context, phone, code string) (*AuthResult, error) {
-	phone = strings.TrimSpace(phone)
-	code = strings.TrimSpace(code)
+	phone = digits.NormalizePhone(phone)
+	code = digits.ToEnglish(strings.TrimSpace(code))
 	if phone == "" || code == "" {
 		return nil, ErrInvalidOTP
 	}
@@ -356,7 +357,7 @@ func (s *authService) ChangePassword(ctx context.Context, userID uint, currentPa
 }
 
 func (s *authService) RequestPasswordResetOTP(ctx context.Context, phone string) error {
-	phone = strings.TrimSpace(phone)
+	phone = digits.NormalizePhone(phone)
 	if phone == "" {
 		return errors.New("phone is required")
 	}
@@ -364,8 +365,8 @@ func (s *authService) RequestPasswordResetOTP(ctx context.Context, phone string)
 }
 
 func (s *authService) ResetPasswordWithOTP(ctx context.Context, phone, code, newPassword string) error {
-	phone = strings.TrimSpace(phone)
-	code = strings.TrimSpace(code)
+	phone = digits.NormalizePhone(phone)
+	code = digits.ToEnglish(strings.TrimSpace(code))
 	newPassword = strings.TrimSpace(newPassword)
 
 	if phone == "" || code == "" {

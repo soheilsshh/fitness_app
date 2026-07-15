@@ -131,10 +131,18 @@ func loadConfig() error {
 	}
 
 	applyLegacyOverrides(&cfg)
+	// Viper often keeps YAML when an env var is set to empty; honor explicit empties.
+	applyExplicitEnvOverrides(&cfg)
 	normalize(&cfg)
 	syncProcessEnv(&cfg)
 
 	return nil
+}
+
+func applyExplicitEnvOverrides(c *Config) {
+	if v, ok := os.LookupEnv("SMS_API_KEY"); ok {
+		c.SMS.APIKey = v
+	}
 }
 
 // syncProcessEnv mirrors selected yaml values into the process environment so

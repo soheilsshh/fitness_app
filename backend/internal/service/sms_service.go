@@ -86,7 +86,8 @@ func SendVerification(receptor, token, template string) (*kavenegarResponse, err
 	cfg := config.Get().SMS
 	apiKey := normalizeKavenegarAPIKey(cfg.APIKey)
 	if apiKey == "" {
-		log.Printf("sms: api_key not configured — skipping Kavenegar (receptor=%s template=%s)", receptor, template)
+		// Local/dev: no provider call; print OTP so flows can be tested without SMS.
+		log.Printf("sms: api_key not configured — OTP code=%s receptor=%s template=%s", token, receptor, template)
 		return &kavenegarResponse{Return: kavenegarReturn{Status: 200, Message: "dev log only"}}, nil
 	}
 

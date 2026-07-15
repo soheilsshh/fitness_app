@@ -16,12 +16,18 @@ function formatToman(n) {
   return `${num.toLocaleString("fa-IR")} تومان`;
 }
 
-export default function CartButton() {
+export default function CartButton({ open: openProp, onOpenChange } = {}) {
   const count = useAppSelector(selectCartCount);
   const items = useAppSelector(selectCartItems);
   const total = useAppSelector(selectCartTotal);
 
-  const [open, setOpen] = useState(false);
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
+  const controlled = typeof openProp === "boolean";
+  const open = controlled ? openProp : uncontrolledOpen;
+  const setOpen = (next) => {
+    if (!controlled) setUncontrolledOpen(next);
+    onOpenChange?.(next);
+  };
   const [hover, setHover] = useState(false);
 
   const topItems = useMemo(() => items.slice(0, 4), [items]);
@@ -35,9 +41,14 @@ export default function CartButton() {
       >
         <button
           type="button"
-          onClick={() => setOpen(true)}
-          className="relative inline-flex h-11 w-11 items-center justify-center rounded-full text-foreground/80 transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          aria-label="سبد خرید"
+          onClick={() => setOpen(!open)}
+          className={`relative inline-flex h-11 w-11 items-center justify-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+            open
+              ? "bg-muted text-foreground"
+              : "text-foreground/80 hover:bg-muted hover:text-foreground"
+          }`}
+          aria-label={open ? "بستن سبد خرید" : "سبد خرید"}
+          aria-expanded={open}
           title="سبد خرید"
         >
           <FiShoppingCart className="text-xl" />

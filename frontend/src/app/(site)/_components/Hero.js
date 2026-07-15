@@ -19,10 +19,18 @@ const DEFAULT_FEATURES = [
   "دسترسی نامحدود",
 ];
 
+function resolveHeroFeatures(items) {
+  if (!Array.isArray(items) || items.length < 3) return DEFAULT_FEATURES;
+  const cleaned = items.map((t) => String(t || "").trim()).filter(Boolean);
+  // Guard against accidental CMS wipe / tiny placeholders from bad saves.
+  if (cleaned.length < 3 || cleaned.every((t) => t.length < 4)) {
+    return DEFAULT_FEATURES;
+  }
+  return cleaned;
+}
+
 export default function Hero({ settings }) {
-  const FEATURES = settings?.featureBullets?.items?.length
-    ? settings.featureBullets.items
-    : DEFAULT_FEATURES;
+  const FEATURES = resolveHeroFeatures(settings?.featureBullets?.items);
 
   return (
     <section

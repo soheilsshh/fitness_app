@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { FiMenu, FiLogOut } from "react-icons/fi";
+import { FiMenu, FiLogOut, FiUser } from "react-icons/fi";
 import MobileDrawer from "./MobileDrawer";
 import CartButton from "./CartButton";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -25,10 +25,14 @@ const iconBtn =
   "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-foreground/80 transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 export default function Navbar() {
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  // Mutual exclusion: only one top sheet at a time ('menu' | 'cart' | null)
+  const [openSheet, setOpenSheet] = useState(null);
   const [scrolled, setScrolled] = useState(false);
   const [session, setSession] = useState(null);
   const [showCoachesSection, setShowCoachesSection] = useState(false);
+
+  const drawerOpen = openSheet === "menu";
+  const cartOpen = openSheet === "cart";
 
   const pathname = usePathname();
   const router = useRouter();
@@ -74,6 +78,24 @@ export default function Navbar() {
     el.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
+  const goToHomeTop = (e) => {
+    // Always land on hero / top of the page (especially on mobile).
+    if (pathname === "/" || pathname === "") {
+      e.preventDefault();
+      const home = document.getElementById("home");
+      if (home) {
+        home.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      if (window.location.hash) {
+        window.history.replaceState(null, "", "/");
+      }
+      return;
+    }
+    // Let Link navigate; hash ensures hero after load.
+  };
+
   const onNavClick = (item) => {
     if (item.type === "link" && item.href) {
       router.push(item.href);
@@ -95,17 +117,19 @@ export default function Navbar() {
     <>
       <header
         className={cn(
-          "fixed inset-x-0 top-0 z-100 transition-[background-color,box-shadow,border-color] duration-300",
+          "fixed inset-x-0 top-0 z-[130] transition-[background-color,box-shadow,border-color] duration-300",
           scrolled
             ? "border-b border-border/70 bg-background/85 shadow-sm backdrop-blur-xl dark:bg-background/80"
             : "border-b border-transparent bg-background/55 backdrop-blur-md"
         )}
       >
         <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:h-[4.25rem] sm:px-6 lg:px-8">
-          {/* Brand */}
+          {/* Brand → hero / top of home */}
           <Link
-            href="/"
+            href="/#home"
+            onClick={goToHomeTop}
             className="group flex min-w-0 items-center gap-2.5 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            aria-label="فیتینو — بازگشت به بخش اصلی"
           >
             <Logo className="h-9 w-9 shrink-0 object-contain sm:h-10 sm:w-10" />
             <span className="font-iranianSansBlack text-xl tracking-tight text-foreground sm:text-2xl">
@@ -154,7 +178,24 @@ export default function Navbar() {
           <div className="ms-auto flex shrink-0 items-center gap-1 sm:gap-1.5">
             <ThemeToggle buttonClassName="h-11 w-11 rounded-full border-0 bg-transparent shadow-none hover:bg-muted" />
 
-            <CartButton />
+            <CartButton
+              open={cartOpen}
+              onOpenChange={(open) => setOpenSheet(open ? "cart" : null)}
+            />
+
+            {/* Mobile: always-visible profile / auth entry */}
+            <Link
+              href={isAuthed ? panelHref : "/auth"}
+              className={cn(
+                iconBtn,
+                "lg:hidden",
+                isAuthed && "bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary"
+              )}
+              aria-label={isAuthed ? `حساب من — ${displayName}` : "ورود / ثبت‌نام"}
+              title={isAuthed ? displayName : "ورود / ثبت‌نام"}
+            >
+              <FiUser className="text-xl" />
+            </Link>
 
             {isAuthed ? (
               <div className="hidden items-center gap-1 lg:flex">
@@ -196,9 +237,13 @@ export default function Navbar() {
 
             <button
               type="button"
-              className={cn(iconBtn, "lg:hidden")}
-              onClick={() => setDrawerOpen(true)}
-              aria-label="باز کردن منو"
+              className={cn(
+                iconBtn,
+                "lg:hidden",
+                drawerOpen && "bg-muted text-foreground"
+              )}
+              onClick={() => setOpenSheet((s) => (s === "menu" ? null : "menu"))}
+              aria-label={drawerOpen ? "بستن منو" : "باز کردن منو"}
               aria-expanded={drawerOpen}
               aria-controls="site-mobile-drawer"
             >
@@ -212,11 +257,11 @@ export default function Navbar() {
 
       <MobileDrawer
         open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
+        onClose={() => setOpenSheet(null)}
         items={navItems}
         pathname={pathname}
         onItemClick={(item) => {
-          setDrawerOpen(false);
+          setOpenSheet(null);
           setTimeout(() => onNavClick(item), 60);
         }}
         session={session}

@@ -12,7 +12,11 @@ import {
   User,
 } from "lucide-react";
 import { api } from "@/lib/axios/client";
-import { isValidIranPhone, toastError } from "@/app/(site)/auth/_components/helpers";
+import {
+  isValidIranPhone,
+  normalizeIranPhone,
+  toastError,
+} from "@/app/(site)/auth/_components/helpers";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -153,9 +157,11 @@ export default function LeadFunnelWizard() {
     if (!firstName.trim() || !lastName.trim()) {
       return toastError("اطلاعات ناقص", "نام و نام خانوادگی را وارد کنید.");
     }
-    if (!isValidIranPhone(phone)) {
+    const normalizedPhone = normalizeIranPhone(phone);
+    if (!isValidIranPhone(normalizedPhone)) {
       return toastError("شماره نامعتبر", "شماره موبایل را با فرمت 09xxxxxxxxx وارد کنید.");
     }
+    setPhone(normalizedPhone);
     if (!analysis) return;
 
     setSubmitting(true);
@@ -163,7 +169,7 @@ export default function LeadFunnelWizard() {
       const res = await api.post("/public/funnel/leads", {
         firstName: firstName.trim(),
         lastName: lastName.trim(),
-        phone: phone.trim(),
+        phone: normalizedPhone,
         primaryGoal: answers.primaryGoal,
         activityLevel: answers.activityLevel,
         trainingEnv: answers.trainingEnv,
@@ -523,7 +529,7 @@ export default function LeadFunnelWizard() {
                         inputMode="numeric"
                         dir="ltr"
                         value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
+                        onChange={(e) => setPhone(normalizeIranPhone(e.target.value))}
                         placeholder="09123456789"
                         className="h-11 text-start"
                         required
