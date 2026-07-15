@@ -423,7 +423,7 @@ export default function LeadFunnelWizard() {
                     scenarioColor === "rose" &&
                       "from-rose-500/20 via-rose-500/10 to-transparent",
                     scenarioColor === "emerald" &&
-                      "from-emerald-500/20 via-emerald-500/10 to-transparent",
+                      "from-teal-500/20 via-teal-500/10 to-transparent",
                     scenarioColor === "sky" &&
                       "from-sky-500/20 via-sky-500/10 to-transparent"
                   )}
@@ -552,8 +552,8 @@ export default function LeadFunnelWizard() {
                         </>
                       ) : (
                         <>
-                          تأیید اطلاعات و رزرو پکیج مربیگری اختصاصی
                           <ArrowLeft className="size-5" />
+                          تأیید اطلاعات و رزرو پکیج مربیگری اختصاصی
                         </>
                       )}
                     </Button>

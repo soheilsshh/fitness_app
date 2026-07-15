@@ -11,12 +11,13 @@ import (
 
 // SiteSettingsDTO matches frontend defaultSiteSettings (admin + public GET).
 type SiteSettingsDTO struct {
-	HeroImage       *HeroImageDTO       `json:"heroImage"`
-	FeatureBullets  FeatureBulletsDTO   `json:"featureBullets"`
-	Stats           []StatItemDTO       `json:"stats"`
-	Steps           []StepItemDTO       `json:"steps"`
-	Pillars         []PillarItemDTO     `json:"pillars"`
-	ContactInfo     ContactInfoDTO      `json:"contactInfo"`
+	HeroImage          *HeroImageDTO     `json:"heroImage"`
+	ShowCoachesSection bool              `json:"showCoachesSection"`
+	FeatureBullets     FeatureBulletsDTO `json:"featureBullets"`
+	Stats              []StatItemDTO     `json:"stats"`
+	Steps              []StepItemDTO     `json:"steps"`
+	Pillars            []PillarItemDTO   `json:"pillars"`
+	ContactInfo        ContactInfoDTO    `json:"contactInfo"`
 }
 
 type HeroImageDTO struct {
@@ -40,7 +41,7 @@ type StepItemDTO struct {
 	Text  string `json:"text"`
 }
 
-// PillarItemDTO is one "why FitPro" value card. Icon is a string key the
+// PillarItemDTO is one "why فیتینو" value card. Icon is a string key the
 // frontend maps to an actual icon component (e.g. "award", "dumbbell").
 type PillarItemDTO struct {
 	ID    string `json:"id"`
@@ -59,7 +60,8 @@ type ContactInfoDTO struct {
 }
 
 var defaultSiteSettingsDTO = SiteSettingsDTO{
-	HeroImage: nil,
+	HeroImage:          nil,
+	ShowCoachesSection: false,
 	FeatureBullets: FeatureBulletsDTO{
 		Title: "بخش",
 		Items: []string{
@@ -120,7 +122,9 @@ func (s *siteSettingsService) Get(ctx context.Context) (*SiteSettingsDTO, error)
 }
 
 func rowToDTO(row *models.SiteSettings) (*SiteSettingsDTO, error) {
-	dto := &SiteSettingsDTO{}
+	dto := &SiteSettingsDTO{
+		ShowCoachesSection: row.ShowCoachesSection,
+	}
 	if row.HeroImageURL != "" {
 		dto.HeroImage = &HeroImageDTO{URL: row.HeroImageURL}
 	}
@@ -169,6 +173,7 @@ func (s *siteSettingsService) Update(ctx context.Context, dto *SiteSettingsDTO) 
 		heroURL = dto.HeroImage.URL
 	}
 	row.HeroImageURL = heroURL
+	row.ShowCoachesSection = dto.ShowCoachesSection
 	if row.FeatureBullets, err = json.Marshal(dto.FeatureBullets); err != nil {
 		return err
 	}

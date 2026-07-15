@@ -4,8 +4,6 @@ import { useRef } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Activity, Award, Star, ThumbsUp, Users, Wrench, Zap } from "lucide-react";
-import { TiltCard } from "./landingEffects";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import baseStatue from "@/assets/landing-page/non_body_builder_statue.png";
 import sculptedStatue from "@/assets/landing-page/body_builder_statue.png";
@@ -18,7 +16,6 @@ const DEFAULT_STATS = [
 ];
 
 const STAT_ICONS = [Users, ThumbsUp, Star, Award];
-const STAT_ICON_CLASSES = ["text-primary", "text-chart-2", "text-primary", "text-chart-2"];
 
 const FEATURES = [
   {
@@ -41,7 +38,6 @@ const FEATURES = [
 export default function RecordsSection({ stats: apiStats }) {
   const STATS = (apiStats?.length ? apiStats : DEFAULT_STATS).map((s, i) => ({
     icon: STAT_ICONS[i % STAT_ICONS.length],
-    iconClass: STAT_ICON_CLASSES[i % STAT_ICON_CLASSES.length],
     value: s.value,
     label: s.label,
   }));
@@ -54,7 +50,7 @@ export default function RecordsSection({ stats: apiStats }) {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
-    el.style.clipPath = `circle(110px at ${x}% ${y}%)`;
+    el.style.clipPath = `circle(120px at ${x}% ${y}%)`;
   };
 
   const onRevealLeave = () => {
@@ -64,110 +60,155 @@ export default function RecordsSection({ stats: apiStats }) {
 
   return (
     <section id="records" dir="rtl" className="relative scroll-mt-24 py-12 md:py-16">
-      <div className="pointer-events-none absolute inset-0 bg-muted/30" />
+      <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-muted/40 via-background to-background" />
 
-      <div className="relative z-10 mx-auto max-w-7xl px-6">
-        <div className="mb-16 space-y-4 text-center">
-          <h2 className="text-4xl font-extrabold tracking-tight text-foreground md:text-5xl">
+      <div className="relative z-10 mx-auto max-w-7xl px-5 sm:px-6">
+        {/* Header — matches Contact / Programs rhythm */}
+        <div className="mb-8 space-y-3 text-center md:mb-10">
+          <p className="text-xs font-iranianSansDemiBold tracking-wide text-primary">
+            نتایج قابل اندازه‌گیری
+          </p>
+          <h2 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl md:text-4xl">
             مسیرت رو با{" "}
             <span className="bg-linear-to-l from-primary via-chart-2 to-chart-3 bg-clip-text text-transparent">
               عدد و نتیجه
             </span>{" "}
             ببین
           </h2>
-          <p className="text-base text-muted-foreground md:text-lg">
-            ما به خروجی کارمان ایمان داریم؛ این آمار گویای همه چیز است.
+          <p className="mx-auto max-w-xl text-sm leading-7 text-foreground/85 md:text-base">
+            ما به خروجی کارمان ایمان داریم؛ این آمار گویای همه‌چیز است.
           </p>
         </div>
 
-        <div className="mb-20 grid items-stretch gap-8 md:grid-cols-2">
-          <Card
-            className="group/reveal relative h-[420px] cursor-crosshair overflow-hidden py-0 md:h-auto md:min-h-[520px]"
+        {/* Reveal + stats bento */}
+        <div className="mb-8 grid items-stretch gap-4 md:mb-10 md:grid-cols-2 md:gap-5">
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.45 }}
+            className="group/reveal relative h-[360px] overflow-hidden rounded-3xl border border-border/70 bg-card shadow-sm md:h-auto md:min-h-[420px]"
             onMouseMove={onRevealMove}
             onMouseLeave={onRevealLeave}
           >
-            <CardContent className="relative h-full p-0">
-              <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-foreground/5 to-transparent opacity-30" />
-              {/* Mobile: no hover, so just show the sculpted statue. */}
+            <div className="pointer-events-none absolute inset-0 z-30 bg-linear-to-t from-background/50 via-transparent to-transparent" />
+
+            {/* Mobile: sculpted only */}
+            <Image
+              src={sculptedStatue}
+              alt="مجسمه تراش‌خورده — نتیجه نهایی"
+              fill
+              className="object-cover object-top md:hidden"
+              sizes="(max-width: 768px) 100vw, 50vw"
+              priority={false}
+            />
+
+            {/* Desktop: hover reveal */}
+            <Image
+              src={baseStatue}
+              alt="مجسمه پیش از تراش"
+              fill
+              className="hidden object-cover object-top md:block"
+              sizes="50vw"
+            />
+            <div
+              ref={overlayRef}
+              className="absolute inset-0 z-20 hidden transition-[clip-path] duration-75 ease-out md:block"
+              style={{ clipPath: "circle(0% at 50% 50%)" }}
+              aria-hidden
+            >
               <Image
                 src={sculptedStatue}
-                alt="مجسمه تراش‌خورده"
+                alt=""
                 fill
-                className="z-10 object-cover object-top md:hidden"
+                className="object-cover object-top"
+                sizes="50vw"
               />
-              {/* Desktop: hover-reveal effect (base + clip-path overlay). */}
-              <Image
-                src={baseStatue}
-                alt="مجسمه در حال تراش"
-                fill
-                className="z-10 hidden object-cover object-top md:block"
-              />
-              <div
-                ref={overlayRef}
-                className="absolute inset-0 z-20 hidden transition-[clip-path] duration-75 ease-out md:block"
-                style={{ clipPath: "circle(0% at 50% 50%)" }}
-              >
-                <Image
-                  src={sculptedStatue}
-                  alt="مجسمه تراش‌خورده"
-                  fill
-                  className="object-cover object-top"
-                />
-              </div>
-            </CardContent>
-          </Card>
+            </div>
 
-          <div className="flex flex-col gap-6">
-            <div className="grid grid-cols-2 gap-6">
+            <div className="absolute inset-x-0 bottom-0 z-40 p-4 md:p-5">
+              <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/80 px-3 py-1.5 text-[11px] text-foreground/90 backdrop-blur-md">
+                <span className="hidden size-1.5 animate-pulse rounded-full bg-primary md:inline-block" />
+                <span className="md:hidden">نتیجه نهایی</span>
+                <span className="hidden md:inline">موس را حرکت بده تا تحول را ببینی</span>
+              </div>
+            </div>
+          </motion.div>
+
+          <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
               {STATS.map((s, idx) => {
                 const Icon = s.icon;
                 return (
-                  <TiltCard key={s.label} delay={idx * 0.06} className="h-full">
-                    <Card className="h-full bg-linear-to-t from-primary/5 to-card text-center shadow-xs">
-                      <CardContent className="pt-6">
-                        <Icon className={cn("mx-auto mb-4 size-10", s.iconClass)} />
-                        <div className="text-3xl font-bold tabular-nums text-foreground">{s.value}</div>
-                        <div className="mt-1 text-xs tracking-widest text-muted-foreground">{s.label}</div>
-                      </CardContent>
-                    </Card>
-                  </TiltCard>
+                  <motion.div
+                    key={s.label}
+                    initial={{ opacity: 0, y: 12 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.25 }}
+                    transition={{ duration: 0.4, delay: idx * 0.05 }}
+                    className="rounded-3xl border border-border/70 bg-card p-4 shadow-sm transition-colors hover:border-primary/30 sm:p-5"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <Icon className="size-4" aria-hidden />
+                      </span>
+                      <span className="truncate text-xs text-foreground/75">{s.label}</span>
+                    </div>
+                    <div
+                      className="mt-3 text-2xl font-iranianSansBlack tabular-nums tracking-tight text-foreground sm:text-3xl"
+                      dir="ltr"
+                    >
+                      {s.value}
+                    </div>
+                  </motion.div>
                 );
               })}
             </div>
 
-            <Card className="flex-1 border-primary/20 bg-card/60 backdrop-blur-sm">
-              <CardHeader className="text-start">
-                <CardTitle className="text-2xl">برنامه‌ای که «واقعاً» انجام می‌دی</CardTitle>
-              </CardHeader>
-              <CardContent className="text-start leading-7 text-muted-foreground">
-                ما متعهد می‌شویم که تا رسیدن به فرم ایده‌آل، لحظه به لحظه در کنار شما
-                باشیم. هنر ما، تراشیدن عضلات شماست.
-              </CardContent>
-            </Card>
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.25 }}
+              transition={{ duration: 0.45, delay: 0.1 }}
+              className="flex flex-1 flex-col justify-center rounded-3xl border border-primary/25 bg-primary/5 p-5 text-start sm:p-6"
+            >
+              <h3 className="text-lg font-iranianSansBlack text-foreground sm:text-xl">
+                برنامه‌ای که «واقعاً» انجام می‌دی
+              </h3>
+              <p className="mt-2 text-sm leading-7 text-foreground/85 md:text-base">
+                ما متعهد می‌شویم که تا رسیدن به فرم ایده‌آل، لحظه به لحظه کنار
+                شما باشیم. هنر ما، تراشیدن عضلات شماست.
+              </p>
+            </motion.div>
           </div>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-3">
+        {/* Feature pillars — icon + title one line */}
+        <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
           {FEATURES.map((f, idx) => {
             const Icon = f.icon;
             return (
-              <motion.div
+              <motion.article
                 key={f.title}
-                initial={{ opacity: 0, y: 16 }}
+                initial={{ opacity: 0, y: 12 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.25 }}
-                transition={{ duration: 0.6, delay: idx * 0.06 }}
+                transition={{ duration: 0.4, delay: idx * 0.05 }}
+                className="rounded-3xl border border-border/70 bg-card p-5 shadow-sm transition-colors hover:border-primary/30"
               >
-                <Card className="h-full bg-linear-to-t from-primary/5 to-card shadow-xs">
-                  <CardContent className="space-y-4 pt-6 text-start">
-                    <div className="mb-4 flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                      <Icon className="size-7" />
-                    </div>
-                    <h3 className="text-2xl font-semibold text-foreground">{f.title}</h3>
-                    <p className="leading-7 text-muted-foreground">{f.desc}</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
+                <h3 className="flex items-center gap-3 text-base font-iranianSansBlack text-foreground sm:text-lg">
+                  <span
+                    className={cn(
+                      "inline-flex size-11 shrink-0 items-center justify-center rounded-xl",
+                      "bg-primary text-primary-foreground"
+                    )}
+                  >
+                    <Icon className="size-5" aria-hidden />
+                  </span>
+                  <span>{f.title}</span>
+                </h3>
+                <p className="mt-3 text-sm leading-7 text-foreground/85">{f.desc}</p>
+              </motion.article>
             );
           })}
         </div>

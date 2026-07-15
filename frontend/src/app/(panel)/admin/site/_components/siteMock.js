@@ -1,5 +1,6 @@
 export const defaultSiteSettings = {
   heroImage: null, // { file?: File, url?: string } - client preview only
+  showCoachesSection: false,
 
   // Section: feature bullets (home page)
   featureBullets: {

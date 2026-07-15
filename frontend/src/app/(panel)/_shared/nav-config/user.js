@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 
 export const userBrand = {
-  title: "Fitino",
+  title: "فیتینو",
   subtitle: "پنل کاربر",
   href: "/user",
 };

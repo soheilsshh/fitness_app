@@ -16,6 +16,10 @@ type SiteSettings struct {
 	// HeroImageURL stores the URL of the main hero image (if any).
 	HeroImageURL string `gorm:"size:512"`
 
+	// ShowCoachesSection controls visibility of the landing coaches/programs block.
+	// Default false so the multi-coach UI can stay off until coaches are ready.
+	ShowCoachesSection bool `gorm:"not null;default:false" json:"showCoachesSection"`
+
 	// JSON blobs are used to keep the structure flexible while still typed.
 	// They follow the shapes defined in frontend/docs/frontend-overview.md.
 	// json.RawMessage is an alias for []byte and works well with GORM for JSON columns.

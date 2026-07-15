@@ -43,7 +43,7 @@ export default function ExerciseDetailModal({ open, onClose, exercise }) {
               <div className="text-lg font-extrabold">{exercise.name}</div>
               <div className="mt-2 flex flex-wrap gap-2">
                 {exercise.sets > 0 ? (
-                  <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-300">
+                  <span className="rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-1 text-xs font-bold text-cyan-700 dark:text-cyan-300">
                     {exercise.sets} ست
                   </span>
                 ) : null}
@@ -106,7 +106,7 @@ export default function ExerciseDetailModal({ open, onClose, exercise }) {
                       key={i}
                       className="flex gap-3 text-sm leading-7 text-muted-foreground"
                     >
-                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-xs font-bold text-emerald-700 dark:text-emerald-300">
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-cyan-500/15 text-xs font-bold text-cyan-700 dark:text-cyan-300">
                         {i + 1}
                       </span>
                       <span>{step}</span>

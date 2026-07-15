@@ -26,14 +26,23 @@ func NewAuthController(authService service.AuthService, meService service.MeServ
 
 type registerRequest struct {
 	Name     string `json:"name" binding:"required"`
-	Email    string `json:"email" binding:"required,email"`
+	Email    string `json:"email"` // optional; auto-generated from phone when empty
 	Phone    string `json:"phone" binding:"required"`
 	Password string `json:"password" binding:"required,min=6"`
+	Code     string `json:"code" binding:"required"` // OTP verification required
+}
+
+type checkPhoneRequest struct {
+	Phone string `json:"phone" binding:"required"`
+}
+
+type checkPhoneResponse struct {
+	Exists bool `json:"exists"`
 }
 
 type registerCoachRequest struct {
 	Name        string `json:"name" binding:"required"`
-	Email       string `json:"email" binding:"required,email"`
+	Email       string `json:"email"` // optional; auto-generated from phone when empty
 	Phone       string `json:"phone" binding:"required"`
 	Password    string `json:"password" binding:"required,min=6"`
 	DisplayName string `json:"displayName"`
@@ -135,9 +144,34 @@ func (h *AuthController) buildAuthUserResponse(c *gin.Context, user *models.User
 	}, nil
 }
 
+// CheckPhone godoc
+// @Summary Check whether a phone is already registered
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body checkPhoneRequest true "Phone check request"
+// @Success 200 {object} checkPhoneResponse
+// @Failure 400 {object} map[string]string
+// @Router /auth/check-phone [post]
+func (h *AuthController) CheckPhone(c *gin.Context) {
+	var req checkPhoneRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	exists, err := h.authService.CheckPhone(c.Request.Context(), req.Phone)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, checkPhoneResponse{Exists: exists})
+}
+
 // Register godoc
 // @Summary Register new user
-// @Description Register a new user with name, email, phone and password
+// @Description Register a new user with name, phone, password and verified OTP (email optional)
 // @Tags auth
 // @Accept json
 // @Produce json
@@ -154,9 +188,12 @@ func (h *AuthController) Register(c *gin.Context) {
 		return
 	}
 
-	result, err := h.authService.Register(c.Request.Context(), req.Name, req.Email, req.Phone, req.Password)
+	result, err := h.authService.Register(c.Request.Context(), req.Name, req.Email, req.Phone, req.Password, req.Code)
 	if err != nil {
 		switch err {
+		case service.ErrInvalidOTP:
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "کد وارد شده نامعتبر یا منقضی شده است"})
+			return
 		case service.ErrEmailAlreadyExists:
 			c.JSON(http.StatusConflict, gin.H{"error": "email already in use"})
 			return
@@ -314,6 +351,10 @@ func (h *AuthController) VerifyOTP(c *gin.Context) {
 	if err != nil {
 		if err == service.ErrInvalidOTP {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid or expired otp code"})
+			return
+		}
+		if err == service.ErrInvalidCredentials {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "حسابی با این شماره یافت نشد"})
 			return
 		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

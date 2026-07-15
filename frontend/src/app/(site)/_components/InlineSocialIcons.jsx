@@ -3,26 +3,19 @@
 import Link from "next/link";
 import { FiInstagram } from "react-icons/fi";
 import { FaTelegramPlane, FaWhatsapp } from "react-icons/fa";
-
-function cn(...xs) {
-  return xs.filter(Boolean).join(" ");
-}
+import { cn } from "@/lib/utils";
 
 export default function InlineSocialIcons({ links }) {
-  const instagram = links?.instagram || "";
-  const telegram = links?.telegram || "";
-  const whatsapp = links?.whatsapp || "";
-
   const items = [
-    { key: "ig", href: instagram, label: "Instagram", Icon: FiInstagram },
-    { key: "tg", href: telegram, label: "Telegram", Icon: FaTelegramPlane },
-    { key: "wa", href: whatsapp, label: "WhatsApp", Icon: FaWhatsapp },
+    { key: "ig", href: links?.instagram || "", label: "Instagram", Icon: FiInstagram },
+    { key: "tg", href: links?.telegram || "", label: "Telegram", Icon: FaTelegramPlane },
+    { key: "wa", href: links?.whatsapp || "", label: "WhatsApp", Icon: FaWhatsapp },
   ].filter((x) => Boolean(x.href));
 
   if (items.length === 0) return null;
 
   return (
-    <div className="mt-3 flex items-center gap-2">
+    <div className="flex items-center justify-start gap-2">
       {items.map(({ key, href, label, Icon }) => (
         <Link
           key={key}
@@ -30,13 +23,14 @@ export default function InlineSocialIcons({ links }) {
           target="_blank"
           rel="noopener noreferrer"
           className={cn(
-            "inline-flex h-10 w-10 items-center justify-center rounded-2xl",
-            "border border-white/10 bg-white/5 text-zinc-200 hover:bg-white/10"
+            "inline-flex size-10 items-center justify-center rounded-xl",
+            "border border-border/70 bg-background/60 text-foreground/80",
+            "transition-colors hover:border-primary/40 hover:bg-primary/10 hover:text-primary"
           )}
           aria-label={label}
           title={label}
         >
-          <Icon className="text-[18px]" />
+          <Icon className="size-4" />
         </Link>
       ))}
     </div>

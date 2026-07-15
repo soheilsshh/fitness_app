@@ -50,7 +50,7 @@ export default function AboutSection({ steps, pillars }) {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.25 }}
           transition={{ duration: 0.6 }}
-          className="mb-10 text-right text-3xl font-extrabold text-primary md:text-4xl"
+          className="mb-10 text-center text-3xl font-extrabold text-primary md:text-4xl"
         >
           فقط <span className="gradient-text">سه قدم</span> تا شروع
         </motion.h3>
@@ -65,25 +65,27 @@ export default function AboutSection({ steps, pillars }) {
               transition={{ duration: 0.5, delay: idx * 0.08 }}
               className="glow-card relative flex h-full flex-col gap-3 rounded-2xl p-6 text-right"
             >
-              <span
-                aria-hidden
-                className="gradient-text text-5xl font-extrabold leading-none opacity-80"
-              >
-                {idx + 1}
-              </span>
-              <h4 className="text-2xl font-semibold text-primary">{s.title}</h4>
-              <p className="leading-7 text-on-surface-variant">{s.text}</p>
+              <h4 className="flex items-baseline gap-3 text-2xl font-semibold text-primary">
+                <span
+                  aria-hidden
+                  className="gradient-text shrink-0 text-4xl font-extrabold leading-none opacity-80 md:text-5xl"
+                >
+                  {idx + 1}
+                </span>
+                <span>{s.title}</span>
+              </h4>
+              <p className="leading-7 text-foreground">{s.text}</p>
             </motion.div>
           ))}
         </div>
 
-        <div className="mt-10 flex justify-end">
+        <div className="mt-10 flex justify-center">
           <Link
             href="/coaches"
-            className="flex items-center gap-2 rounded-full bg-surface-tint px-8 py-4 font-bold text-on-primary shadow-2xl transition-transform hover:scale-105"
+            className="inline-flex items-center gap-2 rounded-full bg-surface-tint px-8 py-4 font-bold text-on-primary shadow-2xl transition-transform hover:scale-105"
           >
-            انتخاب مربی و شروع
             <FiArrowLeft className="text-xl" />
+            انتخاب مربی و شروع
           </Link>
         </div>
       </div>
@@ -94,17 +96,17 @@ export default function AboutSection({ steps, pillars }) {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.25 }}
         transition={{ duration: 0.6 }}
-        className="mb-12 space-y-4 text-right"
+        className="mb-12 flex flex-col items-center space-y-4 text-center"
       >
         <div className="glass inline-flex items-center gap-2 rounded-full border border-surface-tint/20 px-4 py-1 text-xs text-surface-tint">
           <span className="h-2 w-2 animate-pulse rounded-full bg-surface-tint" />
           باشگاه هوشمند و مربیگری اختصاصی
         </div>
         <h2 className="text-4xl font-extrabold text-primary md:text-5xl">
-          چرا <span className="gradient-text">FitPro؟</span>
+          چرا <span className="gradient-text">فیتینو؟</span>
         </h2>
-        <p className="max-w-2xl text-base leading-8 text-on-surface-variant md:text-lg">
-          فیت‌پرو یک باشگاه دیجیتال است که تمرین، تغذیه و مربیگری حرفه‌ای را در یک پلتفرم
+        <p className="max-w-2xl text-base leading-8 text-foreground md:text-lg">
+          فیتینو یک باشگاه دیجیتال است که تمرین، تغذیه و مربیگری حرفه‌ای را در یک پلتفرم
           جمع می‌کند؛ از انتخاب مربی تا رسیدن به فرم ایده‌آل، در هر قدم کنار شما هستیم.
         </p>
       </motion.div>
@@ -121,15 +123,15 @@ export default function AboutSection({ steps, pillars }) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.25 }}
               transition={{ duration: 0.5, delay: idx * 0.05 }}
-              className="group glow-card flex h-full flex-col gap-4 rounded-2xl p-6 text-right"
+              className="group glow-card flex h-full flex-col gap-3 rounded-2xl p-6 text-right"
             >
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted ring-1 ring-border transition-transform group-hover:scale-110">
-                <Icon className={`text-3xl ${color}`} />
-              </div>
-              <div>
-                <h3 className="text-xl font-semibold text-primary">{p.title}</h3>
-                <p className="mt-2 leading-7 text-on-surface-variant">{p.desc}</p>
-              </div>
+              <h3 className="flex items-center gap-3 text-xl font-semibold text-primary">
+                <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-muted ring-1 ring-border transition-transform group-hover:scale-110 md:h-14 md:w-14">
+                  <Icon className={`text-2xl md:text-3xl ${color}`} />
+                </span>
+                <span>{p.title}</span>
+              </h3>
+              <p className="leading-7 text-foreground">{p.desc}</p>
             </motion.div>
           );
         })}

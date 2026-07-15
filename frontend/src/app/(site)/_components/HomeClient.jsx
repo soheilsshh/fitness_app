@@ -67,7 +67,7 @@ export default function HomeClient() {
         <section id="home" className="scroll-mt-24">
           <Hero settings={settings} />
         </section>
-        <ProgramsSection />
+        {settings?.showCoachesSection ? <ProgramsSection /> : null}
         <RecordsSection stats={settings?.stats} />
         <AboutSection steps={settings?.steps} pillars={settings?.pillars} />
         <ContactSection contactInfo={settings?.contactInfo} />

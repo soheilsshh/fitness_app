@@ -31,7 +31,7 @@ export default function FunnelSuccessClient() {
   return (
     <div dir="rtl" className="relative min-h-[calc(100vh-4rem)] overflow-hidden">
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute top-1/4 start-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-emerald-500/10 blur-[120px]" />
+        <div className="absolute top-1/4 start-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-teal-500/10 blur-[120px]" />
       </div>
 
       <div className="relative mx-auto max-w-lg px-4 py-16 text-center">
@@ -39,9 +39,9 @@ export default function FunnelSuccessClient() {
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: "spring", stiffness: 200, damping: 15 }}
-          className="mx-auto mb-6 flex size-20 items-center justify-center rounded-full bg-emerald-500/15"
+          className="mx-auto mb-6 flex size-20 items-center justify-center rounded-full bg-teal-500/15"
         >
-          <CheckCircle2 className="size-10 text-emerald-500" />
+          <CheckCircle2 className="size-10 text-teal-500" />
         </motion.div>
 
         <motion.div
@@ -50,7 +50,7 @@ export default function FunnelSuccessClient() {
           transition={{ delay: 0.2 }}
         >
           <Badge variant="outline" className="mb-4 gap-2">
-            <Sparkles className="size-3.5 text-emerald-500" />
+            <Sparkles className="size-3.5 text-teal-500" />
             پرداخت موفق
           </Badge>
           <h1 className="text-2xl font-extrabold text-foreground md:text-3xl">
@@ -68,7 +68,7 @@ export default function FunnelSuccessClient() {
           transition={{ delay: 0.35 }}
           className="mt-8"
         >
-          <Card className="border-emerald-500/20 bg-card/90 text-start shadow-lg backdrop-blur-sm">
+          <Card className="border-teal-500/20 bg-card/90 text-start shadow-lg backdrop-blur-sm">
             <CardContent className="space-y-3 p-6">
               {checkout && (
                 <>

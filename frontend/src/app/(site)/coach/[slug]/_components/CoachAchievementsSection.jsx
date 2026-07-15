@@ -28,8 +28,8 @@ const ACHIEVEMENT_TYPE_META = {
   medal: {
     label: "مدال",
     icon: Medal,
-    badge: "border-emerald-400/30 bg-emerald-400/10 text-emerald-200",
-    iconWrap: "bg-emerald-400/15 text-emerald-300 ring-emerald-400/20",
+    badge: "border-teal-400/30 bg-teal-400/10 text-teal-200",
+    iconWrap: "bg-teal-400/15 text-teal-300 ring-teal-400/20",
   },
   qualification: {
     label: "مدرک",
@@ -72,7 +72,7 @@ function AchievementCard({ item, onImageClick }) {
         <button
           type="button"
           onClick={() => onImageClick({ src: imageSrc, title: item.title })}
-          className="relative block w-full overflow-hidden border-b border-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950"
+          className="relative block w-full overflow-hidden border-b border-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950"
           aria-label={`بزرگ‌نمایی تصویر ${item.title}`}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -117,7 +117,7 @@ function AchievementCard({ item, onImageClick }) {
         <div className="space-y-2">
           <h3 className="flex items-start justify-start gap-2 text-base font-bold leading-snug text-white md:text-lg">
             <TypeIcon
-              className="mt-0.5 size-4 shrink-0 text-emerald-300/90 md:size-5"
+              className="mt-0.5 size-4 shrink-0 text-teal-300/90 md:size-5"
               aria-hidden="true"
             />
             <span>{item.title}</span>
@@ -166,7 +166,7 @@ export default function CoachAchievementsSection({ achievements }) {
         aria-labelledby="achievements-heading"
       >
         <div className="mb-6 flex flex-col gap-2 text-right md:mb-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-300/80">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-300/80">
             اعتبار و تخصص
           </p>
           <h2
@@ -203,7 +203,7 @@ export default function CoachAchievementsSection({ achievements }) {
           <button
             type="button"
             onClick={() => setLightbox(null)}
-            className="absolute top-4 end-4 inline-flex size-10 items-center justify-center rounded-full bg-white/10 text-white ring-1 ring-white/20 transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+            className="absolute top-4 end-4 inline-flex size-10 items-center justify-center rounded-full bg-white/10 text-white ring-1 ring-white/20 transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400"
             aria-label="بستن"
           >
             <X className="size-5" />

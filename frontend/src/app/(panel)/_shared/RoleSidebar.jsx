@@ -14,7 +14,6 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { DumbbellIcon } from "lucide-react";
 import { Logo } from "@/components/Logo";
 
 function NavUserPlaceholder() {
@@ -46,8 +45,6 @@ export function RoleSidebar({
   secondaryLabel,
   ...props
 }) {
-  const BrandIcon = brand?.icon || DumbbellIcon;
-
   return (
     <Sidebar
       collapsible="offcanvas"
@@ -65,12 +62,10 @@ export function RoleSidebar({
               className="data-[slot=sidebar-menu-button]:p-2!"
             >
               <Link href={brand?.href || "/"}>
-                <span className="flex size-8 items-center justify-center rounded-lg bg-primary/15 text-primary ring-1 ring-sidebar-border">
-                  <Logo />
-                </span>
+                <Logo className="size-8 shrink-0 object-contain" />
                 <div className="grid flex-1 text-start text-sm leading-tight">
-                  <span className="truncate font-semibold">
-                    {brand?.title || "Fitino"}
+                  <span className="truncate font-iranianSansBlack">
+                    {brand?.title || "فیتینو"}
                   </span>
                   {brand?.subtitle ? (
                     <span className="truncate text-xs text-muted-foreground">

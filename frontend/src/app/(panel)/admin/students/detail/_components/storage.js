@@ -1,3 +1,6 @@
+// NOTE: keep legacy key prefix `fitpro_*` (do NOT rename to fitino).
+// Brand is now فیتینو, but renaming this localStorage key would orphan
+// existing admin data already saved under the old name.
 const KEY = "fitpro_admin_student_plans_v1";
 
 export function loadAllPlans() {

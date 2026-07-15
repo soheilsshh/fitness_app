@@ -52,9 +52,9 @@ export default function PillarsEditor({ value, onChange }) {
     <Card dir="rtl">
       <CardHeader className="flex flex-row items-start justify-between gap-3">
         <div className="space-y-1">
-          <CardTitle>چرا FitPro؟ (ویژگی‌ها)</CardTitle>
+          <CardTitle>چرا فیتینو؟ (ویژگی‌ها)</CardTitle>
           <p className="text-sm text-muted-foreground">
-            کارت‌های مزیت که در بخش «چرا FitPro» نمایش داده می‌شوند
+            کارت‌های مزیت که در بخش «چرا فیتینو» نمایش داده می‌شوند
           </p>
         </div>
         <Button type="button" variant="outline" onClick={addPillar}>

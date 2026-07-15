@@ -28,7 +28,8 @@ type AuthResult struct {
 
 // AuthService defines authentication use cases.
 type AuthService interface {
-	Register(ctx context.Context, name, email, phone, password string) (*AuthResult, error)
+	CheckPhone(ctx context.Context, phone string) (exists bool, err error)
+	Register(ctx context.Context, name, email, phone, password, otpCode string) (*AuthResult, error)
 	RegisterCoach(ctx context.Context, name, email, phone, password, displayName, slugInput string) (*AuthResult, error)
 	LoginWithPassword(ctx context.Context, identifier, password string) (*AuthResult, error)
 	RequestOTP(ctx context.Context, phone string) error
@@ -94,16 +95,38 @@ func NewAuthService(
 	}
 }
 
-func (s *authService) Register(ctx context.Context, name, email, phone, password string) (*AuthResult, error) {
+func (s *authService) CheckPhone(ctx context.Context, phone string) (bool, error) {
+	phone = strings.TrimSpace(phone)
+	if phone == "" {
+		return false, errors.New("phone is required")
+	}
+	_, err := s.userRepo.FindByPhone(ctx, phone)
+	if err == nil {
+		return true, nil
+	}
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return false, nil
+	}
+	return false, err
+}
+
+func (s *authService) Register(ctx context.Context, name, email, phone, password, otpCode string) (*AuthResult, error) {
 	name = strings.TrimSpace(name)
 	email = strings.TrimSpace(strings.ToLower(email))
 	phone = strings.TrimSpace(phone)
+	otpCode = strings.TrimSpace(otpCode)
 
-	if name == "" || email == "" || phone == "" || password == "" {
-		return nil, errors.New("name, email, phone and password are required")
+	if name == "" || phone == "" || password == "" {
+		return nil, errors.New("name, phone and password are required")
+	}
+	if otpCode == "" {
+		return nil, ErrInvalidOTP
+	}
+	if email == "" {
+		email = phone + "@phone.local"
 	}
 
-	// uniqueness checks
+	// uniqueness checks before consuming OTP
 	if _, err := s.userRepo.FindByEmail(ctx, email); err == nil {
 		return nil, ErrEmailAlreadyExists
 	} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
@@ -112,6 +135,10 @@ func (s *authService) Register(ctx context.Context, name, email, phone, password
 	if _, err := s.userRepo.FindByPhone(ctx, phone); err == nil {
 		return nil, ErrPhoneAlreadyExists
 	} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, err
+	}
+
+	if err := s.consumeOTP(ctx, phone, "login", otpCode); err != nil {
 		return nil, err
 	}
 
@@ -144,8 +171,11 @@ func (s *authService) RegisterCoach(ctx context.Context, name, email, phone, pas
 		displayName = name
 	}
 
-	if name == "" || email == "" || phone == "" || password == "" {
-		return nil, errors.New("name, email, phone and password are required")
+	if name == "" || phone == "" || password == "" {
+		return nil, errors.New("name, phone and password are required")
+	}
+	if email == "" {
+		email = phone + "@phone.local"
 	}
 
 	if _, err := s.userRepo.FindByEmail(ctx, email); err == nil {
@@ -239,41 +269,34 @@ func (s *authService) VerifyOTP(ctx context.Context, phone, code string) (*AuthR
 		return nil, ErrInvalidOTP
 	}
 
-	entry, err := s.otpRepo.FindValidByPhoneAndPurpose(ctx, phone, "login", time.Now())
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrInvalidOTP
-		}
-		return nil, err
-	}
-	if entry.Code != code {
-		return nil, ErrInvalidOTP
-	}
-
-	if err := s.otpRepo.MarkUsed(ctx, entry.ID, time.Now()); err != nil {
+	if err := s.consumeOTP(ctx, phone, "login", code); err != nil {
 		return nil, err
 	}
 
-	// find or create user by phone
 	user, err := s.userRepo.FindByPhone(ctx, phone)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			// create new user with minimal info
-			user = &models.User{
-				Name:  phone,
-				Email: phone + "@phone.local",
-				Phone: phone,
-				Role:  s.defaultUserRole,
-			}
-			if err := s.userRepo.Create(ctx, user); err != nil {
-				return nil, err
-			}
-		} else {
-			return nil, err
+			// OTP login is for existing users only; new users go through register.
+			return nil, ErrInvalidCredentials
 		}
+		return nil, err
 	}
 
 	return s.generateTokens(ctx, user)
+}
+
+func (s *authService) consumeOTP(ctx context.Context, phone, purpose, code string) error {
+	entry, err := s.otpRepo.FindValidByPhoneAndPurpose(ctx, phone, purpose, time.Now())
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrInvalidOTP
+		}
+		return err
+	}
+	if entry.Code != code {
+		return ErrInvalidOTP
+	}
+	return s.otpRepo.MarkUsed(ctx, entry.ID, time.Now())
 }
 
 func (s *authService) Logout(ctx context.Context, userID uint, refreshToken string) error {

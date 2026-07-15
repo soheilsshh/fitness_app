@@ -2,17 +2,15 @@
 
 import { useId, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Mail, MapPin, Phone } from "lucide-react";
+import { Mail, MapPin, Phone, Send } from "lucide-react";
 import InlineSocialIcons from "./InlineSocialIcons";
-import { TiltCard } from "./landingEffects";
 import { api } from "@/lib/axios/client";
 import { toastError, toastSuccess } from "@/app/(site)/auth/_components/helpers";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 
 const DEFAULT_CONTACT = {
   address: "تهران، سعادت آباد، برج فیتینو",
@@ -22,6 +20,22 @@ const DEFAULT_CONTACT = {
   telegram: "https://t.me/",
   whatsapp: "https://wa.me/989000000000",
 };
+
+function ContactRow({ icon: Icon, label, value, dir }) {
+  return (
+    <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-background/50 px-3.5 py-3 transition-colors hover:border-primary/30 hover:bg-background/80">
+      <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+        <Icon className="size-4" />
+      </span>
+      <div className="min-w-0 text-start">
+        <div className="text-[11px] text-muted-foreground">{label}</div>
+        <div className="truncate text-sm font-iranianSansDemiBold text-foreground" dir={dir}>
+          {value}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function ContactSection({ contactInfo }) {
   const info = { ...DEFAULT_CONTACT, ...(contactInfo || {}) };
@@ -59,7 +73,6 @@ export default function ContactSection({ contactInfo }) {
     const found = validate();
     if (Object.keys(found).length > 0) {
       setErrors(found);
-      // Move focus to the first invalid field so keyboard/screen-reader users land on it.
       if (found.fullName) nameRef.current?.focus();
       else if (found.contact) contactRef.current?.focus();
       else messageRef.current?.focus();
@@ -87,140 +100,180 @@ export default function ContactSection({ contactInfo }) {
   };
 
   return (
-    <section id="contact" dir="rtl" className="mx-auto max-w-7xl scroll-mt-24 px-6 py-12 md:py-16">
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
+    <section id="contact" dir="rtl" className="mx-auto max-w-7xl scroll-mt-24 px-5 py-12 sm:px-6 md:py-16">
+      <div className="mb-8 space-y-2 text-center md:mb-10">
+        <p className="text-xs font-iranianSansDemiBold tracking-wide text-primary">
+          تماس با فیتینو
+        </p>
+        <h2 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl md:text-4xl">
+          راهنمایی می‌خوای؟{" "}
+          <span className="bg-linear-to-l from-primary via-chart-2 to-chart-3 bg-clip-text text-transparent">
+            پیام بده
+          </span>
+        </h2>
+        <p className="mx-auto max-w-xl text-sm leading-7 text-foreground/85 md:text-base">
+          سوالی داری؟ مستقیم بپرس — تیم ما برای مشاوره رایگان آماده‌ست.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
+        {/* Info */}
+        <motion.aside
+          initial={{ opacity: 0, y: 14 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.25 }}
-          transition={{ duration: 0.6 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.45 }}
+          className="relative overflow-hidden rounded-3xl border border-border/70 bg-card p-5 shadow-sm sm:p-6"
         >
-          <Card className="h-full bg-card/60 backdrop-blur-sm">
-            <CardHeader className="text-start">
-              <CardTitle className="text-4xl font-extrabold tracking-tight md:text-5xl">
-                راهنمایی می‌خوای؟{" "}
-                <span className="bg-linear-to-l from-primary via-chart-2 to-chart-3 bg-clip-text text-transparent">
-                  پیام بده
-                </span>
-              </CardTitle>
-              <CardDescription className="text-base leading-8 md:text-lg">
-                سوالی دارید؟ مربیان ما آماده پاسخگویی و ارائه مشاوره رایگان به شما هستند.
-              </CardDescription>
-            </CardHeader>
+          <div className="pointer-events-none absolute -start-16 top-0 size-44 rounded-full bg-primary/10 blur-3xl" />
+          <div className="pointer-events-none absolute -end-10 bottom-0 size-36 rounded-full bg-chart-2/10 blur-3xl" />
 
-            <CardContent className="space-y-6 text-start">
-              <div className="group flex flex-row-reverse items-center gap-4">
-                <Mail className="size-5 text-primary transition-transform group-hover:scale-110" />
-                <span className="text-base text-foreground" dir="ltr">
-                  {info.email}
-                </span>
+          <div className="relative space-y-5">
+            <div className="space-y-1.5 text-start">
+              <h3 className="text-lg font-iranianSansBlack text-foreground">راه‌های ارتباطی</h3>
+              <p className="text-sm leading-7 text-foreground/80">
+                از ایمیل و تماس تا شبکه‌های اجتماعی — هر جا راحت‌تری.
+              </p>
+            </div>
+
+            <div className="space-y-2.5">
+              <ContactRow icon={Mail} label="ایمیل" value={info.email} dir="ltr" />
+              <ContactRow icon={Phone} label="تلفن" value={info.phone} dir="ltr" />
+              <ContactRow icon={MapPin} label="آدرس" value={info.address} />
+            </div>
+
+            <div className="border-t border-border/60 pt-4">
+              <div className="mb-2.5 text-start text-[11px] text-muted-foreground">
+                شبکه‌های اجتماعی
               </div>
-              <div className="group flex flex-row-reverse items-center gap-4">
-                <Phone className="size-5 text-primary transition-transform group-hover:scale-110" />
-                <span className="text-base text-foreground" dir="ltr">
-                  {info.phone}
-                </span>
-              </div>
-              <div className="group flex flex-row-reverse items-center gap-4">
-                <MapPin className="size-5 text-primary transition-transform group-hover:scale-110" />
-                <span className="text-base text-foreground">{info.address}</span>
+              <InlineSocialIcons links={socialLinks} />
+            </div>
+          </div>
+        </motion.aside>
+
+        {/* Form */}
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.45, delay: 0.06 }}
+          className="relative overflow-hidden rounded-3xl border border-border/70 bg-card p-5 shadow-sm sm:p-6"
+        >
+          <div className="pointer-events-none absolute end-0 top-0 size-40 rounded-full bg-primary/8 blur-3xl" />
+
+          <form className="relative space-y-4 text-start" onSubmit={onSubmit} noValidate>
+            <div className="space-y-1.5 pb-1">
+              <h3 className="text-lg font-iranianSansBlack text-foreground">درخواست مشاوره</h3>
+              <p className="text-sm leading-7 text-foreground/80">
+                فرم رو پر کن؛ کمتر از ۲۴ ساعت پاسخ می‌دیم.
+              </p>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5 sm:col-span-2">
+                <Label htmlFor={nameId} className="text-xs text-foreground/90">
+                  نام و نام خانوادگی <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id={nameId}
+                  ref={nameRef}
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="مثلاً علی محمدی"
+                  className={cn(
+                    "h-11 rounded-xl border-border/70 bg-background/60 text-start",
+                    errors.fullName && "border-destructive/50"
+                  )}
+                  name="name"
+                  autoComplete="name"
+                  required
+                  aria-required="true"
+                  aria-invalid={errors.fullName ? "true" : undefined}
+                  aria-describedby={errors.fullName ? `${nameId}-error` : undefined}
+                />
+                {errors.fullName && (
+                  <p id={`${nameId}-error`} role="alert" className="text-xs text-destructive">
+                    {errors.fullName}
+                  </p>
+                )}
               </div>
 
-              <Separator />
-
-              <div className="flex justify-end pt-2">
-                <InlineSocialIcons links={socialLinks} />
+              <div className="space-y-1.5 sm:col-span-2">
+                <Label htmlFor={contactId} className="text-xs text-foreground/90">
+                  شماره موبایل یا ایمیل <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id={contactId}
+                  ref={contactRef}
+                  value={contact}
+                  onChange={(e) => setContact(e.target.value)}
+                  placeholder="09123456789"
+                  className={cn(
+                    "h-11 rounded-xl border-border/70 bg-background/60 text-start",
+                    errors.contact && "border-destructive/50"
+                  )}
+                  name="contact"
+                  inputMode="email"
+                  autoComplete="email"
+                  dir="ltr"
+                  required
+                  aria-required="true"
+                  aria-invalid={errors.contact ? "true" : undefined}
+                  aria-describedby={errors.contact ? `${contactId}-error` : undefined}
+                />
+                {errors.contact && (
+                  <p id={`${contactId}-error`} role="alert" className="text-xs text-destructive">
+                    {errors.contact}
+                  </p>
+                )}
               </div>
-            </CardContent>
-          </Card>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor={messageId} className="text-xs text-foreground/90">
+                پیام شما <span className="text-destructive">*</span>
+              </Label>
+              <Textarea
+                id={messageId}
+                ref={messageRef}
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="هدف و سوالت رو کوتاه بنویس..."
+                rows={4}
+                className={cn(
+                  "min-h-28 rounded-xl border-border/70 bg-background/60 text-start leading-7",
+                  errors.message && "border-destructive/50"
+                )}
+                name="message"
+                required
+                aria-required="true"
+                aria-invalid={errors.message ? "true" : undefined}
+                aria-describedby={errors.message ? `${messageId}-error` : undefined}
+              />
+              {errors.message && (
+                <p id={`${messageId}-error`} role="alert" className="text-xs text-destructive">
+                  {errors.message}
+                </p>
+              )}
+            </div>
+
+            <Button
+              type="submit"
+              size="lg"
+              className="gradient-bg h-11 w-full rounded-xl font-iranianSansBlack text-primary-foreground hover:opacity-90"
+              disabled={submitting}
+            >
+              {submitting ? (
+                "در حال ارسال..."
+              ) : (
+                <>
+                  <Send className="size-4" />
+                  ارسال درخواست مشاوره
+                </>
+              )}
+            </Button>
+          </form>
         </motion.div>
-
-        <TiltCard className="h-full">
-          <Card className="relative h-full overflow-hidden bg-linear-to-t from-primary/5 to-card shadow-xs">
-            <div className="pointer-events-none absolute top-0 end-0 size-32 rounded-full bg-primary/10 blur-3xl" />
-            <CardContent className="relative z-10 pt-6">
-              <form className="space-y-6 text-start" onSubmit={onSubmit} noValidate>
-                <div className="space-y-2">
-                  <Label htmlFor={nameId}>
-                    نام و نام خانوادگی <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id={nameId}
-                    ref={nameRef}
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder="مثلا: علی محمدی"
-                    className="h-11 text-start"
-                    name="name"
-                    autoComplete="name"
-                    required
-                    aria-required="true"
-                    aria-invalid={errors.fullName ? "true" : undefined}
-                    aria-describedby={errors.fullName ? `${nameId}-error` : undefined}
-                  />
-                  {errors.fullName && (
-                    <p id={`${nameId}-error`} role="alert" className="text-xs text-destructive">
-                      {errors.fullName}
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor={contactId}>
-                    شماره موبایل یا ایمیل <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id={contactId}
-                    ref={contactRef}
-                    value={contact}
-                    onChange={(e) => setContact(e.target.value)}
-                    placeholder="۰۹۱۲۳۴۵۶۷۸۹"
-                    className="h-11 text-start"
-                    name="contact"
-                    inputMode="email"
-                    autoComplete="email"
-                    dir="ltr"
-                    required
-                    aria-required="true"
-                    aria-invalid={errors.contact ? "true" : undefined}
-                    aria-describedby={errors.contact ? `${contactId}-error` : undefined}
-                  />
-                  {errors.contact && (
-                    <p id={`${contactId}-error`} role="alert" className="text-xs text-destructive">
-                      {errors.contact}
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor={messageId}>
-                    پیغام شما <span className="text-destructive">*</span>
-                  </Label>
-                  <Textarea
-                    id={messageId}
-                    ref={messageRef}
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    placeholder="چطور می‌توانیم به شما کمک کنیم؟"
-                    rows={4}
-                    className="min-h-28 text-start leading-7"
-                    name="message"
-                    required
-                    aria-required="true"
-                    aria-invalid={errors.message ? "true" : undefined}
-                    aria-describedby={errors.message ? `${messageId}-error` : undefined}
-                  />
-                  {errors.message && (
-                    <p id={`${messageId}-error`} role="alert" className="text-xs text-destructive">
-                      {errors.message}
-                    </p>
-                  )}
-                </div>
-                <Button type="submit" size="lg" className="w-full" disabled={submitting}>
-                  {submitting ? "در حال ارسال..." : "ارسال درخواست مشاوره"}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </TiltCard>
       </div>
     </section>
   );

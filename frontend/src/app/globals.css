@@ -5,58 +5,97 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ---START---- IranSans (local woff2 — bundled with the app, no external CDN) --- */
+/* Unified family so weights resolve like navbar (Medium / DemiBold / Black). */
+@font-face {
+  font-family: "IranianSans";
+  font-display: swap;
+  font-weight: 400;
+  src: url("../assets/fonts/IRANSans/IRANSansXFaNum-Regular.woff2") format("woff2");
+}
+@font-face {
+  font-family: "IranianSans";
+  font-display: swap;
+  font-weight: 500;
+  src: url("../assets/fonts/IRANSans/IRANSansXFaNum-Medium.woff2") format("woff2");
+}
+@font-face {
+  font-family: "IranianSans";
+  font-display: swap;
+  font-weight: 600;
+  src: url("../assets/fonts/IRANSans/IRANSansXFaNum-DemiBold.woff2") format("woff2");
+}
+@font-face {
+  font-family: "IranianSans";
+  font-display: swap;
+  font-weight: 700;
+  src: url("../assets/fonts/IRANSans/IRANSansXFaNum-DemiBold.woff2") format("woff2");
+}
+@font-face {
+  font-family: "IranianSans";
+  font-display: swap;
+  font-weight: 800;
+  src: url("../assets/fonts/IRANSans/IRANSansXFaNum-Black.woff2") format("woff2");
+}
+@font-face {
+  font-family: "IranianSans";
+  font-display: swap;
+  font-weight: 900;
+  src: url("../assets/fonts/IRANSans/IRANSansXFaNum-Black.woff2") format("woff2");
+}
+
+/* Legacy family names for existing utility classes. */
 @font-face {
   font-family: "IranianSansRegular";
   font-display: swap;
   font-weight: 400;
   src: url("../assets/fonts/IRANSans/IRANSansXFaNum-Regular.woff2") format("woff2");
 }
-
 @font-face {
   font-family: "IranianSansMedium";
   font-display: swap;
   font-weight: 500;
   src: url("../assets/fonts/IRANSans/IRANSansXFaNum-Medium.woff2") format("woff2");
 }
-
 @font-face {
   font-family: "IranianSansDemiBold";
   font-display: swap;
   font-weight: 600;
   src: url("../assets/fonts/IRANSans/IRANSansXFaNum-DemiBold.woff2") format("woff2");
 }
-
 @font-face {
   font-family: "IranianSansBlack";
   font-display: swap;
   font-weight: 800;
   src: url("../assets/fonts/IRANSans/IRANSansXFaNum-Black.woff2") format("woff2");
 }
-
 /* ---END---- IranSans --------- */
 
 @theme {
-  --font-iranianSansRegular: IranianSansRegular;
-  --font-iranianSansMedium: IranianSansMedium;
-  --font-iranianSansDemiBold: IranianSansDemiBold;
-  --font-iranianSansBlack: IranianSansBlack;
+  --font-sans: IranianSans, ui-sans-serif, system-ui, sans-serif;
+  --font-iranianSansRegular: IranianSansMedium, IranianSans, ui-sans-serif, system-ui, sans-serif;
+  --font-iranianSansMedium: IranianSansMedium, IranianSans, ui-sans-serif, system-ui, sans-serif;
+  --font-iranianSansDemiBold: IranianSansDemiBold, IranianSans, ui-sans-serif, system-ui, sans-serif;
+  --font-iranianSansBlack: IranianSansBlack, IranianSans, ui-sans-serif, system-ui, sans-serif;
   /* legacy aliases used in a few places */
-  --font-iranianSansXRegular: IranianSansRegular;
+  --font-iranianSansXRegular: IranianSansMedium, IranianSans, ui-sans-serif, system-ui, sans-serif;
 }
 
 body {
-  @apply font-iranianSansRegular;
-  /* Plain fallbacks so text stays light-on-dark even before the
-     @theme CSS variables apply (avoids a dark-text flash on first paint). */
-  /* background-color: #131313;
-  color: #e2e2e2; */
+  /* Same Medium face as navbar — denser/shik-er than Regular base. */
+  @apply font-sans font-medium antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "IranianSans", "IranianSansDemiBold", ui-sans-serif, system-ui, sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
 /* Sonner renders toasts in a portal with its own font stack — force the app's
    Persian font so toast text (e.g. session-expiry) matches the rest of the UI. */
 .cn-toast,
 .cn-toast * {
-  font-family: "IranianSansRegular", sans-serif;
+  font-family: "IranianSans", "IranianSansMedium", ui-sans-serif, system-ui, sans-serif;
 }
 
 html {
@@ -108,38 +147,39 @@ html {
 }
 
 :root {
+  /* Brand from logo sample: electric aqua #26fce3 (oklch hue ~182) — not blue cyan */
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.527 0.154 150.069);
-  --primary-foreground: oklch(0.982 0.018 155.826);
-  --secondary: oklch(0.967 0.001 286.375);
-  --secondary-foreground: oklch(0.21 0.006 285.885);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --primary: oklch(0.58 0.11 187);
+  --primary-foreground: oklch(0.99 0.01 185);
+  --secondary: oklch(0.96 0.02 188);
+  --secondary-foreground: oklch(0.3 0.04 190);
+  --muted: oklch(0.97 0.008 188);
+  --muted-foreground: oklch(0.5 0.02 190);
+  --accent: oklch(0.94 0.035 185);
+  --accent-foreground: oklch(0.3 0.05 188);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.871 0.15 154.449);
-  --chart-2: oklch(0.723 0.219 149.579);
-  --chart-3: oklch(0.627 0.194 149.214);
-  --chart-4: oklch(0.527 0.154 150.069);
-  --chart-5: oklch(0.448 0.119 151.328);
+  --border: oklch(0.92 0.012 188);
+  --input: oklch(0.92 0.012 188);
+  --ring: oklch(0.68 0.11 185);
+  --chart-1: oklch(0.89 0.15 182);
+  --chart-2: oklch(0.77 0.1 187);
+  --chart-3: oklch(0.63 0.1 190);
+  --chart-4: oklch(0.5 0.08 195);
+  --chart-5: oklch(0.42 0.07 200);
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
+  --sidebar: oklch(0.985 0.006 188);
   --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.627 0.194 149.214);
-  --sidebar-primary-foreground: oklch(0.982 0.018 155.826);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar-primary: oklch(0.58 0.11 187);
+  --sidebar-primary-foreground: oklch(0.99 0.01 185);
+  --sidebar-accent: oklch(0.94 0.035 185);
+  --sidebar-accent-foreground: oklch(0.3 0.05 188);
+  --sidebar-border: oklch(0.92 0.012 188);
+  --sidebar-ring: oklch(0.68 0.11 185);
 }
 
 .dark {
@@ -149,42 +189,42 @@ html {
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.448 0.119 151.328);
-  --primary-foreground: oklch(0.982 0.018 155.826);
-  --secondary: oklch(0.274 0.006 286.033);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.86 0.14 183);
+  --primary-foreground: oklch(0.2 0.04 195);
+  --secondary: oklch(0.27 0.03 195);
+  --secondary-foreground: oklch(0.94 0.03 185);
+  --muted: oklch(0.27 0.015 195);
+  --muted-foreground: oklch(0.72 0.03 188);
+  --accent: oklch(0.3 0.045 185);
+  --accent-foreground: oklch(0.93 0.05 183);
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.871 0.15 154.449);
-  --chart-2: oklch(0.723 0.219 149.579);
-  --chart-3: oklch(0.627 0.194 149.214);
-  --chart-4: oklch(0.527 0.154 150.069);
-  --chart-5: oklch(0.448 0.119 151.328);
-  --sidebar: oklch(0.205 0 0);
+  --ring: oklch(0.8 0.13 183);
+  --chart-1: oklch(0.89 0.15 182);
+  --chart-2: oklch(0.77 0.1 187);
+  --chart-3: oklch(0.63 0.1 190);
+  --chart-4: oklch(0.5 0.08 195);
+  --chart-5: oklch(0.42 0.07 200);
+  --sidebar: oklch(0.205 0.012 195);
   --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.723 0.219 149.579);
-  --sidebar-primary-foreground: oklch(0.982 0.018 155.826);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.86 0.14 183);
+  --sidebar-primary-foreground: oklch(0.2 0.04 195);
+  --sidebar-accent: oklch(0.3 0.045 185);
+  --sidebar-accent-foreground: oklch(0.93 0.05 183);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar-ring: oklch(0.8 0.13 183);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
   html {
     @apply font-sans;
+  }
+  body {
+    @apply bg-background font-sans font-medium text-foreground antialiased;
   }
 }
 
@@ -193,27 +233,29 @@ html {
    Scoped separately from shadcn (--background / --primary)
    ========================================================= */
 :root {
-  --emerald-cyan: linear-gradient(135deg, #00b88a 0%, #00b8d4 100%);
-  --aurora-color1: rgba(16, 185, 129, 0.12);
-  --aurora-color2: rgba(20, 184, 166, 0.12);
+  /* Exact logo aqua: deep #187272 → mid #58cac0 → glow #26fce3 */
+  --emerald-cyan: linear-gradient(135deg, #187272 0%, #2a9c96 40%, #58cac0 70%, #26fce3 100%);
+  --aurora-color1: rgba(88, 202, 192, 0.16);
+  --aurora-color2: rgba(38, 252, 227, 0.12);
   --landing-surface: oklch(0.99 0 0);
-  --landing-surface-dim: oklch(0.97 0 0);
-  --landing-surface-bright: oklch(0.94 0 0);
+  --landing-surface-dim: oklch(0.97 0.008 188);
+  --landing-surface-bright: oklch(0.94 0.012 186);
   --landing-surface-container-lowest: oklch(0.98 0 0);
-  --landing-surface-container-low: oklch(0.96 0 0);
-  --landing-surface-container: oklch(0.94 0 0);
-  --landing-surface-container-high: oklch(0.91 0 0);
-  --landing-surface-container-highest: oklch(0.88 0 0);
-  --landing-surface-tint: #00a884;
-  --landing-primary-container: #00c9a0;
-  --landing-primary-fixed: #00e1ab;
-  --landing-secondary-container: #00b8d4;
-  --landing-secondary-fixed-dim: #00a8c4;
+  --landing-surface-container-low: oklch(0.96 0.01 186);
+  --landing-surface-container: oklch(0.94 0.012 186);
+  --landing-surface-container-high: oklch(0.91 0.016 186);
+  --landing-surface-container-highest: oklch(0.88 0.02 186);
+  --landing-surface-tint: #2a9c96;
+  --landing-primary-container: #58cac0;
+  --landing-primary-fixed: #6ceade;
+  --landing-secondary-container: #26fce3;
+  --landing-secondary-fixed-dim: #187e7e;
   --landing-on-primary: #ffffff;
-  --landing-on-surface: oklch(0.18 0 0);
-  --landing-on-surface-variant: oklch(0.42 0.02 150);
-  --landing-outline-variant: oklch(0.86 0.01 150);
-  --landing-heading: oklch(0.2 0 0);
+  --landing-on-surface: oklch(0.145 0 0);
+  /* Body copy: near-black in light (no aqua tint) */
+  --landing-on-surface-variant: oklch(0.22 0 0);
+  --landing-outline-variant: oklch(0.86 0 0);
+  --landing-heading: oklch(0.145 0 0);
   --landing-nav-hover: rgba(0, 0, 0, 0.05);
   --landing-chip-bg: rgba(0, 0, 0, 0.04);
   --landing-chip-border: rgba(0, 0, 0, 0.1);
@@ -221,9 +263,9 @@ html {
 }
 
 .dark {
-  --emerald-cyan: linear-gradient(135deg, #00e1ab 0%, #00e3fd 100%);
-  --aurora-color1: rgba(16, 185, 129, 0.2);
-  --aurora-color2: rgba(20, 184, 166, 0.2);
+  --emerald-cyan: linear-gradient(135deg, #2a9c96 0%, #58cac0 45%, #26fce3 100%);
+  --aurora-color1: rgba(88, 202, 192, 0.24);
+  --aurora-color2: rgba(38, 252, 227, 0.2);
   --landing-surface: #131313;
   --landing-surface-dim: #131313;
   --landing-surface-bright: #393939;
@@ -232,16 +274,17 @@ html {
   --landing-surface-container: #1f1f1f;
   --landing-surface-container-high: #2a2a2a;
   --landing-surface-container-highest: #353535;
-  --landing-surface-tint: #00e1ab;
-  --landing-primary-container: #00ffc2;
-  --landing-primary-fixed: #36ffc4;
-  --landing-secondary-container: #00e3fd;
-  --landing-secondary-fixed-dim: #00daf3;
-  --landing-on-primary: #003828;
-  --landing-on-surface: #e2e2e2;
-  --landing-on-surface-variant: #b9cbc1;
-  --landing-outline-variant: #3a4a43;
-  --landing-heading: #fbfffa;
+  --landing-surface-tint: #26fce3;
+  --landing-primary-container: #58cac0;
+  --landing-primary-fixed: #6ceade;
+  --landing-secondary-container: #2cffe8;
+  --landing-secondary-fixed-dim: #2a9c96;
+  --landing-on-primary: #063532;
+  --landing-on-surface: #f5f5f5;
+  /* Body copy: near-white in dark (no aqua tint) */
+  --landing-on-surface-variant: #f0f0f0;
+  --landing-outline-variant: #3a3a3a;
+  --landing-heading: #fafafa;
   --landing-nav-hover: rgba(255, 255, 255, 0.08);
   --landing-chip-bg: rgba(255, 255, 255, 0.05);
   --landing-chip-border: rgba(255, 255, 255, 0.1);
@@ -421,7 +464,7 @@ html {
   100% { background-position: 200% center; }
 }
 .shimmer-btn {
-  background: linear-gradient(90deg, #00e1ab 0%, #36ffc4 25%, #00e3fd 50%, #36ffc4 75%, #00e1ab 100%);
+  background: linear-gradient(90deg, #187272 0%, #2a9c96 25%, #58cac0 50%, #26fce3 75%, #187272 100%);
   background-size: 200% auto;
   transition: all 0.3s;
 }
@@ -449,7 +492,7 @@ html {
   inset: -1px;
   padding: 1px;
   border-radius: inherit;
-  background: linear-gradient(90deg, #00e1ab, #00e3fd, #00e1ab);
+  background: linear-gradient(90deg, #187272, #2a9c96, #58cac0, #26fce3, #187272);
   background-size: 200% auto;
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -464,7 +507,7 @@ html {
   animation: shimmer 3s linear infinite;
 }
 .glow-card:hover {
-  box-shadow: 0 0 25px rgba(0, 225, 171, 0.15);
+  box-shadow: 0 0 25px rgba(38, 252, 227, 0.22);
 }
 
 /* Mouse-tracking tilt */
@@ -483,9 +526,9 @@ html {
 
 /* Pulsing glow for hero checklist on hover */
 @keyframes pulse-glow {
-  0% { text-shadow: 0 0 0 rgba(0, 225, 171, 0); }
-  50% { text-shadow: 0 0 10px rgba(0, 225, 171, 0.8); }
-  100% { text-shadow: 0 0 0 rgba(0, 225, 171, 0); }
+  0% { text-shadow: 0 0 0 rgba(38, 252, 227, 0); }
+  50% { text-shadow: 0 0 10px rgba(38, 252, 227, 0.85); }
+  100% { text-shadow: 0 0 0 rgba(38, 252, 227, 0); }
 }
 .check-pulse:hover .check-pulse-icon {
   animation: pulse-glow 1.5s infinite;

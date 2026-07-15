@@ -106,7 +106,7 @@ export default function CoachLandingClient({ slug }) {
         <button
           type="button"
           onClick={() => setReloadKey((k) => k + 1)}
-          className="mt-6 inline-block cursor-pointer rounded-xl bg-white px-4 py-2 text-sm font-bold text-zinc-950 transition-colors hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+          className="mt-6 inline-block cursor-pointer rounded-xl bg-white px-4 py-2 text-sm font-bold text-zinc-950 transition-colors hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400"
         >
           تلاش مجدد
         </button>
@@ -123,7 +123,7 @@ export default function CoachLandingClient({ slug }) {
         </p>
         <Link
           href="/"
-          className="mt-6 inline-block rounded-xl bg-white px-4 py-2 text-sm font-bold text-zinc-950 transition-colors hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+          className="mt-6 inline-block rounded-xl bg-white px-4 py-2 text-sm font-bold text-zinc-950 transition-colors hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400"
         >
           بازگشت به صفحه اصلی
         </Link>
@@ -177,7 +177,7 @@ export default function CoachLandingClient({ slug }) {
                 className="absolute inset-0 h-full w-full object-fill"
               />
             ) : (
-              <div className="flex h-full w-full items-center justify-center text-7xl font-bold text-emerald-300">
+              <div className="flex h-full w-full items-center justify-center text-7xl font-bold text-teal-300">
                 {coach.displayName?.[0] || "?"}
               </div>
             )}
@@ -246,7 +246,7 @@ export default function CoachLandingClient({ slug }) {
               <p className="mt-1 text-xs text-zinc-400 md:text-sm">پلن آماده</p>
             </div>
             <div className="border-x border-white/10">
-              <p className="text-xl font-extrabold text-emerald-300 md:text-2xl">
+              <p className="text-xl font-extrabold text-teal-300 md:text-2xl">
                 {new Intl.NumberFormat("fa-IR").format(minPrice)}
               </p>
               <p className="mt-1 text-xs text-zinc-400 md:text-sm">شروع از (تومان)</p>
@@ -301,7 +301,7 @@ export default function CoachLandingClient({ slug }) {
               {assignedCoach.slug ? (
                 <>
                   {" "}
-                  <Link href={`/coach/${assignedCoach.slug}`} className="underline text-emerald-200">
+                  <Link href={`/coach/${assignedCoach.slug}`} className="underline text-teal-200">
                     مشاهده لندینگ مربی شما
                   </Link>
                 </>
@@ -349,14 +349,14 @@ export default function CoachLandingClient({ slug }) {
                       className={[
                         "rounded-[18px] px-6 py-8",
                         popular
-                          ? "bg-zinc-900 ring-1 ring-emerald-400/20 shadow-[0_8px_24px_-6px_rgba(16,185,129,0.25)]"
+                          ? "bg-zinc-900 ring-1 ring-teal-400/20 shadow-[0_8px_24px_-6px_rgba(38,252,227,0.25)]"
                           : "bg-zinc-950 ring-1 ring-white/5 shadow-[0_8px_8px_-3px_rgba(0,0,0,0.4)]",
                       ].join(" ")}
                     >
                       <div className="flex items-center justify-between gap-2">
                         <p className="text-xl font-bold text-white md:text-2xl">{plan.title}</p>
                         {popular && (
-                          <span className="rounded-full bg-emerald-500/20 px-2.5 py-1 text-xs font-bold text-emerald-300">
+                          <span className="rounded-full bg-teal-500/20 px-2.5 py-1 text-xs font-bold text-teal-300">
                             محبوب‌ترین
                           </span>
                         )}
@@ -372,13 +372,13 @@ export default function CoachLandingClient({ slug }) {
                         <span className="text-4xl font-extrabold tracking-tight text-white lg:text-5xl">
                           {new Intl.NumberFormat("fa-IR").format(price)}
                         </span>
-                        <span className={["text-sm", popular ? "text-emerald-50/90" : "text-zinc-400"].join(" ")}>تومان</span>
-                        <span className={["text-sm", popular ? "text-emerald-100/80" : "text-zinc-500"].join(" ")}>/ {plan.durationDays} روز</span>
+                        <span className={["text-sm", popular ? "text-teal-50/90" : "text-zinc-400"].join(" ")}>تومان</span>
+                        <span className={["text-sm", popular ? "text-teal-100/80" : "text-zinc-500"].join(" ")}>/ {plan.durationDays} روز</span>
                       </div>
                       {hasDiscount && (
                         <p className={[
                           "mt-1 text-sm line-through",
-                          popular ? "text-emerald-100/70" : "text-zinc-500",
+                          popular ? "text-teal-100/70" : "text-zinc-500",
                         ].join(" ")}>
                           {formatToman(plan.price)}
                         </p>
@@ -425,11 +425,11 @@ export default function CoachLandingClient({ slug }) {
                               "mt-5 w-full rounded-full px-4 py-3.5 text-sm font-bold transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950",
                               inCart
                                 ? popular
-                                  ? "cursor-not-allowed bg-emerald-950/40 text-emerald-50 ring-1 ring-white/30 focus-visible:ring-white"
-                                  : "cursor-not-allowed bg-emerald-400/10 text-emerald-200 ring-1 ring-emerald-400/30 focus-visible:ring-emerald-400"
+                                  ? "cursor-not-allowed bg-teal-950/40 text-teal-50 ring-1 ring-white/30 focus-visible:ring-white"
+                                  : "cursor-not-allowed bg-teal-400/10 text-teal-200 ring-1 ring-teal-400/30 focus-visible:ring-teal-400"
                                 : popular
-                                  ? "cursor-pointer bg-white text-emerald-700 shadow-[0_4px_14px_-2px_rgba(0,0,0,0.25)] hover:bg-emerald-50 focus-visible:ring-white"
-                                  : "cursor-pointer bg-zinc-950 text-zinc-200 ring-1 ring-white/10 hover:bg-zinc-800 focus-visible:ring-emerald-400",
+                                  ? "cursor-pointer bg-white text-teal-700 shadow-[0_4px_14px_-2px_rgba(0,0,0,0.25)] hover:bg-teal-50 focus-visible:ring-white"
+                                  : "cursor-pointer bg-zinc-950 text-zinc-200 ring-1 ring-white/10 hover:bg-zinc-800 focus-visible:ring-teal-400",
                             ].join(" ")}
                           >
                             {inCart ? "در سبد خرید است" : "انتخاب این پلن"}
@@ -447,7 +447,7 @@ export default function CoachLandingClient({ slug }) {
                         <>
                           <p className={[
                             "font-mono text-xs uppercase tracking-tight",
-                            popular ? "text-emerald-300/80" : "text-zinc-500",
+                            popular ? "text-teal-300/80" : "text-zinc-500",
                           ].join(" ")}>
                             {plan.title} — شامل
                           </p>
@@ -457,14 +457,14 @@ export default function CoachLandingClient({ slug }) {
                                 <span
                                   className={[
                                     "mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full",
-                                    popular ? "bg-emerald-500/20" : "bg-zinc-800",
+                                    popular ? "bg-teal-500/20" : "bg-zinc-800",
                                   ].join(" ")}
                                 >
                                   <FiCheck
                                     aria-hidden="true"
                                     className={[
                                       "size-3 stroke-[3]",
-                                      popular ? "text-emerald-300" : "text-emerald-400",
+                                      popular ? "text-teal-300" : "text-teal-400",
                                     ].join(" ")}
                                   />
                                 </span>
@@ -494,7 +494,7 @@ export default function CoachLandingClient({ slug }) {
         <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-zinc-950/90 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur md:hidden">
           <a
             href="#plans"
-            className="flex w-full items-center justify-center rounded-2xl bg-white px-4 py-3 text-sm font-extrabold text-zinc-950 transition-colors hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+            className="flex w-full items-center justify-center rounded-2xl bg-white px-4 py-3 text-sm font-extrabold text-zinc-950 transition-colors hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400"
           >
             مشاهده پلن‌ها · از {new Intl.NumberFormat("fa-IR").format(minPrice)} تومان
           </a>

@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 
 export const adminBrand = {
-  title: "Fitino",
+  title: "فیتینو",
   subtitle: "پنل مدیر",
   href: "/admin",
 };

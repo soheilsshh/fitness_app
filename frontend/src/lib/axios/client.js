@@ -40,9 +40,9 @@ if (typeof window !== "undefined") {
       const status = error?.response?.status;
       const url = error?.config?.url || "";
       const isAuthEndpoint = url.includes("/auth/");
-      const onLoginPage = window.location.pathname.startsWith("/auth/login");
+      const onAuthPage = window.location.pathname.startsWith("/auth");
 
-      if (status === 401 && !isAuthEndpoint && !onLoginPage && !handlingSessionExpiry) {
+      if (status === 401 && !isAuthEndpoint && !onAuthPage && !handlingSessionExpiry) {
         handlingSessionExpiry = true;
         clearAuthSession();
         toast.error("نشست شما منقضی شده است. لطفاً دوباره وارد شوید.");
@@ -51,7 +51,7 @@ if (typeof window !== "undefined") {
         );
         // Brief delay so the toast is visible before the navigation.
         setTimeout(() => {
-          window.location.href = `/auth/login?redirect=${next}`;
+          window.location.href = `/auth?redirect=${next}`;
         }, 1200);
       }
 

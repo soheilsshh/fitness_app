@@ -139,6 +139,7 @@ func NewServer(db *gorm.DB) *Server {
 	adminFunnelController := controllers.NewAdminFunnelController(funnelService)
 
 	// Auth routes
+	router.POST("/auth/check-phone", authController.CheckPhone)
 	router.POST("/auth/register", authController.Register)
 	router.POST("/auth/register/coach", authController.RegisterCoach)
 	router.POST("/auth/login/password", authController.LoginWithPassword)

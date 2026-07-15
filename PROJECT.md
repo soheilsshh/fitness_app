@@ -7,7 +7,7 @@
 
 ## خلاصه محصول
 
-**Morabiyar (FitPro)** یک پلتفرم مدیریت مربیگری ورزشی است که:
+**فیتینو (Fitino)** یک پلتفرم مدیریت مربیگری ورزشی است که:
 
 - چندین **مربی** می‌توانند در پلتفرم فعالیت کنند
 - هر مربی **پلن فروش** (تمرین / تغذیه / ترکیبی) تعریف می‌کند
@@ -44,9 +44,10 @@
 |------|-------|
 | `/` | لندینگ برند پلتفرم |
 | `/coach/[slug]` | لندینگ عمومی هر مربی |
-| `/auth/login` | ورود |
-| `/auth/register` | ثبت‌نام دانشجو |
-| `/auth/register/coach` | ثبت‌نام مربی (جدید) |
+| `/auth` | ورود / ثبت‌نام واحد (با شماره موبایل) |
+| `/auth/login` | ریدایرکت به `/auth` |
+| `/auth/register` | ریدایرکت به `/auth` |
+| `/auth/register/coach` | ثبت‌نام مربی |
 | `/payment` | تأیید سفارش (دمو) |
 | `/payment/bank` | درگاه دمو |
 
@@ -150,11 +151,12 @@
 
 | متد | مسیر | نقش |
 |-----|------|-----|
-| POST | `/auth/register` | عمومی — دانشجو |
+| POST | `/auth/check-phone` | عمومی — وجود کاربر با شماره |
+| POST | `/auth/register` | عمومی — دانشجو (نیاز به OTP) |
 | POST | `/auth/register/coach` | عمومی — مربی |
 | POST | `/auth/login/password` | عمومی |
 | POST | `/auth/otp/request` | عمومی |
-| POST | `/auth/otp/verify` | عمومی |
+| POST | `/auth/otp/verify` | عمومی — ورود کاربران موجود |
 | POST | `/auth/logout` | JWT |
 | GET | `/auth/me` | JWT |
 

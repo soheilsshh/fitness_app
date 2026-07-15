@@ -1,10 +1,10 @@
-import { Suspense } from "react";
-import LoginForm from "./_components/LoginForm";
+import { redirect } from "next/navigation";
 
-export default function LoginPage() {
-  return (
-    <Suspense fallback={<div className="py-20 text-center text-zinc-400">در حال بارگذاری...</div>}>
-      <LoginForm />
-    </Suspense>
-  );
+export default async function LoginPage({ searchParams }) {
+  const params = await searchParams;
+  const qs = new URLSearchParams();
+  if (params?.next) qs.set("next", params.next);
+  if (params?.redirect) qs.set("redirect", params.redirect);
+  const suffix = qs.toString();
+  redirect(suffix ? `/auth?${suffix}` : "/auth");
 }

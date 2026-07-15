@@ -71,7 +71,7 @@ export default function CartDrawer({ open, onClose }) {
 
               {coach.coachName ? (
                 <div className="border-b border-white/10 px-5 py-3 text-[11px] text-zinc-400">
-                  مربی: <span className="font-bold text-emerald-300">{coach.coachName}</span>
+                  مربی: <span className="font-bold text-teal-300">{coach.coachName}</span>
                 </div>
               ) : null}
 
@@ -107,7 +107,7 @@ export default function CartDrawer({ open, onClose }) {
                           </button>
                         </div>
 
-                        <div className="mt-4 flex items-center justify-end">
+                        <div className="mt-4 flex items-center justify-start">
                           <div className="text-sm font-extrabold text-white">
                             {formatToman(it.price)}
                           </div>

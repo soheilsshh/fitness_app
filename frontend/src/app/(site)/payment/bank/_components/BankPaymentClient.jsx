@@ -59,9 +59,9 @@ export default function BankPaymentClient() {
         ) : order ? (
           <div className="mt-6 rounded-3xl border border-white/10 bg-zinc-950/30 p-5 text-right text-sm text-zinc-200">
             <div>کد پیگیری: <span className="font-bold text-white">{order.trackingCode}</span></div>
-            <div className="mt-2">وضعیت: <span className="text-emerald-300">{order.status}</span></div>
+            <div className="mt-2">وضعیت: <span className="text-teal-300">{order.status}</span></div>
             {order.coachName ? (
-              <div className="mt-2">مربی: <span className="text-emerald-300">{order.coachName}</span></div>
+              <div className="mt-2">مربی: <span className="text-teal-300">{order.coachName}</span></div>
             ) : null}
             <div className="mt-2">مبلغ: <span className="font-bold text-white">{formatToman(total)}</span></div>
           </div>
@@ -74,7 +74,7 @@ export default function BankPaymentClient() {
         <button
           type="button"
           onClick={onConfirm}
-          className="mt-6 w-full rounded-2xl bg-emerald-500 px-4 py-3 text-sm font-extrabold text-zinc-950 hover:bg-emerald-400"
+          className="mt-6 w-full rounded-2xl bg-teal-500 px-4 py-3 text-sm font-extrabold text-zinc-950 hover:bg-teal-400"
         >
           پرداخت موفق (دمو) — مشاهده سفارش
         </button>

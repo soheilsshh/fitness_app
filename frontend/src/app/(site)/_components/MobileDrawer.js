@@ -1,77 +1,149 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { FiX, FiLogOut } from "react-icons/fi";
+import { FiX, FiLogOut, FiUser, FiChevronLeft } from "react-icons/fi";
+import { Logo } from "@/components/Logo";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { cn } from "@/lib/utils";
 
 function itemKey(item) {
   return item.href || item.id;
 }
 
-export default function MobileDrawer({ open, onClose, items, onItemClick, session, panelHref, onLogout }) {
+export default function MobileDrawer({
+  open,
+  onClose,
+  items,
+  onItemClick,
+  session,
+  panelHref,
+  onLogout,
+  pathname,
+}) {
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e) => {
+      if (e.key === "Escape") onClose?.();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [open, onClose]);
+
+  const isAuthed = Boolean(session?.token);
+
   return (
     <AnimatePresence>
       {open && (
         <>
           <motion.div
-            className="fixed inset-0 z-[110] bg-black/50 backdrop-blur-md"
+            className="fixed inset-0 z-[110] bg-foreground/40 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
             onClick={onClose}
+            aria-hidden
           />
           <motion.aside
-            className="fixed right-0 top-0 z-[120] h-full w-[86%] max-w-sm border-l border-white/15 bg-zinc-950/80 p-4 backdrop-blur-2xl"
-            initial={{ x: 420 }}
+            id="site-mobile-drawer"
+            role="dialog"
+            aria-modal="true"
+            aria-label="منوی فیتینو"
+            className="fixed inset-y-0 start-0 z-[120] flex h-full w-[min(100%,22rem)] flex-col border-e border-border bg-background shadow-2xl"
+            initial={{ x: "100%" }}
             animate={{ x: 0 }}
-            exit={{ x: 420 }}
-            transition={{ type: "spring", damping: 26, stiffness: 240 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "spring", damping: 30, stiffness: 320 }}
+            style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
           >
-            <div className="flex items-center justify-between">
-              <div className="text-sm font-extrabold text-white">منو</div>
-              <button
-                type="button"
-                className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 p-2 hover:bg-white/10"
+            <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3.5">
+              <Link
+                href="/"
                 onClick={onClose}
-                aria-label="بستن"
+                className="flex min-w-0 items-center gap-2.5"
               >
-                <FiX className="text-xl" />
-              </button>
+                <Logo className="h-9 w-9 object-contain" />
+                <span className="font-iranianSansBlack text-lg text-foreground">
+                  فیتینو
+                </span>
+              </Link>
+              <div className="flex items-center gap-1">
+                <ThemeToggle buttonClassName="h-11 w-11 rounded-full border-0 bg-transparent shadow-none hover:bg-muted" />
+                <button
+                  type="button"
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-full text-foreground/80 transition-colors hover:bg-muted hover:text-foreground"
+                  onClick={onClose}
+                  aria-label="بستن منو"
+                >
+                  <FiX className="text-xl" />
+                </button>
+              </div>
             </div>
 
-            <div className="mt-4 space-y-1">
-              {items.map((it) =>
-                it.type === "link" ? (
-                  <Link
-                    key={itemKey(it)}
-                    href={it.href}
-                    onClick={onClose}
-                    className="block w-full rounded-xl px-3 py-3 text-right text-sm font-medium text-zinc-200 hover:bg-white/8"
-                  >
-                    {it.label}
-                  </Link>
-                ) : (
-                  <button
-                    key={itemKey(it)}
-                    type="button"
-                    className="w-full rounded-xl px-3 py-3 text-right text-sm font-medium text-zinc-200 hover:bg-white/8"
-                    onClick={() => onItemClick(it)}
-                  >
-                    {it.label}
-                  </button>
-                )
-              )}
-            </div>
+            <nav className="flex-1 overflow-y-auto px-3 py-4" aria-label="منوی موبایل">
+              <ul className="space-y-1">
+                {items.map((it) => {
+                  const active =
+                    it.type === "link" && it.href === pathname;
+                  const className = cn(
+                    "flex w-full items-center justify-between rounded-2xl px-3.5 py-3.5 text-right text-[15px] transition-colors",
+                    active
+                      ? "bg-primary/10 font-iranianSansDemiBold text-primary"
+                      : "font-iranianSansMedium text-foreground hover:bg-muted"
+                  );
 
-            <div className="mt-6 border-t border-white/10 pt-4">
-              {session?.token ? (
+                  if (it.type === "link") {
+                    return (
+                      <li key={itemKey(it)}>
+                        <Link
+                          href={it.href}
+                          onClick={onClose}
+                          className={className}
+                        >
+                          <span>{it.label}</span>
+                          <FiChevronLeft className="text-muted-foreground" />
+                        </Link>
+                      </li>
+                    );
+                  }
+
+                  return (
+                    <li key={itemKey(it)}>
+                      <button
+                        type="button"
+                        className={className}
+                        onClick={() => onItemClick(it)}
+                      >
+                        <span>{it.label}</span>
+                        <FiChevronLeft className="text-muted-foreground" />
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </nav>
+
+            <div className="space-y-2 border-t border-border p-4">
+              {isAuthed ? (
                 <>
                   <Link
                     href={panelHref}
                     onClick={onClose}
-                    className="block rounded-xl px-3 py-3 text-sm text-zinc-200 hover:bg-white/8"
+                    className="flex items-center gap-3 rounded-2xl bg-muted/70 px-3.5 py-3.5 text-sm font-iranianSansDemiBold text-foreground transition-colors hover:bg-muted"
                   >
-                    {session.name || "پنل من"}
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-background text-primary shadow-sm">
+                      <FiUser className="text-lg" />
+                    </span>
+                    <span className="min-w-0 truncate">
+                      {session.name || "پنل من"}
+                    </span>
                   </Link>
                   <button
                     type="button"
@@ -79,34 +151,27 @@ export default function MobileDrawer({ open, onClose, items, onItemClick, sessio
                       onClose();
                       onLogout?.();
                     }}
-                    className="mt-2 flex w-full items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-zinc-200 hover:bg-white/10"
+                    className="flex w-full items-center justify-center gap-2 rounded-2xl border border-border px-3.5 py-3.5 text-sm font-iranianSansMedium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                   >
                     <FiLogOut />
-                    خروج
+                    خروج از حساب
                   </button>
                 </>
               ) : (
                 <>
                   <Link
-                    href="/auth/login"
+                    href="/auth"
                     onClick={onClose}
-                    className="block rounded-xl px-3 py-3 text-sm text-zinc-200 hover:bg-white/8"
+                    className="flex w-full items-center justify-center rounded-2xl border border-border px-3.5 py-3.5 text-sm font-iranianSansDemiBold text-foreground transition-colors hover:bg-muted"
                   >
-                    ورود
-                  </Link>
-                  <Link
-                    href="/auth/register"
-                    onClick={onClose}
-                    className="mt-2 block rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-center text-sm font-medium text-zinc-100 hover:bg-white/10"
-                  >
-                    ثبت‌نام دانشجو
+                    ورود / ثبت‌نام
                   </Link>
                   <Link
                     href="/auth/register/coach"
                     onClick={onClose}
-                    className="mt-2 block rounded-xl bg-gradient-to-l from-emerald-400 to-cyan-400 px-3 py-3 text-center text-sm font-extrabold text-zinc-950"
+                    className="gradient-bg flex w-full items-center justify-center rounded-2xl px-3.5 py-3.5 text-sm font-iranianSansBlack text-primary-foreground shadow-sm transition hover:opacity-90"
                   >
-                    ثبت‌نام مربی
+                    ثبت‌نام به‌عنوان مربی
                   </Link>
                 </>
               )}
