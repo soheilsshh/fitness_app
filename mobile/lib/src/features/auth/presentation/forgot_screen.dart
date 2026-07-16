@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/widgets/app_text_field.dart';
+import '../../../core/widgets/fitino_ui.dart';
 import '../../../core/utils/validators.dart';
 import '../data/auth_repository.dart';
 
@@ -96,8 +97,9 @@ class _ForgotScreenState extends ConsumerState<ForgotScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('بازیابی گذرواژه')),
+    return FitinoPushScaffold(
+      title: 'بازیابی گذرواژه',
+      description: 'با کد پیامکی رمز جدید بگذارید',
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),

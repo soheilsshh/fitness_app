@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/async_value_widget.dart';
+import '../../../core/widgets/fitino_ui.dart';
 import '../../../core/widgets/state_views.dart';
 import '../data/coach_students_repository.dart';
 
@@ -54,9 +55,16 @@ class _CoachStudentsScreenState extends ConsumerState<CoachStudentsScreen> {
     final filter = ref.watch(coachStudentsFilterProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('شاگردان من')),
+      backgroundColor: Colors.transparent,
       body: Column(
         children: [
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 8, 16, 0),
+            child: FitinoPageHeader(
+              title: 'شاگردان من',
+              description: 'مدیریت برنامه‌ها و وضعیت اشتراک',
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             child: TextField(
@@ -112,7 +120,7 @@ class _CoachStudentsScreenState extends ConsumerState<CoachStudentsScreen> {
                     return const EmptyView(message: 'شاگردی یافت نشد.');
                   }
                   return ListView.builder(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 120),
                     itemCount: page.items.length,
                     itemBuilder: (_, i) {
                       final s = page.items[i];

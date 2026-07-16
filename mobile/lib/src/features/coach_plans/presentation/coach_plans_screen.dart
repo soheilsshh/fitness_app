@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/fitino_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -26,8 +27,9 @@ class CoachPlansScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(coachPlansProvider);
-    return Scaffold(
-      appBar: AppBar(title: const Text('پلن‌های من')),
+    return FitinoPushScaffold(
+      title: 'پلن‌های من',
+      description: 'پلن‌های قابل فروش شما',
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/coach/plans/new'),
         icon: const Icon(Icons.add),

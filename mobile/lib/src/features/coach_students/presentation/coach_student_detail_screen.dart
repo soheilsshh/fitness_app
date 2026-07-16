@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/fitino_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -38,8 +39,8 @@ class CoachStudentDetailScreen extends ConsumerWidget {
     final studentAsync = ref.watch(coachStudentDetailProvider(id));
     final programsAsync = ref.watch(coachStudentProgramsProvider(id));
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('جزئیات شاگرد')),
+    return FitinoPushScaffold(
+      title: 'جزئیات شاگرد',
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(coachStudentDetailProvider(id));

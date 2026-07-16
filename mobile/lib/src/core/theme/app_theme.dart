@@ -82,11 +82,13 @@ class AppTheme {
       cardTheme: CardThemeData(
         color: surface,
         elevation: 0,
+        shadowColor: AppColors.brandDeep.withValues(alpha: isDark ? 0.22 : 0.08),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(FitinoRadii.lg),
           side: BorderSide(color: border.withValues(alpha: 0.9)),
         ),
-        margin: EdgeInsets.zero,
+        margin: const EdgeInsets.only(bottom: 8),
+        clipBehavior: Clip.antiAlias,
       ),
       dividerColor: border,
       inputDecorationTheme: InputDecorationTheme(

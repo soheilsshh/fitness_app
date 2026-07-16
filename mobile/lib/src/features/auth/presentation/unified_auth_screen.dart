@@ -181,7 +181,19 @@ class _UnifiedAuthScreenState extends ConsumerState<UnifiedAuthScreen> {
     };
 
     return Scaffold(
-      body: SafeArea(
+      body: DecoratedBox(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFFF5FBFA),
+              Colors.white,
+              Color(0xFFE8F8F5),
+            ],
+          ),
+        ),
+        child: SafeArea(
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
@@ -190,14 +202,44 @@ class _UnifiedAuthScreenState extends ConsumerState<UnifiedAuthScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Icon(Icons.fitness_center,
-                      size: 56, color: AppColors.primary),
-                  const SizedBox(height: 12),
+                  Center(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(18),
+                      child: Image.asset(
+                        'assets/branding/fitino-logo.png',
+                        width: 72,
+                        height: 72,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => Container(
+                          width: 72,
+                          height: 72,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(18),
+                            gradient: AppColors.brandGradient,
+                          ),
+                          child: const Icon(Icons.fitness_center,
+                              size: 36, color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'فیتینو',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.brandDeep,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                   Text(
                     title,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
-                        fontSize: 22, fontWeight: FontWeight.bold),
+                        fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -349,6 +391,7 @@ class _UnifiedAuthScreenState extends ConsumerState<UnifiedAuthScreen> {
               ),
             ),
           ),
+        ),
         ),
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/fitino_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -314,8 +315,8 @@ class _CoachProfileScreenState extends ConsumerState<CoachProfileScreen> {
     final async = ref.watch(coachProfileProvider);
     final achievementsAsync = ref.watch(coachAchievementsProvider);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('پروفایل مربی')),
+    return FitinoPushScaffold(
+      title: 'پروفایل مربی',
       body: AsyncValueWidget<CoachProfile>(
         value: async,
         onRetry: () {

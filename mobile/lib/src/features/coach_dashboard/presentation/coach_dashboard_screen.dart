@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/async_value_widget.dart';
+import '../../../core/widgets/fitino_ui.dart';
 import '../../../core/widgets/state_views.dart';
 import '../../coach_notifications/presentation/coach_notifications_screen.dart';
 import '../data/coach_dashboard_extras.dart';
@@ -17,16 +18,9 @@ class CoachDashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(coachDashboardDataProvider);
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('داشبورد مربی'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () => context.push('/coach/notifications'),
-          ),
-        ],
-      ),
+      backgroundColor: Colors.transparent,
       body: RefreshIndicator(
+        color: AppColors.brandMid,
         onRefresh: () async {
           ref.invalidate(coachDashboardExtrasProvider);
           await ref.refresh(coachDashboardDataProvider.future);
@@ -51,8 +45,18 @@ class _Body extends ConsumerWidget {
     final extras = ref.watch(coachDashboardExtrasProvider);
 
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
       children: [
+        FitinoPageHeader(
+          title: 'داشبورد مربی',
+          description: 'خلاصه شاگردان، فروش و پایبندی',
+          meta: FitinoMetaIconButton(
+            icon: Icons.notifications_outlined,
+            tooltip: 'اعلان‌ها',
+            onTap: () => context.push('/coach/notifications'),
+          ),
+        ),
+        const SizedBox(height: 12),
         GridView.count(
           crossAxisCount: 2,
           shrinkWrap: true,

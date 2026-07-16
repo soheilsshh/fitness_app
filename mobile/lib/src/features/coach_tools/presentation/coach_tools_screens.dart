@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/fitino_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -31,8 +32,8 @@ class _BmiCalculatorScreenState extends State<BmiCalculatorScreen> {
     final h = double.tryParse(_height.text.trim()) ?? 0;
     final result = calculateBmiResult(w, h);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('محاسبه‌گر BMI')),
+    return FitinoPushScaffold(
+      title: 'محاسبه‌گر BMI',
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -124,8 +125,8 @@ class _CalorieCalculatorScreenState
       goal: _goal,
     );
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('محاسبه‌گر کالری')),
+    return FitinoPushScaffold(
+      title: 'محاسبه‌گر کالری',
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

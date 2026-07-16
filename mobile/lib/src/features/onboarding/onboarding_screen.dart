@@ -8,10 +8,11 @@ import 'package:image_picker/image_picker.dart';
 import '../../core/config/app_config.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/jalali.dart';
+import '../../core/widgets/fitino_ui.dart';
+import '../../core/widgets/jalali_date_field.dart';
 import '../auth/application/auth_controller.dart';
 import '../profile/data/profile_models.dart';
 import '../profile/data/profile_repository.dart';
-import '../../core/widgets/jalali_date_field.dart';
 
 /// Multi-step student onboarding — the mobile port of the web app's
 /// `(panel)/user/onboarding` wizard. Each step PATCHes `/me`; the photos step
@@ -345,16 +346,32 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Widget build(BuildContext context) {
     final progress = (_step + 1) / _steps.length;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('تکمیل پروفایل'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () => ref.read(authControllerProvider.notifier).logout(),
+      body: Column(
+        children: [
+          SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(8, 4, 12, 8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: FitinoPageHeader(
+                      title: 'تکمیل پروفایل',
+                      description: 'مرحله ${_step + 1} از ${_steps.length}',
+                    ),
+                  ),
+                  FitinoMetaIconButton(
+                    icon: Icons.logout,
+                    tooltip: 'خروج',
+                    onTap: () =>
+                        ref.read(authControllerProvider.notifier).logout(),
+                  ),
+                ],
+              ),
+            ),
           ),
-        ],
-      ),
-      body: _loading
+          Expanded(
+            child: _loading
           ? const Center(child: CircularProgressIndicator())
           : SafeArea(
               child: Column(
@@ -376,6 +393,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                               value: progress,
                               minHeight: 8,
                               backgroundColor: AppColors.surfaceVariant,
+                              color: AppColors.brandMid,
                             ),
                           ),
                           const SizedBox(height: 12),
@@ -396,6 +414,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ],
               ),
             ),
+          ),
+        ],
+      ),
     );
   }
 

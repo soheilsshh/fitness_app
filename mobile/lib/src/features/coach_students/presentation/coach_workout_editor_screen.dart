@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/fitino_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_exception.dart';
@@ -452,16 +453,14 @@ class _CoachWorkoutEditorScreenState
   Widget build(BuildContext context) {
     final exercises = _loading ? const <Map<String, dynamic>>[] : _exercises();
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('برنامه تمرین'),
-        actions: [
-          TextButton(
-            onPressed: _busy ? null : _pickTemplate,
-            child: const Text('قالب'),
-          ),
-        ],
-      ),
+    return FitinoPushScaffold(
+      title: 'برنامه تمرین',
+      actions: [
+        TextButton(
+          onPressed: _busy ? null : _pickTemplate,
+          child: const Text('قالب'),
+        ),
+      ],
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _busy || _loading ? null : _save,
         icon: const Icon(Icons.save),

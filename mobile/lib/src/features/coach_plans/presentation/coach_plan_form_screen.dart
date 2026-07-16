@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/fitino_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -126,10 +127,8 @@ class _CoachPlanFormScreenState extends ConsumerState<CoachPlanFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(_isEdit ? 'ویرایش پلن' : 'پلن جدید'),
-      ),
+    return FitinoPushScaffold(
+      title: _isEdit ? 'ویرایش پلن' : 'پلن جدید',
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
@@ -236,11 +235,9 @@ class CoachPlanDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(coachPlanDetailProvider(id));
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('جزئیات پلن'),
-        actions: [
-          IconButton(
+    return FitinoPushScaffold(
+      title: 'جزئیات پلن',
+      actions: [IconButton(
             icon: const Icon(Icons.edit_outlined),
             onPressed: () => context.push('/coach/plans/$id/edit'),
           ),
@@ -274,9 +271,7 @@ class CoachPlanDetailScreen extends ConsumerWidget {
                 }
               }
             },
-          ),
-        ],
-      ),
+          ),],
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('$e')),

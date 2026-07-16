@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/async_value_widget.dart';
+import '../../../core/widgets/fitino_ui.dart';
 import '../../../core/widgets/state_views.dart';
 import '../data/coach_tickets_repository.dart';
 
@@ -42,9 +43,16 @@ class CoachTicketsScreen extends ConsumerWidget {
     final filter = ref.watch(coachTicketsFilterProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('تیکت‌ها')),
+      backgroundColor: Colors.transparent,
       body: Column(
         children: [
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 8, 16, 0),
+            child: FitinoPageHeader(
+              title: 'تیکت‌ها',
+              description: 'پیام‌های شاگردان',
+            ),
+          ),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
@@ -163,8 +171,8 @@ class _CoachTicketDetailScreenState
   @override
   Widget build(BuildContext context) {
     final async = ref.watch(coachTicketDetailProvider(widget.id));
-    return Scaffold(
-      appBar: AppBar(title: const Text('پاسخ به تیکت')),
+    return FitinoPushScaffold(
+      title: 'پاسخ به تیکت',
       body: AsyncValueWidget<CoachTicketDetail>(
         value: async,
         onRetry: () => ref.invalidate(coachTicketDetailProvider(widget.id)),

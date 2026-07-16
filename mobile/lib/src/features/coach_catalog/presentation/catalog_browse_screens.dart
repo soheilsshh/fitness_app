@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/fitino_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -155,8 +156,8 @@ class _CoachExercisesCatalogScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('کاتالوگ حرکات')),
+    return FitinoPushScaffold(
+      title: 'کاتالوگ حرکات',
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _createCustom,
         icon: const Icon(Icons.add),
@@ -289,8 +290,8 @@ class _CoachFoodsCatalogScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('کاتالوگ غذاها')),
+    return FitinoPushScaffold(
+      title: 'کاتالوگ غذاها',
       body: Column(
         children: [
           Padding(

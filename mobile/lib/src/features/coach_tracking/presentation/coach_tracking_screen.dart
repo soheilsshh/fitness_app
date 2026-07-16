@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/config/app_config.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/async_value_widget.dart';
+import '../../../core/widgets/fitino_ui.dart';
 import '../../../core/widgets/state_views.dart';
 import '../../tracking/data/tracking_models.dart';
 import '../data/coach_tracking_repository.dart';
@@ -23,21 +24,41 @@ class CoachTrackingScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(coachTrackingListProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('پایش شاگردان')),
+      backgroundColor: Colors.transparent,
       body: RefreshIndicator(
+        color: AppColors.brandMid,
         onRefresh: () async => ref.refresh(coachTrackingListProvider.future),
         child: AsyncValueWidget<List<CoachTrackingStudentItem>>(
           value: async,
           onRetry: () => ref.invalidate(coachTrackingListProvider),
           data: (items) {
             if (items.isEmpty) {
-              return const EmptyView(message: 'شاگردی برای پایش نیست.');
+              return ListView(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
+                children: const [
+                  FitinoPageHeader(
+                    title: 'پایش شاگردان',
+                    description: 'وزن و عکس‌های دوره‌ای',
+                  ),
+                  SizedBox(height: 48),
+                  EmptyView(message: 'شاگردی برای پایش نیست.'),
+                ],
+              );
             }
             return ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: items.length,
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
+              itemCount: items.length + 1,
               itemBuilder: (_, i) {
-                final s = items[i];
+                if (i == 0) {
+                  return const Padding(
+                    padding: EdgeInsets.only(bottom: 12),
+                    child: FitinoPageHeader(
+                      title: 'پایش شاگردان',
+                      description: 'وزن و عکس‌های دوره‌ای',
+                    ),
+                  );
+                }
+                final s = items[i - 1];
                 final overdue = s.weightOverdue || s.photosOverdue;
                 return Card(
                   margin: const EdgeInsets.only(bottom: 8),
@@ -73,8 +94,8 @@ class CoachTrackingDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(coachTrackingDetailProvider(studentId));
-    return Scaffold(
-      appBar: AppBar(title: const Text('پایش شاگرد')),
+    return FitinoPushScaffold(
+      title: 'پایش شاگرد',
       body: AsyncValueWidget<CoachTrackingDetail>(
         value: async,
         onRetry: () =>

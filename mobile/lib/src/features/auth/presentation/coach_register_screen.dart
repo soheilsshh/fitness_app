@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/validators.dart';
 import '../../../core/widgets/app_text_field.dart';
+import '../../../core/widgets/fitino_ui.dart';
 import '../application/auth_controller.dart';
 import '../data/auth_repository.dart';
 
@@ -68,14 +69,9 @@ class _CoachRegisterScreenState extends ConsumerState<CoachRegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('ثبت‌نام مربی'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_forward),
-          onPressed: () => context.go('/auth'),
-        ),
-      ),
+    return FitinoPushScaffold(
+      title: 'ثبت‌نام مربی',
+      description: 'ساخت حساب مربی فیتینو',
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
