@@ -1,6 +1,7 @@
 import {
   ActivityIcon,
   AwardIcon,
+  BookOpenIcon,
   ClipboardListIcon,
   FilterIcon,
   GlobeIcon,
@@ -62,6 +63,11 @@ export const adminNav = [
     href: "/admin/site",
     label: "سایت",
     icon: GlobeIcon,
+  },
+  {
+    href: "/admin/content",
+    label: "آموزش و FAQ",
+    icon: BookOpenIcon,
   },
   {
     href: "/admin/feedback",

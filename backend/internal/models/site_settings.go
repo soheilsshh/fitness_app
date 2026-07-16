@@ -28,5 +28,7 @@ type SiteSettings struct {
 	Steps          json.RawMessage `gorm:"type:json"` // [{ id, title, text }]
 	Pillars        json.RawMessage `gorm:"type:json"` // [{ id, icon, title, desc }]
 	ContactInfo    json.RawMessage `gorm:"type:json"` // { address, phone, email, instagram, telegram, whatsapp }
+	AcademyItems   json.RawMessage `gorm:"type:json"` // [{ id,type,title,description,category,featured,duration,src,cover }]
+	FAQGroups      json.RawMessage `gorm:"type:json"` // [{ id,title,items:[{q,a}] }]
 }
 

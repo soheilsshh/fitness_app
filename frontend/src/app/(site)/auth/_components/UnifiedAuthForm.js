@@ -302,11 +302,17 @@ export default function UnifiedAuthForm() {
               }}
               className="mt-5"
             >
-              <TabsList className="grid h-12 w-full grid-cols-2 rounded-xl p-1">
-                <TabsTrigger value="password" className="h-10 cursor-pointer rounded-lg">
+              <TabsList className="grid !h-13 w-full grid-cols-2 rounded-2xl border border-[#187272]/18 bg-[linear-gradient(180deg,rgba(255,255,255,0.8),rgba(232,255,250,0.55))] p-1.5 shadow-[0_8px_22px_-16px_rgba(24,114,114,0.45)] dark:border-[#26fce3]/22 dark:bg-[linear-gradient(180deg,rgba(38,252,227,0.12),rgba(16,24,24,0.45))]">
+                <TabsTrigger
+                  value="password"
+                  className="h-10 cursor-pointer rounded-xl font-iranianSansDemiBold data-active:!bg-[linear-gradient(165deg,#6ceade_0%,#2a9c96_45%,#187272_100%)] data-active:!text-white data-active:shadow-[0_10px_20px_-10px_rgba(24,114,114,0.6),0_1px_0_rgba(255,255,255,0.35)_inset]"
+                >
                   با رمز عبور
                 </TabsTrigger>
-                <TabsTrigger value="otp" className="h-10 cursor-pointer rounded-lg">
+                <TabsTrigger
+                  value="otp"
+                  className="h-10 cursor-pointer rounded-xl font-iranianSansDemiBold data-active:!bg-[linear-gradient(165deg,#6ceade_0%,#2a9c96_45%,#187272_100%)] data-active:!text-white data-active:shadow-[0_10px_20px_-10px_rgba(24,114,114,0.6),0_1px_0_rgba(255,255,255,0.35)_inset]"
+                >
                   با کد پیامکی
                 </TabsTrigger>
               </TabsList>

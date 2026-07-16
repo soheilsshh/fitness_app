@@ -30,6 +30,24 @@ func NewSiteSettingsController(s service.SiteSettingsService) *SiteSettingsContr
 // @Success 200 {object} service.SiteSettingsDTO
 // @Failure 500 {object} map[string]string
 // @Router /site-settings [get]
+func (h *SiteSettingsController) GetAcademyPublic(c *gin.Context) {
+	items, err := h.siteService.GetAcademy(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"items": items})
+}
+
+func (h *SiteSettingsController) GetFAQPublic(c *gin.Context) {
+	groups, err := h.siteService.GetFAQ(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"groups": groups})
+}
+
 func (h *SiteSettingsController) GetSiteSettingsPublic(c *gin.Context) {
 	dto, err := h.siteService.Get(c.Request.Context())
 	if err != nil {
@@ -131,5 +149,89 @@ func (h *SiteSettingsController) UploadHeroImage(c *gin.Context) {
 		return
 	}
 	urlPath := "/" + filepath.ToSlash(filepath.Join("uploads", "site", name))
+	c.JSON(http.StatusOK, gin.H{"url": urlPath})
+}
+
+func (h *SiteSettingsController) GetAcademyAdmin(c *gin.Context) {
+	_, _ = c.Get(middleware.ContextRoleKey)
+	items, err := h.siteService.GetAcademy(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"items": items})
+}
+
+func (h *SiteSettingsController) UpdateAcademyAdmin(c *gin.Context) {
+	_, _ = c.Get(middleware.ContextRoleKey)
+	var body struct {
+		Items []service.AcademyItemDTO `json:"items"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid body"})
+		return
+	}
+	if err := h.siteService.UpdateAcademy(c.Request.Context(), body.Items); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	items, _ := h.siteService.GetAcademy(c.Request.Context())
+	c.JSON(http.StatusOK, gin.H{"items": items})
+}
+
+func (h *SiteSettingsController) GetFAQAdmin(c *gin.Context) {
+	_, _ = c.Get(middleware.ContextRoleKey)
+	groups, err := h.siteService.GetFAQ(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"groups": groups})
+}
+
+func (h *SiteSettingsController) UpdateFAQAdmin(c *gin.Context) {
+	_, _ = c.Get(middleware.ContextRoleKey)
+	var body struct {
+		Groups []service.FAQGroupDTO `json:"groups"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid body"})
+		return
+	}
+	if err := h.siteService.UpdateFAQ(c.Request.Context(), body.Groups); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	groups, _ := h.siteService.GetFAQ(c.Request.Context())
+	c.JSON(http.StatusOK, gin.H{"groups": groups})
+}
+
+func (h *SiteSettingsController) UploadContentMedia(c *gin.Context) {
+	_, _ = c.Get(middleware.ContextRoleKey)
+	file, err := c.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "file is required"})
+		return
+	}
+	baseDir := config.GetUploadDir()
+	if baseDir == "" {
+		baseDir = "uploads"
+	}
+	dir := filepath.Join(baseDir, "content")
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create upload dir"})
+		return
+	}
+	ext := filepath.Ext(file.Filename)
+	if ext == "" {
+		ext = ".jpg"
+	}
+	name := fmt.Sprintf("content_%d%s", time.Now().UnixNano(), ext)
+	fullPath := filepath.Join(dir, name)
+	if err := c.SaveUploadedFile(file, fullPath); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	urlPath := "/" + filepath.ToSlash(filepath.Join("uploads", "content", name))
 	c.JSON(http.StatusOK, gin.H{"url": urlPath})
 }

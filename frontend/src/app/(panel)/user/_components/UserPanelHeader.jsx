@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Check, HelpCircle } from "lucide-react";
+import { Check, GraduationCap, HelpCircle } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Separator } from "@/components/ui/separator";
@@ -203,8 +203,21 @@ export default function UserPanelHeader() {
           </div>
         </div>
 
-        {/* Left: FAQ + theme — same control size */}
+        {/* Left: learning + FAQ + theme */}
         <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+          <Link
+            href="/user/academy"
+            className={cn(
+              "fitino-meta-badge inline-flex size-10 shrink-0 items-center justify-center rounded-full !p-0",
+              "!h-10 !min-h-10 !w-10",
+              "transition-[transform,box-shadow] duration-200 hover:brightness-[1.03] active:scale-[0.97]",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#26fce3]/65"
+            )}
+            aria-label="آموزش"
+            title="آموزش"
+          >
+            <GraduationCap className="size-4 shrink-0 opacity-90" />
+          </Link>
           <Link
             href="/user/faq"
             className={cn(
