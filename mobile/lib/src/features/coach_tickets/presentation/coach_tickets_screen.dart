@@ -66,12 +66,13 @@ class CoachTicketsScreen extends ConsumerWidget {
                 ])
                   Padding(
                     padding: const EdgeInsets.only(left: 8),
-                    child: ChoiceChip(
-                      label: Text(f.$2),
+                    child: FitinoChoiceChip(
+                      label: f.$2,
                       selected: filter == f.$1,
                       onSelected: (_) {
-                        ref.read(coachTicketsFilterProvider.notifier).state =
-                            f.$1;
+                        ref
+                            .read(coachTicketsFilterProvider.notifier)
+                            .set(f.$1);
                       },
                     ),
                   ),
@@ -93,9 +94,7 @@ class CoachTicketsScreen extends ConsumerWidget {
                     itemCount: page.items.length,
                     itemBuilder: (_, i) {
                       final t = page.items[i];
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        child: ListTile(
+                      return Padding(padding: const EdgeInsets.only(bottom: 8), child: FitinoPanelCard(padding: EdgeInsets.zero, child: ListTile(
                           title: Text(t.title),
                           subtitle: Text(
                             '${t.studentName} · ${coachTicketStatusFa(t.status)} · ${coachTicketPriorityFa(t.priority)}',
@@ -104,8 +103,7 @@ class CoachTicketsScreen extends ConsumerWidget {
                           trailing: const Icon(Icons.chevron_left),
                           onTap: () =>
                               context.push('/coach/tickets/${t.id}'),
-                        ),
-                      );
+                        )));
                     },
                   );
                 },
@@ -232,10 +230,7 @@ class _CoachTicketDetailScreenState
               style: const TextStyle(color: AppColors.muted),
             ),
             const SizedBox(height: 16),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
+            FitinoPanelCard(padding: const EdgeInsets.all(16), child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text('پیام شاگرد',
@@ -243,16 +238,10 @@ class _CoachTicketDetailScreenState
                     const SizedBox(height: 8),
                     Text(t.message, style: const TextStyle(height: 1.6)),
                   ],
-                ),
-              ),
-            ),
+                )),
             const SizedBox(height: 12),
             if (t.answer.isNotEmpty)
-              Card(
-                color: AppColors.primary.withValues(alpha: 0.08),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
+              FitinoPanelCard(padding: const EdgeInsets.all(16), child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text('پاسخ قبلی',
@@ -260,9 +249,7 @@ class _CoachTicketDetailScreenState
                       const SizedBox(height: 8),
                       Text(t.answer, style: const TextStyle(height: 1.6)),
                     ],
-                  ),
-                ),
-              ),
+                  )),
             const SizedBox(height: 16),
             TextField(
               controller: _answerCtrl,

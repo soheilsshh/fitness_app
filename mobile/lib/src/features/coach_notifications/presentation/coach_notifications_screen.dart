@@ -46,12 +46,7 @@ class CoachNotificationsScreen extends ConsumerWidget {
               itemCount: items.length,
               itemBuilder: (_, i) {
                 final n = items[i];
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  color: n.isRead
-                      ? null
-                      : AppColors.primary.withValues(alpha: 0.06),
-                  child: ListTile(
+                return Padding(padding: const EdgeInsets.only(bottom: 8), child: FitinoPanelCard(padding: EdgeInsets.zero, child: ListTile(
                     leading: Icon(_iconForType(n.type),
                         color: AppColors.primary),
                     title: Text(n.title,
@@ -73,8 +68,7 @@ class CoachNotificationsScreen extends ConsumerWidget {
                       ],
                     ),
                     isThreeLine: true,
-                  ),
-                );
+                  )));
               },
             );
           },
@@ -108,7 +102,7 @@ class CoachNotificationsPreview extends ConsumerWidget {
         async.when(
           loading: () => const Padding(
             padding: EdgeInsets.all(12),
-            child: Center(child: CircularProgressIndicator()),
+            child: const FitinoLoading(),
           ),
           error: (_, _) => const Text('بارگذاری اعلان‌ها ناموفق بود.',
               style: TextStyle(color: AppColors.muted)),
@@ -122,17 +116,14 @@ class CoachNotificationsPreview extends ConsumerWidget {
             }
             return Column(
               children: items.take(5).map((n) {
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 6),
-                  child: ListTile(
+                return Padding(padding: const EdgeInsets.only(bottom: 6), child: FitinoPanelCard(padding: EdgeInsets.zero, child: ListTile(
                     dense: true,
                     leading: Icon(_iconForType(n.type), size: 20),
                     title: Text(n.title),
                     subtitle: Text(n.message,
                         maxLines: 1, overflow: TextOverflow.ellipsis),
                     onTap: () => context.push('/coach/notifications'),
-                  ),
-                );
+                  )));
               }).toList(),
             );
           },

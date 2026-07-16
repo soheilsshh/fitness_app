@@ -74,11 +74,11 @@ class _CoachStudentsScreenState extends ConsumerState<CoachStudentsScreen> {
                 prefixIcon: Icon(Icons.search),
               ),
               onSubmitted: (v) {
-                ref.read(coachStudentsQueryProvider.notifier).state = v.trim();
+                ref.read(coachStudentsQueryProvider.notifier).set(v.trim());
               },
               onChanged: (v) {
                 if (v.trim().isEmpty) {
-                  ref.read(coachStudentsQueryProvider.notifier).state = '';
+                  ref.read(coachStudentsQueryProvider.notifier).set('');
                 }
               },
             ),
@@ -95,12 +95,13 @@ class _CoachStudentsScreenState extends ConsumerState<CoachStudentsScreen> {
                 ])
                   Padding(
                     padding: const EdgeInsets.only(left: 8),
-                    child: ChoiceChip(
-                      label: Text(f.$2),
+                    child: FitinoChoiceChip(
+                      label: f.$2,
                       selected: filter == f.$1,
                       onSelected: (_) {
-                        ref.read(coachStudentsFilterProvider.notifier).state =
-                            f.$1;
+                        ref.read(coachStudentsFilterProvider.notifier).set(
+                              f.$1,
+                            );
                       },
                     ),
                   ),
@@ -124,9 +125,7 @@ class _CoachStudentsScreenState extends ConsumerState<CoachStudentsScreen> {
                     itemCount: page.items.length,
                     itemBuilder: (_, i) {
                       final s = page.items[i];
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        child: ListTile(
+                      return Padding(padding: const EdgeInsets.only(bottom: 8), child: FitinoPanelCard(padding: EdgeInsets.zero, child: ListTile(
                           leading: CircleAvatar(
                             backgroundColor: AppColors.primary.withValues(
                                 alpha: 0.15),
@@ -151,8 +150,7 @@ class _CoachStudentsScreenState extends ConsumerState<CoachStudentsScreen> {
                           ),
                           onTap: () =>
                               context.push('/coach/students/${s.id}'),
-                        ),
-                      );
+                        )));
                     },
                   );
                 },

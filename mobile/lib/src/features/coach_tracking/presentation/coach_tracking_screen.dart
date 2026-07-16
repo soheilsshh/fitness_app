@@ -60,9 +60,7 @@ class CoachTrackingScreen extends ConsumerWidget {
                 }
                 final s = items[i - 1];
                 final overdue = s.weightOverdue || s.photosOverdue;
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  child: ListTile(
+                return Padding(padding: const EdgeInsets.only(bottom: 8), child: FitinoPanelCard(padding: EdgeInsets.zero, child: ListTile(
                     title: Text(s.fullName),
                     subtitle: Text(
                       [
@@ -76,8 +74,7 @@ class CoachTrackingScreen extends ConsumerWidget {
                     ),
                     trailing: const Icon(Icons.chevron_left),
                     onTap: () => context.push('/coach/tracking/${s.id}'),
-                  ),
-                );
+                  )));
               },
             );
           },
@@ -116,14 +113,11 @@ class CoachTrackingDetailScreen extends ConsumerWidget {
               if (t.alerts.isNotEmpty) ...[
                 const SizedBox(height: 12),
                 ...t.alerts.map(
-                  (a) => Card(
-                    color: AppColors.destructive.withValues(alpha: 0.12),
-                    child: ListTile(
+                  (a) => FitinoPanelCard(padding: EdgeInsets.zero, child: ListTile(
                       leading: const Icon(Icons.warning_amber,
                           color: AppColors.destructive),
                       title: Text(a.message),
-                    ),
-                  ),
+                    )),
                 ),
               ],
               const SizedBox(height: 16),
@@ -171,11 +165,7 @@ class _PhotoHistoryCardState extends State<_PhotoHistoryCard> {
     final photos = widget.history.photos;
     final current =
         photos.isEmpty ? null : photos[_index.clamp(0, photos.length - 1)];
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
+    return FitinoPanelCard(padding: const EdgeInsets.all(12), child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(widget.history.label,
@@ -216,8 +206,6 @@ class _PhotoHistoryCardState extends State<_PhotoHistoryCard> {
                 ],
               ),
           ],
-        ),
-      ),
-    );
+        ));
   }
 }

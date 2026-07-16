@@ -24,15 +24,18 @@ class FoodDiaryScreen extends ConsumerWidget {
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom: 88),
-        child: FloatingActionButton.extended(
+        child: FitinoExtendedFab(
           onPressed: () => showModalBottomSheet(
             context: context,
             isScrollControlled: true,
             backgroundColor: AppColors.surface,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+            ),
             builder: (_) => const AddFoodSheet(),
           ),
-          icon: const Icon(Icons.add),
-          label: const Text('افزودن غذا'),
+          icon: Icons.add,
+          label: 'افزودن غذا',
         ),
       ),
       body: Column(

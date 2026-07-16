@@ -242,12 +242,10 @@ class _CalorieCalculatorScreenState
   }
 
   Widget _stat(String label, String value) {
-    return Card(
-      child: ListTile(
+    return FitinoPanelCard(padding: EdgeInsets.zero, child: ListTile(
         title: Text(label),
         trailing: Text(value,
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-      ),
-    );
+      ));
   }
 }

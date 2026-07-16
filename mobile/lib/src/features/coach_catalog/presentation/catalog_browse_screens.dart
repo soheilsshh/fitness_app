@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
-import '../../../core/widgets/fitino_ui.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../core/config/app_config.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/fitino_ui.dart';
 import '../data/coach_catalog_repository.dart';
 
 String _assetUrl(String path) {
@@ -158,10 +156,10 @@ class _CoachExercisesCatalogScreenState
   Widget build(BuildContext context) {
     return FitinoPushScaffold(
       title: 'کاتالوگ حرکات',
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FitinoExtendedFab(
         onPressed: _createCustom,
-        icon: const Icon(Icons.add),
-        label: const Text('حرکت جدید'),
+        icon: Icons.add,
+        label: 'حرکت جدید',
       ),
       body: Column(
         children: [
@@ -210,7 +208,7 @@ class _CoachExercisesCatalogScreenState
           const SizedBox(height: 8),
           Expanded(
             child: _loading
-                ? const Center(child: CircularProgressIndicator())
+                ? const FitinoLoading()
                 : _items.isEmpty
                     ? const Center(child: Text('حرکتی یافت نشد.'))
                     : ListView.builder(
@@ -218,9 +216,7 @@ class _CoachExercisesCatalogScreenState
                         itemCount: _items.length,
                         itemBuilder: (_, i) {
                           final ex = _items[i];
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: 8),
-                            child: ListTile(
+                          return Padding(padding: const EdgeInsets.only(bottom: 8), child: FitinoPanelCard(padding: EdgeInsets.zero, child: ListTile(
                               leading: ex.imageUrl.isEmpty
                                   ? const CircleAvatar(
                                       child: Icon(Icons.fitness_center))
@@ -237,8 +233,7 @@ class _CoachExercisesCatalogScreenState
                                 ].join(' · '),
                                 style: const TextStyle(color: AppColors.muted),
                               ),
-                            ),
-                          );
+                            )));
                         },
                       ),
           ),
@@ -308,7 +303,7 @@ class _CoachFoodsCatalogScreenState
           ),
           Expanded(
             child: _loading
-                ? const Center(child: CircularProgressIndicator())
+                ? const FitinoLoading()
                 : _items.isEmpty
                     ? const Center(child: Text('غذایی یافت نشد.'))
                     : ListView.builder(
@@ -316,17 +311,14 @@ class _CoachFoodsCatalogScreenState
                         itemCount: _items.length,
                         itemBuilder: (_, i) {
                           final f = _items[i];
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: 8),
-                            child: ListTile(
+                          return Padding(padding: const EdgeInsets.only(bottom: 8), child: FitinoPanelCard(padding: EdgeInsets.zero, child: ListTile(
                               title: Text(f.name),
                               subtitle: Text(
                                 '${f.calories.round()} کالری در ${f.amount} ${f.unit} · '
                                 'P ${f.protein.round()} · C ${f.carbs.round()} · F ${f.fat.round()}',
                                 style: const TextStyle(color: AppColors.muted),
                               ),
-                            ),
-                          );
+                            )));
                         },
                       ),
           ),

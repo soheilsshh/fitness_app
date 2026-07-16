@@ -461,13 +461,13 @@ class _CoachWorkoutEditorScreenState
           child: const Text('قالب'),
         ),
       ],
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FitinoExtendedFab(
         onPressed: _busy || _loading ? null : _save,
-        icon: const Icon(Icons.save),
-        label: Text(_busy ? '...' : 'ذخیره'),
+        icon: Icons.save,
+        label: _busy ? '...' : 'ذخیره',
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? const FitinoLoading()
           : ListView(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
               children: [
@@ -598,11 +598,7 @@ class _CoachWorkoutEditorScreenState
                           system != 'normal' &&
                           '${e['supersetId']}'.isNotEmpty;
                       final selected = _selectedIndexes.contains(i);
-                      return Card(
-                        color: selected
-                            ? AppColors.primary.withValues(alpha: 0.08)
-                            : null,
-                        child: ListTile(
+                      return FitinoPanelCard(padding: EdgeInsets.zero, child: ListTile(
                           onTap: () => _editExercise(e, i),
                           onLongPress: () => setState(() {
                             if (selected) {
@@ -637,8 +633,7 @@ class _CoachWorkoutEditorScreenState
                               setState(() => _selectedIndexes.remove(i));
                             },
                           ),
-                        ),
-                      );
+                        ));
                     }),
                 ],
               ],

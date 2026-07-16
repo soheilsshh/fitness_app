@@ -121,18 +121,16 @@ class CoachStudentDetailScreen extends ConsumerWidget {
                 programsAsync.when(
                   loading: () => const Padding(
                     padding: EdgeInsets.all(24),
-                    child: Center(child: CircularProgressIndicator()),
+                    child: const FitinoLoading(),
                   ),
                   error: (e, _) => Text('$e'),
                   data: (p) {
                     if (p.planByDay.isEmpty) {
-                      return const Card(
-                        child: Padding(
+                      return const FitinoPanelCard(padding: EdgeInsets.zero, child: Padding(
                           padding: EdgeInsets.all(16),
                           child: Text('هنوز برنامه‌ای تخصیص داده نشده است.',
                               style: TextStyle(color: AppColors.muted)),
-                        ),
-                      );
+                        ));
                     }
                     return Column(
                       children: p.planByDay.entries.map((e) {
@@ -140,9 +138,7 @@ class CoachStudentDetailScreen extends ConsumerWidget {
                         final dayMap = Map<String, dynamic>.from(e.value as Map);
                         final workout = dayMap['workout'];
                         final nutrition = dayMap['nutrition'];
-                        return Card(
-                          margin: const EdgeInsets.only(bottom: 8),
-                          child: ExpansionTile(
+                        return Padding(padding: const EdgeInsets.only(bottom: 8), child: FitinoPanelCard(padding: EdgeInsets.zero, child: ExpansionTile(
                             title: Text(_dayLabels[day] ?? day),
                             children: [
                               if (workout is Map) ...[
@@ -173,8 +169,7 @@ class CoachStudentDetailScreen extends ConsumerWidget {
                                       style: TextStyle(color: AppColors.muted)),
                                 ),
                             ],
-                          ),
-                        );
+                          )));
                       }).toList(),
                     );
                   },

@@ -362,3 +362,278 @@ class FitinoEmptyState extends StatelessWidget {
     );
   }
 }
+
+/// Brand gradient extended action — replaces Material FAB.extended.
+class FitinoExtendedFab extends StatelessWidget {
+  const FitinoExtendedFab({
+    super.key,
+    required this.label,
+    required this.icon,
+    required this.onPressed,
+  });
+
+  final String label;
+  final IconData icon;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = onPressed != null;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(999),
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(999),
+            gradient: enabled
+                ? AppColors.brandGradient
+                : LinearGradient(
+                    colors: [
+                      AppColors.muted.withValues(alpha: 0.4),
+                      AppColors.muted.withValues(alpha: 0.25),
+                    ],
+                  ),
+            boxShadow: enabled
+                ? [
+                    BoxShadow(
+                      color: AppColors.brandDeep.withValues(alpha: 0.35),
+                      blurRadius: 18,
+                      offset: const Offset(0, 8),
+                    ),
+                  ]
+                : null,
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.35),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, color: Colors.white, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontFamily: AppTheme.fontFamily,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Brand spinner — use instead of raw CircularProgressIndicator.
+class FitinoLoading extends StatelessWidget {
+  const FitinoLoading({super.key, this.size = 28});
+
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: SizedBox(
+        width: size,
+        height: size,
+        child: const CircularProgressIndicator(
+          strokeWidth: 2.5,
+          color: AppColors.brandMid,
+        ),
+      ),
+    );
+  }
+}
+
+/// Jewel filter/choice chip — matches web `.fitino-subnav-chip`.
+class FitinoChoiceChip extends StatelessWidget {
+  const FitinoChoiceChip({
+    super.key,
+    required this.label,
+    required this.selected,
+    required this.onSelected,
+    this.icon,
+  });
+
+  final String label;
+  final bool selected;
+  final ValueChanged<bool> onSelected;
+  final IconData? icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => onSelected(!selected),
+        borderRadius: BorderRadius.circular(999),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 280),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(999),
+            gradient: selected
+                ? (isDark
+                    ? AppColors.jewelGradientDark
+                    : AppColors.jewelGradient)
+                : null,
+            color: selected
+                ? null
+                : (isDark
+                    ? AppColors.surfaceVariantDark
+                    : AppColors.surfaceVariant),
+            border: Border.all(
+              color: selected
+                  ? Colors.white.withValues(alpha: 0.3)
+                  : (isDark ? AppColors.borderDark : AppColors.border),
+            ),
+            boxShadow: selected
+                ? [
+                    BoxShadow(
+                      color: AppColors.brandDeep.withValues(alpha: 0.35),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (icon != null) ...[
+                Icon(
+                  icon,
+                  size: 14,
+                  color: selected
+                      ? Colors.white
+                      : (isDark ? AppColors.mutedDark : AppColors.muted),
+                ),
+                const SizedBox(width: 6),
+              ],
+              Text(
+                label,
+                style: TextStyle(
+                  fontFamily: AppTheme.fontFamily,
+                  fontSize: 12,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                  color: selected
+                      ? Colors.white
+                      : (isDark ? AppColors.mutedDark : AppColors.muted),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Quick-action pill for dashboard shortcuts.
+class FitinoQuickLink extends StatelessWidget {
+  const FitinoQuickLink({
+    super.key,
+    required this.label,
+    required this.icon,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return FitinoChoiceChip(
+      label: label,
+      icon: icon,
+      selected: false,
+      onSelected: (_) => onTap(),
+    );
+  }
+}
+
+/// Compact meta badge — web `MetaBadge` / `.fitino-meta-badge`.
+class FitinoMetaBadge extends StatelessWidget {
+  const FitinoMetaBadge({
+    super.key,
+    required this.value,
+    this.label,
+    this.icon,
+  });
+
+  final String value;
+  final String? label;
+  final IconData? icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(999),
+        gradient: LinearGradient(
+          colors: isDark
+              ? [
+                  AppColors.brandGlow.withValues(alpha: 0.16),
+                  AppColors.brandDeep.withValues(alpha: 0.28),
+                ]
+              : [
+                  Colors.white,
+                  AppColors.brandGlow.withValues(alpha: 0.18),
+                ],
+        ),
+        border: Border.all(
+          color: AppColors.brandAqua.withValues(alpha: 0.4),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.brandDeep.withValues(alpha: 0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 14, color: AppColors.brandDeep),
+            const SizedBox(width: 6),
+          ],
+          if (label != null) ...[
+            Text(
+              label!,
+              style: TextStyle(
+                fontFamily: AppTheme.fontFamily,
+                fontSize: 12,
+                color: isDark ? AppColors.mutedDark : AppColors.muted,
+              ),
+            ),
+            const SizedBox(width: 6),
+          ],
+          Text(
+            value,
+            style: const TextStyle(
+              fontFamily: AppTheme.fontFamily,
+              fontWeight: FontWeight.w800,
+              fontSize: 13,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

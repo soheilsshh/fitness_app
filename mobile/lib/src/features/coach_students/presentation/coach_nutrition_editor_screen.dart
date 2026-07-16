@@ -292,13 +292,13 @@ class _CoachNutritionEditorScreenState
           child: const Text('قالب'),
         ),
       ],
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FitinoExtendedFab(
         onPressed: _busy || _loading ? null : _save,
-        icon: const Icon(Icons.save),
-        label: Text(_busy ? '...' : 'ذخیره'),
+        icon: Icons.save,
+        label: _busy ? '...' : 'ذخیره',
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? const FitinoLoading()
           : ListView(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
               children: [
@@ -372,8 +372,7 @@ class _CoachNutritionEditorScreenState
                 else
                   ...meals.asMap().entries.map((e) {
                     final m = e.value;
-                    return Card(
-                      child: ListTile(
+                    return FitinoPanelCard(padding: EdgeInsets.zero, child: ListTile(
                         title: Text(m['title']?.toString() ?? ''),
                         subtitle: Text(
                           [
@@ -400,8 +399,7 @@ class _CoachNutritionEditorScreenState
                             ),
                           ],
                         ),
-                      ),
-                    );
+                      ));
                   }),
               ],
             ),

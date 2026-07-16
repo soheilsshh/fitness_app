@@ -514,7 +514,7 @@ class _CoachProfileScreenState extends ConsumerState<CoachProfileScreen> {
               achievementsAsync.when(
                 loading: () => const Padding(
                   padding: EdgeInsets.all(16),
-                  child: Center(child: CircularProgressIndicator()),
+                  child: const FitinoLoading(),
                 ),
                 error: (e, _) => Text('$e'),
                 data: (items) {
@@ -530,8 +530,7 @@ class _CoachProfileScreenState extends ConsumerState<CoachProfileScreen> {
                   return Column(
                     children: items
                         .map(
-                          (a) => Card(
-                            child: ListTile(
+                          (a) => FitinoPanelCard(padding: EdgeInsets.zero, child: ListTile(
                               leading: a.imageUrl.isNotEmpty
                                   ? ClipRRect(
                                       borderRadius: BorderRadius.circular(6),
@@ -560,8 +559,7 @@ class _CoachProfileScreenState extends ConsumerState<CoachProfileScreen> {
                                   ref.invalidate(coachAchievementsProvider);
                                 },
                               ),
-                            ),
-                          ),
+                            )),
                         )
                         .toList(),
                   );

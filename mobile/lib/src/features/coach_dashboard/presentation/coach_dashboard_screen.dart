@@ -94,10 +94,7 @@ class _Body extends ConsumerWidget {
                   ],
                 ),
                 ...e.attention.take(5).map(
-                      (s) => Card(
-                        color: AppColors.destructive.withValues(alpha: 0.08),
-                        margin: const EdgeInsets.only(bottom: 6),
-                        child: ListTile(
+                      (s) => Padding(padding: const EdgeInsets.only(bottom: 6), child: FitinoPanelCard(padding: EdgeInsets.zero, child: ListTile(
                           leading: const Icon(Icons.warning_amber,
                               color: AppColors.destructive),
                           title: Text(s.fullName),
@@ -108,8 +105,7 @@ class _Body extends ConsumerWidget {
                           ),
                           onTap: () =>
                               context.push('/coach/tracking/${s.id}'),
-                        ),
-                      ),
+                        ))),
                     ),
                 const SizedBox(height: 12),
               ],
@@ -119,9 +115,7 @@ class _Body extends ConsumerWidget {
                         TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 ...e.top.map(
-                  (s) => Card(
-                    margin: const EdgeInsets.only(bottom: 6),
-                    child: ListTile(
+                  (s) => Padding(padding: const EdgeInsets.only(bottom: 6), child: FitinoPanelCard(padding: EdgeInsets.zero, child: ListTile(
                       leading: const Icon(Icons.emoji_events,
                           color: AppColors.primary),
                       title: Text(s.fullName),
@@ -129,8 +123,7 @@ class _Body extends ConsumerWidget {
                           style: const TextStyle(fontWeight: FontWeight.bold)),
                       onTap: () =>
                           context.push('/coach/students/${s.studentId}'),
-                    ),
-                  ),
+                    ))),
                 ),
                 const SizedBox(height: 12),
               ],
@@ -139,10 +132,7 @@ class _Body extends ConsumerWidget {
                     style:
                         TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Column(
+                FitinoPanelCard(padding: const EdgeInsets.all(12), child: Column(
                       children: e.series.reversed
                           .take(7)
                           .map(
@@ -153,9 +143,7 @@ class _Body extends ConsumerWidget {
                             ),
                           )
                           .toList(),
-                    ),
-                  ),
-                ),
+                    )),
                 const SizedBox(height: 12),
               ],
             ],
@@ -171,30 +159,24 @@ class _Body extends ConsumerWidget {
           )
         else
           ...recent.map(
-            (s) => Card(
-              margin: const EdgeInsets.only(bottom: 8),
-              child: ListTile(
+            (s) => Padding(padding: const EdgeInsets.only(bottom: 8), child: FitinoPanelCard(padding: EdgeInsets.zero, child: ListTile(
                 leading: const CircleAvatar(child: Icon(Icons.person)),
                 title: Text(s.fullName),
                 subtitle: Text(s.joinedAt,
                     style: const TextStyle(color: AppColors.muted)),
                 onTap: () => context.push('/coach/students/${s.studentId}'),
-              ),
-            ),
+              ))),
           ),
       ],
     );
   }
 
   Widget _stat(String label, String value, IconData icon) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
+    return FitinoPanelCard(padding: const EdgeInsets.all(14), child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Icon(icon, color: AppColors.primary),
+            Icon(icon, color: AppColors.brandDeep),
             const Spacer(),
             Text(value,
                 style: const TextStyle(
@@ -202,8 +184,6 @@ class _Body extends ConsumerWidget {
             Text(label,
                 style: const TextStyle(color: AppColors.muted, fontSize: 12)),
           ],
-        ),
-      ),
-    );
+        ));
   }
 }

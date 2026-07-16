@@ -30,10 +30,10 @@ class CoachPlansScreen extends ConsumerWidget {
     return FitinoPushScaffold(
       title: 'پلن‌های من',
       description: 'پلن‌های قابل فروش شما',
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FitinoExtendedFab(
         onPressed: () => context.push('/coach/plans/new'),
-        icon: const Icon(Icons.add),
-        label: const Text('پلن جدید'),
+        icon: Icons.add,
+        label: 'پلن جدید',
       ),
       body: RefreshIndicator(
         onRefresh: () async => ref.refresh(coachPlansProvider.future),
@@ -50,9 +50,7 @@ class CoachPlansScreen extends ConsumerWidget {
               itemBuilder: (_, i) {
                 final p = page.items[i];
                 final price = p.discountPrice > 0 ? p.discountPrice : p.price;
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  child: ListTile(
+                return Padding(padding: const EdgeInsets.only(bottom: 8), child: FitinoPanelCard(padding: EdgeInsets.zero, child: ListTile(
                     title: Text(p.title),
                     subtitle: Text(
                       [
@@ -67,8 +65,7 @@ class CoachPlansScreen extends ConsumerWidget {
                       style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                     onTap: () => context.push('/coach/plans/${p.id}'),
-                  ),
-                );
+                  )));
               },
             );
           },

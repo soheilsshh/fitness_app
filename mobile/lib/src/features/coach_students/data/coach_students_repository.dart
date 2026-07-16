@@ -339,8 +339,18 @@ final coachStudentsRepositoryProvider =
   return CoachStudentsRepository(ref.watch(dioProvider));
 });
 
-final coachStudentsFilterProvider = StateProvider<String>((_) => 'all');
-final coachStudentsQueryProvider = StateProvider<String>((_) => '');
+class _StringFilter extends Notifier<String> {
+  _StringFilter(this._initial);
+  final String _initial;
+  @override
+  String build() => _initial;
+  void set(String v) => state = v;
+}
+
+final coachStudentsFilterProvider =
+    NotifierProvider<_StringFilter, String>(() => _StringFilter('all'));
+final coachStudentsQueryProvider =
+    NotifierProvider<_StringFilter, String>(() => _StringFilter(''));
 
 final coachStudentsProvider =
     FutureProvider.autoDispose<CoachStudentsPage>((ref) {

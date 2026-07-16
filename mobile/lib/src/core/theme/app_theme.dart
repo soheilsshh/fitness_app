@@ -136,13 +136,54 @@ class AppTheme {
           ),
         ),
       ),
+      progressIndicatorTheme: const ProgressIndicatorThemeData(
+        color: AppColors.brandMid,
+        linearTrackColor: AppColors.surfaceVariant,
+      ),
       chipTheme: ChipThemeData(
         backgroundColor: fill,
         selectedColor: AppColors.brandMid.withValues(alpha: 0.16),
+        checkmarkColor: AppColors.brandDeep,
         labelStyle: TextStyle(fontFamily: fontFamily, color: fg, fontSize: 12),
+        secondaryLabelStyle:
+            TextStyle(fontFamily: fontFamily, color: fg, fontSize: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(999),
           side: BorderSide(color: border),
+        ),
+        side: BorderSide(color: border),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: AppColors.brandMid,
+          foregroundColor: Colors.white,
+          minimumSize: const Size(0, 48),
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(FitinoRadii.md),
+          ),
+          textStyle: const TextStyle(
+            fontFamily: fontFamily,
+            fontWeight: FontWeight.w700,
+            fontSize: 15,
+          ),
+        ),
+      ),
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: AppColors.brandMid,
+        foregroundColor: Colors.white,
+        elevation: 2,
+      ),
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: isDark ? AppColors.surfaceDark : AppColors.brandDeep,
+        contentTextStyle: const TextStyle(
+          fontFamily: fontFamily,
+          color: Colors.white,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(FitinoRadii.md),
         ),
       ),
       navigationBarTheme: NavigationBarThemeData(
@@ -150,6 +191,22 @@ class AppTheme {
         indicatorColor: Colors.transparent,
         labelTextStyle: WidgetStateProperty.all(
           const TextStyle(fontFamily: fontFamily, fontSize: 10),
+        ),
+      ),
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: surface,
+        modalBackgroundColor: surface,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+        ),
+        showDragHandle: true,
+        dragHandleColor: AppColors.brandAqua.withValues(alpha: 0.5),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(FitinoRadii.lg),
+          side: BorderSide(color: border.withValues(alpha: 0.9)),
         ),
       ),
     );

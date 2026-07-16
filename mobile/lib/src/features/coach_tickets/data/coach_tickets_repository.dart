@@ -162,7 +162,14 @@ final coachTicketsRepositoryProvider = Provider<CoachTicketsRepository>((ref) {
   return CoachTicketsRepository(ref.watch(dioProvider));
 });
 
-final coachTicketsFilterProvider = StateProvider<String>((_) => 'all');
+class _TicketsFilter extends Notifier<String> {
+  @override
+  String build() => 'all';
+  void set(String v) => state = v;
+}
+
+final coachTicketsFilterProvider =
+    NotifierProvider<_TicketsFilter, String>(_TicketsFilter.new);
 
 final coachTicketsProvider =
     FutureProvider.autoDispose<CoachTicketsPage>((ref) {
