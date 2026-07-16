@@ -7,7 +7,14 @@ import {
   JALALI_MONTHS,
 } from "@/lib/date/jalali";
 
-export default function JalaliDateField({ label, year, month, day, onChange }) {
+export default function JalaliDateField({
+  label,
+  year,
+  month,
+  day,
+  onChange,
+  disabled = false,
+}) {
   const years = useMemo(() => getJalaliYearOptions(), []);
   const daysInMonth = useMemo(
     () => getJalaliMonthLength(year, month),
@@ -21,6 +28,7 @@ export default function JalaliDateField({ label, year, month, day, onChange }) {
   }, [daysInMonth]);
 
   const setPart = (part, value) => {
+    if (disabled) return;
     const next = { year, month, day, [part]: value };
     if (part === "year" || part === "month") {
       const maxDay = getJalaliMonthLength(next.year, next.month);
@@ -31,14 +39,18 @@ export default function JalaliDateField({ label, year, month, day, onChange }) {
     onChange?.(next);
   };
 
+  const selectClass =
+    "w-full rounded-2xl border border-border bg-background px-3 py-3 text-sm text-foreground outline-none focus:border-ring disabled:cursor-not-allowed disabled:opacity-60";
+
   return (
     <div>
-      <div className="mb-2 text-xs font-bold text-zinc-300">{label}</div>
+      <div className="mb-2 text-xs font-medium text-muted-foreground">{label}</div>
       <div className="grid grid-cols-3 gap-2">
         <select
           value={year}
+          disabled={disabled}
           onChange={(e) => setPart("year", e.target.value)}
-          className="w-full rounded-2xl border border-white/10 bg-zinc-950/30 px-3 py-3 text-sm text-white outline-none focus:border-white/20"
+          className={selectClass}
         >
           <option value="">سال</option>
           {years.map((y) => (
@@ -50,8 +62,9 @@ export default function JalaliDateField({ label, year, month, day, onChange }) {
 
         <select
           value={month}
+          disabled={disabled}
           onChange={(e) => setPart("month", e.target.value)}
-          className="w-full rounded-2xl border border-white/10 bg-zinc-950/30 px-3 py-3 text-sm text-white outline-none focus:border-white/20"
+          className={selectClass}
         >
           <option value="">ماه</option>
           {JALALI_MONTHS.map((name, i) => (
@@ -63,8 +76,9 @@ export default function JalaliDateField({ label, year, month, day, onChange }) {
 
         <select
           value={day}
+          disabled={disabled}
           onChange={(e) => setPart("day", e.target.value)}
-          className="w-full rounded-2xl border border-white/10 bg-zinc-950/30 px-3 py-3 text-sm text-white outline-none focus:border-white/20"
+          className={selectClass}
         >
           <option value="">روز</option>
           {dayOptions.map((d) => (
@@ -75,7 +89,7 @@ export default function JalaliDateField({ label, year, month, day, onChange }) {
         </select>
       </div>
       {year && month && day && (
-        <div className="mt-2 text-[11px] text-zinc-500">
+        <div className="mt-2 text-[11px] text-muted-foreground">
           تاریخ انتخاب‌شده: {year}/{month}/{day}
         </div>
       )}

@@ -78,49 +78,38 @@ func (u *User) SetGoals(goals []string) error {
 	return nil
 }
 
-// IsStudentProfileComplete reports whether a student has filled all required onboarding fields.
+const placeholderStudentName = "کاربر جدید"
+
+// IsStudentProfileComplete is the soft gate for panel access: real name + primary goal.
+// Detailed body metrics, medical history, and photos are progressive/optional.
 // Non-student roles are always considered complete.
-func IsStudentProfileComplete(user *User, initialPhotos []UserPhoto) bool {
+func IsStudentProfileComplete(user *User, _ []UserPhoto) bool {
 	if user == nil || user.Role != RoleStudent {
 		return true
 	}
+	name := strings.TrimSpace(user.Name)
+	if name == "" || name == placeholderStudentName {
+		return false
+	}
+	if strings.TrimSpace(user.PrimaryGoal) == "" && len(user.GetGoals()) == 0 {
+		return false
+	}
+	return true
+}
 
-	if user.BirthDate == nil {
-		return false
+// StudentProfileProgress returns section completion for progressive profile UX.
+func StudentProfileProgress(user *User, initialPhotos []UserPhoto) (essentials, body, medical, photos bool, percent int) {
+	if user == nil {
+		return false, false, false, false, 0
 	}
-	if len(strings.TrimSpace(user.NationalID)) != 10 {
-		return false
-	}
-	if !containsString(ValidGenders, user.Gender) {
-		return false
-	}
-	if len(user.GetGoals()) == 0 {
-		return false
-	}
-	if strings.TrimSpace(user.PrimaryGoal) == "" {
-		return false
-	}
-	if user.TargetWeightKg == nil || *user.TargetWeightKg <= 0 {
-		return false
-	}
-	if !containsString(ValidBodyConditions, user.BodyCondition) {
-		return false
-	}
-	if user.HeightCm == nil || *user.HeightCm <= 0 {
-		return false
-	}
-	if user.WeightKg == nil || *user.WeightKg <= 0 {
-		return false
-	}
-	if strings.TrimSpace(user.MedicalHistory) == "" {
-		return false
-	}
-	if strings.TrimSpace(user.Injuries) == "" {
-		return false
-	}
-	if strings.TrimSpace(user.PhysicalLimitations) == "" {
-		return false
-	}
+	essentials = IsStudentProfileComplete(user, initialPhotos)
+	body = user.HeightCm != nil && *user.HeightCm > 0 &&
+		user.WeightKg != nil && *user.WeightKg > 0 &&
+		user.TargetWeightKg != nil && *user.TargetWeightKg > 0 &&
+		containsString(ValidBodyConditions, user.BodyCondition)
+	medical = strings.TrimSpace(user.MedicalHistory) != "" &&
+		strings.TrimSpace(user.Injuries) != "" &&
+		strings.TrimSpace(user.PhysicalLimitations) != ""
 
 	typesPresent := map[string]bool{}
 	for _, p := range initialPhotos {
@@ -132,12 +121,22 @@ func IsStudentProfileComplete(user *User, initialPhotos []UserPhoto) bool {
 			typesPresent[t] = true
 		}
 	}
+	photos = true
 	for _, required := range RequiredBodyPhotoTypes {
 		if !typesPresent[required] {
-			return false
+			photos = false
+			break
 		}
 	}
-	return true
+
+	done := 0
+	for _, ok := range []bool{essentials, body, medical, photos} {
+		if ok {
+			done++
+		}
+	}
+	percent = done * 100 / 4
+	return essentials, body, medical, photos, percent
 }
 
 func containsString(list []string, value string) bool {

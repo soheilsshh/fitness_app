@@ -29,6 +29,7 @@ type MeProfileDTO struct {
 	LastName            string       `json:"lastName"`
 	Phone               string       `json:"phone"`
 	Email               string       `json:"email"`
+	AvatarURL           string       `json:"avatarUrl,omitempty"`
 	HeightCm            *float64     `json:"heightCm,omitempty"`
 	WeightKg            *float64     `json:"weightKg,omitempty"`
 	BirthDate           *string      `json:"birthDate,omitempty"`
@@ -42,14 +43,24 @@ type MeProfileDTO struct {
 	MedicalHistory      string       `json:"medicalHistory,omitempty"`
 	Injuries            string       `json:"injuries,omitempty"`
 	PhysicalLimitations string       `json:"physicalLimitations,omitempty"`
-	IsProfileComplete   bool         `json:"isProfileComplete"`
-	Photos              []MePhotoDTO `json:"photos"`
-	ProgramsCount       int64        `json:"programsCount"`
-	OrdersCount         int64        `json:"ordersCount"`
-	AssignedCoachID     *uint        `json:"assignedCoachId,omitempty"`
-	AssignedCoachName   string       `json:"assignedCoachName,omitempty"`
-	AssignedCoachSlug   string       `json:"assignedCoachSlug,omitempty"`
-	CreatedAt           time.Time    `json:"createdAt"`
+	IsProfileComplete   bool                 `json:"isProfileComplete"`
+	ProfileProgress     *ProfileProgressDTO  `json:"profileProgress,omitempty"`
+	Photos              []MePhotoDTO         `json:"photos"`
+	ProgramsCount       int64                `json:"programsCount"`
+	OrdersCount         int64                `json:"ordersCount"`
+	AssignedCoachID     *uint                `json:"assignedCoachId,omitempty"`
+	AssignedCoachName   string               `json:"assignedCoachName,omitempty"`
+	AssignedCoachSlug   string               `json:"assignedCoachSlug,omitempty"`
+	CreatedAt           time.Time            `json:"createdAt"`
+}
+
+// ProfileProgressDTO drives progressive / gamified profile completion UI.
+type ProfileProgressDTO struct {
+	Essentials bool `json:"essentials"`
+	Body       bool `json:"body"`
+	Medical    bool `json:"medical"`
+	Photos     bool `json:"photos"`
+	Percent    int  `json:"percent"`
 }
 
 type MePhotoDTO struct {
@@ -206,6 +217,7 @@ type MeService interface {
 	GetProfile(ctx context.Context, userID uint) (*MeProfileDTO, error)
 	UpdateProfile(ctx context.Context, userID uint, req *MeProfileUpdateRequest) (*MeProfileDTO, error)
 	UploadBodyPhoto(ctx context.Context, userID uint, file io.Reader, filename string, photoType string) (*MePhotoDTO, error)
+	UploadAvatar(ctx context.Context, userID uint, file io.Reader, filename string) (avatarURL string, err error)
 	IsProfileComplete(ctx context.Context, user *models.User) (bool, error)
 	ListMyOrders(ctx context.Context, userID uint, page, pageSize int, status string) (*MeOrderListResponse, error)
 	GetMyOrderByID(ctx context.Context, userID uint, orderID uint) (*MeOrderDTO, error)
@@ -294,12 +306,15 @@ func (s *meService) buildProfileDTO(ctx context.Context, user *models.User) (*Me
 		birthDate = &formatted
 	}
 
+	essentials, bodyDone, medicalDone, photosDone, percent := models.StudentProfileProgress(user, initialPhotos)
+
 	return &MeProfileDTO{
 		ID:                  user.ID,
 		FirstName:           first,
 		LastName:            last,
 		Phone:               user.Phone,
 		Email:               user.Email,
+		AvatarURL:           user.AvatarURL,
 		HeightCm:            user.HeightCm,
 		WeightKg:            user.WeightKg,
 		BirthDate:           birthDate,
@@ -314,13 +329,20 @@ func (s *meService) buildProfileDTO(ctx context.Context, user *models.User) (*Me
 		Injuries:            user.Injuries,
 		PhysicalLimitations: user.PhysicalLimitations,
 		IsProfileComplete:   complete,
-		Photos:              photoDTOs,
-		ProgramsCount:       programsCount,
-		OrdersCount:         ordersCount,
-		AssignedCoachID:     assignedCoachID,
-		AssignedCoachName:   assignedCoachName,
-		AssignedCoachSlug:   assignedCoachSlug,
-		CreatedAt:           user.CreatedAt,
+		ProfileProgress: &ProfileProgressDTO{
+			Essentials: essentials,
+			Body:       bodyDone,
+			Medical:    medicalDone,
+			Photos:     photosDone,
+			Percent:    percent,
+		},
+		Photos:            photoDTOs,
+		ProgramsCount:     programsCount,
+		OrdersCount:       ordersCount,
+		AssignedCoachID:   assignedCoachID,
+		AssignedCoachName: assignedCoachName,
+		AssignedCoachSlug: assignedCoachSlug,
+		CreatedAt:         user.CreatedAt,
 	}, nil
 }
 
@@ -484,6 +506,53 @@ func containsMeString(list []string, value string) bool {
 		}
 	}
 	return false
+}
+
+func (s *meService) UploadAvatar(ctx context.Context, userID uint, file io.Reader, filename string) (string, error) {
+	user, err := s.userRepo.FindByID(ctx, userID)
+	if err != nil {
+		return "", err
+	}
+
+	baseDir := meGetUploadDir()
+	relDir := filepath.Join("users", fmt.Sprintf("%d", userID), "avatar")
+	dir := filepath.Join(baseDir, relDir)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return "", fmt.Errorf("creating upload dir: %w", err)
+	}
+
+	ext := strings.ToLower(filepath.Ext(filename))
+	switch ext {
+	case ".jpg", ".jpeg", ".png", ".webp", ".gif":
+	case "":
+		ext = ".jpg"
+	default:
+		return "", fmt.Errorf("%w: unsupported image type", ErrInvalidPhotoType)
+	}
+
+	uniqueName := fmt.Sprintf("avatar_%d%s", time.Now().UnixNano(), ext)
+	fullPath := filepath.Join(dir, uniqueName)
+	dst, err := os.Create(fullPath)
+	if err != nil {
+		return "", fmt.Errorf("creating file: %w", err)
+	}
+	defer dst.Close()
+
+	if _, err := io.Copy(dst, file); err != nil {
+		_ = os.Remove(fullPath)
+		return "", fmt.Errorf("writing file: %w", err)
+	}
+
+	urlPath := "/" + filepath.ToSlash(filepath.Join("uploads", relDir, uniqueName))
+	if prev := strings.TrimSpace(user.AvatarURL); prev != "" && prev != urlPath {
+		meRemovePhotoFile(prev)
+	}
+	user.AvatarURL = urlPath
+	if err := s.userRepo.Update(ctx, user); err != nil {
+		_ = os.Remove(fullPath)
+		return "", err
+	}
+	return urlPath, nil
 }
 
 func (s *meService) UploadBodyPhoto(ctx context.Context, userID uint, file io.Reader, filename string, photoType string) (*MePhotoDTO, error) {

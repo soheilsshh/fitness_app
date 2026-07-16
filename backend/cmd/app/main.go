@@ -81,6 +81,7 @@ func NewServer(db *gorm.DB) *Server {
 	checkoutService := service.NewCheckoutService(db, userRepo, servicePlanRepo, orderRepo, subscriptionRepo, coachProfileRepo, paymentService)
 	studentService := service.NewStudentService(userRepo, subscriptionRepo, servicePlanRepo, programRepo)
 	meService := service.NewMeService(db, userRepo, orderRepo, subscriptionRepo, servicePlanRepo, programRepo, exerciseRepo, foodRepo)
+	aiChatService := service.NewAIChatService(meService)
 	adminUserService := service.NewAdminUserService(db, subscriptionRepo, txRepo)
 	adminDashboardService := service.NewAdminDashboardService(db, subscriptionRepo, txRepo, coachProfileRepo)
 	adminStudentService := service.NewAdminStudentService(db, userRepo, subscriptionRepo, servicePlanRepo, coachProfileRepo)
@@ -96,6 +97,7 @@ func NewServer(db *gorm.DB) *Server {
 	studentController := controllers.NewStudentController(studentService)
 	meController := controllers.NewMeController(meService)
 	meTicketController := controllers.NewMeTicketController(ticketService)
+	aiChatController := controllers.NewAIChatController(aiChatService)
 	adminUserController := controllers.NewAdminUserController(adminUserService)
 	adminDashboardController := controllers.NewAdminDashboardController(adminDashboardService)
 	adminStudentController := controllers.NewAdminStudentController(adminStudentService)
@@ -235,6 +237,7 @@ func NewServer(db *gorm.DB) *Server {
 	{
 		studentGroup.GET("/me", meController.GetProfile)
 		studentGroup.PATCH("/me", meController.UpdateProfile)
+		studentGroup.POST("/me/avatar", meController.UploadAvatar)
 		studentGroup.POST("/me/body-photos", meController.UploadBodyPhoto)
 		studentGroup.GET("/me/tracking", trackingController.GetMyTracking)
 		studentGroup.POST("/me/tracking/weight", trackingController.SubmitWeight)
@@ -255,6 +258,7 @@ func NewServer(db *gorm.DB) *Server {
 		studentGroup.GET("/me/tickets", meTicketController.ListTickets)
 		studentGroup.POST("/me/tickets", meTicketController.CreateTicket)
 		studentGroup.GET("/me/tickets/:id", meTicketController.GetTicket)
+		studentGroup.POST("/me/ai/chat", aiChatController.Chat)
 		studentGroup.GET("/subscriptions/current", studentController.GetCurrentSubscription)
 		studentGroup.GET("/subscriptions", studentController.ListSubscriptions)
 		studentGroup.GET("/programs/current", studentController.GetCurrentPrograms)
@@ -335,6 +339,7 @@ func main() {
 		cfg.Database.Name,
 		len(cfg.CORS.AllowedOrigins),
 	)
+	log.Printf("config: sms_delivery=%s", service.SMSDeliveryMode())
 
 	db, err := config.NewMySQLGORM()
 	if err != nil {

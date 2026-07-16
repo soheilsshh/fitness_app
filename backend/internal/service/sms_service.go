@@ -48,6 +48,30 @@ func normalizeKavenegarAPIKey(raw string) string {
 	return strings.TrimSpace(raw)
 }
 
+// smsConsoleOnly is true for local/dev: print OTP to the server terminal instead of
+// calling Kavenegar. Production keeps real SMS when APP_ENV=production and SMS_API_KEY is set.
+//
+// Trigger (either is enough):
+//   - APP_ENV is development|dev|local
+//   - SMS_API_KEY is empty
+func smsConsoleOnly(apiKey string) bool {
+	env := strings.ToLower(strings.TrimSpace(config.Get().App.Env))
+	switch env {
+	case "development", "dev", "local":
+		return true
+	}
+	return apiKey == ""
+}
+
+// SMSDeliveryMode reports how OTP will be delivered (for startup logs).
+func SMSDeliveryMode() string {
+	apiKey := normalizeKavenegarAPIKey(config.Get().SMS.APIKey)
+	if smsConsoleOnly(apiKey) {
+		return "console (local/dev — OTP printed in terminal, no SMS)"
+	}
+	return "kavenegar (production SMS)"
+}
+
 // escapeAPIKeyForPath hex keys have no slashes; keep helper for rare keys with "/".
 func escapeAPIKeyForPath(apiKey string) string {
 	return strings.ReplaceAll(apiKey, "/", "%2F")
@@ -85,10 +109,16 @@ func SendVerification(receptor, token, template string) (*kavenegarResponse, err
 
 	cfg := config.Get().SMS
 	apiKey := normalizeKavenegarAPIKey(cfg.APIKey)
-	if apiKey == "" {
-		// Local/dev: no provider call; print OTP so flows can be tested without SMS.
-		log.Printf("sms: api_key not configured — OTP code=%s receptor=%s template=%s", token, receptor, template)
-		return &kavenegarResponse{Return: kavenegarReturn{Status: 200, Message: "dev log only"}}, nil
+
+	// Local/dev ONLY — never call Kavenegar. Production (app.env=production + api key) sends real SMS.
+	if smsConsoleOnly(apiKey) {
+		log.Printf("sms: LOCAL/DEV console OTP (no provider call) env=%s", config.Get().App.Env)
+		log.Printf("========== LOCAL OTP ==========")
+		log.Printf("code: %s", token)
+		log.Printf("phone: %s", receptor)
+		log.Printf("template: %s", template)
+		log.Printf("================================")
+		return &kavenegarResponse{Return: kavenegarReturn{Status: 200, Message: "local console otp"}}, nil
 	}
 
 	endpoint := fmt.Sprintf(

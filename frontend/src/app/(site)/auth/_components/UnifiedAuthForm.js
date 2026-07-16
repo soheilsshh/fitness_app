@@ -13,7 +13,6 @@ import {
   Pencil,
   Phone,
   RefreshCw,
-  User,
   UserRound,
 } from "lucide-react";
 import {
@@ -74,9 +73,6 @@ export default function UnifiedAuthForm() {
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState("");
 
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-
   const [isChecking, setIsChecking] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -90,8 +86,6 @@ export default function UnifiedAuthForm() {
     setShowPassword(false);
     setOtpSent(false);
     setOtp("");
-    setFirstName("");
-    setLastName("");
     setLoginMode("password");
     resetCooldown();
   };
@@ -128,7 +122,10 @@ export default function UnifiedAuthForm() {
       setStep(exists ? "login" : "register");
     } catch (error) {
       const msg =
-        error?.response?.data?.error || "بررسی شماره ناموفق بود. دوباره تلاش کنید.";
+        error?.response?.data?.error ||
+        (error?.code === "ERR_NETWORK" || !error?.response
+          ? "اتصال به سرور برقرار نشد. مطمئن شوید بک‌اند لوکال روشن است."
+          : "بررسی شماره ناموفق بود. دوباره تلاش کنید.");
       toastError("خطا", msg);
     } finally {
       setIsChecking(false);
@@ -216,19 +213,14 @@ export default function UnifiedAuthForm() {
     if (!isValidOtp(code)) {
       return toastError("کد نامعتبر", "کد تایید را صحیح وارد کنید.");
     }
-    if (!firstName.trim() || !lastName.trim()) {
-      return toastError("اطلاعات ناقص", "نام و نام خانوادگی را وارد کنید.");
-    }
     if (password.length < 6) {
       return toastError("رمز عبور کوتاه است", "رمز عبور باید حداقل ۶ کاراکتر باشد.");
     }
 
-    const name = `${firstName.trim()} ${lastName.trim()}`.trim();
-
     setIsSubmitting(true);
     try {
+      // Name/goal collected in short progressive onboarding — keep signup friction minimal.
       const res = await api.post("/auth/register", {
-        name,
         phone: normalizeIranPhone(phone),
         password,
         code,
@@ -253,7 +245,7 @@ export default function UnifiedAuthForm() {
     },
     register: {
       title: "ساخت حساب جدید",
-      description: "کد تایید را بگیرید، سپس اطلاعات حساب را کامل کنید.",
+      description: "شماره را با کد پیامکی تایید کنید و یک رمز بگذارید؛ بقیه بعداً.",
     },
   };
 
@@ -447,36 +439,6 @@ export default function UnifiedAuthForm() {
                         : "ارسال مجدد کد"}
                   </Button>
 
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <Field>
-                      <FieldLabel htmlFor={`${formId}-first-name`}>نام</FieldLabel>
-                      <div className="relative">
-                        <User className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                        <Input
-                          id={`${formId}-first-name`}
-                          value={firstName}
-                          onChange={(e) => setFirstName(e.target.value)}
-                          placeholder="نام"
-                          className={inputClass}
-                          autoComplete="given-name"
-                          disabled={busy}
-                        />
-                      </div>
-                    </Field>
-                    <Field>
-                      <FieldLabel htmlFor={`${formId}-last-name`}>نام خانوادگی</FieldLabel>
-                      <Input
-                        id={`${formId}-last-name`}
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
-                        placeholder="نام خانوادگی"
-                        className="h-12 rounded-xl border-border/80 bg-background/60 text-base"
-                        autoComplete="family-name"
-                        disabled={busy}
-                      />
-                    </Field>
-                  </div>
-
                   <PasswordField
                     id={`${formId}-register-password`}
                     value={password}
@@ -485,7 +447,7 @@ export default function UnifiedAuthForm() {
                     onToggleShow={() => setShowPassword((v) => !v)}
                     disabled={busy}
                     autoComplete="new-password"
-                    description="حداقل ۶ کاراکتر"
+                    description="حداقل ۶ کاراکتر — برای ورودهای بعدی"
                   />
 
                   <PrimaryButton type="submit" disabled={busy} loading={isSubmitting}>
@@ -493,7 +455,7 @@ export default function UnifiedAuthForm() {
                   </PrimaryButton>
 
                   <FieldDescription className="text-center">
-                    با ادامه، قوانین و حریم خصوصی را می‌پذیرید.
+                    نام و هدف‌تان را در دو مرحله کوتاه بعد از ثبت‌نام می‌پرسیم.
                   </FieldDescription>
                 </>
               )}

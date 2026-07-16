@@ -25,8 +25,8 @@ func NewAuthController(authService service.AuthService, meService service.MeServ
 // DTOs
 
 type registerRequest struct {
-	Name     string `json:"name" binding:"required"`
-	Email    string `json:"email"` // optional; auto-generated from phone when empty
+	Name     string `json:"name"`                    // optional at signup; collected in short onboarding
+	Email    string `json:"email"`                   // optional; auto-generated from phone when empty
 	Phone    string `json:"phone" binding:"required"`
 	Password string `json:"password" binding:"required,min=6"`
 	Code     string `json:"code" binding:"required"` // OTP verification required
@@ -79,6 +79,7 @@ type authUserResponse struct {
 	Email             string `json:"email,omitempty"`
 	Phone             string `json:"phone,omitempty"`
 	Role              string `json:"role"`
+	AvatarURL         string `json:"avatarUrl,omitempty"`
 	IsProfileComplete bool   `json:"isProfileComplete"`
 }
 
@@ -102,6 +103,7 @@ type meResponse struct {
 	Email             string    `json:"email"`
 	Phone             string    `json:"phone"`
 	Role              string    `json:"role"`
+	AvatarURL         string    `json:"avatarUrl,omitempty"`
 	IsProfileComplete bool      `json:"isProfileComplete"`
 	CreatedAt         time.Time `json:"created_at"`
 }
@@ -140,6 +142,7 @@ func (h *AuthController) buildAuthUserResponse(c *gin.Context, user *models.User
 		Email:             user.Email,
 		Phone:             user.Phone,
 		Role:              user.Role,
+		AvatarURL:         user.AvatarURL,
 		IsProfileComplete: complete,
 	}, nil
 }
@@ -496,6 +499,7 @@ func (h *AuthController) Me(c *gin.Context) {
 		Email:             user.Email,
 		Phone:             user.Phone,
 		Role:              user.Role,
+		AvatarURL:         user.AvatarURL,
 		IsProfileComplete: complete,
 		CreatedAt:         user.CreatedAt,
 	}

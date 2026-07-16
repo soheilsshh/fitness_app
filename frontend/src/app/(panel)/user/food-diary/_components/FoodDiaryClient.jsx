@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Apple,
-  BookOpen,
   ChevronLeft,
   ChevronRight,
   Flame,
@@ -15,6 +14,7 @@ import { api } from "@/lib/axios/client";
 import { USER_FOOD_LOGS_PATH, USER_FOODS_PATH } from "@/lib/api/user";
 import FoodPickerModal from "@/app/(panel)/coach/students/nutrition/_components/FoodPickerModal";
 import ManualFoodModal from "@/app/(panel)/coach/students/nutrition/_components/ManualFoodModal";
+import PageHeader from "@/app/(panel)/user/_components/ui/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -338,22 +338,20 @@ export default function FoodDiaryClient() {
 
   return (
     <div className="flex flex-col gap-4 md:gap-6" dir="rtl">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div className="text-start">
-          <h2 className="flex items-center gap-2 text-lg font-semibold tracking-tight">
-            <BookOpen className="size-5 text-primary" />
-            کالری‌شمار من
-          </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            ثبت و پیگیری غذاهای مصرفی روزانه
-          </p>
-        </div>
-        {today ? (
-          <Badge className="border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
-            امروز
-          </Badge>
-        ) : null}
-      </div>
+      <PageHeader
+        title="کالری‌شمار من"
+        description="ثبت و پیگیری غذاهای مصرفی روزانه"
+        meta={
+          today ? (
+            <Badge
+              variant="outline"
+              className="fitino-meta-badge fitino-meta-badge--solid px-3.5 py-2 font-iranianSansDemiBold"
+            >
+              امروز
+            </Badge>
+          ) : null
+        }
+      />
 
       <Card>
         <CardContent className="flex items-center justify-between gap-3 pt-6">

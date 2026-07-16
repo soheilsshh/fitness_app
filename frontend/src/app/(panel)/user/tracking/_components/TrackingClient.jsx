@@ -1,8 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Camera, Scale, Upload } from "lucide-react";
+import { Camera, CreditCard, Scale, Upload } from "lucide-react";
 import { api } from "@/lib/axios/client";
+import PageHeader from "@/app/(panel)/user/_components/ui/PageHeader";
+import PanelEmptyState from "@/app/(panel)/user/_components/ui/PanelEmptyState";
 import PhotoCompareBox from "@/components/tracking/PhotoCompareBox";
 import TrackingAlerts from "@/components/tracking/TrackingAlerts";
 import WeightChart from "@/components/tracking/WeightChart";
@@ -98,11 +100,19 @@ export default function TrackingClient({ showWeightChart = true }) {
 
   if (!tracking) {
     return (
-      <Card dir="rtl">
-        <CardContent className="py-10 text-center text-sm text-muted-foreground">
-          برای استفاده از پایش، ابتدا باید اشتراک فعال داشته باشید.
-        </CardContent>
-      </Card>
+      <div className="flex flex-col gap-4 md:gap-6" dir="rtl">
+        <PageHeader
+          title="پایش پیشرفت"
+          description="وزن و عکس‌های بدن را در بازه‌های منظم ثبت کنید."
+        />
+        <PanelEmptyState
+          icon={CreditCard}
+          title="اشتراک فعال لازم است"
+          description="برای استفاده از پایش، ابتدا باید اشتراک فعال داشته باشید."
+          actionHref="/user/orders"
+          actionLabel="مشاهده سفارش‌ها"
+        />
+      </div>
     );
   }
 
@@ -112,22 +122,22 @@ export default function TrackingClient({ showWeightChart = true }) {
 
   return (
     <div className="flex flex-col gap-4 md:gap-6" dir="rtl">
-      <div className="text-start">
-        <h2 className="text-lg font-semibold tracking-tight">پایش پیشرفت</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          هر {tracking.frequencyDays?.toLocaleString("fa-IR") || "۱۴"} روز یک‌بار وزن و عکس‌های جلو، پشت و بغل را ثبت کنید.
-        </p>
-        {tracking.nextDueDate && (
-          <Badge variant="outline" className="mt-2">
-            موعد بعدی:{" "}
-            {new Intl.DateTimeFormat("fa-IR", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            }).format(new Date(tracking.nextDueDate))}
-          </Badge>
-        )}
-      </div>
+      <PageHeader
+        title="پایش پیشرفت"
+        description={`هر ${tracking.frequencyDays?.toLocaleString("fa-IR") || "۱۴"} روز یک‌بار وزن و عکس‌های جلو، پشت و بغل را ثبت کنید.`}
+        meta={
+          tracking.nextDueDate ? (
+            <Badge variant="outline" className="fitino-meta-badge px-3.5 py-2">
+              موعد بعدی:{" "}
+              {new Intl.DateTimeFormat("fa-IR", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              }).format(new Date(tracking.nextDueDate))}
+            </Badge>
+          ) : null
+        }
+      />
 
       <TrackingAlerts alerts={tracking.alerts} />
 

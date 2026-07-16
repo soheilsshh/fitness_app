@@ -117,8 +117,12 @@ func (s *authService) Register(ctx context.Context, name, email, phone, password
 	phone = digits.NormalizePhone(phone)
 	otpCode = digits.ToEnglish(strings.TrimSpace(otpCode))
 
-	if name == "" || phone == "" || password == "" {
-		return nil, errors.New("name, phone and password are required")
+	if phone == "" || password == "" {
+		return nil, errors.New("phone and password are required")
+	}
+	// Name is collected in short onboarding; keep a safe placeholder for DB.
+	if name == "" {
+		name = "کاربر جدید"
 	}
 	if otpCode == "" {
 		return nil, ErrInvalidOTP

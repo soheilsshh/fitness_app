@@ -35,6 +35,7 @@ export function NavRoleMain({ items = [], label }) {
                   asChild
                   tooltip={item.label}
                   isActive={active}
+                  className="h-9 font-iranianSansMedium"
                 >
                   <Link href={item.href}>
                     {Icon ? <Icon /> : null}

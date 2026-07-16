@@ -76,6 +76,12 @@ type Config struct {
 			MobileDeepLink   string `mapstructure:"mobile_deep_link_scheme"`
 		} `mapstructure:"zarinpal"`
 	} `mapstructure:"payments"`
+
+	OpenAI struct {
+		APIKey  string `mapstructure:"api_key"`
+		Model   string `mapstructure:"model"`
+		BaseURL string `mapstructure:"base_url"`
+	} `mapstructure:"openai"`
 }
 
 var (
@@ -143,6 +149,12 @@ func applyExplicitEnvOverrides(c *Config) {
 	if v, ok := os.LookupEnv("SMS_API_KEY"); ok {
 		c.SMS.APIKey = v
 	}
+	if v, ok := os.LookupEnv("OPENAI_API_KEY"); ok {
+		c.OpenAI.APIKey = v
+	}
+	if v, ok := os.LookupEnv("OPENAI_MODEL"); ok && strings.TrimSpace(v) != "" {
+		c.OpenAI.Model = v
+	}
 }
 
 // syncProcessEnv mirrors selected yaml values into the process environment so
@@ -185,6 +197,8 @@ func setDefaults() {
 	viper.SetDefault("sms.otp_resend_cooldown_seconds", 60)
 	viper.SetDefault("payments.zarinpal.sandbox", true)
 	viper.SetDefault("payments.zarinpal.mobile_deep_link_scheme", "fitinoo")
+	viper.SetDefault("openai.model", "gpt-4o-mini")
+	viper.SetDefault("openai.base_url", "https://api.openai.com/v1")
 }
 
 func bindEnvKeys() {
@@ -214,6 +228,9 @@ func bindEnvKeys() {
 	_ = viper.BindEnv("payments.zarinpal.callback_base_url", "ZARINPAL_CALLBACK_BASE_URL")
 	_ = viper.BindEnv("payments.zarinpal.web_result_url", "ZARINPAL_WEB_RESULT_URL")
 	_ = viper.BindEnv("payments.zarinpal.mobile_deep_link_scheme", "ZARINPAL_MOBILE_DEEP_LINK_SCHEME")
+	_ = viper.BindEnv("openai.api_key", "OPENAI_API_KEY")
+	_ = viper.BindEnv("openai.model", "OPENAI_MODEL")
+	_ = viper.BindEnv("openai.base_url", "OPENAI_BASE_URL")
 }
 
 func applyLegacyOverrides(c *Config) {
@@ -259,6 +276,16 @@ func normalize(c *Config) {
 	if c.Payments.Zarinpal.MobileDeepLink == "" {
 		c.Payments.Zarinpal.MobileDeepLink = "fitinoo"
 	}
+
+	c.OpenAI.APIKey = strings.TrimSpace(c.OpenAI.APIKey)
+	c.OpenAI.Model = strings.TrimSpace(c.OpenAI.Model)
+	c.OpenAI.BaseURL = strings.TrimRight(strings.TrimSpace(c.OpenAI.BaseURL), "/")
+	if c.OpenAI.Model == "" {
+		c.OpenAI.Model = "gpt-4o-mini"
+	}
+	if c.OpenAI.BaseURL == "" {
+		c.OpenAI.BaseURL = "https://api.openai.com/v1"
+	}
 }
 
 func splitCSV(value string) []string {
@@ -298,7 +325,15 @@ func CORSAllowCredentials() bool {
 	return Get().CORS.AllowCredentials
 }
 
-var localOriginRe = regexp.MustCompile(`^https?://(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$`)
+// localhost + private LAN origins (so phone testing via Wi‑Fi IP works in local/dev).
+var localOriginRe = regexp.MustCompile(
+	`^https?://(` +
+		`localhost|127\.0\.0\.1|\[::1\]|` +
+		`192\.168(?:\.\d{1,3}){2}|` +
+		`10(?:\.\d{1,3}){3}|` +
+		`172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2}` +
+		`)(:\d+)?$`,
+)
 
 // IsOriginAllowed checks whether an Origin header may access the API.
 func IsOriginAllowed(origin string) bool {

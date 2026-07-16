@@ -50,7 +50,7 @@ export function usePanelUser({ fetchProfile = true } = {}) {
         setUser({
           name,
           email: data.email || data.phone || "",
-          avatar: data.avatarUrl || data.avatar || "",
+          avatar: data.avatarUrl || data.avatar || data.avatar_url || "",
           role: data.role || session?.role || "",
           initials: getInitials(name),
         });
