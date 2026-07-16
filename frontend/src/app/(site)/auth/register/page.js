@@ -1,10 +1,21 @@
-import { redirect } from "next/navigation";
+import { Suspense } from "react";
+import AuthAliasRedirect from "../_components/AuthAliasRedirect";
 
-export default async function RegisterPage({ searchParams }) {
-  const params = await searchParams;
-  const qs = new URLSearchParams();
-  if (params?.next) qs.set("next", params.next);
-  if (params?.redirect) qs.set("redirect", params.redirect);
-  const suffix = qs.toString();
-  redirect(suffix ? `/auth?${suffix}` : "/auth");
+export const metadata = {
+  title: "ثبت‌نام | فیتینو",
+  description: "ساخت حساب فیتینو",
+};
+
+export default function RegisterPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="py-20 text-center text-muted-foreground">
+          در حال انتقال…
+        </div>
+      }
+    >
+      <AuthAliasRedirect />
+    </Suspense>
+  );
 }
