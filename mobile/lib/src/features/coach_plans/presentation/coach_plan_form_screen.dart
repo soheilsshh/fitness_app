@@ -130,7 +130,7 @@ class _CoachPlanFormScreenState extends ConsumerState<CoachPlanFormScreen> {
     return FitinoPushScaffold(
       title: _isEdit ? 'ویرایش پلن' : 'پلن جدید',
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? const FitinoLoading()
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
@@ -273,7 +273,7 @@ class CoachPlanDetailScreen extends ConsumerWidget {
             },
           ),],
       body: async.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const FitinoLoading(),
         error: (e, _) => Center(child: Text('$e')),
         data: (p) {
           final price = p.discountPrice > 0 ? p.discountPrice : p.price;

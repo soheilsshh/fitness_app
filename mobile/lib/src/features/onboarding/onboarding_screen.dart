@@ -372,7 +372,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
           Expanded(
             child: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? const FitinoLoading()
           : SafeArea(
               child: Column(
                 children: [

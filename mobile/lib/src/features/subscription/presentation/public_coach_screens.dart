@@ -64,7 +64,7 @@ class _CoachesDirectoryScreenState
       title: 'مربی‌ها',
       description: 'مربیان منتشرشده فیتینو',
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? const FitinoLoading()
           : RefreshIndicator(
               onRefresh: _load,
               child: ListView(
@@ -195,7 +195,7 @@ class _PublicCoachLandingScreenState
       title: c?.displayName ?? 'صفحه مربی',
       description: 'پروفایل عمومی و پلن‌ها',
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? const FitinoLoading()
           : RefreshIndicator(
               onRefresh: _load,
               child: ListView(

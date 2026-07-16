@@ -166,11 +166,28 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
                       maxWidth: MediaQuery.sizeOf(context).width * 0.82,
                     ),
                     decoration: BoxDecoration(
-                      color: isUser
-                          ? AppColors.primary.withValues(alpha: 0.2)
-                          : AppColors.surfaceVariant,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.border),
+                      gradient: isUser
+                          ? LinearGradient(
+                              colors: [
+                                AppColors.brandMid.withValues(alpha: 0.22),
+                                AppColors.brandGlow.withValues(alpha: 0.12),
+                              ],
+                            )
+                          : null,
+                      color: isUser ? null : AppColors.surfaceVariant,
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(
+                        color: isUser
+                            ? AppColors.brandAqua.withValues(alpha: 0.45)
+                            : AppColors.border,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.brandDeep.withValues(alpha: 0.08),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
                     child: Text(m.content, style: const TextStyle(height: 1.5)),
                   ),
@@ -186,9 +203,12 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
                 for (final p in _quickPrompts)
                   Padding(
                     padding: const EdgeInsets.only(left: 6),
-                    child: ActionChip(
-                      label: Text(p, style: const TextStyle(fontSize: 12)),
-                      onPressed: _sending ? null : () => _send(p),
+                    child: FitinoChoiceChip(
+                      label: p,
+                      selected: false,
+                      onSelected: (_) {
+                        if (!_sending) _send(p);
+                      },
                     ),
                   ),
               ],

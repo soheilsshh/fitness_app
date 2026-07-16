@@ -174,7 +174,7 @@ class _ExercisePickerSheetState extends ConsumerState<_ExercisePickerSheet> {
           const SizedBox(height: 8),
           Expanded(
             child: _loading
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(child: CircularProgressIndicator(color: AppColors.brandMid))
                 : _error != null
                     ? Center(child: Text(_error!))
                     : _items.isEmpty
@@ -362,7 +362,7 @@ class _FoodPickerSheetState extends ConsumerState<_FoodPickerSheet> {
           ),
           Expanded(
             child: _loading
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(child: CircularProgressIndicator(color: AppColors.brandMid))
                 : _items.isEmpty
                     ? const Center(child: Text('غذایی یافت نشد.'))
                     : ListView.builder(

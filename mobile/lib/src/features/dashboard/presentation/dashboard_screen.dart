@@ -207,30 +207,30 @@ class _DashboardBody extends StatelessWidget {
           spacing: 8,
           runSpacing: 8,
           children: [
-            ActionChip(
-              avatar: const Icon(Icons.school_outlined, size: 18),
-              label: const Text('آموزش'),
-              onPressed: () => context.push('/student/academy'),
+            FitinoQuickLink(
+              icon: Icons.school_outlined,
+              label: 'آموزش',
+              onTap: () => context.push('/student/academy'),
             ),
-            ActionChip(
-              avatar: const Icon(Icons.help_outline, size: 18),
-              label: const Text('سوالات'),
-              onPressed: () => context.push('/student/faq'),
+            FitinoQuickLink(
+              icon: Icons.help_outline,
+              label: 'سوالات',
+              onTap: () => context.push('/student/faq'),
             ),
-            ActionChip(
-              avatar: const Icon(Icons.auto_awesome, size: 18),
-              label: const Text('دستیار AI'),
-              onPressed: () => context.push('/student/ai'),
+            FitinoQuickLink(
+              icon: Icons.auto_awesome,
+              label: 'دستیار AI',
+              onTap: () => context.push('/student/ai'),
             ),
-            ActionChip(
-              avatar: const Icon(Icons.shopping_bag_outlined, size: 18),
-              label: const Text('خرید پلن'),
-              onPressed: () => context.push('/student/subscribe'),
+            FitinoQuickLink(
+              icon: Icons.shopping_bag_outlined,
+              label: 'خرید پلن',
+              onTap: () => context.push('/student/subscribe'),
             ),
-            ActionChip(
-              avatar: const Icon(Icons.storefront_outlined, size: 18),
-              label: const Text('مربی‌ها'),
-              onPressed: () => context.push('/student/coaches'),
+            FitinoQuickLink(
+              icon: Icons.storefront_outlined,
+              label: 'مربی‌ها',
+              onTap: () => context.push('/student/coaches'),
             ),
           ],
         ),

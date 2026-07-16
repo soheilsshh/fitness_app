@@ -117,7 +117,7 @@ class _SubscribeScreenState extends ConsumerState<SubscribeScreen> {
         ),
       ],
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? const FitinoLoading()
           : RefreshIndicator(
               onRefresh: _loadCoaches,
               child: ListView(
@@ -179,7 +179,7 @@ class _SubscribeScreenState extends ConsumerState<SubscribeScreen> {
                   if (_paying)
                     const Padding(
                       padding: EdgeInsets.all(16),
-                      child: Center(child: CircularProgressIndicator()),
+                      child: const FitinoLoading(),
                     ),
                 ],
               ),

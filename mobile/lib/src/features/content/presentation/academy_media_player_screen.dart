@@ -84,7 +84,7 @@ class _AcademyMediaPlayerScreenState extends State<AcademyMediaPlayerScreen> {
                 ),
               )
             else if (!_ready || c == null)
-              const Expanded(child: Center(child: CircularProgressIndicator()))
+              const Expanded(child: const FitinoLoading())
             else ...[
               Expanded(
                 child: Center(

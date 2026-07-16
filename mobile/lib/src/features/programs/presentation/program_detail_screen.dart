@@ -100,8 +100,8 @@ class _ProgramDetailScreenState extends ConsumerState<ProgramDetailScreen> {
                       for (final key in days)
                         Padding(
                           padding: const EdgeInsets.only(left: 6),
-                          child: ChoiceChip(
-                            label: Text(_dayLabel(key)),
+                          child: FitinoChoiceChip(
+                            label: _dayLabel(key),
                             selected: day == key,
                             onSelected: (_) =>
                                 setState(() => _selectedDay = key),
@@ -111,13 +111,22 @@ class _ProgramDetailScreenState extends ConsumerState<ProgramDetailScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                SegmentedButton<int>(
-                  segments: const [
-                    ButtonSegment(value: 0, label: Text('تمرین')),
-                    ButtonSegment(value: 1, label: Text('تغذیه')),
+                Row(
+                  children: [
+                    FitinoChoiceChip(
+                      label: 'تمرین',
+                      icon: Icons.fitness_center_rounded,
+                      selected: _tab == 0,
+                      onSelected: (_) => setState(() => _tab = 0),
+                    ),
+                    const SizedBox(width: 8),
+                    FitinoChoiceChip(
+                      label: 'تغذیه',
+                      icon: Icons.restaurant_rounded,
+                      selected: _tab == 1,
+                      onSelected: (_) => setState(() => _tab = 1),
+                    ),
                   ],
-                  selected: {_tab},
-                  onSelectionChanged: (s) => setState(() => _tab = s.first),
                 ),
                 const SizedBox(height: 12),
                 if (_tab == 0 && plan?.workout != null) ...[

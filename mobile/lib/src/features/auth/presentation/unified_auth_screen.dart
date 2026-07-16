@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/validators.dart';
 import '../../../core/widgets/app_text_field.dart';
+import '../../../core/widgets/fitino_ui.dart';
 import '../application/auth_controller.dart';
 import '../data/auth_repository.dart';
 
@@ -277,22 +278,29 @@ class _UnifiedAuthScreenState extends ConsumerState<UnifiedAuthScreen> {
                       ),
                     ),
                   ],
-                  if (_step == _AuthStep.login) ...[
-                    SegmentedButton<_LoginTab>(
-                      segments: const [
-                        ButtonSegment(
-                            value: _LoginTab.password,
-                            label: Text('با رمز عبور')),
-                        ButtonSegment(
-                            value: _LoginTab.otp,
-                            label: Text('با کد پیامکی')),
-                      ],
-                      selected: {_loginTab},
-                      onSelectionChanged: (s) =>
-                          setState(() => _loginTab = s.first),
-                    ),
-                    const SizedBox(height: 16),
-                    if (_loginTab == _LoginTab.password) ...[
+                    if (_step == _AuthStep.login) ...[
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          FitinoChoiceChip(
+                            label: 'با رمز عبور',
+                            icon: Icons.lock_outline,
+                            selected: _loginTab == _LoginTab.password,
+                            onSelected: (_) => setState(
+                                () => _loginTab = _LoginTab.password),
+                          ),
+                          FitinoChoiceChip(
+                            label: 'با کد پیامکی',
+                            icon: Icons.sms_outlined,
+                            selected: _loginTab == _LoginTab.otp,
+                            onSelected: (_) =>
+                                setState(() => _loginTab = _LoginTab.otp),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      if (_loginTab == _LoginTab.password) ...[
                       AppTextField(
                         controller: _password,
                         label: 'رمز عبور',
