@@ -6,6 +6,7 @@ import '../../../core/utils/jalali.dart';
 import '../../../core/widgets/async_value_widget.dart';
 import '../../../core/widgets/state_views.dart';
 import '../application/food_diary_controller.dart';
+import '../application/nutrition_targets.dart';
 import '../data/food_models.dart';
 import 'add_food_sheet.dart';
 
@@ -34,7 +35,10 @@ class FoodDiaryScreen extends ConsumerWidget {
           _DateBar(date: date, ref: ref),
           Expanded(
             child: RefreshIndicator(
-              onRefresh: () async => ref.refresh(dailyDiaryProvider.future),
+              onRefresh: () async {
+                ref.invalidate(nutritionTargetsProvider);
+                await ref.refresh(dailyDiaryProvider.future);
+              },
               child: AsyncValueWidget<DailyFoodLog>(
                 value: async,
                 onRetry: () => ref.invalidate(dailyDiaryProvider),
@@ -62,7 +66,6 @@ class _DateBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // RTL: "previous day" is the right-pointing chevron.
           IconButton(
             onPressed: () => notifier.shift(-1),
             icon: const Icon(Icons.chevron_right),
@@ -91,10 +94,25 @@ class _DiaryBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final targetsAsync = ref.watch(nutritionTargetsProvider);
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
       children: [
-        _TotalsCard(totals: day.totals),
+        targetsAsync.when(
+          loading: () => _TotalsCard(
+            totals: day.totals,
+            targets: const NutritionTargets(),
+            loadingTargets: true,
+          ),
+          error: (_, _) => _TotalsCard(
+            totals: day.totals,
+            targets: const NutritionTargets(),
+          ),
+          data: (targets) => _TotalsCard(
+            totals: day.totals,
+            targets: targets,
+          ),
+        ),
         const SizedBox(height: 16),
         if (day.items.isEmpty)
           const Padding(
@@ -118,8 +136,15 @@ class _DiaryBody extends ConsumerWidget {
                 margin: const EdgeInsets.only(bottom: 8),
                 child: ListTile(
                   title: Text(log.foodName),
-                  subtitle: Text(log.quantity,
-                      style: const TextStyle(color: AppColors.muted)),
+                  subtitle: Text(
+                    [
+                      log.quantity,
+                      if (log.protein > 0) 'P ${log.protein.round()}g',
+                      if (log.carbs > 0) 'C ${log.carbs.round()}g',
+                      if (log.fat > 0) 'F ${log.fat.round()}g',
+                    ].where((s) => s.isNotEmpty).join(' · '),
+                    style: const TextStyle(color: AppColors.muted),
+                  ),
                   trailing: Text('${log.calories.round()} کالری'),
                 ),
               ),
@@ -131,43 +156,172 @@ class _DiaryBody extends ConsumerWidget {
 }
 
 class _TotalsCard extends StatelessWidget {
-  const _TotalsCard({required this.totals});
+  const _TotalsCard({
+    required this.totals,
+    required this.targets,
+    this.loadingTargets = false,
+  });
+
   final MacroTotals totals;
+  final NutritionTargets targets;
+  final bool loadingTargets;
 
   @override
   Widget build(BuildContext context) {
+    final calPct = targetProgressPercent(
+      totals.calories,
+      targets.caloriesTarget.toDouble(),
+    );
+    final proPct = targetProgressPercent(totals.protein, targets.proteinGrams);
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('${totals.calories.round()}',
-                style: const TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primary)),
-            const Text('کالری کل', style: TextStyle(color: AppColors.muted)),
-            const SizedBox(height: 14),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+            const Row(
               children: [
-                _macro('پروتئین', totals.protein),
-                _macro('کربوهیدرات', totals.carbs),
-                _macro('چربی', totals.fat),
+                Icon(Icons.local_fire_department, color: AppColors.primary),
+                SizedBox(width: 8),
+                Text('خلاصه مصرف روز',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
               ],
             ),
+            const SizedBox(height: 4),
+            Text(
+              loadingTargets
+                  ? 'در حال بارگذاری اهداف...'
+                  : targets.hasAny
+                      ? 'مقایسه با اهداف برنامه غذایی مربی'
+                      : 'اهداف رژیم هنوز توسط مربی تنظیم نشده است',
+              style: const TextStyle(color: AppColors.muted, fontSize: 12),
+            ),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Expanded(
+                    child: _StatTile(
+                        label: 'کالری',
+                        value: '${totals.calories.round()}',
+                        unit: 'kcal')),
+                Expanded(
+                    child: _StatTile(
+                        label: 'پروتئین',
+                        value: '${totals.protein.round()}',
+                        unit: 'g')),
+                Expanded(
+                    child: _StatTile(
+                        label: 'کربو',
+                        value: '${totals.carbs.round()}',
+                        unit: 'g')),
+                Expanded(
+                    child: _StatTile(
+                        label: 'چربی',
+                        value: '${totals.fat.round()}',
+                        unit: 'g')),
+              ],
+            ),
+            if (targets.caloriesTarget > 0) ...[
+              const SizedBox(height: 16),
+              _ProgressRow(
+                label: 'کالری',
+                current: totals.calories,
+                target: targets.caloriesTarget.toDouble(),
+                unit: 'kcal',
+                percent: calPct,
+              ),
+            ],
+            if (targets.proteinGrams > 0) ...[
+              const SizedBox(height: 12),
+              _ProgressRow(
+                label: 'پروتئین',
+                current: totals.protein,
+                target: targets.proteinGrams,
+                unit: 'g',
+                percent: proPct,
+                targetLabel: targets.proteinTarget,
+              ),
+            ],
           ],
         ),
       ),
     );
   }
+}
 
-  Widget _macro(String label, double grams) {
+class _StatTile extends StatelessWidget {
+  const _StatTile({
+    required this.label,
+    required this.value,
+    required this.unit,
+  });
+
+  final String label;
+  final String value;
+  final String unit;
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       children: [
-        Text('${grams.round()} گرم',
-            style: const TextStyle(fontWeight: FontWeight.bold)),
-        Text(label, style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+        Text(label,
+            style: const TextStyle(color: AppColors.muted, fontSize: 11)),
+        const SizedBox(height: 4),
+        Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+        Text(unit,
+            style: const TextStyle(color: AppColors.muted, fontSize: 10)),
+      ],
+    );
+  }
+}
+
+class _ProgressRow extends StatelessWidget {
+  const _ProgressRow({
+    required this.label,
+    required this.current,
+    required this.target,
+    required this.unit,
+    required this.percent,
+    this.targetLabel,
+  });
+
+  final String label;
+  final double current;
+  final double target;
+  final String unit;
+  final double? percent;
+  final String? targetLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final pct = (percent ?? 0) / 100;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+            const Spacer(),
+            Text(
+              '${current.round()} / ${target.round()} $unit'
+              '${percent != null ? ' · ${percent!.round()}٪' : ''}',
+              style: const TextStyle(color: AppColors.muted, fontSize: 12),
+            ),
+          ],
+        ),
+        if (targetLabel != null && targetLabel!.isNotEmpty) ...[
+          const SizedBox(height: 2),
+          Text(targetLabel!,
+              style: const TextStyle(color: AppColors.muted, fontSize: 11)),
+        ],
+        const SizedBox(height: 6),
+        LinearProgressIndicator(
+          value: pct.clamp(0, 1),
+          minHeight: 8,
+          borderRadius: BorderRadius.circular(6),
+          backgroundColor: AppColors.surfaceVariant,
+        ),
       ],
     );
   }

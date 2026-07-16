@@ -123,7 +123,8 @@ func (h *AdminCoachController) PatchCoach(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid body"})
 		return
 	}
-	if req.IsPublished == nil && req.IsActive == nil && req.Status == nil {
+	if req.IsPublished == nil && req.IsActive == nil && req.Status == nil &&
+		req.DisplayName == nil && req.Slug == nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "no fields to update"})
 		return
 	}
@@ -134,8 +135,13 @@ func (h *AdminCoachController) PatchCoach(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid status"})
 			return
 		}
-		if err.Error() == "coach must be approved before publishing" {
+		if err.Error() == "coach must be approved before publishing" ||
+			err.Error() == "displayName cannot be empty" {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		if errors.Is(err, service.ErrSlugTaken) || errors.Is(err, service.ErrInvalidSlug) {
+			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 			return
 		}
 		if errors.Is(err, service.ErrCoachProfileNotFound) || errors.Is(err, gorm.ErrRecordNotFound) {

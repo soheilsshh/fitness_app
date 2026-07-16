@@ -171,10 +171,9 @@ func (s *authService) RegisterCoach(ctx context.Context, name, email, phone, pas
 	name = strings.TrimSpace(name)
 	email = strings.TrimSpace(strings.ToLower(email))
 	phone = digits.NormalizePhone(phone)
-	displayName = strings.TrimSpace(displayName)
-	if displayName == "" {
-		displayName = name
-	}
+	// displayName and slug are admin-owned; coaches cannot self-assign branding.
+	_ = displayName
+	_ = slugInput
 
 	if name == "" || phone == "" || password == "" {
 		return nil, errors.New("name, phone and password are required")
@@ -211,10 +210,7 @@ func (s *authService) RegisterCoach(ctx context.Context, name, email, phone, pas
 		return nil, err
 	}
 
-	coachSlug := slug.Normalize(slugInput)
-	if coachSlug == "" {
-		coachSlug = slug.Fallback(user.ID)
-	}
+	coachSlug := slug.Fallback(user.ID)
 	exists, err := s.coachProfileRepo.SlugExists(ctx, coachSlug, 0)
 	if err != nil {
 		return nil, err
@@ -226,10 +222,10 @@ func (s *authService) RegisterCoach(ctx context.Context, name, email, phone, pas
 	profile := &models.CoachProfile{
 		UserID:       user.ID,
 		Slug:         coachSlug,
-		DisplayName:  displayName,
+		DisplayName:  name,
 		Status:       models.CoachProfileStatusPending,
 		ContactPhone: phone,
-		IsPublished: false,
+		IsPublished:  false,
 	}
 	if err := s.coachProfileRepo.Create(ctx, profile); err != nil {
 		return nil, err

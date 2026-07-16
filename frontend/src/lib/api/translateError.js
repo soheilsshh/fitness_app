@@ -44,6 +44,8 @@ const EXACT = {
   "coach profile not found": "پروفایل مربی یافت نشد.",
   "coach profile is incomplete":
     "پروفایل ناقص است. لطفاً نام، کد ملی، شهر، شماره تماس و سایر اطلاعات الزامی را تکمیل کنید.",
+  "grade-3 coaching certificate is required":
+    "ثبت «مدرک مربی‌گری درجه سه» همراه با تصویر الزامی است.",
   "coach profile is already under review": "پروفایل شما در حال بررسی است.",
   "coach profile is already approved": "پروفایل شما قبلاً تأیید شده است.",
   "invalid national id": "کد ملی وارد شده معتبر نیست.",

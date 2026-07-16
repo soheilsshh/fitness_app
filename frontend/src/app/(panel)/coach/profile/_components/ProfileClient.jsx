@@ -134,8 +134,6 @@ export default function ProfileClient() {
   const [submitting, setSubmitting] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
-  const [slugStatus, setSlugStatus] = useState(null);
-
   const [form, setForm] = useState({
     slug: "",
     displayName: "",
@@ -204,24 +202,6 @@ export default function ProfileClient() {
     loadProfile();
   }, [loadProfile]);
 
-  useEffect(() => {
-    if (!form.slug || form.slug.length < 3 || readOnly) {
-      setSlugStatus(null);
-      return;
-    }
-    const timer = setTimeout(async () => {
-      try {
-        const res = await api.get("/coach/profile/slug/check", {
-          params: { slug: form.slug },
-        });
-        setSlugStatus(res.data?.available ? "available" : "taken");
-      } catch {
-        setSlugStatus(null);
-      }
-    }, 400);
-    return () => clearTimeout(timer);
-  }, [form.slug, readOnly]);
-
   const updateField = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
@@ -249,8 +229,6 @@ export default function ProfileClient() {
     setSaving(true);
     try {
       const p = await updateCoachProfile({
-        slug: form.slug,
-        displayName: form.displayName,
         title: form.title,
         bio: form.bio,
         aboutCoach: form.aboutCoach,
@@ -278,8 +256,6 @@ export default function ProfileClient() {
     setSubmitting(true);
     try {
       await updateCoachProfile({
-        slug: form.slug,
-        displayName: form.displayName,
         title: form.title,
         bio: form.bio,
         aboutCoach: form.aboutCoach,
@@ -302,7 +278,20 @@ export default function ProfileClient() {
         "اطلاعات شما برای بررسی ادمین ارسال شد. پس از تأیید، پنل شما فعال می‌شود.",
       );
     } catch (error) {
-      toastError("خطا", getApiErrorMessage(error, "ثبت درخواست ناموفق بود"));
+      const msg = getApiErrorMessage(error, "ثبت درخواست ناموفق بود");
+      const raw = error?.response?.data?.error || "";
+      if (
+        raw.includes("grade-3") ||
+        raw.includes("Grade3") ||
+        msg.includes("grade-3")
+      ) {
+        toastError(
+          "مدرک الزامی",
+          "برای ارسال درخواست باید «مدرک مربی‌گری درجه سه» را با تصویر در بخش افتخارات ثبت کنید.",
+        );
+      } else {
+        toastError("خطا", msg);
+      }
     } finally {
       setSubmitting(false);
     }
@@ -385,7 +374,7 @@ export default function ProfileClient() {
               type="button"
               size="sm"
               onClick={onSave}
-              disabled={saving || slugStatus === "taken"}
+              disabled={saving}
             >
               <Save data-icon="inline-start" />
               {saving ? "در حال ذخیره..." : "ذخیره"}
@@ -418,30 +407,28 @@ export default function ProfileClient() {
 
         <Card>
           <CardContent className="grid gap-4 pt-6 md:grid-cols-2">
-            <FormField
-              label="نام نمایشی"
-              value={form.displayName}
-              onChange={(v) => updateField("displayName", v)}
-              disabled={readOnly}
-            />
+            <div className="space-y-2">
+              <FormField
+                label="نام نمایشی"
+                value={form.displayName}
+                onChange={() => {}}
+                disabled
+              />
+              <p className="text-xs text-muted-foreground">
+                فقط توسط ادمین قابل ویرایش است.
+              </p>
+            </div>
             <div className="space-y-2">
               <FormField
                 label="شناسه لینک (slug)"
                 value={form.slug}
-                onChange={(v) => updateField("slug", v)}
+                onChange={() => {}}
                 dir="ltr"
-                disabled={readOnly}
+                disabled
               />
-              {slugStatus === "available" ? (
-                <Badge variant="outline" className="border-emerald-500/30 text-emerald-700 dark:text-emerald-300">
-                  شناسه در دسترس است
-                </Badge>
-              ) : null}
-              {slugStatus === "taken" ? (
-                <Badge variant="outline" className="border-rose-500/30 text-rose-700 dark:text-rose-300">
-                  شناسه قبلاً استفاده شده
-                </Badge>
-              ) : null}
+              <p className="text-xs text-muted-foreground">
+                فقط توسط ادمین قابل ویرایش است.
+              </p>
             </div>
             <FormField
               label="عنوان / تخصص کوتاه"

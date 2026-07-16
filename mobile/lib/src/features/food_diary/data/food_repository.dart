@@ -48,6 +48,10 @@ class FoodRepository {
     required String foodName,
     required String quantity,
     double? multiplier,
+    double? calories,
+    double? protein,
+    double? carbs,
+    double? fat,
   }) async {
     try {
       await _dio.post(ApiPaths.userFoodLogs, data: {
@@ -58,6 +62,10 @@ class FoodRepository {
         'quantity': quantity,
         // ignore: use_null_aware_elements
         if (multiplier != null) 'multiplier': multiplier,
+        if (calories != null) 'calories': calories,
+        if (protein != null) 'protein': protein,
+        if (carbs != null) 'carbs': carbs,
+        if (fat != null) 'fat': fat,
       });
     } on DioException catch (e) {
       throw ApiException.fromDio(e);

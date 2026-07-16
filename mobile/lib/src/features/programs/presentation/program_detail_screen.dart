@@ -1,62 +1,221 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/config/api_paths.dart';
+import '../../../core/network/api_exception.dart';
+import '../../../core/network/dio_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/async_value_widget.dart';
+import '../../../core/widgets/state_views.dart';
 import '../application/programs_controller.dart';
 import '../data/program_models.dart';
 
-class ProgramDetailScreen extends ConsumerWidget {
+class ProgramDetailScreen extends ConsumerStatefulWidget {
   const ProgramDetailScreen({super.key, required this.id});
   final int id;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final async = ref.watch(programDetailProvider(id));
+  ConsumerState<ProgramDetailScreen> createState() =>
+      _ProgramDetailScreenState();
+}
+
+class _ProgramDetailScreenState extends ConsumerState<ProgramDetailScreen> {
+  String? _selectedDay;
+  bool _logging = false;
+  int _tab = 0; // 0 workout, 1 nutrition
+
+  Future<void> _logWorkout(ProgramDetail d, String dayKey) async {
+    final workout = d.planByDay[dayKey]?.workout;
+    if (workout == null) return;
+    setState(() => _logging = true);
+    try {
+      final dio = ref.read(dioProvider);
+      await dio.post(ApiPaths.meWorkoutSessions, data: {
+        'subscriptionId': d.id,
+        'dayKey': dayKey,
+        'durationMin': workout.durationMin,
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('تمرین در تاریخچه ثبت شد')),
+        );
+      }
+    } on DioException catch (e) {
+      final msg = ApiException.fromDio(e).message;
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(msg)),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _logging = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final async = ref.watch(programDetailProvider(widget.id));
     return Scaffold(
       appBar: AppBar(title: const Text('جزئیات برنامه')),
       body: AsyncValueWidget<ProgramDetail>(
         value: async,
-        onRetry: () => ref.invalidate(programDetailProvider(id)),
-        data: (d) => _Detail(d: d),
+        onRetry: () => ref.invalidate(programDetailProvider(widget.id)),
+        data: (d) {
+          final days = d.planByDay.keys.toList();
+          final day = _selectedDay ?? (days.isNotEmpty ? days.first : null);
+          final plan = day == null ? null : d.planByDay[day];
+
+          return ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              Text(d.title,
+                  style: const TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 6),
+              Wrap(
+                spacing: 8,
+                runSpacing: 6,
+                children: [
+                  if (d.goal.isNotEmpty) _chip(d.goal),
+                  if (d.level.isNotEmpty) _chip(d.level),
+                  if (d.coach.isNotEmpty) _chip('مربی: ${d.coach}'),
+                  ...d.tags.map(_chip),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                '${d.remainingDays} روز از ${d.durationDays} روز باقی‌مانده',
+                style: const TextStyle(color: AppColors.muted),
+              ),
+              if (days.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                SizedBox(
+                  height: 40,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: [
+                      for (final key in days)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 6),
+                          child: ChoiceChip(
+                            label: Text(_dayLabel(key)),
+                            selected: day == key,
+                            onSelected: (_) =>
+                                setState(() => _selectedDay = key),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SegmentedButton<int>(
+                  segments: const [
+                    ButtonSegment(value: 0, label: Text('تمرین')),
+                    ButtonSegment(value: 1, label: Text('تغذیه')),
+                  ],
+                  selected: {_tab},
+                  onSelectionChanged: (s) => setState(() => _tab = s.first),
+                ),
+                const SizedBox(height: 12),
+                if (_tab == 0 && plan?.workout != null) ...[
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            plan!.workout!.title.isEmpty
+                                ? 'تمرین'
+                                : plan.workout!.title,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          if (plan.workout!.durationMin > 0)
+                            Text('${plan.workout!.durationMin} دقیقه',
+                                style: const TextStyle(
+                                    color: AppColors.muted, fontSize: 12)),
+                          const SizedBox(height: 12),
+                          ...plan.workout!.exercises.map(
+                            (ex) => ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              leading: ex.imageUrl.isEmpty
+                                  ? const Icon(Icons.fitness_center,
+                                      color: AppColors.primary)
+                                  : ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Image.network(
+                                        ex.imageUrl,
+                                        width: 48,
+                                        height: 48,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, _, _) =>
+                                            const Icon(Icons.fitness_center),
+                                      ),
+                                    ),
+                              title: Text(ex.name),
+                              subtitle: Text('${ex.sets}×${ex.reps}'),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          FilledButton.icon(
+                            onPressed: _logging || day == null
+                                ? null
+                                : () => _logWorkout(d, day),
+                            icon: _logging
+                                ? const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2),
+                                  )
+                                : const Icon(Icons.check),
+                            label: Text(_logging
+                                ? 'در حال ثبت…'
+                                : 'ثبت این جلسه در تاریخچه'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ] else if (_tab == 0)
+                  const EmptyView(message: 'تمرینی برای این روز نیست'),
+                if (_tab == 1 && plan?.nutrition != null) ...[
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'هدف کالری: ${plan!.nutrition!.caloriesTarget}',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          if (plan.nutrition!.proteinTarget.isNotEmpty)
+                            Text('پروتئین: ${plan.nutrition!.proteinTarget}',
+                                style: const TextStyle(color: AppColors.muted)),
+                          const SizedBox(height: 12),
+                          ...plan.nutrition!.meals.map(
+                            (m) => ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              title: Text(m.title),
+                              subtitle: Text(m.detail),
+                              trailing: Text('${m.calories.toInt()} کال'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ] else if (_tab == 1)
+                  const EmptyView(message: 'تغذیه‌ای برای این روز نیست'),
+              ] else
+                const Text('جزئیات روزانه‌ای ثبت نشده است.',
+                    style: TextStyle(color: AppColors.muted)),
+            ],
+          );
+        },
       ),
-    );
-  }
-}
-
-class _Detail extends StatelessWidget {
-  const _Detail({required this.d});
-  final ProgramDetail d;
-
-  @override
-  Widget build(BuildContext context) {
-    final days = d.planByDay.entries.toList();
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        Text(d.title,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 6),
-        Wrap(
-          spacing: 8,
-          runSpacing: 6,
-          children: [
-            if (d.goal.isNotEmpty) _chip(d.goal),
-            if (d.level.isNotEmpty) _chip(d.level),
-            if (d.coach.isNotEmpty) _chip('مربی: ${d.coach}'),
-            ...d.tags.map(_chip),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Text('${d.remainingDays} روز از ${d.durationDays} روز باقی‌مانده',
-            style: const TextStyle(color: AppColors.muted)),
-        const Divider(height: 28),
-        if (days.isEmpty)
-          const Text('جزئیات روزانه‌ای ثبت نشده است.',
-              style: TextStyle(color: AppColors.muted))
-        else
-          ...days.map((e) => _DaySection(day: e.key, plan: e.value)),
-      ],
     );
   }
 
@@ -65,68 +224,17 @@ class _Detail extends StatelessWidget {
         backgroundColor: AppColors.surfaceVariant,
         side: const BorderSide(color: AppColors.border),
       );
-}
 
-class _DaySection extends StatelessWidget {
-  const _DaySection({required this.day, required this.plan});
-  final String day;
-  final DayPlan plan;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(day, style: const TextStyle(fontWeight: FontWeight.bold)),
-            if (plan.workout != null) ...[
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  const Icon(Icons.fitness_center,
-                      size: 18, color: AppColors.primary),
-                  const SizedBox(width: 6),
-                  Text(plan.workout!.title.isEmpty
-                      ? 'تمرین'
-                      : plan.workout!.title),
-                ],
-              ),
-              ...plan.workout!.exercises.map(
-                (ex) => Padding(
-                  padding: const EdgeInsets.only(top: 6, right: 24),
-                  child: Text(
-                    '• ${ex.name}  ${ex.sets}×${ex.reps}',
-                    style: const TextStyle(color: AppColors.muted, fontSize: 13),
-                  ),
-                ),
-              ),
-            ],
-            if (plan.nutrition != null) ...[
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  const Icon(Icons.restaurant,
-                      size: 18, color: AppColors.primary),
-                  const SizedBox(width: 6),
-                  Text('تغذیه · ${plan.nutrition!.caloriesTarget} کالری'),
-                ],
-              ),
-              ...plan.nutrition!.meals.map(
-                (m) => Padding(
-                  padding: const EdgeInsets.only(top: 6, right: 24),
-                  child: Text(
-                    '• ${m.title}: ${m.detail}',
-                    style: const TextStyle(color: AppColors.muted, fontSize: 13),
-                  ),
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
+  String _dayLabel(String key) {
+    const map = {
+      'sat': 'شنبه',
+      'sun': 'یکشنبه',
+      'mon': 'دوشنبه',
+      'tue': 'سه‌شنبه',
+      'wed': 'چهارشنبه',
+      'thu': 'پنجشنبه',
+      'fri': 'جمعه',
+    };
+    return map[key] ?? key;
   }
 }

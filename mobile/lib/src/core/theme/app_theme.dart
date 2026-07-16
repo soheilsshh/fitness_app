@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'app_colors.dart';
 
-/// Dark, RTL-friendly theme using the bundled IRANSansX Persian font.
+/// RTL-friendly theme using the bundled IRANSansX Persian font.
 class AppTheme {
   const AppTheme._();
 
@@ -27,33 +27,70 @@ class AppTheme {
       dividerColor: AppColors.border,
     );
 
+    return _finish(base, isDark: true);
+  }
+
+  static ThemeData get light {
+    const bg = Color(0xFFF5F7F6);
+    const surface = Color(0xFFFFFFFF);
+    const fg = Color(0xFF14201A);
+
+    final scheme = const ColorScheme.light(
+      primary: AppColors.primary,
+      onPrimary: AppColors.onPrimary,
+      secondary: AppColors.primaryDark,
+      surface: surface,
+      onSurface: fg,
+      error: AppColors.destructive,
+    );
+
+    final base = ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.light,
+      fontFamily: fontFamily,
+      colorScheme: scheme,
+      scaffoldBackgroundColor: bg,
+      dividerColor: const Color(0xFFE2E8E4),
+    );
+
+    return _finish(base, isDark: false);
+  }
+
+  static ThemeData _finish(ThemeData base, {required bool isDark}) {
+    final fg = isDark ? AppColors.foreground : const Color(0xFF14201A);
+    final bg = isDark ? AppColors.background : const Color(0xFFF5F7F6);
+    final surface = isDark ? AppColors.surface : const Color(0xFFFFFFFF);
+    final border = isDark ? AppColors.border : const Color(0xFFE2E8E4);
+    final fill = isDark ? AppColors.surfaceVariant : const Color(0xFFF0F3F1);
+    final muted = isDark ? AppColors.muted : const Color(0xFF6B7A72);
+
     return base.copyWith(
-      appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.background,
-        foregroundColor: AppColors.foreground,
+      appBarTheme: AppBarTheme(
+        backgroundColor: bg,
+        foregroundColor: fg,
         elevation: 0,
         centerTitle: true,
       ),
       cardTheme: CardThemeData(
-        color: AppColors.surface,
+        color: surface,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: AppColors.border),
+          side: BorderSide(color: border),
         ),
         margin: EdgeInsets.zero,
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.surfaceVariant,
-        hintStyle: const TextStyle(color: AppColors.muted),
+        fillColor: fill,
+        hintStyle: TextStyle(color: muted),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.border),
+          borderSide: BorderSide(color: border),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.border),
+          borderSide: BorderSide(color: border),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -64,11 +101,6 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
           foregroundColor: AppColors.onPrimary,
-          // Height-only minimum. Full-width CTAs come from the parent's
-          // stretch constraint (forms use CrossAxisAlignment.stretch), so we
-          // must NOT demand infinite width here — an infinite min width crashes
-          // (`hasSize`) whenever a button lands in an unbounded-width parent
-          // like a Row, dialog `actions` (OverflowBar), or Wrap.
           minimumSize: const Size(0, 52),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
@@ -81,7 +113,7 @@ class AppTheme {
         ),
       ),
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: AppColors.surface,
+        backgroundColor: surface,
         indicatorColor: AppColors.primary.withValues(alpha: 0.18),
         labelTextStyle: WidgetStateProperty.all(
           const TextStyle(fontFamily: fontFamily, fontSize: 12),

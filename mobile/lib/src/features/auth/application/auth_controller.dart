@@ -53,19 +53,37 @@ class AuthController extends _$AuthController {
   }
 
   Future<void> register({
-    required String name,
-    required String email,
     required String phone,
     required String password,
+    required String code,
+    String name = '',
+    String email = '',
   }) async {
     await _run(
       () => ref.read(authRepositoryProvider).register(
-            name: name,
-            email: email,
             phone: phone,
             password: password,
+            code: code,
+            name: name,
+            email: email,
           ),
     );
+  }
+
+  /// Persist an already-fetched [AuthResponse] (e.g. coach register).
+  Future<void> applyAuthResponse(AuthResponse res) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      await ref.read(tokenStoreProvider).save(
+            accessToken: res.accessToken,
+            refreshToken: res.refreshToken,
+            role: res.user.role,
+            name: res.user.name,
+            isProfileComplete: res.user.isProfileComplete,
+          );
+      return _sessionFromUser(res.user);
+    });
+    if (state.hasError) throw state.error!;
   }
 
   /// Re-fetches `/auth/me` and republishes the session. Used after onboarding

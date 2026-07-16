@@ -7,6 +7,7 @@ import {
   GlobeIcon,
   LayoutDashboardIcon,
   MessageCircleIcon,
+  SmartphoneIcon,
   UserCheckIcon,
   UserPlusIcon,
   UsersIcon,
@@ -23,6 +24,11 @@ export const adminNav = [
     href: "/admin/dashboard",
     label: "داشبورد",
     icon: LayoutDashboardIcon,
+  },
+  {
+    href: "/admin/mobile",
+    label: "اپ موبایل",
+    icon: SmartphoneIcon,
   },
   {
     href: "/admin/students",
@@ -78,5 +84,5 @@ export const adminNav = [
 
 export const adminHeader = {
   title: "پنل مدیر",
-  subtitle: "مدیریت برنامه‌ها و سفارش‌ها",
+  subtitle: "مدیریت برنامه‌ها، سفارش‌ها و اپ موبایل",
 };

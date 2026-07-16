@@ -71,6 +71,8 @@ func NewServer(db *gorm.DB) *Server {
 	foodRepo := repository.NewFoodRepository(db)
 	dailyFoodLogRepo := repository.NewDailyFoodLogRepository(db)
 	notificationRepo := repository.NewNotificationRepository(db)
+	mobileDeviceRepo := repository.NewMobileDeviceRepository(db)
+	mobileReleaseRepo := repository.NewMobileReleaseRepository(db)
 
 	// Initialize services
 	authService := service.NewAuthService(userRepo, coachProfileRepo, refreshTokenRepo, otpRepo)
@@ -88,6 +90,7 @@ func NewServer(db *gorm.DB) *Server {
 	adminPlanService := service.NewAdminPlanService(servicePlanRepo, coachProfileRepo)
 	adminCoachService := service.NewAdminCoachService(coachProfileRepo, coachAchievementRepo)
 	adminExerciseService := service.NewAdminExerciseService(exerciseRepo)
+	mobileAppService := service.NewMobileAppService(mobileDeviceRepo, mobileReleaseRepo)
 	siteSettingsService := service.NewSiteSettingsService(siteSettingsRepo)
 	feedbackService := service.NewFeedbackService(feedbackRepo)
 	ticketService := service.NewTicketService(userRepo, ticketRepo)
@@ -107,6 +110,7 @@ func NewServer(db *gorm.DB) *Server {
 	adminFeedbackController := controllers.NewAdminFeedbackController(feedbackService)
 	adminCoachController := controllers.NewAdminCoachController(adminCoachService)
 	adminExerciseController := controllers.NewAdminExerciseController(adminExerciseService)
+	mobileAppController := controllers.NewMobileAppController(mobileAppService)
 	coachProfileController := controllers.NewCoachProfileController(coachProfileService)
 	coachAchievementController := controllers.NewCoachAchievementController(coachAchievementService)
 	publicCoachController := controllers.NewPublicCoachController(coachProfileService)
@@ -163,6 +167,7 @@ func NewServer(db *gorm.DB) *Server {
 	router.GET("/site-settings", siteSettingsController.GetSiteSettingsPublic)
 	router.GET("/academy", siteSettingsController.GetAcademyPublic)
 	router.GET("/faq", siteSettingsController.GetFAQPublic)
+	router.POST("/mobile/heartbeat", mobileAppController.PublicHeartbeat)
 	router.POST("/feedbacks", feedbackController.CreateFeedback)
 	router.GET("/coaches", publicCoachController.ListCoaches)
 	router.GET("/coaches/:slug", publicCoachController.GetCoachBySlug)
@@ -261,6 +266,7 @@ func NewServer(db *gorm.DB) *Server {
 		studentGroup.POST("/me/tickets", meTicketController.CreateTicket)
 		studentGroup.GET("/me/tickets/:id", meTicketController.GetTicket)
 		studentGroup.POST("/me/ai/chat", aiChatController.Chat)
+		studentGroup.POST("/me/mobile/heartbeat", mobileAppController.MeHeartbeat)
 		studentGroup.GET("/subscriptions/current", studentController.GetCurrentSubscription)
 		studentGroup.GET("/subscriptions", studentController.ListSubscriptions)
 		studentGroup.GET("/programs/current", studentController.GetCurrentPrograms)
@@ -308,6 +314,12 @@ func NewServer(db *gorm.DB) *Server {
 		adminGroup.GET("/funnel-leads/:id", adminFunnelController.GetLead)
 		adminGroup.PATCH("/funnel-leads/:id", adminFunnelController.PatchLead)
 		adminGroup.DELETE("/funnel-leads/:id", adminFunnelController.DeleteLead)
+		adminGroup.GET("/mobile/overview", mobileAppController.Overview)
+		adminGroup.GET("/mobile/devices", mobileAppController.ListDevices)
+		adminGroup.GET("/mobile/releases", mobileAppController.ListReleases)
+		adminGroup.POST("/mobile/releases", mobileAppController.CreateRelease)
+		adminGroup.PATCH("/mobile/releases/:id", mobileAppController.UpdateRelease)
+		adminGroup.DELETE("/mobile/releases/:id", mobileAppController.DeleteRelease)
 	}
 
 	// Serve uploaded files (e.g. user body photos) at /uploads/*

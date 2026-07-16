@@ -3,11 +3,13 @@ package service
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
 
 	"github.com/yourusername/fitness-management/internal/models"
+	"github.com/yourusername/fitness-management/internal/pkg/slug"
 	"github.com/yourusername/fitness-management/internal/repository"
 )
 
@@ -68,6 +70,8 @@ type AdminCoachPatchRequest struct {
 	IsPublished *bool   `json:"isPublished"`
 	IsActive    *bool   `json:"isActive"`
 	Status      *string `json:"status"`
+	DisplayName *string `json:"displayName"`
+	Slug        *string `json:"slug"`
 }
 
 type AdminCoachService interface {
@@ -189,6 +193,27 @@ func (s *adminCoachService) UpdateCoach(ctx context.Context, coachUserID uint, r
 	}
 	if req.IsActive != nil {
 		profile.IsActive = *req.IsActive
+	}
+	if req.DisplayName != nil {
+		name := strings.TrimSpace(*req.DisplayName)
+		if name == "" {
+			return nil, errors.New("displayName cannot be empty")
+		}
+		profile.DisplayName = name
+	}
+	if req.Slug != nil {
+		normalized := slug.Normalize(*req.Slug)
+		if normalized == "" {
+			return nil, ErrInvalidSlug
+		}
+		taken, err := s.coachRepo.SlugExists(ctx, normalized, coachUserID)
+		if err != nil {
+			return nil, err
+		}
+		if taken {
+			return nil, ErrSlugTaken
+		}
+		profile.Slug = normalized
 	}
 	if err := s.coachRepo.Update(ctx, profile); err != nil {
 		return nil, err

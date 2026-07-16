@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/network/api_exception.dart';
@@ -82,7 +83,8 @@ class _SubscribeScreenState extends ConsumerState<SubscribeScreen> {
       final repo = ref.read(subscriptionRepositoryProvider);
       final payment = await repo.requestZarinpalPayment(plan.id);
       final uri = Uri.parse(payment.paymentUrl);
-      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      final launched =
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
       if (!launched && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('باز کردن درگاه پرداخت ناموفق بود')),
@@ -100,12 +102,20 @@ class _SubscribeScreenState extends ConsumerState<SubscribeScreen> {
     }
   }
 
-  String _formatToman(int value) => '${value.toString()} تومان';
+  String _formatToman(int value) => '$value تومان';
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('خرید اشتراک')),
+      appBar: AppBar(
+        title: const Text('خرید اشتراک'),
+        actions: [
+          TextButton(
+            onPressed: () => context.push('/student/coaches'),
+            child: const Text('لیست مربی‌ها'),
+          ),
+        ],
+      ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
@@ -116,9 +126,10 @@ class _SubscribeScreenState extends ConsumerState<SubscribeScreen> {
                   if (_error != null)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 12),
-                      child: Text(_error!, style: const TextStyle(color: Colors.red)),
+                      child:
+                          Text(_error!, style: const TextStyle(color: Colors.red)),
                     ),
-                  if (_coaches.length > 1) ...[
+                  if (_coaches.isNotEmpty) ...[
                     DropdownButtonFormField<PublicCoachItem>(
                       value: _selectedCoach,
                       decoration: const InputDecoration(labelText: 'مربی'),
@@ -136,6 +147,15 @@ class _SubscribeScreenState extends ConsumerState<SubscribeScreen> {
                         _loadPlans(coach.slug);
                       },
                     ),
+                    if (_selectedCoach != null) ...[
+                      const SizedBox(height: 8),
+                      TextButton(
+                        onPressed: () => context.push(
+                          '/student/coaches/${_selectedCoach!.slug}',
+                        ),
+                        child: const Text('مشاهده صفحه عمومی مربی'),
+                      ),
+                    ],
                     const SizedBox(height: 16),
                   ],
                   if (_plans.isEmpty)

@@ -30,3 +30,35 @@ abstract class CoachRecentStudent with _$CoachRecentStudent {
   factory CoachRecentStudent.fromJson(Map<String, dynamic> json) =>
       _$CoachRecentStudentFromJson(json);
 }
+
+class CoachTopStudent {
+  const CoachTopStudent({
+    required this.studentId,
+    required this.fullName,
+    required this.adherence,
+  });
+
+  final int studentId;
+  final String fullName;
+  final int adherence;
+
+  factory CoachTopStudent.fromJson(Map<String, dynamic> json) =>
+      CoachTopStudent(
+        studentId: (json['studentId'] as num?)?.toInt() ?? 0,
+        fullName: json['fullName'] as String? ?? '',
+        adherence: (json['adherence'] as num?)?.toInt() ?? 0,
+      );
+}
+
+class CoachProgressPoint {
+  const CoachProgressPoint({required this.date, required this.value});
+
+  final String date;
+  final int value;
+
+  factory CoachProgressPoint.fromJson(Map<String, dynamic> json) =>
+      CoachProgressPoint(
+        date: json['date'] as String? ?? '',
+        value: (json['value'] as num?)?.toInt() ?? 0,
+      );
+}

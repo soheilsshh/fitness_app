@@ -14,6 +14,15 @@ class AuthRepository {
 
   final Dio _dio;
 
+  Future<bool> checkPhone(String phone) async {
+    final res = await _guard(
+      () => _dio.post(ApiPaths.checkPhone, data: {'phone': phone}),
+    );
+    final data = res.data;
+    if (data is Map) return data['exists'] == true;
+    return false;
+  }
+
   Future<AuthResponse> loginWithPassword(
     String identifier,
     String password,
@@ -25,14 +34,28 @@ class AuthRepository {
   }
 
   Future<AuthResponse> register({
+    required String phone,
+    required String password,
+    required String code,
+    String name = '',
+    String email = '',
+  }) async {
+    return _post(ApiPaths.register, {
+      if (name.isNotEmpty) 'name': name,
+      if (email.isNotEmpty) 'email': email,
+      'phone': phone,
+      'password': password,
+      'code': code,
+    });
+  }
+
+  Future<AuthResponse> registerCoach({
     required String name,
-    required String email,
     required String phone,
     required String password,
   }) async {
-    return _post(ApiPaths.register, {
+    return _post(ApiPaths.registerCoach, {
       'name': name,
-      'email': email,
       'phone': phone,
       'password': password,
     });

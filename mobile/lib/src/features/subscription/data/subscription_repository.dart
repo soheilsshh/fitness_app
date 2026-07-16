@@ -24,8 +24,18 @@ class SubscriptionRepository {
         .toList();
   }
 
+  Future<PublicCoachProfile> getCoach(String slug) async {
+    try {
+      final res = await _dio.get(ApiPaths.publicCoach(slug));
+      return PublicCoachProfile.fromJson(
+          Map<String, dynamic>.from(res.data as Map));
+    } on DioException catch (e) {
+      throw ApiException.fromDio(e);
+    }
+  }
+
   Future<List<PublicPlan>> listCoachPlans(String slug) async {
-    final res = await _dio.get(ApiPaths.coachPlans(slug));
+    final res = await _dio.get(ApiPaths.publicCoachPlans(slug));
     final plans = (res.data['plans'] as List<dynamic>? ?? []);
     return plans
         .map((e) => PublicPlan.fromJson(e as Map<String, dynamic>))

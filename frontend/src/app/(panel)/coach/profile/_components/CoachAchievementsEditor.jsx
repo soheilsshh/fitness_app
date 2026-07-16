@@ -94,6 +94,27 @@ const EMPTY_FORM = {
   isVisible: true,
 };
 
+export const GRADE3_CERTIFICATE_TITLE = "مدرک مربی‌گری درجه سه";
+
+function normalizePersian(s) {
+  return String(s || "")
+    .replace(/ي/g, "ی")
+    .replace(/ك/g, "ک")
+    .replace(/‌/g, "")
+    .replace(/\s+/g, "");
+}
+
+export function isGrade3Certificate(item) {
+  if (!item?.imageUrl) return false;
+  if (item.type !== "qualification" && item.type !== "certificate") return false;
+  const title = normalizePersian(item.title);
+  const needle = normalizePersian(GRADE3_CERTIFICATE_TITLE);
+  return (
+    title.includes(needle) ||
+    (title.includes("مربی") && title.includes("درجهسه"))
+  );
+}
+
 function getTypeMeta(type) {
   return (
     ACHIEVEMENT_TYPES.find((item) => item.value === type) || ACHIEVEMENT_TYPES[0]
@@ -264,6 +285,23 @@ export default function CoachAchievementsEditor({ readOnly = false }) {
     [items],
   );
 
+  const hasGrade3 = useMemo(
+    () => items.some((item) => isGrade3Certificate(item)),
+    [items],
+  );
+
+  const openGrade3Dialog = () => {
+    setUploadingImage(false);
+    setEditingId(null);
+    setForm({
+      ...EMPTY_FORM,
+      type: "qualification",
+      title: GRADE3_CERTIFICATE_TITLE,
+      isVisible: true,
+    });
+    setDialogOpen(true);
+  };
+
   const loadAchievements = useCallback(async () => {
     setLoading(true);
     try {
@@ -352,6 +390,16 @@ export default function CoachAchievementsEditor({ readOnly = false }) {
       return;
     }
 
+    const draft = {
+      type: form.type,
+      title: form.title.trim(),
+      imageUrl: form.imageUrl.trim(),
+    };
+    if (isGrade3Certificate(draft) && !draft.imageUrl) {
+      toastError("خطا", "برای مدرک مربی‌گری درجه سه، تصویر مدرک الزامی است.");
+      return;
+    }
+
     setSaving(true);
     try {
       const payload = buildPayload();
@@ -399,13 +447,35 @@ export default function CoachAchievementsEditor({ readOnly = false }) {
             گواهینامه‌ها، مدال‌ها و مدارک خود را برای نمایش در لندینگ عمومی اضافه کنید.
           </CardDescription>
         </div>
-        <Button type="button" size="sm" onClick={openCreateDialog} disabled={readOnly}>
-          <Plus data-icon="inline-start" />
-          افزودن مورد جدید
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          {!hasGrade3 && !readOnly ? (
+            <Button type="button" size="sm" variant="secondary" onClick={openGrade3Dialog}>
+              <GraduationCap data-icon="inline-start" />
+              افزودن مدرک درجه سه
+            </Button>
+          ) : null}
+          <Button type="button" size="sm" onClick={openCreateDialog} disabled={readOnly}>
+            <Plus data-icon="inline-start" />
+            افزودن مورد جدید
+          </Button>
+        </div>
       </CardHeader>
 
-      <CardContent className="pt-6">
+      <CardContent className="space-y-4 pt-6">
+        {!hasGrade3 ? (
+          <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-100">
+            <p className="font-medium">مدرک مربی‌گری درجه سه الزامی است</p>
+            <p className="mt-1 text-amber-800/90 dark:text-amber-100/80">
+              برای ارسال درخواست تأیید، باید این مدرک را با تصویر اسکن‌شده ثبت کنید.
+              بدون آن درخواست بررسی ارسال نمی‌شود.
+            </p>
+          </div>
+        ) : (
+          <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-900 dark:text-emerald-100">
+            مدرک مربی‌گری درجه سه ثبت شده است.
+          </div>
+        )}
+
         {loading ? (
           <div className="grid gap-4 sm:grid-cols-2">
             {[1, 2].map((key) => (

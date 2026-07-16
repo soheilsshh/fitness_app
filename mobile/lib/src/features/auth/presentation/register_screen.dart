@@ -99,10 +99,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     setState(() => _registering = true);
     try {
       await ref.read(authControllerProvider.notifier).register(
-            name: '${_firstName.text.trim()} ${_lastName.text.trim()}'.trim(),
-            email: '$phone@phone.local',
             phone: phone,
             password: _password.text,
+            code: _otp.text.trim(),
+            name: '${_firstName.text.trim()} ${_lastName.text.trim()}'.trim(),
+            email: '$phone@phone.local',
           );
       // Router redirect handles navigation after a successful register.
     } catch (e) {

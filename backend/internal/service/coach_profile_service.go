@@ -22,7 +22,11 @@ var (
 	ErrCoachProfileAlreadyReviewing = errors.New("coach profile is already under review")
 	ErrCoachProfileAlreadyApproved  = errors.New("coach profile is already approved")
 	ErrInvalidCoachNationalID     = errors.New("invalid national id")
+	ErrMissingGrade3Certificate   = errors.New("grade-3 coaching certificate is required")
 )
+
+// Canonical title for the mandatory Iranian grade-3 coaching certificate.
+const Grade3CoachingCertificateTitle = "مدرک مربی‌گری درجه سه"
 
 // CoachSocialLinks groups public social/contact fields.
 type CoachSocialLinks struct {
@@ -184,23 +188,7 @@ func (s *coachProfileService) UpdateProfile(ctx context.Context, coachUserID uin
 		return nil, ErrCoachProfileAlreadyReviewing
 	}
 
-	if req.Slug != nil {
-		normalized := slug.Normalize(*req.Slug)
-		if normalized == "" {
-			return nil, ErrInvalidSlug
-		}
-		taken, err := s.coachRepo.SlugExists(ctx, normalized, coachUserID)
-		if err != nil {
-			return nil, err
-		}
-		if taken {
-			return nil, ErrSlugTaken
-		}
-		profile.Slug = normalized
-	}
-	if req.DisplayName != nil {
-		profile.DisplayName = *req.DisplayName
-	}
+	// Slug and displayName are admin-only — ignore any coach-provided values.
 	if req.Title != nil {
 		profile.Title = *req.Title
 	}
@@ -271,6 +259,14 @@ func (s *coachProfileService) SubmitProfileRequest(ctx context.Context, coachUse
 		return nil, ErrCoachProfileIncomplete
 	}
 
+	achievements, err := s.achievementRepo.ListByCoachUserID(ctx, coachUserID)
+	if err != nil {
+		return nil, err
+	}
+	if !hasGrade3CoachingCertificate(achievements) {
+		return nil, ErrMissingGrade3Certificate
+	}
+
 	profile.Status = models.CoachProfileStatusReviewing
 	if err := s.coachRepo.Update(ctx, profile); err != nil {
 		return nil, err
@@ -301,6 +297,34 @@ func coachProfileSubmissionMissingFields(p *models.CoachProfile) []string {
 		missing = append(missing, "nationalId")
 	}
 	return missing
+}
+
+func normalizePersianText(s string) string {
+	s = strings.TrimSpace(s)
+	s = strings.ReplaceAll(s, "ي", "ی")
+	s = strings.ReplaceAll(s, "ك", "ک")
+	s = strings.ReplaceAll(s, "‌", "") // zero-width non-joiner
+	s = strings.ReplaceAll(s, " ", "")
+	return s
+}
+
+func hasGrade3CoachingCertificate(achievements []models.CoachAchievement) bool {
+	needle := normalizePersianText(Grade3CoachingCertificateTitle)
+	for i := range achievements {
+		a := &achievements[i]
+		if strings.TrimSpace(a.ImageURL) == "" {
+			continue
+		}
+		if a.Type != "qualification" && a.Type != "certificate" {
+			continue
+		}
+		title := normalizePersianText(a.Title)
+		if strings.Contains(title, needle) ||
+			(strings.Contains(title, "مربی") && strings.Contains(title, "درجهسه")) {
+			return true
+		}
+	}
+	return false
 }
 
 func (s *coachProfileService) CheckSlugAvailable(ctx context.Context, slugInput string, coachUserID uint) (*SlugCheckResponse, error) {

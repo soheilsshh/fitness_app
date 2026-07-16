@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/config/api_paths.dart';
@@ -45,6 +46,36 @@ class ProfileRepository {
     }
   }
 
+  Future<String> uploadAvatar(String filePath) async {
+    try {
+      final form = FormData.fromMap({
+        'file': await MultipartFile.fromFile(filePath),
+      });
+      final res = await _dio.post(ApiPaths.meAvatar, data: form);
+      final data = res.data;
+      if (data is Map) {
+        return data['url'] as String? ??
+            data['avatarUrl'] as String? ??
+            '';
+      }
+      return '';
+    } on DioException catch (e) {
+      throw ApiException.fromDio(e);
+    }
+  }
+
+  /// Raw avatar URL from GET /me (not on generated MeProfile yet).
+  Future<String> avatarUrl() async {
+    try {
+      final res = await _dio.get(ApiPaths.me);
+      final data = res.data;
+      if (data is Map) return data['avatarUrl'] as String? ?? '';
+      return '';
+    } on DioException catch (e) {
+      throw ApiException.fromDio(e);
+    }
+  }
+
   Future<void> changePassword(String current, String next) async {
     try {
       await _dio.post(ApiPaths.changePassword, data: {
@@ -66,3 +97,8 @@ ProfileRepository profileRepository(Ref ref) {
 Future<MeProfile> myProfile(Ref ref) {
   return ref.watch(profileRepositoryProvider).getProfile();
 }
+
+/// Manual provider to avoid codegen for avatar URL.
+final myAvatarUrlProvider = FutureProvider.autoDispose<String>((ref) {
+  return ref.watch(profileRepositoryProvider).avatarUrl();
+});

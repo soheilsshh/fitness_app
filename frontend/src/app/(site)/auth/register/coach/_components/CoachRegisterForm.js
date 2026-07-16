@@ -7,12 +7,10 @@ import {
   ArrowLeft,
   Eye,
   EyeOff,
-  Link2,
   Loader2,
   Lock,
   Phone,
   User,
-  UserRound,
 } from "lucide-react";
 import { api } from "@/lib/axios/client";
 import { persistAuthSession } from "@/lib/auth/session";
@@ -50,8 +48,6 @@ export default function CoachRegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({
     name: "",
-    displayName: "",
-    slug: "",
     phone: "",
     password: "",
   });
@@ -76,8 +72,6 @@ export default function CoachRegisterForm() {
     try {
       const res = await api.post("/auth/register/coach", {
         name: form.name.trim(),
-        displayName: form.displayName.trim() || form.name.trim(),
-        slug: form.slug.trim() || undefined,
         phone,
         password: form.password,
       });
@@ -119,39 +113,9 @@ export default function CoachRegisterForm() {
                   disabled={loading}
                 />
               </div>
-            </Field>
-
-            <Field>
-              <FieldLabel htmlFor={`${formId}-display`}>نام نمایشی</FieldLabel>
-              <div className="relative">
-                <UserRound className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  id={`${formId}-display`}
-                  value={form.displayName}
-                  onChange={setField("displayName")}
-                  placeholder="اختیاری"
-                  className={inputClass}
-                  disabled={loading}
-                />
-              </div>
-              <FieldDescription>اگر خالی بماند، همان نام کامل استفاده می‌شود.</FieldDescription>
-            </Field>
-
-            <Field>
-              <FieldLabel htmlFor={`${formId}-slug`}>شناسه لینک</FieldLabel>
-              <div className="relative">
-                <Link2 className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  id={`${formId}-slug`}
-                  value={form.slug}
-                  onChange={setField("slug")}
-                  placeholder="ali-rezaei"
-                  className={cn(inputClass, "tracking-wide")}
-                  dir="ltr"
-                  disabled={loading}
-                />
-              </div>
-              <FieldDescription>اختیاری — آدرس لندینگ عمومی شما</FieldDescription>
+              <FieldDescription>
+                نام نمایشی و آدرس لندینگ پس از بررسی توسط ادمین تنظیم می‌شود.
+              </FieldDescription>
             </Field>
 
             <Field>

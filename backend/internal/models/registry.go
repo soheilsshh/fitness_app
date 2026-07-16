@@ -37,5 +37,7 @@ func AllModels() []any {
 		&NutritionTemplate{},
 		&TemplateMeal{},
 		&TemplateMealItem{},
+		&MobileDevice{},
+		&MobileStoreRelease{},
 	}
 }

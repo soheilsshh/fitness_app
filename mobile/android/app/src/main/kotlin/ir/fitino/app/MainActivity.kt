@@ -1,4 +1,4 @@
-package com.example.mobile
+package ir.fitino.app
 
 import io.flutter.embedding.android.FlutterActivity
 
