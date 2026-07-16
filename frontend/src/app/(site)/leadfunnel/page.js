@@ -1,23 +1,6 @@
-import { Suspense } from "react";
-import { lazyPage } from "@/lib/lazy-page";
+import { redirect } from "next/navigation";
 
-const LeadFunnelWizard = lazyPage(() => import("./_components/LeadFunnelWizard"));
-
-export const metadata = {
-  title: "ارزیابی رایگان | قیف فروش",
-  description: "ارزیابی اختصاصی تناسب اندام با استاد علی رشید آبادی",
-};
-
-export default function LeadFunnelPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="flex min-h-[60vh] items-center justify-center text-muted-foreground">
-          در حال بارگذاری...
-        </div>
-      }
-    >
-      <LeadFunnelWizard />
-    </Suspense>
-  );
+/** Legacy path — keep old links working. */
+export default function LegacyLeadFunnelRedirect() {
+  redirect("/ali-rashidabadi");
 }

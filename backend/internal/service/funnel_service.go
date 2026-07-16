@@ -241,7 +241,7 @@ func (s *funnelService) CreateLead(ctx context.Context, req *CreateFunnelLeadReq
 
 	return &CreateFunnelLeadResponse{
 		CheckoutToken: token,
-		PaymentURL:    "/leadfunnel/payment?token=" + token,
+		PaymentURL:    "/ali-rashidabadi/payment?token=" + token,
 	}, nil
 }
 

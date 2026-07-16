@@ -13,7 +13,7 @@ const (
 	FunnelStatusContacted      = "contacted"
 )
 
-// FunnelLead stores guest submissions from the /leadfunnel sales funnel.
+// FunnelLead stores guest submissions from the /ali-rashidabadi sales funnel.
 type FunnelLead struct {
 	gorm.Model
 

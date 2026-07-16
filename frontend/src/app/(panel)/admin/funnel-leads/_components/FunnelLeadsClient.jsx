@@ -42,7 +42,7 @@ import {
   GOAL_LABELS,
   QUESTIONS,
   STATUS_LABELS,
-} from "@/app/(site)/leadfunnel/_lib/funnelConfig";
+} from "@/app/(site)/ali-rashidabadi/_lib/funnelConfig";
 
 const Q_SHORT = {
   primaryGoal: "هدف اصلی",

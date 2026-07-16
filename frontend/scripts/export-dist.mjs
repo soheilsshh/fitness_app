@@ -44,7 +44,7 @@ function assertExportReady(exportRoot) {
   const checks = [
     "index.html",
     "admin/index.html",
-    "leadfunnel/index.html",
+    "ali-rashidabadi/index.html",
     "auth/login/index.html",
     "780027.txt",
   ];

@@ -1,14 +1,13 @@
-// 7 specialized funnel questions (see bodybuilding_lead_funnel_documentation.md).
-// `key` matches the backend CreateFunnelLeadRequest json fields.
+// 7 specialized funnel questions (keys match CreateFunnelLeadRequest).
 export const QUESTIONS = [
   {
     key: "primaryGoal",
-    title: "هدف نهایی شما از تغییر بدنتان چیست؟",
-    subtitle: "مسیر اختصاصی شما بر اساس این پاسخ طراحی می‌شود",
+    title: "هدف اصلی شما برای تغییر استایل چیست؟",
+    subtitle: "پایه علمی برنامه تو بر اساس این انتخاب شکل می‌گیرد.",
     options: [
-      { value: "weight_loss", label: "چربی‌سوزی، کاهش وزن و سایز", emoji: "🔥", scenario: "A" },
-      { value: "muscle_gain", label: "افزایش وزن، حجم عضلانی و ماندگار", emoji: "💪", scenario: "B" },
-      { value: "fitness", label: "فیتنس، کات کردن، فرم‌دهی و سلامتی", emoji: "⚡", scenario: "C" },
+      { value: "weight_loss", label: "چربی‌سوزی سریع و کات بدون ریزش عضلات", emoji: "🔥", scenario: "A" },
+      { value: "muscle_gain", label: "ساخت عضلات باکیفیت و حجم‌دهی عضلانی", emoji: "💪", scenario: "B" },
+      { value: "fitness", label: "افزایش قدرت، انرژی روزانه و فیتنس عمومی", emoji: "⚡", scenario: "C" },
     ],
   },
   {
@@ -52,10 +51,10 @@ export const QUESTIONS = [
   },
   {
     key: "mainObstacle",
-    title: "اصلی‌ترین دلیلی که در مسیرهای قبلی شکست خوردید چه بود؟",
-    subtitle: "شناسایی مانع ذهنی، کلید ساختن یک مسیر ماندگار است",
+    title: "بزرگترین مانعی که در برنامه‌های قبلی شما را متوقف کرد چه بود؟",
+    subtitle: "ما اینجاییم تا زنجیره شکست‌های قبلی را قطع کنیم.",
     options: [
-      { value: "motivation", label: "نبود پیگیری مربی و بی‌انگیزه شدن بعد از چند هفته", emoji: "🎯" },
+      { value: "motivation", label: "رها شدن توسط مربی و عدم نظارت و پیگیری مداوم", emoji: "🎯" },
       { value: "plateau", label: "استپ وزنی و نتیجه نگرفتن از رژیم‌های سخت", emoji: "📉" },
       { value: "knowledge", label: "تا به حال مسیر اصولی را شروع نکرده‌ام", emoji: "🚀" },
     ],
@@ -110,22 +109,144 @@ const SCENARIO_META = {
     color: "rose",
     badge: "مسیر چربی‌سوزی و کاهش وزن",
     method: "کرب‌سایکلینگ (نوسان کربوهیدرات)",
+    bodyType: "اندومورف متابولیک",
   },
   B: {
     color: "emerald",
     badge: "مسیر افزایش حجم و عضله‌سازی",
     method: "تنش مکانیکی بالا (Progressive Overload)",
+    bodyType: "اکتومورف مستعد کاتابولیسم",
   },
   C: {
     color: "sky",
     badge: "مسیر فیتنس و فرم‌دهی",
     method: "سیستم پیگیری هوشمند (Accountability)",
+    bodyType: "مزومورف متعادل",
   },
+};
+
+export const HERO_COPY = {
+  title: "فرمول اختصاصی بدن تو؛ ترکیب علم مربیگری و پایش ۲۴ ساعته هوش مصنوعی",
+  subtitle:
+    "رژیم‌های تکراری و برنامه‌های رها شده را فراموش کن. در فیتینو، مربی علی و ایجنت‌های هوش مصنوعی، لحظه به لحظه مسیر تغییر بدنت را زیر نظر دارند تا مطمئن شویم این‌بار حتماً به نتیجه می‌رسی.",
+  cta: "شروع ارزیابی هوشمند بدنم (رایگان)",
+};
+
+export const METRICS_COPY = {
+  title: "کالیبره کردن سیستم پردازش بر اساس ساختار فیزیولوژیک شما",
+  guide:
+    "اطلاعات فعلی خود را وارد کنید تا ایجنت هوش مصنوعی، نرخ متابولیسم پایه (BMR) و توزیع ماکروهای بدنتان را محاسبه کند.",
+  cta: "محاسبه شاخص‌ها و استخراج بیوگرافی بدنی",
+};
+
+export const LEAD_COPY = {
+  title: "اتصال دیتای ارزیابی به پنل اختصاصی مربی علی",
+  subtitle:
+    "برای ذخیره دایمی این آنالیز در بانک داده فیتینو و فعال‌سازی پروتکل پایش هوشمند، نام و شماره موبایل خود را وارد کنید.",
+  cta: "تایید و ورود به بخش دریافت برنامه اختصاصی",
+};
+
+export const RESULT_COPY = {
+  title: "گزارش اولیه آنالیز هوشمند بدنی شما آماده شد",
+  cta: "دریافت راهکار و برنامه اختصاصی از مربی علی",
+  aiWarning:
+    "تحلیل سیستم: الگوی پاسخ‌های شما نشان می‌دهد بدنتان مقاومت بالایی به استپ وزنی در هفته‌های سوم به بعد دارد. مربی علی برای شکستن این استپ عضلانی، نیاز به اعمال یک سیستم بارگذاری متناوب در تمرین شما دارد.",
+};
+
+export const PAYMENT_COPY = {
+  title: "سیستم تحول بدنی فیتینو؛ جایی که هیچ‌کس رها نمی‌شود!",
+  socialProof: "کسانی که مثل تو فکر می‌کردند تغییر، غیرممکن است... (مشاهده نتایج قبل و بعد)",
+  cta: "همین حالا تغییر را شروع کن (دریافت برنامه + فعال‌سازی پایش هوشمند)",
+  features: [
+    {
+      icon: "bot",
+      title: "پایش ثانیه‌ای با هوش مصنوعی",
+      body: "ایجنت‌های ما هر روز تمرین و تغذیه شما را پایش کرده و گزارش پیشرفت یا علائم استپ را فوراً به مربی علی مخابره می‌کنند تا برنامه شما آپدیت شود.",
+    },
+    {
+      icon: "user",
+      title: "طراحی علمی توسط مربی علی",
+      body: "هیچ برنامه آماده یا رباتیکی در کار نیست؛ تمام جزییات تمرین بر اساس بیومکانیک اختصاصی بدن شما فرمول‌نویسی می‌شود.",
+    },
+    {
+      icon: "utensils",
+      title: "منوی غذایی کاملاً منعطف",
+      body: "فرمول فیتینو بر پایه غذاهای سفارشی و در دسترس شماست. سیستم ما لیست غذاهای مورد علاقه‌تان را طوری می‌چیند که بدون زجر کشیدن رژیم بگیرید.",
+    },
+    {
+      icon: "smartphone",
+      title: "سادگی در بالاترین سطح",
+      body: "بدون پیچیدگی‌های اضافه، همه‌چیز در ساده‌ترین و مدرن‌ترین فرمت روی موبایل شماست.",
+    },
+  ],
+  transformations: [
+    { before: "/images/1.png", after: "/images/11.png", name: "نتیجه واقعی ۱" },
+    { before: "/images/2.png", after: "/images/22.png", name: "نتیجه واقعی ۲" },
+  ],
+};
+
+export const SUCCESS_COPY = {
+  title: "به فیتینو خوش آمدی! اولین و مهم‌ترین قدم را مقتدرانه برداشتی.",
+  subtitle:
+    "پرداخت شما با موفقیت تایید شد. سیستم هوشمند و مربی علی در حال آماده‌سازی پنل اختصاصی شما هستند.",
+  bookingPrompt:
+    "برای اینکه شروع بدون ابهام و طوفانی داشته باشی، همین حالا زمان تماس و هماهنگی اولیه خود را با تیم پشتیبانی مربی رزرو کن.",
+  cta: "رزرو ساعت مشاوره و استارت نهایی برنامه",
+  slots: ["۱۰:۰۰ – ۱۲:۰۰", "۱۲:۰۰ – ۱۴:۰۰", "۱۶:۰۰ – ۱۸:۰۰", "۱۸:۰۰ – ۲۰:۰۰"],
 };
 
 function getScenario(primaryGoal) {
   const q = QUESTIONS[0].options.find((o) => o.value === primaryGoal);
   return q?.scenario || "A";
+}
+
+/** Mifflin–St Jeor (male baseline; sex not collected in funnel). */
+export function calculateBmr(age, heightCm, weightKg) {
+  const a = Number(age);
+  const h = Number(heightCm);
+  const w = Number(weightKg);
+  if (![a, h, w].every((n) => Number.isFinite(n) && n > 0)) return null;
+  return Math.round(10 * w + 6.25 * h - 5 * a + 5);
+}
+
+export function estimateBodyType(primaryGoal, bmi) {
+  const meta = SCENARIO_META[getScenario(primaryGoal)];
+  if (bmi && bmi >= 27) return "اندومورف با ذخیره چربی مقاوم";
+  if (bmi && bmi < 20) return "اکتومورف با متابولیسم سریع";
+  return meta?.bodyType || "مزومورف متعادل";
+}
+
+export function calculateBmi(heightCm, weightKg) {
+  const h = Number(heightCm) / 100;
+  const w = Number(weightKg);
+  if (!h || !w || h <= 0) return null;
+  return Math.round((w / (h * h)) * 10) / 10;
+}
+
+export function buildMacroSplit(primaryGoal, bmr) {
+  if (!bmr) return null;
+  if (primaryGoal === "muscle_gain") {
+    return {
+      calories: Math.round(bmr * 1.35),
+      protein: "۳۵٪",
+      carbs: "۴۰٪",
+      fat: "۲۵٪",
+    };
+  }
+  if (primaryGoal === "weight_loss") {
+    return {
+      calories: Math.round(bmr * 1.15),
+      protein: "۴۰٪",
+      carbs: "۳۰٪",
+      fat: "۳۰٪",
+    };
+  }
+  return {
+    calories: Math.round(bmr * 1.25),
+    protein: "۳۰٪",
+    carbs: "۴۰٪",
+    fat: "۳۰٪",
+  };
 }
 
 export function buildAnalysis(answers, coachName = "علی رشید آبادی") {
@@ -136,6 +257,9 @@ export function buildAnalysis(answers, coachName = "علی رشید آبادی")
     experience,
     nutritionChallenge,
     mainObstacle,
+    age,
+    heightCm,
+    weightKg,
   } = answers;
 
   const scenario = getScenario(primaryGoal);
@@ -145,19 +269,67 @@ export function buildAnalysis(answers, coachName = "علی رشید آبادی")
   const nutrition = NUTRITION_LABELS[nutritionChallenge] || "چالش تغذیه‌ای شما";
   const obstacle = OBSTACLE_LABELS[mainObstacle] || "";
   const meta = SCENARIO_META[scenario];
+  const bmr = calculateBmr(age, heightCm, weightKg);
+  const bmi = calculateBmi(heightCm, weightKg);
+  const bodyType = estimateBodyType(primaryGoal, bmi);
+  const macros = buildMacroSplit(primaryGoal, bmr);
+
+  const metricsHighlights = [
+    { label: "تیپ بدنی تخمینی", value: bodyType, icon: "body" },
+    {
+      label: "نرخ متابولیسم پایه (BMR)",
+      value: bmr ? `${new Intl.NumberFormat("fa-IR").format(bmr)} کالری` : "—",
+      icon: "flame",
+    },
+    {
+      label: "شاخص توده بدنی",
+      value: bmi != null ? new Intl.NumberFormat("fa-IR").format(bmi) : "—",
+      icon: "chart",
+    },
+    {
+      label: "هدف کالری روزانه",
+      value: macros
+        ? `${new Intl.NumberFormat("fa-IR").format(macros.calories)} کالری`
+        : "—",
+      icon: "target",
+    },
+  ];
+
+  const chartBars =
+    primaryGoal === "muscle_gain"
+      ? [
+          { label: "قدرت", value: 72 },
+          { label: "حجم", value: 85 },
+          { label: "استقامت", value: 58 },
+          { label: "ریکاوری", value: 64 },
+        ]
+      : primaryGoal === "weight_loss"
+        ? [
+            { label: "چربی‌سوزی", value: 88 },
+            { label: "حفظ عضله", value: 70 },
+            { label: "متابولیسم", value: 55 },
+            { label: "ثبات", value: 62 },
+          ]
+        : [
+            { label: "فرم", value: 78 },
+            { label: "انرژی", value: 82 },
+            { label: "قدرت", value: 68 },
+            { label: "تعادل", value: 75 },
+          ];
 
   if (primaryGoal === "weight_loss") {
     return {
       scenario,
-      title: "گزارش آنالیز سوخت‌وساز شما آماده شد!",
-      subtitle: "تحلیل اختصاصی بر اساس ۷ پاسخ تخصصی شما",
+      title: RESULT_COPY.title,
+      subtitle: "تحلیل اختصاصی بر اساس ۷ پاسخ تخصصی و شاخص‌های فیزیولوژیک شما",
       meta,
-      highlights: [
-        { label: "تیپ متابولیک", value: "مقاوم به چربی‌سوزی" },
-        { label: "سطح فعالیت", value: activity },
-        { label: "چالش تغذیه", value: nutrition },
-        { label: "پتانسیل کاهش سایز", value: "۸۸٪" },
-      ],
+      bmr,
+      bmi,
+      bodyType,
+      macros,
+      chartBars,
+      aiWarning: RESULT_COPY.aiWarning,
+      highlights: metricsHighlights,
       sections: [
         {
           title: "خلاصه وضعیت",
@@ -177,22 +349,23 @@ export function buildAnalysis(answers, coachName = "علی رشید آبادی")
         "تمرینات ترکیبی برای چربی‌سوزی هدفمند",
         "پیگیری و چکاپ هفتگی توسط تیم مربی",
       ],
-      closing: `برای ثبت این تحلیل در پرونده ورزشی شما و ارسال آن مستقیماً روی میز استاد ${coachName}، اطلاعات تماس خود را وارد کنید.`,
+      closing: LEAD_COPY.subtitle,
     };
   }
 
   if (primaryGoal === "muscle_gain") {
     return {
       scenario,
-      title: "گزارش پتانسیل آنابولیک (عضله‌سازی) شما آماده شد!",
+      title: RESULT_COPY.title,
       subtitle: "تحلیل ژنتیک و متابولیسم اختصاصی شما",
       meta,
-      highlights: [
-        { label: "تیپ بدنی", value: "مستعد کاتابولیسم" },
-        { label: "سطح فعالیت", value: activity },
-        { label: "چالش تغذیه", value: nutrition },
-        { label: "پتانسیل رشد", value: "بالا" },
-      ],
+      bmr,
+      bmi,
+      bodyType,
+      macros,
+      chartBars,
+      aiWarning: RESULT_COPY.aiWarning,
+      highlights: metricsHighlights,
       sections: [
         {
           title: "خلاصه وضعیت",
@@ -212,21 +385,22 @@ export function buildAnalysis(answers, coachName = "علی رشید آبادی")
         "رژیم پرکالریِ زودهضم و شخصی‌سازی‌شده",
         "مکمل‌سازی و زمان‌بندی دقیق وعده‌ها",
       ],
-      closing: `برای ثبت این تحلیل در پرونده ورزشی شما و ارسال آن مستقیماً روی میز استاد ${coachName}، اطلاعات تماس خود را وارد کنید.`,
+      closing: LEAD_COPY.subtitle,
     };
   }
 
   return {
     scenario,
-    title: "گزارش بالانس استایل و تناسب اندام شما آماده شد!",
+    title: RESULT_COPY.title,
     subtitle: "برنامه انعطاف‌پذیر برای یک تغییر ماندگار",
     meta,
-    highlights: [
-      { label: "هدف", value: "بدن کات و پرانرژی" },
-      { label: "سطح فعالیت", value: activity },
-      { label: "حلقه مفقوده", value: obstacle },
-      { label: "آمادگی", value: "کامل" },
-    ],
+    bmr,
+    bmi,
+    bodyType,
+    macros,
+    chartBars,
+    aiWarning: RESULT_COPY.aiWarning,
+    highlights: metricsHighlights,
     sections: [
       {
         title: "خلاصه وضعیت",
@@ -246,16 +420,20 @@ export function buildAnalysis(answers, coachName = "علی رشید آبادی")
       "رژیم متعادل بدون محرومیت شدید",
       "گزارش‌دهی و چکاپ هفتگی در پنل اختصاصی",
     ],
-    closing: `برای ثبت این تحلیل در پرونده ورزشی شما و ارسال آن مستقیماً روی میز استاد ${coachName}، اطلاعات تماس خود را وارد کنید.`,
+    closing: LEAD_COPY.subtitle,
   };
 }
 
-export const ANALYZING_MESSAGES = [
-  "در حال بررسی ۷ پاسخ تخصصی شما...",
-  "تحلیل متابولیسم و تیپ بدنی...",
-  "تطبیق با پروفایل و متد استاد...",
-  "آماده‌سازی گزارش اختصاصی شما...",
+export const ANALYZING_STEPS = [
+  "محاسبه دقیق نرخ متابولیسم و تفکیک ماکروها انجام شد.",
+  "متصل کردن متغیرهای شما به سیستم پایش لحظه‌ای هوش مصنوعی...",
+  "تحلیل موانع غذایی و شخصی‌سازی منوی منعطف فیتینو...",
+  "ارسال گزارش اولیه به پنل کاربری مربی علی جهت تایید نهایی...",
 ];
+
+export const ANALYZING_TITLE = "در حال تحلیل داده‌های ساختاری و طراحی استراتژی بدنی شما...";
+
+export const ANALYZING_MESSAGES = ANALYZING_STEPS;
 
 export const PREPARING_MESSAGES = [
   "در حال آماده‌سازی سوال بعدی هستیم...",
@@ -269,7 +447,6 @@ export const GOAL_LABELS = {
   fitness: "فیتنس و فرم‌دهی",
 };
 
-// Admin-facing answer label maps.
 export const ANSWER_LABELS = {
   activityLevel: ACTIVITY_LABELS,
   trainingEnv: ENV_LABELS,
@@ -285,3 +462,15 @@ export const STATUS_LABELS = {
   contacted: "تماس گرفته شد",
   failed: "ناموفق",
 };
+
+/** Progress for smart-processor bar: quiz 15→70, metrics 80, analyzing 90, result/lead 95+. */
+export function funnelProgress(stage, qIndex) {
+  if (stage === "quiz") {
+    return 15 + (qIndex / QUESTIONS.length) * 55;
+  }
+  if (stage === "metrics") return 80;
+  if (stage === "analyzing") return 90;
+  if (stage === "result") return 95;
+  if (stage === "lead") return 98;
+  return 10;
+}
