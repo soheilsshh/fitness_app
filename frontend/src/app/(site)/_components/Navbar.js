@@ -113,6 +113,9 @@ export default function Navbar() {
     ? NAV_ITEMS
     : NAV_ITEMS.filter((item) => item.id !== "programs");
 
+  // The sales funnel renders inside its own phone frame — no site chrome.
+  if (pathname?.startsWith("/ali-rashidabadi")) return null;
+
   return (
     <>
       <header

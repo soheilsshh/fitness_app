@@ -29,7 +29,9 @@ import {
   buildAnalysis,
   funnelProgress,
 } from "../_lib/funnelConfig";
+import FinalAnalyzeLoader from "./FinalAnalyzeLoader";
 import FunnelHero from "./FunnelHero";
+import { LogoAnchor } from "./FunnelLogoLayer";
 import FunnelShell, { FunnelCta, FunnelGlass, FunnelProgressBar } from "./FunnelShell";
 import Typewriter from "./Typewriter";
 
@@ -52,7 +54,6 @@ export default function LeadFunnelWizard() {
   const [qIndex, setQIndex] = useState(0);
   const [phase, setPhase] = useState("typing");
   const [answers, setAnswers] = useState({});
-  const [analyzingStep, setAnalyzingStep] = useState(0);
   const [prepMsg, setPrepMsg] = useState(0);
   const [age, setAge] = useState("");
   const [heightCm, setHeightCm] = useState("");
@@ -91,30 +92,19 @@ export default function LeadFunnelWizard() {
 
   useEffect(() => {
     if (stage !== "quiz" || phase !== "preparing") return;
+    const MSG_MS = 500;
     const rotate = setInterval(() => {
       setPrepMsg((m) => (m + 1) % PREPARING_MESSAGES.length);
-    }, 420);
+    }, MSG_MS);
     const advance = setTimeout(() => {
       setQIndex((i) => Math.min(i + 1, LAST_INDEX));
       setPhase("typing");
-    }, 1150);
+    }, PREPARING_MESSAGES.length * MSG_MS);
     return () => {
       clearInterval(rotate);
       clearTimeout(advance);
     };
   }, [stage, phase]);
-
-  useEffect(() => {
-    if (stage !== "analyzing") return;
-    const rotate = setInterval(() => {
-      setAnalyzingStep((s) => Math.min(s + 1, ANALYZING_STEPS.length));
-    }, 1100);
-    const done = setTimeout(() => setStage("result"), 4800);
-    return () => {
-      clearInterval(rotate);
-      clearTimeout(done);
-    };
-  }, [stage]);
 
   const startQuiz = useCallback(() => {
     setAnswers({});
@@ -139,7 +129,6 @@ export default function LeadFunnelWizard() {
     setPhase("locking");
     lockTimer.current = setTimeout(() => {
       if (qIndex >= LAST_INDEX) {
-        setAnalyzingStep(0);
         setStage("metrics");
       } else {
         setPrepMsg(0);
@@ -170,7 +159,6 @@ export default function LeadFunnelWizard() {
       return toastError("وزن نامعتبر", "وزن را به کیلوگرم وارد کنید.");
     }
     setAnswers((prev) => ({ ...prev, age: a, heightCm: h, weightKg: w }));
-    setAnalyzingStep(0);
     setStage("analyzing");
   };
 
@@ -247,11 +235,7 @@ export default function LeadFunnelWizard() {
             exit={{ opacity: 0 }}
             className="flex flex-col items-center py-20 text-center"
           >
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1.4, repeat: Infinity, ease: "linear" }}
-              className="mb-6 size-14 rounded-full border-2 border-primary/25 border-t-primary"
-            />
+            <LogoAnchor id="preparing" size={88} thinking className="mb-6 rounded-full" />
             <AnimatePresence mode="wait">
               <motion.p
                 key={prepMsg}
@@ -275,17 +259,18 @@ export default function LeadFunnelWizard() {
             className="min-h-[20rem]"
           >
             <div className="mb-8 text-center">
+              <LogoAnchor
+                id="quiz"
+                size={56}
+                thinking={phase === "typing"}
+                className="mx-auto mb-4 rounded-full"
+              />
               <p className="mb-3 text-xs text-white/40">
                 سوال {qIndex + 1} از {QUESTIONS.length}
               </p>
               <h1 className="min-h-[3.5rem] text-2xl font-extrabold leading-relaxed text-white md:text-3xl">
                 {phase === "typing" ? (
-                  <Typewriter
-                    key={`tw-${qIndex}`}
-                    text={currentQ.title}
-                    speed={36}
-                    onDone={onTitleDone}
-                  />
+                  <Typewriter key={`tw-${qIndex}`} text={currentQ.title} onDone={onTitleDone} />
                 ) : (
                   currentQ.title
                 )}
@@ -366,6 +351,7 @@ export default function LeadFunnelWizard() {
             exit={{ opacity: 0 }}
           >
             <div className="mb-8 text-center">
+              <LogoAnchor id="metrics" size={64} className="mx-auto mb-4 rounded-full" />
               <h1 className="text-2xl font-extrabold leading-relaxed text-white md:text-3xl">
                 {METRICS_COPY.title}
               </h1>
@@ -425,47 +411,12 @@ export default function LeadFunnelWizard() {
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
-            className="flex flex-col items-center py-10 text-center"
           >
-            <div className="relative mb-8">
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 2.4, repeat: Infinity, ease: "linear" }}
-                className="size-24 rounded-full border-2 border-primary/20 border-t-primary border-r-chart-2/50"
-              />
-              <div className="absolute inset-0 m-auto size-14 rounded-full border border-white/10 bg-white/5 backdrop-blur" />
-            </div>
-            <h2 className="max-w-md text-lg font-bold leading-8 text-white md:text-xl">
-              {ANALYZING_TITLE}
-            </h2>
-            <ul className="mt-8 w-full max-w-lg space-y-3 text-start">
-              {ANALYZING_STEPS.map((step, i) => {
-                const done = i < analyzingStep;
-                const active = i === analyzingStep;
-                return (
-                  <motion.li
-                    key={step}
-                    initial={{ opacity: 0.25 }}
-                    animate={{ opacity: done || active ? 1 : 0.3 }}
-                    className={cn(
-                      "flex items-start gap-3 rounded-xl border px-4 py-3 text-sm leading-7",
-                      done
-                        ? "border-primary/30 bg-primary/10 text-white/90"
-                        : "border-white/10 bg-white/[0.03] text-white/45"
-                    )}
-                  >
-                    {done ? (
-                      <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" />
-                    ) : active ? (
-                      <Loader2 className="mt-0.5 size-4 shrink-0 animate-spin text-primary" />
-                    ) : (
-                      <span className="mt-1.5 size-4 shrink-0 rounded-full border border-white/20" />
-                    )}
-                    <span className="font-mono text-[13px] tracking-tight">{step}</span>
-                  </motion.li>
-                );
-              })}
-            </ul>
+            <FinalAnalyzeLoader
+              title={ANALYZING_TITLE}
+              steps={ANALYZING_STEPS}
+              onComplete={() => setStage("result")}
+            />
           </motion.div>
         )}
 
@@ -477,12 +428,13 @@ export default function LeadFunnelWizard() {
             className="space-y-5"
           >
             <div className="text-center">
+              <LogoAnchor id="result" size={64} className="mx-auto mb-3 rounded-full" />
               <h2 className="text-xl font-extrabold text-white md:text-2xl">{analysis.title}</h2>
               <p className="mt-2 text-sm text-white/50">{analysis.subtitle}</p>
             </div>
 
             <FunnelGlass className="overflow-hidden">
-              <div className="border-b border-white/10 px-5 py-4">
+              <div className="flex justify-center border-b border-white/10 px-5 py-4">
                 <span className="inline-flex rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs text-primary">
                   {analysis.meta.badge}
                 </span>
@@ -560,6 +512,7 @@ export default function LeadFunnelWizard() {
             className="mx-auto max-w-md space-y-6"
           >
             <div className="text-center">
+              <LogoAnchor id="lead" size={64} className="mx-auto mb-3 rounded-full" />
               <h2 className="text-xl font-extrabold text-white md:text-2xl">{LEAD_COPY.title}</h2>
               <p className="mt-3 text-sm leading-8 text-white/55">{LEAD_COPY.subtitle}</p>
             </div>

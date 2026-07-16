@@ -1154,6 +1154,104 @@ select:focus-visible,
   font-family: var(--font-iranianSansDemiBold, inherit);
 }
 
+/* ── Lead funnel (ali-rashidabadi) — phone frame, typing caret, signature CTA ── */
+
+@keyframes blink-cursor {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+.animate-blink-cursor {
+  animation: blink-cursor 1s step-start infinite;
+}
+
+/* Phone frame: full-bleed on mobile, centered 430px device on md+ */
+.funnel-frame-shell {
+  min-height: 100dvh;
+  width: 100%;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  background:
+    radial-gradient(1200px 500px at 50% -120px, rgba(38, 252, 227, 0.09), transparent 60%),
+    #060b0b;
+}
+
+.funnel-frame-device {
+  position: relative;
+  width: 100%;
+  background: #0e0e0e;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Full-height section inside the frame (navbar is hidden on funnel routes) */
+.funnel-screen {
+  min-height: 100dvh;
+}
+
+@media (min-width: 768px) {
+  .funnel-frame-shell {
+    padding: 18px 0;
+  }
+  .funnel-frame-device {
+    width: min(430px, 100vw);
+    height: calc(100dvh - 36px);
+    border-radius: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 20px 70px rgba(0, 0, 0, 0.45);
+    overflow: hidden auto;
+    overscroll-behavior: contain;
+  }
+  .funnel-screen {
+    min-height: calc(100dvh - 36px);
+  }
+}
+
+/* Signature CTA — black pill, gradient border (not fill), dual glow.
+   Fitino palette mapped onto the funnel-spec .btn-cta. */
+.btn-cta {
+  display: inline-flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 900;
+  color: #fff;
+  padding: 16px 1.5rem;
+  border-radius: 9999px;
+  font-size: 17px;
+  line-height: 1.25;
+  background-color: #000;
+  border: 2px solid transparent;
+  background-image:
+    linear-gradient(#000, #000),
+    linear-gradient(90deg, #187272 0%, #2a9c96 42%, #26fce3 100%);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  box-shadow:
+    0 0 22px rgba(42, 156, 150, 0.28),
+    0 0 44px rgba(38, 252, 227, 0.14);
+  transition:
+    box-shadow 0.22s ease,
+    transform 0.15s ease,
+    opacity 0.2s ease;
+}
+
+.btn-cta:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.btn-cta:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
 /* Respect the user's reduced-motion preference.
    Neutralises decorative loops (float/shimmer/bounce/pulse) and shortens
    transitions so framer-motion and CSS effects don't trigger motion sickness. */

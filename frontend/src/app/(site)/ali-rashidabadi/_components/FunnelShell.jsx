@@ -12,7 +12,7 @@ export default function FunnelShell({
     <div
       dir="rtl"
       className={cn(
-        "funnel-shell relative isolate min-h-[calc(100vh-4rem)] overflow-hidden bg-[#0e0e0e] text-white",
+        "funnel-shell funnel-screen relative isolate overflow-hidden bg-[#0e0e0e] text-white",
         className
       )}
     >
@@ -23,8 +23,8 @@ export default function FunnelShell({
       </div>
       <div
         className={cn(
-          "relative z-10 mx-auto w-full max-w-3xl px-4 py-8 md:py-12",
-          centered && "flex min-h-[calc(100vh-4rem)] flex-col justify-center",
+          "relative z-10 mx-auto w-full max-w-3xl px-4 py-8 md:py-10",
+          centered && "funnel-screen flex flex-col justify-center",
           contentClassName
         )}
       >
@@ -78,7 +78,7 @@ export function FunnelCta({ children, className, type = "button", ...props }) {
     <button
       type={type}
       className={cn(
-        "gradient-bg inline-flex w-full items-center justify-center gap-2 rounded-full px-6 py-4 text-base font-extrabold text-primary-foreground shadow-lg shadow-primary/25 transition duration-200 hover:opacity-95 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60",
+        "btn-cta",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[#0e0e0e]",
         className
       )}

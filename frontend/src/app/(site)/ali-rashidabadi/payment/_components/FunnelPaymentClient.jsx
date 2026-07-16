@@ -17,6 +17,7 @@ import { api } from "@/lib/axios/client";
 import { toastError } from "@/app/(site)/auth/_components/helpers";
 import { PAYMENT_COPY } from "../../_lib/funnelConfig";
 import FunnelShell, { FunnelCta, FunnelGlass } from "../../_components/FunnelShell";
+import { LogoAnchor } from "../../_components/FunnelLogoLayer";
 
 function formatToman(n) {
   return new Intl.NumberFormat("fa-IR").format(Number(n || 0)) + " تومان";
@@ -141,6 +142,7 @@ export default function FunnelPaymentClient() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center"
         >
+          <LogoAnchor id="payment" size={64} className="mx-auto mb-3 rounded-full" />
           <p className="mb-3 text-xs text-primary/80">فیتینو · پیشنهاد نهایی</p>
           <h1 className="text-2xl font-extrabold leading-relaxed text-white md:text-3xl">
             {PAYMENT_COPY.title}

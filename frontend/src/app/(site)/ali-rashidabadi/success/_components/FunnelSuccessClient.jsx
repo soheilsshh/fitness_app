@@ -9,6 +9,7 @@ import { api } from "@/lib/axios/client";
 import { toastError, toastSuccess } from "@/app/(site)/auth/_components/helpers";
 import { SUCCESS_COPY } from "../../_lib/funnelConfig";
 import FunnelShell, { FunnelCta, FunnelGlass } from "../../_components/FunnelShell";
+import { LogoAnchor } from "../../_components/FunnelLogoLayer";
 import { cn } from "@/lib/utils";
 
 function formatToman(n) {
@@ -45,6 +46,7 @@ export default function FunnelSuccessClient() {
   return (
     <FunnelShell>
       <div className="mx-auto max-w-lg space-y-8 text-center">
+        <LogoAnchor id="success" size={72} className="mx-auto rounded-full" />
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}

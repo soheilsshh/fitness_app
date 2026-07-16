@@ -2,58 +2,53 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "framer-motion";
+import { typeHumanly } from "../_lib/humanTyping";
 
 /**
- * Reveals `text` one character at a time (typewriter effect), then calls
- * `onDone`. Respects prefers-reduced-motion: shows the full text instantly.
+ * Reveals `text` one character at a time with human-irregular cadence
+ * (shared `humanTyping` timing — per-key jitter, pauses at spaces/clauses/
+ * sentences/newlines, occasional hesitation), then calls `onDone`.
+ * Respects prefers-reduced-motion: shows the full text instantly.
+ * Callers must remount (change `key`) to retype a different text.
  */
 export default function Typewriter({
   text = "",
-  speed = 40,
   startDelay = 120,
   onDone,
   className,
   showCaret = true,
 }) {
   const reduceMotion = useReducedMotion();
-  const [shown, setShown] = useState("");
+  const [shownLen, setShownLen] = useState(0);
   const onDoneRef = useRef(onDone);
-  onDoneRef.current = onDone;
+
+  useEffect(() => {
+    onDoneRef.current = onDone;
+  });
 
   useEffect(() => {
     if (reduceMotion) {
-      setShown(text);
-      onDoneRef.current?.();
-      return;
+      const t = setTimeout(() => {
+        setShownLen(text.length);
+        onDoneRef.current?.();
+      }, 0);
+      return () => clearTimeout(t);
     }
+    return typeHumanly(
+      text,
+      (count) => setShownLen(count),
+      () => onDoneRef.current?.(),
+      startDelay
+    );
+  }, [text, startDelay, reduceMotion]);
 
-    setShown("");
-    let i = 0;
-    let interval;
-    const startTimer = setTimeout(() => {
-      interval = setInterval(() => {
-        i += 1;
-        setShown(text.slice(0, i));
-        if (i >= text.length) {
-          clearInterval(interval);
-          onDoneRef.current?.();
-        }
-      }, speed);
-    }, startDelay);
-
-    return () => {
-      clearTimeout(startTimer);
-      clearInterval(interval);
-    };
-  }, [text, speed, startDelay, reduceMotion]);
-
-  const done = shown.length >= text.length;
+  const done = shownLen >= text.length;
 
   return (
     <span className={className}>
-      {shown}
+      {text.slice(0, shownLen)}
       {showCaret && !done && (
-        <span className="ms-0.5 animate-pulse font-light text-primary">|</span>
+        <span className="ms-0.5 inline-block animate-blink-cursor font-light text-primary">|</span>
       )}
     </span>
   );
