@@ -9,6 +9,7 @@ import '../../../core/network/api_exception.dart';
 import '../../../core/network/dio_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/async_value_widget.dart';
+import '../../../core/widgets/fitino_ui.dart';
 import '../../../core/widgets/state_views.dart';
 import '../../profile/data/profile_repository.dart';
 
@@ -213,33 +214,35 @@ class ContactScreen extends ConsumerWidget {
     final async = ref.watch(ticketsProvider);
     final profile = ref.watch(myProfileProvider);
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('ارتباط با مربی'),
-        actions: [
-          IconButton(
-            tooltip: 'تیکت جدید',
-            onPressed: () => _createTicket(context, ref),
-            icon: const Icon(Icons.add_comment_outlined),
-          ),
-        ],
-      ),
+      backgroundColor: Colors.transparent,
       body: RefreshIndicator(
+        color: AppColors.brandMid,
         onRefresh: () async => ref.refresh(ticketsProvider.future),
         child: AsyncValueWidget<List<TicketItem>>(
           value: async,
           onRetry: () => ref.invalidate(ticketsProvider),
           data: (items) {
             return ListView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
               children: [
+                FitinoPageHeader(
+                  title: 'ارتباط با مربی',
+                  description: 'تیکت‌ها و پشتیبانی',
+                  meta: FitinoMetaIconButton(
+                    icon: Icons.add_comment_outlined,
+                    tooltip: 'تیکت جدید',
+                    onTap: () => _createTicket(context, ref),
+                  ),
+                ),
+                const SizedBox(height: 12),
                 profile.whenOrNull(
                       data: (p) {
                         if (p.assignedCoachName.isEmpty) return null;
-                        return Card(
-                          margin: const EdgeInsets.only(bottom: 16),
+                        return FitinoPanelCard(
+                          padding: EdgeInsets.zero,
                           child: ListTile(
                             leading: const Icon(Icons.person,
-                                color: AppColors.primary),
+                                color: AppColors.brandMid),
                             title: Text(p.assignedCoachName),
                             subtitle: const Text('مربی اختصاصی شما'),
                           ),
@@ -263,23 +266,26 @@ class ContactScreen extends ConsumerWidget {
                   ),
                 ] else
                   ...items.map(
-                    (t) => Card(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      child: ListTile(
-                        title: Text(t.title),
-                        subtitle: Text(
-                          [
-                            ticketStatusFa(t.status),
-                            if (t.createdAt != null) t.createdAt!,
-                          ].join(' · '),
-                          style: const TextStyle(color: AppColors.muted),
+                    (t) => Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: FitinoPanelCard(
+                        padding: EdgeInsets.zero,
+                        child: ListTile(
+                          title: Text(t.title),
+                          subtitle: Text(
+                            [
+                              ticketStatusFa(t.status),
+                              if (t.createdAt != null) t.createdAt!,
+                            ].join(' · '),
+                            style: const TextStyle(color: AppColors.muted),
+                          ),
+                          trailing: t.answered
+                              ? const Icon(Icons.mark_chat_read,
+                                  color: AppColors.brandMid)
+                              : const Icon(Icons.chevron_left),
+                          onTap: () =>
+                              context.push('/student/tickets/${t.id}'),
                         ),
-                        trailing: t.answered
-                            ? const Icon(Icons.mark_chat_read,
-                                color: AppColors.primary)
-                            : const Icon(Icons.chevron_left),
-                        onTap: () =>
-                            context.push('/student/tickets/${t.id}'),
                       ),
                     ),
                   ),
@@ -299,8 +305,9 @@ class TicketDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(ticketDetailProvider(id));
-    return Scaffold(
-      appBar: AppBar(title: const Text('جزئیات تیکت')),
+    return FitinoPushScaffold(
+      title: 'جزئیات تیکت',
+      description: 'پیام شما و پاسخ مربی',
       body: AsyncValueWidget<TicketDetail>(
         value: async,
         onRetry: () => ref.invalidate(ticketDetailProvider(id)),
@@ -322,50 +329,34 @@ class TicketDetailScreen extends ConsumerWidget {
                 style:
                     const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('پیام شما',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    Text(t.message, style: const TextStyle(height: 1.6)),
-                  ],
-                ),
-              ),
+            FitinoPanelCard(
+              title: 'پیام شما',
+              icon: Icons.chat_bubble_outline,
+              child: Text(t.message, style: const TextStyle(height: 1.6)),
             ),
             const SizedBox(height: 12),
-            Card(
-              color: t.answer.isEmpty
-                  ? null
-                  : AppColors.primary.withValues(alpha: 0.08),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('پاسخ مربی',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    Text(
-                      t.answer.isEmpty
-                          ? 'هنوز پاسخی ثبت نشده است.'
-                          : t.answer,
-                      style: TextStyle(
-                        height: 1.6,
-                        color: t.answer.isEmpty ? AppColors.muted : null,
-                      ),
+            FitinoPanelCard(
+              title: 'پاسخ مربی',
+              icon: Icons.support_agent,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    t.answer.isEmpty
+                        ? 'هنوز پاسخی ثبت نشده است.'
+                        : t.answer,
+                    style: TextStyle(
+                      height: 1.6,
+                      color: t.answer.isEmpty ? AppColors.muted : null,
                     ),
-                    if (t.answeredAt != null) ...[
-                      const SizedBox(height: 8),
-                      Text('پاسخ در ${t.answeredAt}',
-                          style: const TextStyle(
-                              color: AppColors.muted, fontSize: 12)),
-                    ],
+                  ),
+                  if (t.answeredAt != null) ...[
+                    const SizedBox(height: 8),
+                    Text('پاسخ در ${t.answeredAt}',
+                        style: const TextStyle(
+                            color: AppColors.muted, fontSize: 12)),
                   ],
-                ),
+                ],
               ),
             ),
           ],

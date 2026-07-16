@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/jalali.dart';
 import '../../../core/widgets/async_value_widget.dart';
+import '../../../core/widgets/fitino_ui.dart';
 import '../../../core/widgets/state_views.dart';
 import '../application/food_diary_controller.dart';
 import '../application/nutrition_targets.dart';
@@ -19,22 +20,34 @@ class FoodDiaryScreen extends ConsumerWidget {
     final async = ref.watch(dailyDiaryProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('دفتر غذای روزانه')),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => showModalBottomSheet(
-          context: context,
-          isScrollControlled: true,
-          backgroundColor: AppColors.surface,
-          builder: (_) => const AddFoodSheet(),
+      backgroundColor: Colors.transparent,
+      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 88),
+        child: FloatingActionButton.extended(
+          onPressed: () => showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: AppColors.surface,
+            builder: (_) => const AddFoodSheet(),
+          ),
+          icon: const Icon(Icons.add),
+          label: const Text('افزودن غذا'),
         ),
-        icon: const Icon(Icons.add),
-        label: const Text('افزودن غذا'),
       ),
       body: Column(
         children: [
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 8, 16, 0),
+            child: FitinoPageHeader(
+              title: 'دفتر غذای روزانه',
+              description: 'وعده‌ها و کالری امروز را ثبت کنید',
+            ),
+          ),
           _DateBar(date: date, ref: ref),
           Expanded(
             child: RefreshIndicator(
+              color: AppColors.brandMid,
               onRefresh: () async {
                 ref.invalidate(nutritionTargetsProvider);
                 await ref.refresh(dailyDiaryProvider.future);
@@ -96,7 +109,7 @@ class _DiaryBody extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final targetsAsync = ref.watch(nutritionTargetsProvider);
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
       children: [
         targetsAsync.when(
           loading: () => _TotalsCard(
@@ -132,8 +145,8 @@ class _DiaryBody extends ConsumerWidget {
               ),
               onDismissed: (_) =>
                   ref.read(foodDiaryActionsProvider.notifier).delete(log.id),
-              child: Card(
-                margin: const EdgeInsets.only(bottom: 8),
+              child: FitinoPanelCard(
+                padding: EdgeInsets.zero,
                 child: ListTile(
                   title: Text(log.foodName),
                   subtitle: Text(
@@ -174,21 +187,12 @@ class _TotalsCard extends StatelessWidget {
     );
     final proPct = targetProgressPercent(totals.protein, targets.proteinGrams);
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Row(
-              children: [
-                Icon(Icons.local_fire_department, color: AppColors.primary),
-                SizedBox(width: 8),
-                Text('خلاصه مصرف روز',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-              ],
-            ),
-            const SizedBox(height: 4),
+    return FitinoPanelCard(
+      title: 'خلاصه مصرف روز',
+      icon: Icons.local_fire_department_rounded,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
             Text(
               loadingTargets
                   ? 'در حال بارگذاری اهداف...'
@@ -243,8 +247,7 @@ class _TotalsCard extends StatelessWidget {
                 targetLabel: targets.proteinTarget,
               ),
             ],
-          ],
-        ),
+        ],
       ),
     );
   }

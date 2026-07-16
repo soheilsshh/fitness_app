@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/fitino_ui.dart';
 import '../data/ai_repository.dart';
 
 const _quickPrompts = [
@@ -121,17 +122,16 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('دستیار فیتینو'),
-        actions: [
-          IconButton(
-            tooltip: 'شروع مجدد',
-            onPressed: _reset,
-            icon: const Icon(Icons.refresh),
-          ),
-        ],
-      ),
+    return FitinoPushScaffold(
+      title: 'دستیار فیتینو',
+      description: 'راهنمای امکانات اپ',
+      actions: [
+        FitinoMetaIconButton(
+          icon: Icons.refresh,
+          tooltip: 'شروع مجدد',
+          onTap: _reset,
+        ),
+      ],
       body: Column(
         children: [
           Expanded(

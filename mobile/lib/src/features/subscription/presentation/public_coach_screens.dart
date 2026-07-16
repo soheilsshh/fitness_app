@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/config/app_config.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/fitino_ui.dart';
 import '../data/subscription_models.dart';
 import '../data/subscription_repository.dart';
 
@@ -59,8 +60,9 @@ class _CoachesDirectoryScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('مربی‌ها')),
+    return FitinoPushScaffold(
+      title: 'مربی‌ها',
+      description: 'مربیان منتشرشده فیتینو',
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
@@ -71,34 +73,36 @@ class _CoachesDirectoryScreenState
                   if (_error != null)
                     Text(_error!, style: const TextStyle(color: Colors.red)),
                   if (_coaches.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.all(24),
-                      child: Text('مربی منتشرشده‌ای یافت نشد.',
-                          textAlign: TextAlign.center),
+                    const FitinoEmptyState(
+                      message: 'مربی منتشرشده‌ای یافت نشد.',
+                      icon: Icons.person_search_outlined,
                     )
                   else
                     ..._coaches.map(
-                      (c) => Card(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        child: ListTile(
-                          leading: CircleAvatar(
-                            backgroundImage: c.avatarUrl.isNotEmpty
-                                ? NetworkImage(_asset(c.avatarUrl))
-                                : null,
-                            child: c.avatarUrl.isEmpty
-                                ? const Icon(Icons.person)
-                                : null,
+                      (c) => Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: FitinoPanelCard(
+                          padding: EdgeInsets.zero,
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundImage: c.avatarUrl.isNotEmpty
+                                  ? NetworkImage(_asset(c.avatarUrl))
+                                  : null,
+                              child: c.avatarUrl.isEmpty
+                                  ? const Icon(Icons.person)
+                                  : null,
+                            ),
+                            title: Text(c.displayName),
+                            subtitle: Text(
+                              [
+                                if (c.title.isNotEmpty) c.title,
+                                if (c.specialty.isNotEmpty) c.specialty,
+                              ].join(' · '),
+                            ),
+                            trailing: const Icon(Icons.chevron_left),
+                            onTap: () =>
+                                context.push('/student/coaches/${c.slug}'),
                           ),
-                          title: Text(c.displayName),
-                          subtitle: Text(
-                            [
-                              if (c.title.isNotEmpty) c.title,
-                              if (c.specialty.isNotEmpty) c.specialty,
-                            ].join(' · '),
-                          ),
-                          trailing: const Icon(Icons.chevron_left),
-                          onTap: () =>
-                              context.push('/student/coaches/${c.slug}'),
                         ),
                       ),
                     ),
@@ -187,8 +191,9 @@ class _PublicCoachLandingScreenState
   @override
   Widget build(BuildContext context) {
     final c = _coach;
-    return Scaffold(
-      appBar: AppBar(title: Text(c?.displayName ?? 'صفحه مربی')),
+    return FitinoPushScaffold(
+      title: c?.displayName ?? 'صفحه مربی',
+      description: 'پروفایل عمومی و پلن‌ها',
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
@@ -270,26 +275,31 @@ class _PublicCoachLandingScreenState
                                 style: TextStyle(fontWeight: FontWeight.bold)),
                             const SizedBox(height: 8),
                             ...c.achievements.map(
-                              (a) => Card(
-                                child: ListTile(
-                                  leading: a.imageUrl.isNotEmpty
-                                      ? ClipRRect(
-                                          borderRadius:
-                                              BorderRadius.circular(6),
-                                          child: Image.network(
-                                            _asset(a.imageUrl),
-                                            width: 48,
-                                            height: 48,
-                                            fit: BoxFit.cover,
-                                          ),
-                                        )
-                                      : const Icon(Icons.emoji_events_outlined),
-                                  title: Text(a.title),
-                                  subtitle: Text(
-                                    [
-                                      if (a.issuer.isNotEmpty) a.issuer,
-                                      if (a.year > 0) '${a.year}',
-                                    ].join(' · '),
+                              (a) => Padding(
+                                padding: const EdgeInsets.only(bottom: 8),
+                                child: FitinoPanelCard(
+                                  padding: EdgeInsets.zero,
+                                  child: ListTile(
+                                    leading: a.imageUrl.isNotEmpty
+                                        ? ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(6),
+                                            child: Image.network(
+                                              _asset(a.imageUrl),
+                                              width: 48,
+                                              height: 48,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          )
+                                        : const Icon(
+                                            Icons.emoji_events_outlined),
+                                    title: Text(a.title),
+                                    subtitle: Text(
+                                      [
+                                        if (a.issuer.isNotEmpty) a.issuer,
+                                        if (a.year > 0) '${a.year}',
+                                      ].join(' · '),
+                                    ),
                                   ),
                                 ),
                               ),
@@ -305,10 +315,9 @@ class _PublicCoachLandingScreenState
                                 style: TextStyle(color: AppColors.muted))
                           else
                             ..._plans.map(
-                              (plan) => Card(
-                                margin: const EdgeInsets.only(bottom: 10),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(14),
+                              (plan) => Padding(
+                                padding: const EdgeInsets.only(bottom: 10),
+                                child: FitinoPanelCard(
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
@@ -368,8 +377,9 @@ class _PublicCoachLandingScreenState
                                           ],
                                           const Spacer(),
                                           FilledButton(
-                                            onPressed:
-                                                _paying ? null : () => _pay(plan),
+                                            onPressed: _paying
+                                                ? null
+                                                : () => _pay(plan),
                                             child: Text(
                                                 _paying ? '...' : 'خرید'),
                                           ),

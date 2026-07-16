@@ -7,6 +7,7 @@ import '../../../core/network/api_exception.dart';
 import '../../../core/network/dio_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/async_value_widget.dart';
+import '../../../core/widgets/fitino_ui.dart';
 import '../../../core/widgets/state_views.dart';
 
 class WorkoutSessionItem {
@@ -74,8 +75,9 @@ class WorkoutHistoryScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(workoutHistoryProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('تاریخچه تمرینات')),
+      backgroundColor: Colors.transparent,
       body: RefreshIndicator(
+        color: AppColors.brandMid,
         onRefresh: () async => ref.refresh(workoutHistoryProvider.future),
         child: AsyncValueWidget<List<WorkoutSessionItem>>(
           value: async,
@@ -83,8 +85,13 @@ class WorkoutHistoryScreen extends ConsumerWidget {
           data: (items) {
             if (items.isEmpty) {
               return ListView(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
                 children: const [
-                  SizedBox(height: 120),
+                  FitinoPageHeader(
+                    title: 'تاریخچه تمرینات',
+                    description: 'جلسات ثبت‌شده شما',
+                  ),
+                  SizedBox(height: 80),
                   EmptyView(
                     message: 'هنوز جلسه تمرینی ثبت نشده',
                     icon: Icons.history,
@@ -93,17 +100,30 @@ class WorkoutHistoryScreen extends ConsumerWidget {
               );
             }
             return ListView.separated(
-              padding: const EdgeInsets.all(16),
-              itemCount: items.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 8),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
+              itemCount: items.length + 1,
+              separatorBuilder: (_, i) =>
+                  SizedBox(height: i == 0 ? 12 : 8),
               itemBuilder: (_, i) {
-                final s = items[i];
-                return Card(
+                if (i == 0) {
+                  return const FitinoPageHeader(
+                    title: 'تاریخچه تمرینات',
+                    description: 'جلسات ثبت‌شده شما',
+                  );
+                }
+                final s = items[i - 1];
+                return FitinoPanelCard(
+                  padding: EdgeInsets.zero,
                   child: ListTile(
-                    leading: const CircleAvatar(
-                      backgroundColor: AppColors.surfaceVariant,
-                      child: Icon(Icons.fitness_center,
-                          color: AppColors.primary),
+                    leading: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        color: AppColors.surfaceVariant,
+                      ),
+                      child: const Icon(Icons.fitness_center,
+                          color: AppColors.brandMid, size: 20),
                     ),
                     title: Text(s.title),
                     subtitle: Text(s.date,

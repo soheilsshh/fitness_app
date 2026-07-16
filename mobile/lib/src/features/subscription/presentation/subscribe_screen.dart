@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/network/api_exception.dart';
+import '../../../core/widgets/fitino_ui.dart';
 import '../data/subscription_models.dart';
 import '../data/subscription_repository.dart';
 
@@ -106,16 +107,15 @@ class _SubscribeScreenState extends ConsumerState<SubscribeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('خرید اشتراک'),
-        actions: [
-          TextButton(
-            onPressed: () => context.push('/student/coaches'),
-            child: const Text('لیست مربی‌ها'),
-          ),
-        ],
-      ),
+    return FitinoPushScaffold(
+      title: 'خرید اشتراک',
+      description: 'انتخاب مربی و پلن',
+      actions: [
+        TextButton(
+          onPressed: () => context.push('/student/coaches'),
+          child: const Text('لیست مربی‌ها'),
+        ),
+      ],
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
@@ -159,16 +159,20 @@ class _SubscribeScreenState extends ConsumerState<SubscribeScreen> {
                     const SizedBox(height: 16),
                   ],
                   if (_plans.isEmpty)
-                    const Text('پلنی برای نمایش وجود ندارد.')
+                    const FitinoEmptyState(
+                        message: 'پلنی برای نمایش وجود ندارد.')
                   else
                     ..._plans.map(
-                      (plan) => Card(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        child: ListTile(
-                          title: Text(plan.title),
-                          subtitle: Text('${plan.durationDays} روز'),
-                          trailing: Text(_formatToman(plan.payable)),
-                          onTap: _paying ? null : () => _pay(plan),
+                      (plan) => Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: FitinoPanelCard(
+                          padding: EdgeInsets.zero,
+                          child: ListTile(
+                            title: Text(plan.title),
+                            subtitle: Text('${plan.durationDays} روز'),
+                            trailing: Text(_formatToman(plan.payable)),
+                            onTap: _paying ? null : () => _pay(plan),
+                          ),
                         ),
                       ),
                     ),

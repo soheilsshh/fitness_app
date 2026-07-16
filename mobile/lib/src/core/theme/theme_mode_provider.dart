@@ -9,7 +9,7 @@ class ThemeModeNotifier extends Notifier<ThemeMode> {
   @override
   ThemeMode build() {
     _hydrate();
-    return ThemeMode.dark;
+    return ThemeMode.light;
   }
 
   Future<void> _hydrate() async {
@@ -21,7 +21,7 @@ class ThemeModeNotifier extends Notifier<ThemeMode> {
     final mode = switch (raw) {
       'light' => ThemeMode.light,
       'system' => ThemeMode.system,
-      _ => ThemeMode.dark,
+      _ => ThemeMode.light,
     };
     state = mode;
   }

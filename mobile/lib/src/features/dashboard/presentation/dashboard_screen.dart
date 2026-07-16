@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/jalali.dart';
 import '../../../core/widgets/async_value_widget.dart';
+import '../../../core/widgets/fitino_ui.dart';
 import '../../../core/widgets/state_views.dart';
 import '../../tracking/data/tracking_models.dart';
 import '../application/dashboard_bundle.dart';
@@ -53,8 +54,10 @@ class DashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(dashboardBundleProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('خانه')),
+      backgroundColor: Colors.transparent,
+      appBar: null,
       body: RefreshIndicator(
+        color: AppColors.brandMid,
         onRefresh: () async => ref.refresh(dashboardBundleProvider.future),
         child: AsyncValueWidget<DashboardBundle>(
           value: async,
@@ -77,15 +80,11 @@ class _DashboardBody extends StatelessWidget {
     final s = data.summary;
 
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 120),
       children: [
-        Text(
-          'سلام $firstName',
-          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-        ),
-        Text(
-          'امروز ${JalaliDates.longFromDate(DateTime.now())}',
-          style: const TextStyle(color: AppColors.muted),
+        FitinoPageHeader(
+          title: 'سلام $firstName',
+          description: 'امروز ${JalaliDates.longFromDate(DateTime.now())}',
         ),
         const SizedBox(height: 16),
         if (data.profile.progress.percent < 100)
@@ -93,11 +92,17 @@ class _DashboardBody extends StatelessWidget {
         if (data.tracking?.alerts.isNotEmpty == true) ...[
           const SizedBox(height: 12),
           ...data.tracking!.alerts.map(
-            (a) => Card(
-              color: Colors.amber.withValues(alpha: 0.12),
-              child: ListTile(
-                leading: const Icon(Icons.warning_amber_rounded),
-                title: Text(a.message),
+            (a) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: FitinoPanelCard(
+                child: Row(
+                  children: [
+                    Icon(Icons.warning_amber_rounded,
+                        color: Colors.amber.shade700),
+                    const SizedBox(width: 10),
+                    Expanded(child: Text(a.message)),
+                  ],
+                ),
               ),
             ),
           ),
@@ -117,7 +122,7 @@ class _DashboardBody extends StatelessWidget {
               sub: s.streakWeeks > 0
                   ? '${s.streakWeeks} هفته متوالی'
                   : 'این هفته شروع کن',
-              icon: Icons.calendar_today,
+              icon: Icons.calendar_today_rounded,
             ),
             _StatCard(
               label: 'پایبندی',
@@ -125,7 +130,7 @@ class _DashboardBody extends StatelessWidget {
               sub: s.weeklyGoalDays > 0
                   ? '${s.completedThisWeek} از ${s.weeklyGoalDays} روز'
                   : 'برنامه‌ای فعال نیست',
-              icon: Icons.trending_up,
+              icon: Icons.trending_up_rounded,
             ),
             _StatCard(
               label: 'میانگین مدت',
@@ -137,22 +142,27 @@ class _DashboardBody extends StatelessWidget {
               label: 'کل جلسات',
               value: '${s.totalSessions}',
               sub: '${s.sessionsThisMonth} جلسه این ماه',
-              icon: Icons.fitness_center,
+              icon: Icons.fitness_center_rounded,
             ),
           ],
         ),
         const SizedBox(height: 16),
-        _Section(
+        FitinoPanelCard(
           title: 'هدف هفتگی',
+          icon: Icons.flag_rounded,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              LinearProgressIndicator(
-                value: s.weeklyGoalDays == 0
-                    ? 0
-                    : (s.completedThisWeek / s.weeklyGoalDays).clamp(0, 1),
-                minHeight: 10,
+              ClipRRect(
                 borderRadius: BorderRadius.circular(8),
+                child: LinearProgressIndicator(
+                  value: s.weeklyGoalDays == 0
+                      ? 0
+                      : (s.completedThisWeek / s.weeklyGoalDays).clamp(0, 1),
+                  minHeight: 10,
+                  backgroundColor: AppColors.surfaceVariant,
+                  color: AppColors.brandMid,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
@@ -164,8 +174,9 @@ class _DashboardBody extends StatelessWidget {
         ),
         if (s.progressSeries.isNotEmpty) ...[
           const SizedBox(height: 12),
-          _Section(
+          FitinoPanelCard(
             title: 'روند فعالیت (۳۰ روز)',
+            icon: Icons.insights_rounded,
             child: _MiniBars(points: s.progressSeries),
           ),
         ],
@@ -183,14 +194,14 @@ class _DashboardBody extends StatelessWidget {
         _SubscriptionCard(sub: data.subscription),
         if (data.tracking?.weightHistory.isNotEmpty == true) ...[
           const SizedBox(height: 12),
-          _Section(
+          FitinoPanelCard(
             title: 'روند وزن',
+            icon: Icons.monitor_weight_outlined,
             child: _WeightSparkline(points: data.tracking!.weightHistory),
           ),
         ],
         const SizedBox(height: 16),
-        const Text('دسترسی سریع',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        FitinoPageHeader(title: 'دسترسی سریع'),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
@@ -230,25 +241,14 @@ class _DashboardBody extends StatelessWidget {
 }
 
 class _Section extends StatelessWidget {
-  const _Section({required this.title, required this.child});
+  const _Section({required this.title, required this.child, this.icon});
   final String title;
   final Widget child;
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 12),
-            child,
-          ],
-        ),
-      ),
-    );
+    return FitinoPanelCard(title: title, icon: icon, child: child);
   }
 }
 
@@ -267,32 +267,46 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(label,
-                      style: const TextStyle(
-                          color: AppColors.muted, fontSize: 12)),
+    return FitinoPanelCard(
+      padding: const EdgeInsets.all(14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  label,
+                  style: const TextStyle(color: AppColors.muted, fontSize: 12),
                 ),
-                Icon(icon, color: AppColors.primary, size: 18),
-              ],
+              ),
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.brandGlow.withValues(alpha: 0.35),
+                      AppColors.brandDeep.withValues(alpha: 0.12),
+                    ],
+                  ),
+                ),
+                child: Icon(icon, color: AppColors.brandDeep, size: 16),
+              ),
+            ],
+          ),
+          const Spacer(),
+          Text(
+            value,
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+          ),
+          if (sub != null)
+            Text(
+              sub!,
+              style: const TextStyle(color: AppColors.muted, fontSize: 11),
             ),
-            const Spacer(),
-            Text(value,
-                style:
-                    const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-            if (sub != null)
-              Text(sub!,
-                  style:
-                      const TextStyle(color: AppColors.muted, fontSize: 11)),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -310,55 +324,52 @@ class _ProfileBoostCard extends StatelessWidget {
       ('سوابق پزشکی', progress.medical),
       ('عکس‌های بدن', progress.photos),
     ];
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('تکمیل پروفایل — ${progress.percent}٪',
-                style: const TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 6),
-            const Text(
-              'هر بخش را کامل کنید تا مربی برنامه دقیق‌تری بسازد.',
-              style: TextStyle(color: AppColors.muted, fontSize: 12),
-            ),
-            const SizedBox(height: 10),
-            LinearProgressIndicator(
+    return FitinoPanelCard(
+      title: 'تکمیل پروفایل — ${progress.percent}٪',
+      icon: Icons.person_outline_rounded,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'هر بخش را کامل کنید تا مربی برنامه دقیق‌تری بسازد.',
+            style: TextStyle(color: AppColors.muted, fontSize: 12),
+          ),
+          const SizedBox(height: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: LinearProgressIndicator(
               value: (progress.percent / 100).clamp(0, 1),
               minHeight: 8,
-              borderRadius: BorderRadius.circular(8),
+              backgroundColor: AppColors.surfaceVariant,
+              color: AppColors.brandMid,
             ),
-            const SizedBox(height: 12),
-            ...items.map(
-              (e) => ListTile(
-                dense: true,
-                contentPadding: EdgeInsets.zero,
-                leading: Icon(
-                  e.$2 ? Icons.check_circle : Icons.circle_outlined,
-                  color: e.$2 ? Colors.green : AppColors.muted,
-                ),
-                title: Text(e.$1),
-                trailing: e.$2
-                    ? null
-                    : const Icon(Icons.chevron_left, size: 18),
-                onTap: e.$2
-                    ? null
-                    : () {
-                        // Account tab / profile edit is inside shell; push nothing —
-                        // user opens حساب من. Snack hint:
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'از تب «حساب من» پروفایل را تکمیل کنید.',
-                            ),
-                          ),
-                        );
-                      },
+          ),
+          const SizedBox(height: 12),
+          ...items.map(
+            (e) => ListTile(
+              dense: true,
+              contentPadding: EdgeInsets.zero,
+              leading: Icon(
+                e.$2 ? Icons.check_circle : Icons.circle_outlined,
+                color: e.$2 ? AppColors.brandMid : AppColors.muted,
               ),
+              title: Text(e.$1),
+              trailing:
+                  e.$2 ? null : const Icon(Icons.chevron_left, size: 18),
+              onTap: e.$2
+                  ? null
+                  : () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'از تب «حساب من» پروفایل را تکمیل کنید.',
+                          ),
+                        ),
+                      );
+                    },
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -389,6 +400,7 @@ class _GoalCard extends StatelessWidget {
 
     return _Section(
       title: 'هدف وزن',
+      icon: Icons.monitor_weight_outlined,
       child: current == null || target == null
           ? const Text('وزن فعلی یا هدف ثبت نشده است.',
               style: TextStyle(color: AppColors.muted))
@@ -466,6 +478,7 @@ class _CheckinCard extends StatelessWidget {
         photos.isNotEmpty && photos.values.every((v) => v);
     return _Section(
       title: 'کارهای پایش این دوره',
+      icon: Icons.checklist_rounded,
       child: t == null
           ? const Text('اشتراک فعالی برای پایش یافت نشد.',
               style: TextStyle(color: AppColors.muted))
@@ -532,6 +545,7 @@ class _TodayPlanCard extends StatelessWidget {
 
     return _Section(
       title: 'تمرین امروز',
+      icon: Icons.fitness_center_rounded,
       child: program.items.isEmpty
           ? const Text('برنامه تمرینی فعالی ندارید.',
               style: TextStyle(color: AppColors.muted))
@@ -584,6 +598,7 @@ class _RecordsCard extends StatelessWidget {
     final max = records.fold<int>(1, (m, r) => r.est1rm > m ? r.est1rm : m);
     return _Section(
       title: 'رکوردهای شخصی',
+      icon: Icons.emoji_events_outlined,
       child: records.isEmpty
           ? const EmptyView(message: 'هنوز رکوردی ثبت نشده است.')
           : Column(
@@ -633,6 +648,7 @@ class _RecentSessionsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return _Section(
       title: 'جلسات اخیر',
+      icon: Icons.history_rounded,
       child: items.isEmpty
           ? const Text('هنوز جلسه‌ای ثبت نکرده‌اید.',
               style: TextStyle(color: AppColors.muted))
@@ -681,6 +697,7 @@ class _SubscriptionCard extends StatelessWidget {
 
     return _Section(
       title: 'اشتراک من',
+      icon: Icons.workspace_premium_outlined,
       child: sub == null
           ? Column(
               crossAxisAlignment: CrossAxisAlignment.start,

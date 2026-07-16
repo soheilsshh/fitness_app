@@ -9,6 +9,7 @@ import '../../../core/network/api_exception.dart';
 import '../../../core/network/dio_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/async_value_widget.dart';
+import '../../../core/widgets/fitino_ui.dart';
 import '../../../core/widgets/state_views.dart';
 
 class OrderLineItem {
@@ -138,16 +139,9 @@ class OrdersScreen extends ConsumerWidget {
     final async = ref.watch(ordersProvider);
     final fmt = NumberFormat.decimalPattern('fa');
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('سفارش‌ها'),
-        actions: [
-          TextButton(
-            onPressed: () => context.push('/student/subscribe'),
-            child: const Text('خرید پلن'),
-          ),
-        ],
-      ),
+      backgroundColor: Colors.transparent,
       body: RefreshIndicator(
+        color: AppColors.brandMid,
         onRefresh: () async => ref.refresh(ordersProvider.future),
         child: AsyncValueWidget<List<OrderDetail>>(
           value: async,
@@ -155,8 +149,17 @@ class OrdersScreen extends ConsumerWidget {
           data: (items) {
             if (items.isEmpty) {
               return ListView(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
                 children: [
-                  const SizedBox(height: 80),
+                  FitinoPageHeader(
+                    title: 'سفارش‌ها',
+                    description: 'تاریخچه خرید و وضعیت پرداخت',
+                    meta: TextButton(
+                      onPressed: () => context.push('/student/subscribe'),
+                      child: const Text('خرید پلن'),
+                    ),
+                  ),
+                  const SizedBox(height: 64),
                   const EmptyView(
                     message: 'هنوز سفارشی ندارید',
                     icon: Icons.shopping_bag_outlined,
@@ -172,15 +175,27 @@ class OrdersScreen extends ConsumerWidget {
               );
             }
             return ListView.separated(
-              padding: const EdgeInsets.all(16),
-              itemCount: items.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 8),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
+              itemCount: items.length + 1,
+              separatorBuilder: (_, i) =>
+                  SizedBox(height: i == 0 ? 12 : 8),
               itemBuilder: (_, i) {
-                final o = items[i];
+                if (i == 0) {
+                  return FitinoPageHeader(
+                    title: 'سفارش‌ها',
+                    description: 'تاریخچه خرید و وضعیت پرداخت',
+                    meta: TextButton(
+                      onPressed: () => context.push('/student/subscribe'),
+                      child: const Text('خرید پلن'),
+                    ),
+                  );
+                }
+                final o = items[i - 1];
                 final title = o.items.isNotEmpty
                     ? o.items.first.title
                     : 'سفارش #${o.id}';
-                return Card(
+                return FitinoPanelCard(
+                  padding: EdgeInsets.zero,
                   child: ListTile(
                     title: Text(title),
                     subtitle: Text(
@@ -211,15 +226,17 @@ class OrderDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(orderDetailProvider(id));
     final fmt = NumberFormat.decimalPattern('fa');
-    return Scaffold(
-      appBar: AppBar(title: Text('سفارش #$id')),
+    return FitinoPushScaffold(
+      title: 'سفارش #$id',
+      description: 'جزئیات سفارش و پرداخت',
       body: AsyncValueWidget<OrderDetail>(
         value: async,
         onRetry: () => ref.invalidate(orderDetailProvider(id)),
         data: (o) => ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            Card(
+            FitinoPanelCard(
+              padding: EdgeInsets.zero,
               child: ListTile(
                 title: Text(statusFa(o.status)),
                 subtitle: Text(o.createdAt),
@@ -231,34 +248,35 @@ class OrderDetailScreen extends ConsumerWidget {
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 8),
             ...o.items.map(
-              (item) => Card(
-                margin: const EdgeInsets.only(bottom: 8),
-                child: ListTile(
-                  title: Text(item.title),
-                  subtitle: Text('تعداد: ${item.qty}'),
-                  trailing: Text('${fmt.format(item.price * item.qty)} ت'),
+              (item) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: FitinoPanelCard(
+                  padding: EdgeInsets.zero,
+                  child: ListTile(
+                    title: Text(item.title),
+                    subtitle: Text('تعداد: ${item.qty}'),
+                    trailing:
+                        Text('${fmt.format(item.price * item.qty)} ت'),
+                  ),
                 ),
               ),
             ),
             const SizedBox(height: 12),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    _row('جمع', '${fmt.format(o.subtotal)} تومان'),
-                    if (o.discountPercent > 0)
-                      _row('تخفیف', '${o.discountPercent}٪'),
-                    const Divider(),
-                    _row('قابل پرداخت', '${fmt.format(o.payable)} تومان',
-                        bold: true),
-                    if (o.paymentMethod.isNotEmpty)
-                      _row('روش پرداخت', o.paymentMethod),
-                    if (o.trackingCode.isNotEmpty)
-                      _row('کد پیگیری', o.trackingCode),
-                    if (o.note.isNotEmpty) _row('یادداشت', o.note),
-                  ],
-                ),
+            FitinoPanelCard(
+              child: Column(
+                children: [
+                  _row('جمع', '${fmt.format(o.subtotal)} تومان'),
+                  if (o.discountPercent > 0)
+                    _row('تخفیف', '${o.discountPercent}٪'),
+                  const Divider(),
+                  _row('قابل پرداخت', '${fmt.format(o.payable)} تومان',
+                      bold: true),
+                  if (o.paymentMethod.isNotEmpty)
+                    _row('روش پرداخت', o.paymentMethod),
+                  if (o.trackingCode.isNotEmpty)
+                    _row('کد پیگیری', o.trackingCode),
+                  if (o.note.isNotEmpty) _row('یادداشت', o.note),
+                ],
               ),
             ),
           ],

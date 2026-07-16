@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/async_value_widget.dart';
+import '../../../core/widgets/fitino_ui.dart';
 import '../data/content_models.dart';
 import '../data/content_repository.dart';
 
@@ -25,8 +26,9 @@ class _FaqScreenState extends ConsumerState<FaqScreen> {
   @override
   Widget build(BuildContext context) {
     final async = ref.watch(faqProvider);
-    return Scaffold(
-      appBar: AppBar(title: const Text('سوالات متداول')),
+    return FitinoPushScaffold(
+      title: 'سوالات متداول',
+      description: 'پاسخ‌های رایج درباره فیتینو',
       body: AsyncValueWidget<List<FaqGroup>>(
         value: async,
         onRetry: () => ref.invalidate(faqProvider),
@@ -77,7 +79,7 @@ class _FaqScreenState extends ConsumerState<FaqScreen> {
               if (filtered.isEmpty)
                 const Padding(
                   padding: EdgeInsets.only(top: 40),
-                  child: Center(child: Text('موردی پیدا نشد')),
+                  child: FitinoEmptyState(message: 'موردی پیدا نشد'),
                 )
               else
                 ...filtered.map((g) => Column(
@@ -90,21 +92,24 @@ class _FaqScreenState extends ConsumerState<FaqScreen> {
                                   fontWeight: FontWeight.bold, fontSize: 15)),
                         ),
                         ...g.items.map(
-                          (item) => Card(
-                            margin: const EdgeInsets.only(bottom: 8),
-                            child: ExpansionTile(
-                              title: Text(item.q,
-                                  style: const TextStyle(fontSize: 14)),
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.fromLTRB(
-                                      16, 0, 16, 16),
-                                  child: Text(item.a,
-                                      style: const TextStyle(
-                                          color: AppColors.muted,
-                                          height: 1.6)),
-                                ),
-                              ],
+                          (item) => Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: FitinoPanelCard(
+                              padding: EdgeInsets.zero,
+                              child: ExpansionTile(
+                                title: Text(item.q,
+                                    style: const TextStyle(fontSize: 14)),
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(
+                                        16, 0, 16, 16),
+                                    child: Text(item.a,
+                                        style: const TextStyle(
+                                            color: AppColors.muted,
+                                            height: 1.6)),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),

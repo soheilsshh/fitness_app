@@ -6,6 +6,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/theme_mode_provider.dart';
 import '../../../core/utils/jalali.dart';
 import '../../../core/widgets/app_text_field.dart';
+import '../../../core/widgets/fitino_ui.dart';
 import '../../../core/widgets/jalali_date_field.dart';
 import '../data/profile_models.dart';
 import '../data/profile_repository.dart';
@@ -151,8 +152,9 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('ویرایش پروفایل')),
+    return FitinoPushScaffold(
+      title: 'ویرایش پروفایل',
+      description: 'اطلاعات پایه، بدن و اهداف',
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

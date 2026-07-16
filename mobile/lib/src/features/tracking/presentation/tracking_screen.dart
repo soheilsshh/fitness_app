@@ -8,6 +8,7 @@ import '../../../core/config/app_config.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/async_value_widget.dart';
+import '../../../core/widgets/fitino_ui.dart';
 import '../data/tracking_models.dart';
 import '../data/tracking_repository.dart';
 
@@ -105,15 +106,22 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
   Widget build(BuildContext context) {
     final async = ref.watch(trackingStatusProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('پایش پیشرفت')),
+      backgroundColor: Colors.transparent,
       body: RefreshIndicator(
+        color: AppColors.brandMid,
         onRefresh: () async => ref.refresh(trackingStatusProvider.future),
         child: AsyncValueWidget<TrackingStatus>(
           value: async,
           onRetry: () => ref.invalidate(trackingStatusProvider),
           data: (status) => ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
             children: [
+              const FitinoPageHeader(
+                title: 'پایش پیشرفت',
+                description:
+                    'وزن و عکس‌های جلو، پشت و بغل را در موعد ثبت کنید',
+              ),
+              const SizedBox(height: 12),
               Text(
                 'هر ${status.frequencyDays} روز یک‌بار وزن و عکس‌های جلو، پشت و بغل را ثبت کنید.',
                 style: const TextStyle(color: AppColors.muted),
@@ -128,8 +136,9 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
               if (status.alerts.isNotEmpty) ...[
                 const SizedBox(height: 12),
                 ...status.alerts.map(
-                  (a) => Card(
-                    color: AppColors.destructive.withValues(alpha: 0.12),
+                  (a) => FitinoPanelCard(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 4),
                     child: ListTile(
                       leading: const Icon(Icons.warning_amber,
                           color: AppColors.destructive),
@@ -139,103 +148,76 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
                 ),
               ],
               const SizedBox(height: 16),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Row(
-                        children: [
-                          Icon(Icons.monitor_weight_outlined,
-                              color: AppColors.primary),
-                          SizedBox(width: 8),
-                          Text('ثبت وزن',
-                              style: TextStyle(fontWeight: FontWeight.bold)),
-                        ],
+              FitinoPanelCard(
+                title: 'ثبت وزن',
+                icon: Icons.monitor_weight_outlined,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextField(
+                      controller: _weightCtrl,
+                      keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true),
+                      decoration: InputDecoration(
+                        labelText: 'وزن (کیلوگرم)',
+                        hintText: status.lastWeightKg != null
+                            ? '${status.lastWeightKg}'
+                            : 'مثلاً ۷۵',
                       ),
-                      const SizedBox(height: 12),
-                      TextField(
-                        controller: _weightCtrl,
-                        keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true),
-                        decoration: InputDecoration(
-                          labelText: 'وزن (کیلوگرم)',
-                          hintText: status.lastWeightKg != null
-                              ? '${status.lastWeightKg}'
-                              : 'مثلاً ۷۵',
-                        ),
+                    ),
+                    const SizedBox(height: 12),
+                    FilledButton(
+                      onPressed: _submittingWeight
+                          ? null
+                          : () => _submitWeight(status),
+                      child: Text(
+                        _submittingWeight ? 'در حال ثبت...' : 'ثبت وزن',
                       ),
-                      const SizedBox(height: 12),
-                      FilledButton(
-                        onPressed: _submittingWeight
-                            ? null
-                            : () => _submitWeight(status),
+                    ),
+                    if (status.weightSubmitted)
+                      const Padding(
+                        padding: EdgeInsets.only(top: 8),
                         child: Text(
-                          _submittingWeight ? 'در حال ثبت...' : 'ثبت وزن',
+                          'وزن این دوره ثبت شده است.',
+                          style: TextStyle(color: AppColors.brandMid),
                         ),
                       ),
-                      if (status.weightSubmitted)
-                        const Padding(
-                          padding: EdgeInsets.only(top: 8),
-                          child: Text(
-                            'وزن این دوره ثبت شده است.',
-                            style: TextStyle(color: AppColors.primary),
-                          ),
-                        ),
-                    ],
-                  ),
+                  ],
                 ),
               ),
               const SizedBox(height: 12),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Row(
-                        children: [
-                          Icon(Icons.camera_alt_outlined,
-                              color: AppColors.primary),
-                          SizedBox(width: 8),
-                          Text('آپلود عکس‌های پایش',
-                              style: TextStyle(fontWeight: FontWeight.bold)),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          for (final slot in _photoSlots)
-                            Expanded(
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 4),
-                                child: Column(
-                                  children: [
-                                    OutlinedButton(
-                                      onPressed: _uploadingType == slot.$1
-                                          ? null
-                                          : () => _uploadPhoto(slot.$1),
-                                      child: Text(
-                                        _uploadingType == slot.$1
-                                            ? '...'
-                                            : slot.$2,
-                                      ),
-                                    ),
-                                    if (status.photosSubmitted[slot.$1] == true)
-                                      const Text('ثبت شد',
-                                          style: TextStyle(
-                                              fontSize: 11,
-                                              color: AppColors.primary)),
-                                  ],
+              FitinoPanelCard(
+                title: 'آپلود عکس‌های پایش',
+                icon: Icons.camera_alt_outlined,
+                child: Row(
+                  children: [
+                    for (final slot in _photoSlots)
+                      Expanded(
+                        child: Padding(
+                          padding:
+                              const EdgeInsets.symmetric(horizontal: 4),
+                          child: Column(
+                            children: [
+                              OutlinedButton(
+                                onPressed: _uploadingType == slot.$1
+                                    ? null
+                                    : () => _uploadPhoto(slot.$1),
+                                child: Text(
+                                  _uploadingType == slot.$1
+                                      ? '...'
+                                      : slot.$2,
                                 ),
                               ),
-                            ),
-                        ],
+                              if (status.photosSubmitted[slot.$1] == true)
+                                const Text('ثبت شد',
+                                    style: TextStyle(
+                                        fontSize: 11,
+                                        color: AppColors.brandMid)),
+                            ],
+                          ),
+                        ),
                       ),
-                    ],
-                  ),
+                  ],
                 ),
               ),
               const SizedBox(height: 16),
@@ -278,81 +260,78 @@ class _PhotoCompareBoxState extends State<_PhotoCompareBox> {
     final current = photos.isEmpty ? null : photos[_index.clamp(0, photos.length - 1)];
     final hasMultiple = photos.length > 1;
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(widget.history.label,
-                style: const TextStyle(fontWeight: FontWeight.w600)),
-            const SizedBox(height: 8),
-            AspectRatio(
-              aspectRatio: 3 / 4,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceVariant,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: current == null
-                    ? const Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.image_not_supported_outlined,
-                                color: AppColors.muted),
-                            SizedBox(height: 8),
-                            Text('عکسی ثبت نشده',
-                                style: TextStyle(
-                                    color: AppColors.muted, fontSize: 12)),
-                          ],
-                        ),
-                      )
-                    : ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.network(
-                          _assetUrl(current.url),
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, _, _) =>
-                              const Icon(Icons.broken_image),
-                        ),
+    return FitinoPanelCard(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(widget.history.label,
+              style: const TextStyle(fontWeight: FontWeight.w600)),
+          const SizedBox(height: 8),
+          AspectRatio(
+            aspectRatio: 3 / 4,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: AppColors.surfaceVariant,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: current == null
+                  ? const Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.image_not_supported_outlined,
+                              color: AppColors.muted),
+                          SizedBox(height: 8),
+                          Text('عکسی ثبت نشده',
+                              style: TextStyle(
+                                  color: AppColors.muted, fontSize: 12)),
+                        ],
                       ),
-              ),
+                    )
+                  : ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        _assetUrl(current.url),
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) =>
+                            const Icon(Icons.broken_image),
+                      ),
+                    ),
             ),
-            if (current != null) ...[
-              const SizedBox(height: 8),
-              Text(
-                hasMultiple
-                    ? '${current.uploadedAt} (${_index + 1} از ${photos.length})'
-                    : current.uploadedAt,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: AppColors.muted, fontSize: 12),
-              ),
-            ],
-            if (hasMultiple) ...[
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  IconButton(
-                    onPressed: _index >= photos.length - 1
-                        ? null
-                        : () => setState(() => _index++),
-                    icon: const Icon(Icons.chevron_right),
-                    tooltip: 'عکس قدیمی‌تر',
-                  ),
-                  IconButton(
-                    onPressed:
-                        _index <= 0 ? null : () => setState(() => _index--),
-                    icon: const Icon(Icons.chevron_left),
-                    tooltip: 'عکس جدیدتر',
-                  ),
-                ],
-              ),
-            ],
+          ),
+          if (current != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              hasMultiple
+                  ? '${current.uploadedAt} (${_index + 1} از ${photos.length})'
+                  : current.uploadedAt,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: AppColors.muted, fontSize: 12),
+            ),
           ],
-        ),
+          if (hasMultiple) ...[
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
+                  onPressed: _index >= photos.length - 1
+                      ? null
+                      : () => setState(() => _index++),
+                  icon: const Icon(Icons.chevron_right),
+                  tooltip: 'عکس قدیمی‌تر',
+                ),
+                IconButton(
+                  onPressed:
+                      _index <= 0 ? null : () => setState(() => _index--),
+                  icon: const Icon(Icons.chevron_left),
+                  tooltip: 'عکس جدیدتر',
+                ),
+              ],
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -365,13 +344,11 @@ class _WeightChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (points.isEmpty) {
-      return const Card(
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 40),
-          child: Center(
-            child: Text('هنوز وزنی ثبت نشده است.',
-                style: TextStyle(color: AppColors.muted)),
-          ),
+      return const FitinoPanelCard(
+        padding: EdgeInsets.symmetric(vertical: 40, horizontal: 16),
+        child: Center(
+          child: Text('هنوز وزنی ثبت نشده است.',
+              style: TextStyle(color: AppColors.muted)),
         ),
       );
     }
@@ -381,38 +358,35 @@ class _WeightChart extends StatelessWidget {
     final first = sorted.first;
     final delta = latest.weight - first.weight;
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'آخرین: ${latest.weight} کیلو · تغییر: ${delta >= 0 ? '+' : ''}${delta.toStringAsFixed(1)}',
-              style: const TextStyle(color: AppColors.muted, fontSize: 12),
+    return FitinoPanelCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'آخرین: ${latest.weight} کیلو · تغییر: ${delta >= 0 ? '+' : ''}${delta.toStringAsFixed(1)}',
+            style: const TextStyle(color: AppColors.muted, fontSize: 12),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 180,
+            width: double.infinity,
+            child: CustomPaint(
+              painter: _WeightChartPainter(sorted),
             ),
-            const SizedBox(height: 12),
-            SizedBox(
-              height: 180,
-              width: double.infinity,
-              child: CustomPaint(
-                painter: _WeightChartPainter(sorted),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(first.date,
-                    style:
-                        const TextStyle(color: AppColors.muted, fontSize: 11)),
-                Text(latest.date,
-                    style:
-                        const TextStyle(color: AppColors.muted, fontSize: 11)),
-              ],
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(first.date,
+                  style:
+                      const TextStyle(color: AppColors.muted, fontSize: 11)),
+              Text(latest.date,
+                  style:
+                      const TextStyle(color: AppColors.muted, fontSize: 11)),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -460,7 +434,7 @@ class _WeightChartPainter extends CustomPainter {
     }
 
     final linePaint = Paint()
-      ..color = AppColors.primary
+      ..color = AppColors.brandMid
       ..strokeWidth = 2.5
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
+import '../../core/widgets/fitino_ai_fab.dart';
+import '../../core/widgets/fitino_bottom_dock.dart';
+import '../../core/widgets/fitino_student_header.dart';
 import '../contact/presentation/contact_screen.dart';
 import '../dashboard/presentation/dashboard_screen.dart';
 import '../food_diary/presentation/food_diary_screen.dart';
@@ -11,8 +13,7 @@ import '../programs/presentation/programs_screen.dart';
 import '../tracking/presentation/tracking_screen.dart';
 import '../workout_history/presentation/workout_history_screen.dart';
 
-/// Bottom-nav shell matching web IA:
-/// خانه · تمرین · تغذیه · پایش · حساب من
+/// Student panel chrome — pixel-faithful Fitino dock + header + AI FAB.
 class StudentShell extends ConsumerStatefulWidget {
   const StudentShell({super.key});
 
@@ -22,8 +23,20 @@ class StudentShell extends ConsumerStatefulWidget {
 
 class _StudentShellState extends ConsumerState<StudentShell> {
   int _index = 0;
-  int _trainingSub = 0; // 0 programs, 1 history
-  int _accountSub = 0; // 0 profile, 1 orders, 2 contact
+  int _trainingSub = 0;
+  int _accountSub = 0;
+
+  static const _nav = [
+    FitinoNavItem(id: 'home', label: 'خانه', icon: Icons.home_rounded),
+    FitinoNavItem(
+        id: 'training', label: 'تمرین', icon: Icons.fitness_center_rounded),
+    FitinoNavItem(
+        id: 'nutrition', label: 'تغذیه', icon: Icons.restaurant_rounded),
+    FitinoNavItem(
+        id: 'tracking', label: 'پایش', icon: Icons.show_chart_rounded),
+    FitinoNavItem(
+        id: 'account', label: 'حساب من', icon: Icons.person_rounded),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -42,41 +55,28 @@ class _StudentShellState extends ConsumerState<StudentShell> {
     ];
 
     return Scaffold(
-      body: IndexedStack(index: _index, children: tabs),
-      floatingActionButton: FloatingActionButton(
-        heroTag: 'fitino_ai_fab',
-        tooltip: 'دستیار فیتینو',
-        onPressed: () => context.push('/student/ai'),
-        child: const Icon(Icons.auto_awesome),
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _index,
-        onDestinationSelected: (i) => setState(() => _index = i),
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: 'خانه',
+      extendBody: true,
+      body: Stack(
+        children: [
+          Column(
+            children: [
+              SafeArea(
+                bottom: false,
+                child: const FitinoStudentHeader(),
+              ),
+              Expanded(
+                child: IndexedStack(index: _index, children: tabs),
+              ),
+            ],
           ),
-          NavigationDestination(
-            icon: Icon(Icons.fitness_center_outlined),
-            selectedIcon: Icon(Icons.fitness_center),
-            label: 'تمرین',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.restaurant_outlined),
-            selectedIcon: Icon(Icons.restaurant),
-            label: 'تغذیه',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.show_chart_outlined),
-            selectedIcon: Icon(Icons.show_chart),
-            label: 'پایش',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person),
-            label: 'حساب من',
+          const FitinoAiFab(),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: FitinoBottomDock(
+              items: _nav,
+              selectedIndex: _index,
+              onSelect: (i) => setState(() => _index = i),
+            ),
           ),
         ],
       ),
@@ -97,19 +97,13 @@ class _TrainingHub extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        SafeArea(
-          bottom: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-            child: SegmentedButton<int>(
-              segments: const [
-                ButtonSegment(value: 0, label: Text('برنامه‌ها')),
-                ButtonSegment(value: 1, label: Text('تاریخچه')),
-              ],
-              selected: {subIndex},
-              onSelectionChanged: (s) => onSubChanged(s.first),
-            ),
-          ),
+        FitinoSubNavChips(
+          selectedIndex: subIndex,
+          onSelect: onSubChanged,
+          items: const [
+            (label: 'برنامه‌های من', icon: Icons.assignment_outlined),
+            (label: 'تاریخچه تمرینات', icon: Icons.history_rounded),
+          ],
         ),
         Expanded(
           child: IndexedStack(
@@ -138,46 +132,14 @@ class _AccountHub extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        SafeArea(
-          bottom: false,
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-                child: SegmentedButton<int>(
-                  segments: const [
-                    ButtonSegment(value: 0, label: Text('پروفایل')),
-                    ButtonSegment(value: 1, label: Text('سفارش‌ها')),
-                    ButtonSegment(value: 2, label: Text('مربی')),
-                  ],
-                  selected: {subIndex},
-                  onSelectionChanged: (s) => onSubChanged(s.first),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () => context.push('/student/academy'),
-                        icon: const Icon(Icons.school_outlined, size: 18),
-                        label: const Text('آموزش'),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () => context.push('/student/faq'),
-                        icon: const Icon(Icons.help_outline, size: 18),
-                        label: const Text('سوالات'),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+        FitinoSubNavChips(
+          selectedIndex: subIndex,
+          onSelect: onSubChanged,
+          items: const [
+            (label: 'پروفایل', icon: Icons.person_outline),
+            (label: 'سفارش‌ها', icon: Icons.shopping_bag_outlined),
+            (label: 'ارتباط با مربی', icon: Icons.contact_mail_outlined),
+          ],
         ),
         Expanded(
           child: IndexedStack(

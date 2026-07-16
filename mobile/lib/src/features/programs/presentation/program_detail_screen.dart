@@ -7,6 +7,7 @@ import '../../../core/network/api_exception.dart';
 import '../../../core/network/dio_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/async_value_widget.dart';
+import '../../../core/widgets/fitino_ui.dart';
 import '../../../core/widgets/state_views.dart';
 import '../application/programs_controller.dart';
 import '../data/program_models.dart';
@@ -56,8 +57,9 @@ class _ProgramDetailScreenState extends ConsumerState<ProgramDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final async = ref.watch(programDetailProvider(widget.id));
-    return Scaffold(
-      appBar: AppBar(title: const Text('جزئیات برنامه')),
+    return FitinoPushScaffold(
+      title: 'جزئیات برنامه',
+      description: 'تمرین و تغذیه روزانه',
       body: AsyncValueWidget<ProgramDetail>(
         value: async,
         onRetry: () => ref.invalidate(programDetailProvider(widget.id)),
@@ -119,92 +121,82 @@ class _ProgramDetailScreenState extends ConsumerState<ProgramDetailScreen> {
                 ),
                 const SizedBox(height: 12),
                 if (_tab == 0 && plan?.workout != null) ...[
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            plan!.workout!.title.isEmpty
-                                ? 'تمرین'
-                                : plan.workout!.title,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          if (plan.workout!.durationMin > 0)
-                            Text('${plan.workout!.durationMin} دقیقه',
-                                style: const TextStyle(
-                                    color: AppColors.muted, fontSize: 12)),
-                          const SizedBox(height: 12),
-                          ...plan.workout!.exercises.map(
-                            (ex) => ListTile(
-                              contentPadding: EdgeInsets.zero,
-                              leading: ex.imageUrl.isEmpty
-                                  ? const Icon(Icons.fitness_center,
-                                      color: AppColors.primary)
-                                  : ClipRRect(
-                                      borderRadius: BorderRadius.circular(8),
-                                      child: Image.network(
-                                        ex.imageUrl,
-                                        width: 48,
-                                        height: 48,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (_, _, _) =>
-                                            const Icon(Icons.fitness_center),
-                                      ),
+                  FitinoPanelCard(
+                    title: plan!.workout!.title.isEmpty
+                        ? 'تمرین'
+                        : plan.workout!.title,
+                    icon: Icons.fitness_center_rounded,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (plan.workout!.durationMin > 0)
+                          Text('${plan.workout!.durationMin} دقیقه',
+                              style: const TextStyle(
+                                  color: AppColors.muted, fontSize: 12)),
+                        const SizedBox(height: 12),
+                        ...plan.workout!.exercises.map(
+                          (ex) => ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: ex.imageUrl.isEmpty
+                                ? const Icon(Icons.fitness_center,
+                                    color: AppColors.brandMid)
+                                : ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: Image.network(
+                                      ex.imageUrl,
+                                      width: 48,
+                                      height: 48,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, _, _) =>
+                                          const Icon(Icons.fitness_center),
                                     ),
-                              title: Text(ex.name),
-                              subtitle: Text('${ex.sets}×${ex.reps}'),
-                            ),
+                                  ),
+                            title: Text(ex.name),
+                            subtitle: Text('${ex.sets}×${ex.reps}'),
                           ),
-                          const SizedBox(height: 8),
-                          FilledButton.icon(
-                            onPressed: _logging || day == null
-                                ? null
-                                : () => _logWorkout(d, day),
-                            icon: _logging
-                                ? const SizedBox(
-                                    width: 16,
-                                    height: 16,
-                                    child: CircularProgressIndicator(
-                                        strokeWidth: 2),
-                                  )
-                                : const Icon(Icons.check),
-                            label: Text(_logging
-                                ? 'در حال ثبت…'
-                                : 'ثبت این جلسه در تاریخچه'),
-                          ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(height: 8),
+                        FilledButton.icon(
+                          onPressed: _logging || day == null
+                              ? null
+                              : () => _logWorkout(d, day),
+                          icon: _logging
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                      strokeWidth: 2),
+                                )
+                              : const Icon(Icons.check),
+                          label: Text(_logging
+                              ? 'در حال ثبت…'
+                              : 'ثبت این جلسه در تاریخچه'),
+                        ),
+                      ],
                     ),
                   ),
                 ] else if (_tab == 0)
                   const EmptyView(message: 'تمرینی برای این روز نیست'),
                 if (_tab == 1 && plan?.nutrition != null) ...[
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'هدف کالری: ${plan!.nutrition!.caloriesTarget}',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
+                  FitinoPanelCard(
+                    title: 'هدف کالری: ${plan!.nutrition!.caloriesTarget}',
+                    icon: Icons.restaurant_rounded,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (plan.nutrition!.proteinTarget.isNotEmpty)
+                          Text('پروتئین: ${plan.nutrition!.proteinTarget}',
+                              style: const TextStyle(color: AppColors.muted)),
+                        const SizedBox(height: 12),
+                        ...plan.nutrition!.meals.map(
+                          (m) => ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: Text(m.title),
+                            subtitle: Text(m.detail),
+                            trailing: Text('${m.calories.toInt()} کال'),
                           ),
-                          if (plan.nutrition!.proteinTarget.isNotEmpty)
-                            Text('پروتئین: ${plan.nutrition!.proteinTarget}',
-                                style: const TextStyle(color: AppColors.muted)),
-                          const SizedBox(height: 12),
-                          ...plan.nutrition!.meals.map(
-                            (m) => ListTile(
-                              contentPadding: EdgeInsets.zero,
-                              title: Text(m.title),
-                              subtitle: Text(m.detail),
-                              trailing: Text('${m.calories.toInt()} کال'),
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ] else if (_tab == 1)

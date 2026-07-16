@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/fitino_ui.dart';
 import '../data/content_models.dart';
 import 'academy_screen.dart';
 
@@ -65,8 +66,9 @@ class _AcademyMediaPlayerScreenState extends State<AcademyMediaPlayerScreen> {
   @override
   Widget build(BuildContext context) {
     final c = _controller;
-    return Scaffold(
-      appBar: AppBar(title: Text(widget.item.title)),
+    return FitinoPushScaffold(
+      title: widget.item.title,
+      description: widget.item.type == 'podcast' ? 'پادکست' : 'ویدیو',
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

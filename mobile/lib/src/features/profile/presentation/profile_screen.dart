@@ -7,6 +7,7 @@ import '../../../core/config/app_config.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/async_value_widget.dart';
+import '../../../core/widgets/fitino_ui.dart';
 import '../../auth/application/auth_controller.dart';
 import '../data/profile_models.dart';
 import '../data/profile_repository.dart';
@@ -34,25 +35,9 @@ class ProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(myProfileProvider);
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('پروفایل'),
-        actions: [
-          IconButton(
-            tooltip: 'ویرایش',
-            icon: const Icon(Icons.edit_outlined),
-            onPressed: () {
-              final p = async.asData?.value;
-              if (p == null) return;
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => ProfileEditScreen(profile: p),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
+      backgroundColor: Colors.transparent,
       body: RefreshIndicator(
+        color: AppColors.brandMid,
         onRefresh: () async {
           ref.invalidate(myProfileProvider);
           ref.invalidate(myAvatarUrlProvider);
@@ -174,8 +159,24 @@ class _BodyState extends ConsumerState<_Body> {
     };
 
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
       children: [
+        FitinoPageHeader(
+          title: 'پروفایل',
+          description: 'اطلاعات شخصی و وضعیت حساب شما',
+          meta: FitinoMetaIconButton(
+            icon: Icons.edit_outlined,
+            tooltip: 'ویرایش',
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => ProfileEditScreen(profile: profile),
+                ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 16),
         Center(
           child: Column(
             children: [
@@ -276,8 +277,10 @@ class _BodyState extends ConsumerState<_Body> {
           childAspectRatio: 1.1,
           children: [
             for (final slot in _photoSlots)
-              Card(
+              FitinoPanelCard(
+                padding: EdgeInsets.zero,
                 child: InkWell(
+                  borderRadius: BorderRadius.circular(18),
                   onTap: _uploadingType == slot.$1
                       ? null
                       : () => _uploadBody(slot.$1),
@@ -306,7 +309,7 @@ class _BodyState extends ConsumerState<_Body> {
                             _uploadingType == slot.$1
                                 ? Icons.hourglass_top
                                 : Icons.add_a_photo_outlined,
-                            color: AppColors.primary,
+                            color: AppColors.brandMid,
                           ),
                         ),
                       Padding(

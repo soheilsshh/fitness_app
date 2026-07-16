@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/config/app_config.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/async_value_widget.dart';
+import '../../../core/widgets/fitino_ui.dart';
 import '../../../core/widgets/state_views.dart';
 import '../data/content_models.dart';
 import '../data/content_repository.dart';
@@ -92,22 +93,26 @@ class _AcademyScreenState extends ConsumerState<AcademyScreen>
   @override
   Widget build(BuildContext context) {
     final async = ref.watch(academyProvider);
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('آموزش فیتینو'),
-        bottom: TabBar(
-          controller: _tabs,
-          tabs: const [
-            Tab(text: 'پادکست'),
-            Tab(text: 'ویدیو'),
-            Tab(text: 'متن'),
-          ],
-        ),
-      ),
-      body: AsyncValueWidget<List<AcademyItem>>(
-        value: async,
-        onRetry: () => ref.invalidate(academyProvider),
-        data: (items) {
+    return FitinoPushScaffold(
+      title: 'آموزش فیتینو',
+      description: 'پادکست، ویدیو و مقالات',
+      body: Column(
+        children: [
+          TabBar(
+            controller: _tabs,
+            labelColor: AppColors.brandDeep,
+            indicatorColor: AppColors.brandMid,
+            tabs: const [
+              Tab(text: 'پادکست'),
+              Tab(text: 'ویدیو'),
+              Tab(text: 'متن'),
+            ],
+          ),
+          Expanded(
+            child: AsyncValueWidget<List<AcademyItem>>(
+              value: async,
+              onRetry: () => ref.invalidate(academyProvider),
+              data: (items) {
           final typed = items.where((i) => i.type == _type).toList();
           final cats = [
             'همه',
@@ -129,47 +134,55 @@ class _AcademyScreenState extends ConsumerState<AcademyScreen>
                       final item = featured[i];
                       return Padding(
                         padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-                        child: Card(
-                          color: AppColors.primaryDark,
-                          child: InkWell(
-                            onTap: () {
-                              if (item.type == 'text') {
-                                _readText(item);
-                              } else if (item.src != null &&
-                                  item.src!.isNotEmpty) {
-                                _openMedia(item);
-                              } else {
-                                final idx = item.type == 'podcast'
-                                    ? 0
-                                    : item.type == 'video'
-                                        ? 1
-                                        : 2;
-                                _tabs.animateTo(idx);
-                              }
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text('ویژه',
-                                      style: TextStyle(
-                                          color: AppColors.onPrimary,
-                                          fontSize: 12)),
-                                  const SizedBox(height: 6),
-                                  Text(item.title,
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16)),
-                                  const Spacer(),
-                                  Text(item.category,
-                                      style: TextStyle(
-                                          color: AppColors.onPrimary
-                                              .withValues(alpha: 0.8),
-                                          fontSize: 12)),
-                                ],
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(18),
+                            gradient: AppColors.brandGradient,
+                          ),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(18),
+                              onTap: () {
+                                if (item.type == 'text') {
+                                  _readText(item);
+                                } else if (item.src != null &&
+                                    item.src!.isNotEmpty) {
+                                  _openMedia(item);
+                                } else {
+                                  final idx = item.type == 'podcast'
+                                      ? 0
+                                      : item.type == 'video'
+                                          ? 1
+                                          : 2;
+                                  _tabs.animateTo(idx);
+                                }
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text('ویژه',
+                                        style: TextStyle(
+                                            color: AppColors.onPrimary,
+                                            fontSize: 12)),
+                                    const SizedBox(height: 6),
+                                    Text(item.title,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                            color: Colors.white)),
+                                    const Spacer(),
+                                    Text(item.category,
+                                        style: TextStyle(
+                                            color: AppColors.onPrimary
+                                                .withValues(alpha: 0.8),
+                                            fontSize: 12)),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
@@ -205,10 +218,9 @@ class _AcademyScreenState extends ConsumerState<AcademyScreen>
                         itemCount: filtered.length,
                         itemBuilder: (_, i) {
                           final item = filtered[i];
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            child: Padding(
-                              padding: const EdgeInsets.all(14),
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: FitinoPanelCard(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -264,7 +276,10 @@ class _AcademyScreenState extends ConsumerState<AcademyScreen>
               ),
             ],
           );
-        },
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
