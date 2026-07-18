@@ -39,7 +39,7 @@ export default function FunnelHero({ coachName = "علی رشید آبادی", o
   return (
     <section
       dir="rtl"
-      className="funnel-screen relative isolate flex flex-col overflow-hidden bg-[#0e0e0e] text-white"
+      className="funnel-screen relative isolate flex flex-col overflow-clip bg-[#0e0e0e] text-white"
     >
       {/* Coach portrait backdrop + scrims */}
       <div className="pointer-events-none absolute inset-0 z-0" aria-hidden>

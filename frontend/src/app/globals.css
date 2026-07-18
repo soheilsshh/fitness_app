@@ -1183,11 +1183,11 @@ select:focus-visible,
 }
 
 .funnel-frame-device {
+  /* block, not flex: a flex column would shrink tall screens down to the
+     frame height and clip them instead of letting the frame scroll */
   position: relative;
   width: 100%;
   background: #0e0e0e;
-  display: flex;
-  flex-direction: column;
 }
 
 /* Full-height section inside the frame (navbar is hidden on funnel routes) */

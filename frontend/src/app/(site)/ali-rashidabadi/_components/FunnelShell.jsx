@@ -12,11 +12,13 @@ export default function FunnelShell({
     <div
       dir="rtl"
       className={cn(
-        "funnel-shell funnel-screen relative isolate overflow-hidden bg-[#0e0e0e] text-white",
+        // overflow-clip (not hidden): decorative blobs must never create a
+        // programmatically-scrollable area inside the phone frame
+        "funnel-shell funnel-screen relative isolate overflow-clip bg-[#0e0e0e] text-white",
         className
       )}
     >
-      <div className="pointer-events-none absolute inset-0" aria-hidden>
+      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
         <div className="absolute -top-40 start-1/2 h-[28rem] w-[28rem] -translate-x-1/2 rounded-full bg-primary/15 blur-[140px]" />
         <div className="absolute bottom-0 end-0 h-80 w-80 rounded-full bg-chart-2/12 blur-[120px]" />
         <div className="absolute top-1/3 -start-20 h-64 w-64 rounded-full bg-primary/8 blur-[100px]" />
