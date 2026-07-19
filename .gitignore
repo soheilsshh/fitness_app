@@ -9,3 +9,6 @@ crul/output/exercise/videos/
 uploads/
 node_modules
 .idea
+
+.cursor/*
+.specify/*
