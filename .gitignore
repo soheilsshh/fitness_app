@@ -10,5 +10,8 @@ uploads/
 node_modules
 .idea
 
+.cursor/*
+.specify/*
+
 # Local Go build cache (never commit)
 .gocache/
