@@ -73,22 +73,48 @@ class _AddFoodSheetState extends ConsumerState<AddFoodSheet> {
   Future<void> _addManual() async {
     final nameCtrl = TextEditingController();
     final qtyCtrl = TextEditingController();
+    final calCtrl = TextEditingController();
+    final proCtrl = TextEditingController();
+    final carbCtrl = TextEditingController();
+    final fatCtrl = TextEditingController();
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('ثبت دستی'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameCtrl,
-              decoration: const InputDecoration(labelText: 'نام غذا'),
-            ),
-            TextField(
-              controller: qtyCtrl,
-              decoration: const InputDecoration(labelText: 'مقدار'),
-            ),
-          ],
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameCtrl,
+                decoration: const InputDecoration(labelText: 'نام غذا'),
+              ),
+              TextField(
+                controller: qtyCtrl,
+                decoration: const InputDecoration(labelText: 'مقدار'),
+              ),
+              TextField(
+                controller: calCtrl,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: const InputDecoration(labelText: 'کالری'),
+              ),
+              TextField(
+                controller: proCtrl,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: const InputDecoration(labelText: 'پروتئین (گرم)'),
+              ),
+              TextField(
+                controller: carbCtrl,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: const InputDecoration(labelText: 'کربوهیدرات (گرم)'),
+              ),
+              TextField(
+                controller: fatCtrl,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: const InputDecoration(labelText: 'چربی (گرم)'),
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -105,9 +131,14 @@ class _AddFoodSheetState extends ConsumerState<AddFoodSheet> {
     if (ok != true || nameCtrl.text.trim().isEmpty) return;
     setState(() => _busy = true);
     try {
-      await ref
-          .read(foodDiaryActionsProvider.notifier)
-          .addManual(nameCtrl.text.trim(), qtyCtrl.text.trim());
+      await ref.read(foodDiaryActionsProvider.notifier).addManual(
+            nameCtrl.text.trim(),
+            qtyCtrl.text.trim(),
+            calories: double.tryParse(calCtrl.text.trim()),
+            protein: double.tryParse(proCtrl.text.trim()),
+            carbs: double.tryParse(carbCtrl.text.trim()),
+            fat: double.tryParse(fatCtrl.text.trim()),
+          );
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       _toast(e.toString());

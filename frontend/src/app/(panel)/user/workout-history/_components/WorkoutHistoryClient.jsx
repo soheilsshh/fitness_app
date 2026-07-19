@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { Clock, Dumbbell, History } from "lucide-react";
 import { api } from "@/lib/axios/client";
 import PanelPagination from "@/app/(panel)/_shared/Pagination";
+import MetaBadge from "@/app/(panel)/user/_components/ui/MetaBadge";
+import PageHeader from "@/app/(panel)/user/_components/ui/PageHeader";
+import PanelEmptyState from "@/app/(panel)/user/_components/ui/PanelEmptyState";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -71,21 +72,17 @@ export default function WorkoutHistoryClient() {
 
   return (
     <div className="flex flex-col gap-4 md:gap-6" dir="rtl">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div className="text-start">
-          <h2 className="text-lg font-semibold tracking-tight">تاریخچه تمرینات</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            سوابق تمرینات انجام‌شده شما
-          </p>
-        </div>
-        <Badge variant="outline" className="gap-1.5 px-3 py-1.5 text-sm">
-          <History className="size-3.5 text-primary" />
-          تعداد:
-          <span className="font-semibold tabular-nums text-foreground">
-            {total.toLocaleString("fa-IR")}
-          </span>
-        </Badge>
-      </div>
+      <PageHeader
+        title="تاریخچه تمرینات"
+        description="سوابق تمرینات انجام‌شده شما"
+        meta={
+          <MetaBadge
+            icon={History}
+            label="تعداد:"
+            value={total.toLocaleString("fa-IR")}
+          />
+        }
+      />
 
       {loading ? (
         <Card>
@@ -96,18 +93,13 @@ export default function WorkoutHistoryClient() {
           </CardContent>
         </Card>
       ) : items.length === 0 ? (
-        <Card className="border-dashed">
-          <CardContent className="py-10 text-center">
-            <Dumbbell className="mx-auto mb-3 size-8 text-muted-foreground opacity-60" />
-            <p className="text-sm font-medium">هنوز تمرینی ثبت نشده</p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              پس از اتمام هر جلسه تمرین، از صفحه برنامه‌های من آن را ثبت کنید.
-            </p>
-            <Button variant="outline" size="sm" className="mt-4" asChild>
-              <Link href="/user/my-programs">رفتن به برنامه‌های من</Link>
-            </Button>
-          </CardContent>
-        </Card>
+        <PanelEmptyState
+          icon={Dumbbell}
+          title="هنوز تمرینی ثبت نشده"
+          description="پس از اتمام هر جلسه تمرین، از صفحه برنامه‌های من آن را ثبت کنید."
+          actionHref="/user/my-programs"
+          actionLabel="رفتن به برنامه‌های من"
+        />
       ) : (
         <Card>
           <CardContent className="pt-6">

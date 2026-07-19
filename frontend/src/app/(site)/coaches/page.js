@@ -44,7 +44,7 @@ export default function CoachesListPage() {
     <main className="mx-auto max-w-7xl px-4 py-16 text-on-surface">
       <div className="mb-8">
         <h1 className="text-2xl font-extrabold text-landing-heading md:text-3xl">
-          مربی‌های Fitino
+          مربی‌های فیتینو
         </h1>
         <p className="mt-2 max-w-2xl text-sm site-muted md:text-base">
           مربی مورد نظر خود را انتخاب کنید و از صفحه اختصاصی او پلن‌ها را ببینید.

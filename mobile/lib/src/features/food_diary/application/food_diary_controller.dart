@@ -47,12 +47,23 @@ class FoodDiaryActions extends _$FoodDiaryActions {
     ref.invalidate(dailyDiaryProvider);
   }
 
-  Future<void> addManual(String name, String quantity) async {
+  Future<void> addManual(
+    String name,
+    String quantity, {
+    double? calories,
+    double? protein,
+    double? carbs,
+    double? fat,
+  }) async {
     final date = ref.read(selectedDiaryDateProvider);
     await ref.read(foodRepositoryProvider).createLog(
           logDate: JalaliDates.isoDate(date),
           foodName: name,
           quantity: quantity,
+          calories: calories,
+          protein: protein,
+          carbs: carbs,
+          fat: fat,
         );
     ref.invalidate(dailyDiaryProvider);
   }

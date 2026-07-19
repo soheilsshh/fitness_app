@@ -4,8 +4,8 @@ import "./globals.css";
 import Providers from "./providers";
 
 export const metadata = {
-  title: "Fitino",
-  description: "پلتفرم مربیگری و تناسب اندام Fitino",
+  title: "فیتینو",
+  description: "پلتفرم مربیگری و تناسب اندام فیتینو",
   other: {
     enamad: "780027",
   },

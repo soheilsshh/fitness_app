@@ -1,13 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { MessageSquare } from "lucide-react";
 import { api } from "@/lib/axios/client";
+import MetaBadge from "@/app/(panel)/user/_components/ui/MetaBadge";
+import PageHeader from "@/app/(panel)/user/_components/ui/PageHeader";
 import CoachSocialCards from "./CoachSocialCards";
 import TicketCreateForm from "./TicketCreateForm";
 import TicketsList from "./TicketsList";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
 
 function faNum(v) {
   return new Intl.NumberFormat("fa-IR").format(v ?? 0);
@@ -90,16 +92,17 @@ export default function ContactClient() {
 
   return (
     <div dir="rtl" className="flex flex-col gap-4 md:gap-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div className="text-start">
-          <h2 className="text-lg font-semibold tracking-tight">ارتباط با مربی</h2>
-          <p className="mt-1 text-sm text-muted-foreground">{headerSubtitle}</p>
-        </div>
-
-        <Badge variant="outline" className="px-3 py-1.5 text-sm">
-          تعداد تیکت‌ها: <span className="ms-1 font-semibold tabular-nums">{faNum(ticketsTotal)}</span>
-        </Badge>
-      </div>
+      <PageHeader
+        title="ارتباط با مربی"
+        description={headerSubtitle}
+        meta={
+          <MetaBadge
+            icon={MessageSquare}
+            label="تیکت‌ها:"
+            value={faNum(ticketsTotal)}
+          />
+        }
+      />
 
       {coachLoading ? (
         <Card>

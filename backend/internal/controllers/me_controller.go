@@ -83,6 +83,51 @@ func (h *MeController) UpdateProfile(c *gin.Context) {
 	c.JSON(http.StatusOK, profile)
 }
 
+// UploadAvatar godoc
+// @Summary Upload student profile avatar
+// @Tags me
+// @Accept multipart/form-data
+// @Produce json
+// @Security BearerAuth
+// @Param file formData file true "Avatar image"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /me/avatar [post]
+func (h *MeController) UploadAvatar(c *gin.Context) {
+	userID, err := middleware.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	file, err := c.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "file is required"})
+		return
+	}
+
+	opened, err := file.Open()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to read file"})
+		return
+	}
+	defer opened.Close()
+
+	urlPath, err := h.meService.UploadAvatar(c.Request.Context(), userID, opened, file.Filename)
+	if err != nil {
+		if errors.Is(err, service.ErrInvalidPhotoType) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "فقط تصویر jpg، png یا webp مجاز است"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"avatarUrl": urlPath, "url": urlPath})
+}
+
 // UploadBodyPhoto godoc
 // @Summary Upload onboarding body photo
 // @Description Upload a body photo (front, right, back, left) for the current user

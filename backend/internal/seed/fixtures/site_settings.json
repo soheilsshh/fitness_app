@@ -2,6 +2,7 @@
   {
     "ID": 1,
     "HeroImageURL": "",
+    "ShowCoachesSection": false,
     "FeatureBullets": {
       "title": "چرا فیت‌پلاس؟",
       "items": [

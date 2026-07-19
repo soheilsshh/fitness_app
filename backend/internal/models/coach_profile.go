@@ -22,6 +22,12 @@ type CoachProfile struct {
 	WhatsApp     string `gorm:"size:50"`
 	Website      string `gorm:"size:255"`
 
+	NationalID string `gorm:"size:10"`
+	City       string `gorm:"size:100"`
+
+	// Status: pending | reviewing | approved
+	Status string `gorm:"size:20;not null;default:pending;index"`
+
 	IsPublished bool `gorm:"not null;default:false"`
 	IsActive    bool `gorm:"not null;default:true"`
 }

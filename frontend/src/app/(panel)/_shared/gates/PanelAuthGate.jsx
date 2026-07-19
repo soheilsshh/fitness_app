@@ -13,7 +13,7 @@ export default function PanelAuthGate({ requiredRole, children }) {
     const role = getAuthSession()?.role;
 
     if (!role) {
-      router.replace(`/auth/login?next=${encodeURIComponent(pathname || "/")}`);
+      router.replace(`/auth?next=${encodeURIComponent(pathname || "/")}`);
       return;
     }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
@@ -12,7 +12,7 @@ import {
   UtensilsCrossed,
 } from "lucide-react";
 import { api } from "@/lib/axios/client";
-import { toastError } from "@/app/(site)/auth/_components/helpers";
+import { toastError, toastSuccess } from "@/app/(site)/auth/_components/helpers";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -41,6 +41,7 @@ import {
 } from "../../_components/nutritionHelpers";
 import FoodPickerModal from "./FoodPickerModal";
 import ManualFoodModal from "./ManualFoodModal";
+import TemplatePickerModal from "../../_components/TemplatePickerModal";
 
 function applyCaloriesToPlan(planByDay, calories) {
   const value = Math.round(Number(calories));
@@ -100,44 +101,47 @@ export default function NutritionEditorClient({ studentId: studentIdProp } = {})
   const [proteinTarget, setProteinTarget] = useState("");
   const [pickerOpen, setPickerOpen] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
+  const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
+
+  const loadPrograms = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await api.get(`/coach/students/${studentId}/programs`);
+      const data = res.data || {};
+      setProgramId(data.nutritionProgramId || null);
+      if (data.planByDay) {
+        const merged = emptyPlanByDay();
+        for (const key of DAY_KEYS) {
+          if (data.planByDay[key]?.nutrition) {
+            merged[key].nutrition = normalizeNutritionFromApi(
+              data.planByDay[key].nutrition,
+            );
+          }
+        }
+        setPlanByDay(
+          caloriesFromQuery ? applyCaloriesToPlan(merged, caloriesFromQuery) : merged,
+        );
+      } else if (caloriesFromQuery) {
+        setPlanByDay((prev) => applyCaloriesToPlan(prev, caloriesFromQuery));
+      }
+    } catch {
+      toastError("خطا", "بارگذاری برنامه ناموفق بود");
+    } finally {
+      setLoading(false);
+    }
+  }, [studentId, caloriesFromQuery]);
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
-      setLoading(true);
-      try {
-        const res = await api.get(`/coach/students/${studentId}/programs`);
-        if (cancelled) return;
-        const data = res.data || {};
-        setProgramId(data.nutritionProgramId || null);
-        if (data.planByDay) {
-          const merged = emptyPlanByDay();
-          for (const key of DAY_KEYS) {
-            if (data.planByDay[key]?.nutrition) {
-              merged[key].nutrition = normalizeNutritionFromApi(
-                data.planByDay[key].nutrition,
-              );
-            }
-          }
-          setPlanByDay(
-            caloriesFromQuery
-              ? applyCaloriesToPlan(merged, caloriesFromQuery)
-              : merged,
-          );
-        } else if (caloriesFromQuery) {
-          setPlanByDay((prev) => applyCaloriesToPlan(prev, caloriesFromQuery));
-        }
-      } catch {
-        if (!cancelled) toastError("خطا", "بارگذاری برنامه ناموفق بود");
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
+      if (cancelled) return;
+      await loadPrograms();
     }
     load();
     return () => {
       cancelled = true;
     };
-  }, [studentId, caloriesFromQuery]);
+  }, [loadPrograms]);
 
   useEffect(() => {
     const n = planByDay[selectedDay]?.nutrition;
@@ -230,6 +234,7 @@ export default function NutritionEditorClient({ studentId: studentIdProp } = {})
         );
         setProgramId(res.data?.nutritionProgramId || null);
       }
+      await toastSuccess("موفق", "برنامه غذایی با موفقیت برای دانشجو ذخیره شد.");
     } catch (error) {
       toastError("خطا", error?.response?.data?.error || "ذخیره ناموفق بود");
     } finally {
@@ -354,6 +359,15 @@ export default function NutritionEditorClient({ studentId: studentIdProp } = {})
                 <PenLine data-icon="inline-start" />
                 ورود دستی
               </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setTemplatePickerOpen(true)}
+              >
+                <UtensilsCrossed data-icon="inline-start" />
+                انتخاب از بانک تمپلیت
+              </Button>
             </div>
           </div>
         </CardHeader>
@@ -393,6 +407,15 @@ export default function NutritionEditorClient({ studentId: studentIdProp } = {})
         onClose={() => setManualOpen(false)}
         onAdd={addMeal}
         dayLabel={DAY_LABELS[selectedDay]}
+      />
+      <TemplatePickerModal
+        open={templatePickerOpen}
+        onClose={() => setTemplatePickerOpen(false)}
+        mode="nutrition"
+        studentId={studentId}
+        onApplied={async () => {
+          await loadPrograms();
+        }}
       />
     </div>
   );

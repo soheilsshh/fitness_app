@@ -12,3 +12,6 @@ node_modules
 
 .cursor/*
 .specify/*
+
+# Local Go build cache (never commit)
+.gocache/

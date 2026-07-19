@@ -22,6 +22,7 @@ import {
   Trophy,
 } from "lucide-react";
 import { api } from "@/lib/axios/client";
+import PageHeader from "@/app/(panel)/user/_components/ui/PageHeader";
 import TrackingAlerts from "@/components/tracking/TrackingAlerts";
 import WeightChart from "@/components/tracking/WeightChart";
 import { Button } from "@/components/ui/button";
@@ -161,20 +162,21 @@ export default function UserDashboardClient() {
 
   return (
     <div className="flex flex-col gap-4 md:gap-6" dir="rtl">
-      {/* greeting */}
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div className="text-start">
-          <h2 className="text-xl font-bold tracking-tight">سلام {firstName} 👋</h2>
-          <p className="mt-1 text-sm text-muted-foreground">امروز {jalaliLong()}</p>
-        </div>
-        <Button variant="outline" size="sm" asChild>
-          <Link href="/user/tracking">
-            <LineChart className="size-4" />
-            پایش کامل
-            <ArrowLeft className="size-4" />
-          </Link>
-        </Button>
-      </div>
+      <PageHeader
+        title={`سلام ${firstName}`}
+        description={`امروز ${jalaliLong()}`}
+        meta={
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/user/tracking">
+              <LineChart className="size-4" />
+              پایش کامل
+              <ArrowLeft className="size-4" />
+            </Link>
+          </Button>
+        }
+      />
+
+      <ProfileBoostCard profile={profile} loading={loading} />
 
       {/* alerts */}
       {!loading && tracking?.alerts?.length ? (
@@ -261,11 +263,13 @@ export default function UserDashboardClient() {
 
 function SectionPanel({ icon: Icon, iconClass, title, action, children }) {
   return (
-    <Card className="bg-gradient-to-t from-primary/5 to-card">
+    <Card>
       <CardContent className="flex flex-col gap-4 p-5">
-        <div className="flex items-center justify-between">
-          <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground">
-            <Icon className={cn("size-5", iconClass)} />
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="flex items-center gap-2 font-iranianSansDemiBold text-base text-foreground sm:text-lg">
+            <span className="flex size-9 items-center justify-center rounded-xl bg-[linear-gradient(160deg,rgba(108,234,222,0.35),rgba(24,114,114,0.12))] shadow-[0_1px_0_rgba(255,255,255,0.45)_inset]">
+              <Icon className={cn("size-4", iconClass || "text-[#187272] dark:text-[#6ceade]")} />
+            </span>
             {title}
           </h2>
           {action}
@@ -278,18 +282,28 @@ function SectionPanel({ icon: Icon, iconClass, title, action, children }) {
 
 function StatCard({ icon: Icon, accent, label, value, sub, loading }) {
   return (
-    <Card className="bg-gradient-to-t from-primary/5 to-card">
-      <CardContent className="flex flex-col gap-1.5 p-5">
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">{label}</span>
-          <Icon className={cn("size-4", accent)} />
+    <Card>
+      <CardContent className="flex flex-col gap-2 p-5">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-sm font-iranianSansMedium text-muted-foreground">
+            {label}
+          </span>
+          <span className="flex size-8 items-center justify-center rounded-xl bg-[linear-gradient(160deg,rgba(108,234,222,0.3),rgba(24,114,114,0.1))]">
+            <Icon className={cn("size-4", accent)} />
+          </span>
         </div>
         {loading ? (
           <Skeleton className="h-7 w-20" />
         ) : (
-          <span className="text-2xl font-bold tabular-nums text-foreground">{value}</span>
+          <span className="font-iranianSansBlack text-2xl tabular-nums tracking-tight text-foreground">
+            {value}
+          </span>
         )}
-        {sub ? <span className="text-xs text-muted-foreground">{sub}</span> : null}
+        {sub ? (
+          <span className="text-xs font-iranianSansMedium text-muted-foreground">
+            {sub}
+          </span>
+        ) : null}
       </CardContent>
     </Card>
   );
@@ -297,9 +311,11 @@ function StatCard({ icon: Icon, accent, label, value, sub, loading }) {
 
 function EmptyState({ icon: Icon, text }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-2 py-8 text-center text-muted-foreground">
-      <Icon className="size-8 opacity-40" />
-      <p className="text-sm">{text}</p>
+    <div className="flex flex-col items-center justify-center gap-2.5 py-8 text-center">
+      <span className="fitino-empty-icon flex size-12 items-center justify-center rounded-2xl">
+        <Icon className="size-5 text-[#187272] opacity-80 dark:text-[#6ceade]" />
+      </span>
+      <p className="text-sm font-iranianSansMedium text-muted-foreground">{text}</p>
     </div>
   );
 }
@@ -607,6 +623,98 @@ function RecentSessionsCard({ loading, items }) {
         </ul>
       )}
     </SectionPanel>
+  );
+}
+
+function ProfileBoostCard({ profile, loading }) {
+  const progress = profile?.profileProgress;
+  if (loading) {
+    return <Skeleton className="h-36 w-full rounded-2xl" />;
+  }
+  if (!progress || progress.percent >= 100) return null;
+
+  const items = [
+    {
+      key: "essentials",
+      done: progress.essentials,
+      label: "نام و هدف",
+      href: "/user/onboarding",
+    },
+    {
+      key: "body",
+      done: progress.body,
+      label: "قد، وزن و وضعیت بدن",
+      href: "/user/profile#body",
+    },
+    {
+      key: "medical",
+      done: progress.medical,
+      label: "سوابق پزشکی",
+      href: "/user/profile#medical",
+    },
+    {
+      key: "photos",
+      done: progress.photos,
+      label: "عکس‌های بدن",
+      href: "/user/profile#photos",
+    },
+  ];
+
+  return (
+    <Card className="overflow-hidden border-[#187272]/20 dark:border-[#26fce3]/20">
+      <CardContent className="space-y-4 pt-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="text-start">
+            <p className="text-sm font-iranianSansDemiBold text-foreground">
+              تکمیل پروفایل — {formatFa(progress.percent)}٪
+            </p>
+            <p className="mt-1 text-xs font-iranianSansMedium text-muted-foreground">
+              هر بخش را کامل کنید تا مربی برنامه دقیق‌تری بسازد. اجباری نیست.
+            </p>
+          </div>
+          <Badge
+            variant="outline"
+            className="fitino-meta-badge tabular-nums font-iranianSansDemiBold"
+          >
+            {formatFa(items.filter((i) => i.done).length)} از{" "}
+            {formatFa(items.length)}
+          </Badge>
+        </div>
+
+        <div className="h-2.5 w-full overflow-hidden rounded-full bg-muted/80">
+          <div
+            className="h-full rounded-full bg-[linear-gradient(90deg,#26fce3,#2a9c96,#187272)] transition-all"
+            style={{ width: `${Math.min(100, Math.max(0, progress.percent))}%` }}
+          />
+        </div>
+
+        <ul className="grid gap-2 sm:grid-cols-2">
+          {items.map((item) => (
+            <li key={item.key}>
+              <Link
+                href={item.href}
+                className={cn(
+                  "flex items-center gap-2 rounded-xl border px-3 py-2.5 text-sm transition-colors",
+                  item.done
+                    ? "border-emerald-500/25 bg-emerald-500/10 text-emerald-800 dark:text-emerald-200"
+                    : "border-border/70 bg-background/70 text-foreground hover:bg-muted/60"
+                )}
+              >
+                {item.done ? (
+                  <CheckCircle2 className="size-4 shrink-0 text-emerald-600" />
+                ) : (
+                  <Circle className="size-4 shrink-0 text-muted-foreground" />
+                )}
+                <span className="min-w-0 flex-1 truncate text-start">{item.label}</span>
+                {!item.done ? (
+                  <ChevronLeft className="size-4 shrink-0 text-muted-foreground" />
+                ) : null}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </CardContent>
+    </Card>
   );
 }
 

@@ -69,7 +69,7 @@ function ExerciseBadges({ exercise }) {
   return (
     <div className="flex flex-wrap gap-2">
       {exercise.sets > 0 ? (
-        <Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+        <Badge variant="outline" className="border-cyan-500/30 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300">
           {Number(exercise.sets).toLocaleString("fa-IR")} ست
         </Badge>
       ) : null}

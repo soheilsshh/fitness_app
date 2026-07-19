@@ -17,6 +17,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function SiteSettingsClient() {
@@ -121,6 +123,46 @@ export default function SiteSettingsClient() {
         value={settings.heroImage}
         onChange={(heroImage) => setSettings((p) => ({ ...p, heroImage }))}
       />
+
+      <Card>
+        <CardHeader>
+          <CardTitle>بخش مربیان (صفحه اصلی)</CardTitle>
+          <CardDescription>
+            سیستم چندمربی حفظ می‌شود؛ فقط نمایش سکشن مربی‌ها در لندینگ را کنترل کنید.
+            به‌صورت پیش‌فرض خاموش است.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <label
+            htmlFor="show-coaches-section"
+            className="flex cursor-pointer items-start gap-3 rounded-xl border border-border/70 bg-muted/20 px-4 py-3.5 transition-colors hover:bg-muted/40"
+          >
+            <Checkbox
+              id="show-coaches-section"
+              checked={Boolean(settings.showCoachesSection)}
+              onCheckedChange={(checked) =>
+                setSettings((p) => ({
+                  ...p,
+                  showCoachesSection: checked === true,
+                }))
+              }
+              className="mt-0.5"
+            />
+            <div className="space-y-1">
+              <Label
+                htmlFor="show-coaches-section"
+                className="cursor-pointer text-sm font-iranianSansDemiBold"
+              >
+                نمایش بخش مربیان در صفحه اصلی
+              </Label>
+              <p className="text-xs leading-6 text-muted-foreground">
+                وقتی روشن باشد، کارت مربی‌های منتشرشده (یا پیام خالی) در لندینگ نشان
+                داده می‌شود. صفحهٔ جداگانهٔ «مربی‌ها» همیشه در دسترس می‌ماند.
+              </p>
+            </div>
+          </label>
+        </CardContent>
+      </Card>
 
       <FeatureBulletsEditor
         value={settings.featureBullets}

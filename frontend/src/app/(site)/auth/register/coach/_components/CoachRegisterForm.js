@@ -1,38 +1,78 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FiUser, FiSmartphone, FiMail, FiLock, FiLink } from "react-icons/fi";
+import {
+  ArrowLeft,
+  Eye,
+  EyeOff,
+  Loader2,
+  Lock,
+  Phone,
+  User,
+} from "lucide-react";
 import { api } from "@/lib/axios/client";
 import { persistAuthSession } from "@/lib/auth/session";
-import { toastError, toastSuccess } from "../../../_components/helpers";
+import {
+  isValidIranPhone,
+  normalizeIranPhone,
+  toastError,
+  toastSuccess,
+} from "../../../_components/helpers";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+
+const inputClass =
+  "h-12 rounded-xl border-border/80 bg-background/60 ps-10 text-base transition-[box-shadow,border-color] duration-200 focus-visible:ring-2 focus-visible:ring-ring/40";
 
 export default function CoachRegisterForm() {
   const router = useRouter();
+  const formId = useId();
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({
     name: "",
-    displayName: "",
-    slug: "",
     phone: "",
-    email: "",
     password: "",
   });
 
+  const setField = (key) => (e) =>
+    setForm((prev) => ({ ...prev, [key]: e.target.value }));
+
   const onSubmit = async (e) => {
     e.preventDefault();
-    if (!form.name.trim() || !form.phone.trim() || !form.email.trim() || !form.password.trim()) {
-      return toastError("اطلاعات ناقص", "فیلدهای ضروری را پر کنید");
+    if (!form.name.trim() || !form.phone.trim() || !form.password.trim()) {
+      return toastError("اطلاعات ناقص", "نام، موبایل و رمز عبور را پر کنید");
     }
+    const phone = normalizeIranPhone(form.phone);
+    if (!isValidIranPhone(phone)) {
+      return toastError("شماره نامعتبر", "شماره موبایل را با فرمت 09xxxxxxxxx وارد کنید.");
+    }
+    if (form.password.length < 6) {
+      return toastError("رمز عبور کوتاه است", "رمز عبور باید حداقل ۶ کاراکتر باشد.");
+    }
+
     setLoading(true);
     try {
       const res = await api.post("/auth/register/coach", {
         name: form.name.trim(),
-        displayName: form.displayName.trim() || form.name.trim(),
-        slug: form.slug.trim() || undefined,
-        phone: form.phone.trim(),
-        email: form.email.trim(),
+        phone,
         password: form.password,
       });
       persistAuthSession(res.data);
@@ -47,96 +87,111 @@ export default function CoachRegisterForm() {
   };
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
-      <label className="block space-y-1">
-        <span className="text-sm text-zinc-300">نام کامل</span>
-        <div className="relative">
-          <FiUser className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500" />
-          <input
-            value={form.name}
-            onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
-            className="w-full rounded-2xl border border-white/10 bg-white/5 py-3 pr-10 pl-3 text-sm text-white outline-none focus:border-emerald-400/40"
-          />
-        </div>
-      </label>
+    <Card className="rounded-2xl border-0 bg-card/90 shadow-lg shadow-black/5 ring-1 ring-border/60 backdrop-blur-sm">
+      <CardHeader className="space-y-1.5">
+        <CardTitle className="font-iranianSansBlack text-xl sm:text-2xl">
+          ثبت‌نام مربی
+        </CardTitle>
+        <CardDescription className="text-pretty text-sm leading-relaxed">
+          حساب مربی بسازید و پروفایل عمومی خود را تکمیل کنید.
+        </CardDescription>
+      </CardHeader>
 
-      <label className="block space-y-1">
-        <span className="text-sm text-zinc-300">نام نمایشی (اختیاری)</span>
-        <input
-          value={form.displayName}
-          onChange={(e) => setForm((p) => ({ ...p, displayName: e.target.value }))}
-          className="w-full rounded-2xl border border-white/10 bg-white/5 py-3 px-3 text-sm text-white outline-none focus:border-emerald-400/40"
-        />
-      </label>
+      <CardContent>
+        <form onSubmit={onSubmit}>
+          <FieldGroup className="gap-5">
+            <Field>
+              <FieldLabel htmlFor={`${formId}-name`}>نام کامل</FieldLabel>
+              <div className="relative">
+                <User className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  id={`${formId}-name`}
+                  value={form.name}
+                  onChange={setField("name")}
+                  className={inputClass}
+                  autoComplete="name"
+                  disabled={loading}
+                />
+              </div>
+              <FieldDescription>
+                نام نمایشی و آدرس لندینگ پس از بررسی توسط ادمین تنظیم می‌شود.
+              </FieldDescription>
+            </Field>
 
-      <label className="block space-y-1">
-        <span className="text-sm text-zinc-300">شناسه لینک (اختیاری)</span>
-        <div className="relative">
-          <FiLink className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500" />
-          <input
-            value={form.slug}
-            onChange={(e) => setForm((p) => ({ ...p, slug: e.target.value }))}
-            placeholder="ali-rezaei"
-            dir="ltr"
-            className="w-full rounded-2xl border border-white/10 bg-white/5 py-3 pr-10 pl-3 text-sm text-white outline-none focus:border-emerald-400/40"
-          />
-        </div>
-      </label>
+            <Field>
+              <FieldLabel htmlFor={`${formId}-phone`}>شماره موبایل</FieldLabel>
+              <div className="relative">
+                <Phone className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  id={`${formId}-phone`}
+                  value={form.phone}
+                  onChange={(e) =>
+                    setForm((p) => ({
+                      ...p,
+                      phone: normalizeIranPhone(e.target.value),
+                    }))
+                  }
+                  placeholder="09xxxxxxxxx"
+                  className={cn(inputClass, "tracking-wide")}
+                  inputMode="numeric"
+                  autoComplete="tel"
+                  dir="ltr"
+                  disabled={loading}
+                />
+              </div>
+            </Field>
 
-      <label className="block space-y-1">
-        <span className="text-sm text-zinc-300">موبایل</span>
-        <div className="relative">
-          <FiSmartphone className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500" />
-          <input
-            value={form.phone}
-            onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
-            dir="ltr"
-            className="w-full rounded-2xl border border-white/10 bg-white/5 py-3 pr-10 pl-3 text-sm text-white outline-none focus:border-emerald-400/40"
-          />
-        </div>
-      </label>
+            <Field>
+              <FieldLabel htmlFor={`${formId}-password`}>رمز عبور</FieldLabel>
+              <div className="relative">
+                <Lock className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  id={`${formId}-password`}
+                  type={showPassword ? "text" : "password"}
+                  value={form.password}
+                  onChange={setField("password")}
+                  className={cn(inputClass, "pe-12")}
+                  autoComplete="new-password"
+                  disabled={loading}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute end-1 top-1/2 size-10 -translate-y-1/2 cursor-pointer"
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-label={showPassword ? "مخفی کردن رمز" : "نمایش رمز"}
+                  disabled={loading}
+                >
+                  {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                </Button>
+              </div>
+              <FieldDescription>حداقل ۶ کاراکتر</FieldDescription>
+            </Field>
 
-      <label className="block space-y-1">
-        <span className="text-sm text-zinc-300">ایمیل</span>
-        <div className="relative">
-          <FiMail className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500" />
-          <input
-            type="email"
-            value={form.email}
-            onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
-            dir="ltr"
-            className="w-full rounded-2xl border border-white/10 bg-white/5 py-3 pr-10 pl-3 text-sm text-white outline-none focus:border-emerald-400/40"
-          />
-        </div>
-      </label>
+            <Button
+              type="submit"
+              size="lg"
+              className="h-12 w-full cursor-pointer gap-2 rounded-xl text-base font-iranianSansDemiBold transition-transform duration-200 active:scale-[0.98] motion-reduce:active:scale-100"
+              disabled={loading}
+            >
+              {loading ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <ArrowLeft className="size-4" />
+              )}
+              {loading ? "در حال ثبت‌نام..." : "ثبت‌نام به‌عنوان مربی"}
+            </Button>
+          </FieldGroup>
+        </form>
+      </CardContent>
 
-      <label className="block space-y-1">
-        <span className="text-sm text-zinc-300">رمز عبور</span>
-        <div className="relative">
-          <FiLock className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500" />
-          <input
-            type="password"
-            value={form.password}
-            onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))}
-            className="w-full rounded-2xl border border-white/10 bg-white/5 py-3 pr-10 pl-3 text-sm text-white outline-none focus:border-emerald-400/40"
-          />
-        </div>
-      </label>
-
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full rounded-2xl bg-emerald-500 py-3 text-sm font-extrabold text-zinc-950 hover:bg-emerald-400 disabled:opacity-60"
-      >
-        {loading ? "در حال ثبت‌نام..." : "ثبت‌نام به عنوان مربی"}
-      </button>
-
-      <p className="text-center text-sm text-zinc-400">
-        دانشجو هستید؟{" "}
-        <Link href="/auth/register" className="text-emerald-300 hover:underline">
-          ثبت‌نام دانشجو
-        </Link>
-      </p>
-    </form>
+      <CardFooter className="flex-col gap-3 border-t border-border/50 pt-4">
+        <p className="text-center text-sm text-muted-foreground">دانشجو هستید؟</p>
+        <Button variant="outline" className="h-11 w-full cursor-pointer" asChild>
+          <Link href="/auth">ورود / ثبت‌نام دانشجو</Link>
+        </Button>
+      </CardFooter>
+    </Card>
   );
 }

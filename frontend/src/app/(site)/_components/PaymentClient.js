@@ -35,13 +35,12 @@ export default function PaymentClient() {
     setLoggedIn(isLoggedIn());
   }, []);
 
-  const loginHref = buildAuthUrl("/auth/login", "/payment");
-  const registerHref = buildAuthUrl("/auth/register", "/payment");
+  const authHref = buildAuthUrl("/auth", "/payment");
 
   const canPay = useMemo(() => items.length > 0 && !paying, [items.length, paying]);
 
   const redirectToAuth = () => {
-    router.push(loginHref);
+    router.push(authHref);
   };
 
   const handleCheckout = async () => {
@@ -112,18 +111,12 @@ export default function PaymentClient() {
                   محصولات شما در سبد خرید ذخیره شده‌اند. پس از ورود یا ثبت‌نام، به همین صفحه
                   برمی‌گردید و می‌توانید پرداخت را انجام دهید.
                 </p>
-                <div className="mt-4 flex flex-wrap gap-3">
+                <div className="mt-4">
                   <Link
-                    href={loginHref}
-                    className="rounded-2xl bg-white px-4 py-2.5 text-sm font-extrabold text-zinc-950 hover:bg-zinc-200"
+                    href={authHref}
+                    className="inline-flex rounded-2xl bg-white px-4 py-2.5 text-sm font-extrabold text-zinc-950 hover:bg-zinc-200"
                   >
-                    ورود
-                  </Link>
-                  <Link
-                    href={registerHref}
-                    className="rounded-2xl border border-white/20 bg-white/5 px-4 py-2.5 text-sm font-extrabold text-white hover:bg-white/10"
-                  >
-                    ثبت‌نام
+                    ورود / ثبت‌نام
                   </Link>
                 </div>
               </div>
@@ -134,13 +127,13 @@ export default function PaymentClient() {
         <div className="mb-10 grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
           <div className="rounded-[26px] border border-white/10 bg-white/5 p-6">
             <div className="flex items-center gap-2 text-sm font-extrabold text-white">
-              <FiCheckCircle className="text-emerald-300" />
+              <FiCheckCircle className="text-teal-300" />
               تایید نهایی محصولات
             </div>
 
             {coach.coachName ? (
               <div className="mt-3 text-sm text-zinc-400">
-                مربی: <span className="text-emerald-300">{coach.coachName}</span>
+                مربی: <span className="text-teal-300">{coach.coachName}</span>
               </div>
             ) : null}
 
@@ -174,7 +167,7 @@ export default function PaymentClient() {
 
           <div className="rounded-[26px] border border-white/10 bg-white/5 p-6">
             <div className="flex items-center gap-2 text-sm font-extrabold text-white">
-              <FiShield className="text-cyan-300" />
+              <FiShield className="text-teal-300" />
               پرداخت
             </div>
 

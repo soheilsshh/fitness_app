@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { api } from "@/lib/axios/client";
+import PageHeader from "@/app/(panel)/user/_components/ui/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -61,15 +62,15 @@ export default function TicketDetailsClient() {
 
   return (
     <div dir="rtl" className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
-        <div className="text-start">
-          <h2 className="text-lg font-semibold tracking-tight">جزئیات تیکت</h2>
-          <p className="mt-1 text-sm text-muted-foreground">پیگیری وضعیت و مشاهده پاسخ مربی</p>
-        </div>
-        <Button asChild variant="outline" size="sm">
-          <Link href="/user/contact">بازگشت</Link>
-        </Button>
-      </div>
+      <PageHeader
+        title="جزئیات تیکت"
+        description="پیگیری وضعیت و مشاهده پاسخ مربی"
+        meta={
+          <Button asChild variant="outline" size="sm">
+            <Link href="/user/contact">بازگشت</Link>
+          </Button>
+        }
+      />
 
       {error ? (
         <Card className="border-destructive/30 bg-destructive/10">

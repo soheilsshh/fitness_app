@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react";
 import { ShoppingBag } from "lucide-react";
 import { api } from "@/lib/axios/client";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import MetaBadge from "../../_components/ui/MetaBadge";
+import PageHeader from "../../_components/ui/PageHeader";
+import PanelEmptyState from "../../_components/ui/PanelEmptyState";
 import OrdersFilterChips from "./OrdersFilterChips";
 import Pagination from "../../_components/Pagination";
 import OrderCardLink from "./OrderCardLink";
@@ -77,22 +79,17 @@ export default function OrdersListClient() {
 
   return (
     <div className="flex flex-col gap-4 md:gap-6" dir="rtl">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div className="text-start">
-          <h2 className="text-lg font-semibold tracking-tight">سفارش‌های من</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            وضعیت پرداخت‌ها و جزئیات هر سفارش را اینجا ببینید.
-          </p>
-        </div>
-
-        <Badge variant="outline" className="gap-1.5 px-3 py-1.5 text-sm">
-          <ShoppingBag className="size-3.5 text-primary" />
-          تعداد کل:
-          <span className="font-semibold tabular-nums text-foreground">
-            {total.toLocaleString("fa-IR")}
-          </span>
-        </Badge>
-      </div>
+      <PageHeader
+        title="سفارش‌های من"
+        description="وضعیت پرداخت‌ها و جزئیات هر سفارش را اینجا ببینید."
+        meta={
+          <MetaBadge
+            icon={ShoppingBag}
+            label="تعداد کل:"
+            value={total.toLocaleString("fa-IR")}
+          />
+        }
+      />
 
       <Card>
         <CardContent className="flex flex-wrap items-center justify-between gap-3 pt-6">
@@ -107,11 +104,11 @@ export default function OrdersListClient() {
           ))}
         </div>
       ) : items.length === 0 ? (
-        <Card>
-          <CardContent className="py-10 text-center text-sm text-muted-foreground">
-            سفارشی برای نمایش وجود ندارد.
-          </CardContent>
-        </Card>
+        <PanelEmptyState
+          icon={ShoppingBag}
+          title="سفارشی برای نمایش وجود ندارد"
+          description="پس از ثبت سفارش، وضعیت پرداخت و جزئیات اینجا دیده می‌شود."
+        />
       ) : (
         <div className="grid gap-4 sm:grid-cols-1">
           {items.map((order) => (

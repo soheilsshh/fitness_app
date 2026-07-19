@@ -44,7 +44,7 @@ const AuroraBackground = ({
           transition={{ duration: 1, ease: "easeInOut" }}
         >
           <motion.div
-            className="absolute -top-1/4 -left-1/4 w-1/2 h-1/2 bg-emerald-600 rounded-full filter blur-3xl opacity-40"
+            className="absolute -top-1/4 -left-1/4 w-1/2 h-1/2 bg-cyan-600 rounded-full filter blur-3xl opacity-40"
             animate={{
               x: [-50, 50, -50],
               y: [-20, 20, -20],

@@ -6,6 +6,7 @@ func AllModels() []any {
 	return []any{
 		&User{},
 		&CoachProfile{},
+		&CoachAchievement{},
 		&ServicePlan{},
 		&Subscription{},
 		&Transaction{},
@@ -30,5 +31,13 @@ func AllModels() []any {
 		&WorkoutSession{},
 		&FunnelLead{},
 		&WorkoutSetLog{},
+		&WorkoutTemplate{},
+		&TemplateProgramItem{},
+		&TemplateProgramItemSet{},
+		&NutritionTemplate{},
+		&TemplateMeal{},
+		&TemplateMealItem{},
+		&MobileDevice{},
+		&MobileStoreRelease{},
 	}
 }

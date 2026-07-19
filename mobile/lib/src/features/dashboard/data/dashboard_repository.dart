@@ -25,7 +25,12 @@ class DashboardRepository {
   Future<List<PersonalRecord>> records() async {
     try {
       final res = await _dio.get(ApiPaths.meRecords);
-      final list = (res.data as List?) ?? const [];
+      // Backend wraps the array: `{ "items": [...] }`. Fall back to a bare list
+      // for safety in case the shape changes.
+      final data = res.data;
+      final list = data is Map
+          ? (data['items'] as List? ?? const [])
+          : (data as List? ?? const []);
       return list
           .map((e) => PersonalRecord.fromJson(Map<String, dynamic>.from(e as Map)))
           .toList();

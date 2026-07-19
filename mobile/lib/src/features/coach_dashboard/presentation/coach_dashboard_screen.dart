@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/async_value_widget.dart';
+import '../../../core/widgets/fitino_ui.dart';
 import '../../../core/widgets/state_views.dart';
+import '../../coach_notifications/presentation/coach_notifications_screen.dart';
+import '../data/coach_dashboard_extras.dart';
 import '../data/coach_dashboard_models.dart';
 import '../data/coach_dashboard_repository.dart';
 
@@ -14,9 +18,13 @@ class CoachDashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(coachDashboardDataProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('داشبورد مربی')),
+      backgroundColor: Colors.transparent,
       body: RefreshIndicator(
-        onRefresh: () async => ref.refresh(coachDashboardDataProvider.future),
+        color: AppColors.brandMid,
+        onRefresh: () async {
+          ref.invalidate(coachDashboardExtrasProvider);
+          await ref.refresh(coachDashboardDataProvider.future);
+        },
         child: AsyncValueWidget<CoachDashboardData>(
           value: async,
           onRetry: () => ref.invalidate(coachDashboardDataProvider),
@@ -27,16 +35,28 @@ class CoachDashboardScreen extends ConsumerWidget {
   }
 }
 
-class _Body extends StatelessWidget {
+class _Body extends ConsumerWidget {
   const _Body({required this.stats, required this.recent});
   final CoachStats stats;
   final List<CoachRecentStudent> recent;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final extras = ref.watch(coachDashboardExtrasProvider);
+
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
       children: [
+        FitinoPageHeader(
+          title: 'داشبورد مربی',
+          description: 'خلاصه شاگردان، فروش و پایبندی',
+          meta: FitinoMetaIconButton(
+            icon: Icons.notifications_outlined,
+            tooltip: 'اعلان‌ها',
+            onTap: () => context.push('/coach/notifications'),
+          ),
+        ),
+        const SizedBox(height: 12),
         GridView.count(
           crossAxisCount: 2,
           shrinkWrap: true,
@@ -52,6 +72,83 @@ class _Body extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 20),
+        const CoachNotificationsPreview(),
+        const SizedBox(height: 16),
+        extras.when(
+          loading: () => const SizedBox.shrink(),
+          error: (_, _) => const SizedBox.shrink(),
+          data: (e) => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (e.attention.isNotEmpty) ...[
+                Row(
+                  children: [
+                    const Text('نیاز به توجه',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
+                    const Spacer(),
+                    TextButton(
+                      onPressed: () => context.push('/coach/tracking'),
+                      child: const Text('پایش'),
+                    ),
+                  ],
+                ),
+                ...e.attention.take(5).map(
+                      (s) => Padding(padding: const EdgeInsets.only(bottom: 6), child: FitinoPanelCard(padding: EdgeInsets.zero, child: ListTile(
+                          leading: const Icon(Icons.warning_amber,
+                              color: AppColors.destructive),
+                          title: Text(s.fullName),
+                          subtitle: Text(
+                            s.alerts.isNotEmpty
+                                ? s.alerts.first.message
+                                : 'تأخیر در ثبت وزن/عکس',
+                          ),
+                          onTap: () =>
+                              context.push('/coach/tracking/${s.id}'),
+                        ))),
+                    ),
+                const SizedBox(height: 12),
+              ],
+              if (e.top.isNotEmpty) ...[
+                const Text('برترین شاگردان',
+                    style:
+                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                ...e.top.map(
+                  (s) => Padding(padding: const EdgeInsets.only(bottom: 6), child: FitinoPanelCard(padding: EdgeInsets.zero, child: ListTile(
+                      leading: const Icon(Icons.emoji_events,
+                          color: AppColors.primary),
+                      title: Text(s.fullName),
+                      trailing: Text('${s.adherence}٪',
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                      onTap: () =>
+                          context.push('/coach/students/${s.studentId}'),
+                    ))),
+                ),
+                const SizedBox(height: 12),
+              ],
+              if (e.series.isNotEmpty) ...[
+                const Text('روند جلسات (۳۰ روز)',
+                    style:
+                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                FitinoPanelCard(padding: const EdgeInsets.all(12), child: Column(
+                      children: e.series.reversed
+                          .take(7)
+                          .map(
+                            (p) => ListTile(
+                              dense: true,
+                              title: Text(p.date),
+                              trailing: Text('${p.value} جلسه'),
+                            ),
+                          )
+                          .toList(),
+                    )),
+                const SizedBox(height: 12),
+              ],
+            ],
+          ),
+        ),
         const Text('شاگردان اخیر',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
@@ -62,29 +159,24 @@ class _Body extends StatelessWidget {
           )
         else
           ...recent.map(
-            (s) => Card(
-              margin: const EdgeInsets.only(bottom: 8),
-              child: ListTile(
+            (s) => Padding(padding: const EdgeInsets.only(bottom: 8), child: FitinoPanelCard(padding: EdgeInsets.zero, child: ListTile(
                 leading: const CircleAvatar(child: Icon(Icons.person)),
                 title: Text(s.fullName),
                 subtitle: Text(s.joinedAt,
                     style: const TextStyle(color: AppColors.muted)),
-              ),
-            ),
+                onTap: () => context.push('/coach/students/${s.studentId}'),
+              ))),
           ),
       ],
     );
   }
 
   Widget _stat(String label, String value, IconData icon) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
+    return FitinoPanelCard(padding: const EdgeInsets.all(14), child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Icon(icon, color: AppColors.primary),
+            Icon(icon, color: AppColors.brandDeep),
             const Spacer(),
             Text(value,
                 style: const TextStyle(
@@ -92,8 +184,6 @@ class _Body extends StatelessWidget {
             Text(label,
                 style: const TextStyle(color: AppColors.muted, fontSize: 12)),
           ],
-        ),
-      ),
-    );
+        ));
   }
 }

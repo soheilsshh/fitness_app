@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 
 export const coachBrand = {
-  title: "Fitino",
+  title: "فیتینو",
   subtitle: "پنل مربی",
   href: "/coach",
 };

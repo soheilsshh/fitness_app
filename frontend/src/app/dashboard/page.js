@@ -12,7 +12,7 @@ export default function DashboardRedirectPage() {
     const session = getAuthSession();
 
     if (!session?.role) {
-      router.replace("/auth/login?next=/dashboard");
+      router.replace("/auth?next=/dashboard");
       return;
     }
 

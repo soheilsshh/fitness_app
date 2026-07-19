@@ -76,5 +76,5 @@ export async function logout() {
     // proceed with local cleanup even if API fails
   }
   clearAuthSession();
-  window.location.href = "/auth/login";
+  window.location.href = "/auth";
 }

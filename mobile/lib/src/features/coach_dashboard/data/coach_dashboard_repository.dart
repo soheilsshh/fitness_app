@@ -23,11 +23,49 @@ class CoachDashboardRepository {
 
   Future<List<CoachRecentStudent>> recentStudents() async {
     try {
-      final res = await _dio.get(ApiPaths.coachDashboardRecent);
-      final list = (res.data as List?) ?? const [];
+      final res = await _dio.get(ApiPaths.coachDashboardRecent,
+          queryParameters: {'limit': 5});
+      final data = res.data;
+      final list = data is List
+          ? data
+          : (data is Map ? (data['items'] as List? ?? const []) : const []);
       return list
           .map((e) =>
               CoachRecentStudent.fromJson(Map<String, dynamic>.from(e as Map)))
+          .toList();
+    } on DioException catch (e) {
+      throw ApiException.fromDio(e);
+    }
+  }
+
+  Future<List<CoachTopStudent>> topStudents({int limit = 3}) async {
+    try {
+      final res = await _dio.get(ApiPaths.coachDashboardTop,
+          queryParameters: {'limit': limit});
+      final data = res.data;
+      final list = data is List
+          ? data
+          : (data is Map ? (data['items'] as List? ?? const []) : const []);
+      return list
+          .map((e) =>
+              CoachTopStudent.fromJson(Map<String, dynamic>.from(e as Map)))
+          .toList();
+    } on DioException catch (e) {
+      throw ApiException.fromDio(e);
+    }
+  }
+
+  Future<List<CoachProgressPoint>> progressSeries({int days = 30}) async {
+    try {
+      final res = await _dio.get(ApiPaths.coachDashboardProgress,
+          queryParameters: {'days': days});
+      final data = res.data;
+      final list = data is List
+          ? data
+          : (data is Map ? (data['items'] as List? ?? const []) : const []);
+      return list
+          .map((e) =>
+              CoachProgressPoint.fromJson(Map<String, dynamic>.from(e as Map)))
           .toList();
     } on DioException catch (e) {
       throw ApiException.fromDio(e);

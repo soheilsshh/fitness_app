@@ -14,6 +14,7 @@ type User struct {
 	Phone        string     `gorm:"size:255;uniqueIndex;not null"`
 	Password     string     `gorm:"size:255;not null"`
 	Role         string     `gorm:"type:varchar(20);not null;default:'student'"`
+	AvatarURL    string     `gorm:"column:avatar_url;size:512"`
 	LastActiveAt *time.Time `gorm:"index"`
 	HeightCm     *float64   `gorm:"column:height_cm"`
 	WeightKg     *float64   `gorm:"column:weight_kg"`

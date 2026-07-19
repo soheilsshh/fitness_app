@@ -52,7 +52,7 @@ export default function PaymentResultClient() {
       <div className="mx-auto max-w-xl px-4 py-16">
         <div className="rounded-[26px] border border-white/10 bg-white/5 p-8 text-center">
           {verifiedSuccess ? (
-            <FiCheckCircle className="mx-auto text-5xl text-emerald-400" />
+            <FiCheckCircle className="mx-auto text-5xl text-teal-400" />
           ) : (
             <FiXCircle className="mx-auto text-5xl text-rose-400" />
           )}
@@ -74,7 +74,7 @@ export default function PaymentResultClient() {
                 <div className="mt-2">کد پیگیری زرین‌پال: <span className="font-bold text-white">{refId}</span></div>
               ) : null}
               {orderStatus ? (
-                <div className="mt-2">وضعیت سفارش: <span className="text-emerald-300">{orderStatus}</span></div>
+                <div className="mt-2">وضعیت سفارش: <span className="text-teal-300">{orderStatus}</span></div>
               ) : null}
             </div>
           ) : null}

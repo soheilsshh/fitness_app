@@ -76,39 +76,38 @@ export default function CoachSocialCards({ coach, assignedCoachName, assignedCoa
       </CardHeader>
       <CardContent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <SocialCard
-          
           icon={Send}
           title="تلگرام"
           value={social.telegram}
-          href={`https://t.me/${social.telegram}`}
+          href={social.telegram ? `https://t.me/${social.telegram}` : ""}
           hint="لینک یا آیدی"
         />
         <SocialCard
           icon={Inbox}
           title="اینستاگرام"
           value={social.instagram}
-          href={`https://Instagram.com/${social.instagram}`}
+          href={social.instagram ? `https://instagram.com/${social.instagram}` : ""}
           hint="لینک یا آیدی"
         />
         <SocialCard
           icon={MessageCircle}
           title="واتساپ"
           value={social.whatsapp || social.contactPhone}
-          href={`https://wa.me/${social.whatsapp.replace(/[^\d]/g, "")}`}
+          href={waHref}
           hint="شماره یا لینک"
         />
         <SocialCard
           icon={Globe}
           title="وب‌سایت"
           value={social.website}
-          href={`https://${social.website}`}
+          href={website}
           hint="آدرس سایت"
         />
         <SocialCard
           icon={Phone}
           title="تماس"
           value={phone}
-          href={`tel:${phone.replace(/[^\d]/g, "")}`}
+          href={phoneHref}
           hint="شماره تماس"
         />
       </CardContent>

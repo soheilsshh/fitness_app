@@ -1,77 +1,161 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
-import { AnimatePresence, motion } from "framer-motion";
-import { FiX, FiLogOut } from "react-icons/fi";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { FiX, FiLogOut, FiUser, FiChevronLeft } from "react-icons/fi";
+import { cn } from "@/lib/utils";
 
 function itemKey(item) {
   return item.href || item.id;
 }
 
-export default function MobileDrawer({ open, onClose, items, onItemClick, session, panelHref, onLogout }) {
+const easeOut = [0.16, 1, 0.3, 1];
+
+export default function MobileDrawer({
+  open,
+  onClose,
+  items,
+  onItemClick,
+  session,
+  panelHref,
+  onLogout,
+  pathname,
+}) {
+  const reduceMotion = useReducedMotion();
+
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e) => {
+      if (e.key === "Escape") onClose?.();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [open, onClose]);
+
+  const isAuthed = Boolean(session?.token);
+
+  const panelTransition = reduceMotion
+    ? { duration: 0.01 }
+    : { type: "spring", damping: 28, stiffness: 320, mass: 0.85 };
+
+  const fadeTransition = reduceMotion
+    ? { duration: 0.01 }
+    : { duration: 0.22, ease: easeOut };
+
   return (
     <AnimatePresence>
       {open && (
         <>
           <motion.div
-            className="fixed inset-0 z-[110] bg-black/50 backdrop-blur-md"
+            className="fixed inset-x-0 bottom-0 top-16 z-[110] bg-foreground/35 backdrop-blur-[6px] sm:top-[4.25rem]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={fadeTransition}
             onClick={onClose}
+            aria-hidden
           />
-          <motion.aside
-            className="fixed right-0 top-0 z-[120] h-full w-[86%] max-w-sm border-l border-white/15 bg-zinc-950/80 p-4 backdrop-blur-2xl"
-            initial={{ x: 420 }}
-            animate={{ x: 0 }}
-            exit={{ x: 420 }}
-            transition={{ type: "spring", damping: 26, stiffness: 240 }}
+
+          <motion.div
+            id="site-mobile-drawer"
+            role="dialog"
+            aria-modal="true"
+            aria-label="منوی فیتینو"
+            className="fixed inset-x-0 top-16 z-[120] max-h-[min(calc(100dvh-4rem),560px)] overflow-hidden rounded-b-[1.75rem] border-b border-border/60 bg-background/95 shadow-[0_24px_80px_-24px_rgba(0,0,0,0.45)] backdrop-blur-2xl sm:top-[4.25rem] sm:max-h-[min(calc(100dvh-4.25rem),580px)]"
+            initial={reduceMotion ? { opacity: 0 } : { y: "-105%", opacity: 0.96 }}
+            animate={reduceMotion ? { opacity: 1 } : { y: 0, opacity: 1 }}
+            exit={reduceMotion ? { opacity: 0 } : { y: "-105%", opacity: 0.96 }}
+            transition={panelTransition}
           >
-            <div className="flex items-center justify-between">
-              <div className="text-sm font-extrabold text-white">منو</div>
+            <div className="mx-auto flex justify-center pt-2.5 pb-1" aria-hidden>
+              <span className="h-1 w-10 rounded-full bg-border" />
+            </div>
+
+            <div className="flex items-center justify-between gap-3 px-4 pb-2 pt-0.5">
+              <p className="text-sm font-iranianSansDemiBold text-foreground">منو</p>
               <button
                 type="button"
-                className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 p-2 hover:bg-white/10"
+                className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full text-foreground/80 transition-colors duration-200 hover:bg-muted hover:text-foreground"
                 onClick={onClose}
-                aria-label="بستن"
+                aria-label="بستن منو"
               >
                 <FiX className="text-xl" />
               </button>
             </div>
 
-            <div className="mt-4 space-y-1">
-              {items.map((it) =>
-                it.type === "link" ? (
-                  <Link
-                    key={itemKey(it)}
-                    href={it.href}
-                    onClick={onClose}
-                    className="block w-full rounded-xl px-3 py-3 text-right text-sm font-medium text-zinc-200 hover:bg-white/8"
-                  >
-                    {it.label}
-                  </Link>
-                ) : (
-                  <button
-                    key={itemKey(it)}
-                    type="button"
-                    className="w-full rounded-xl px-3 py-3 text-right text-sm font-medium text-zinc-200 hover:bg-white/8"
-                    onClick={() => onItemClick(it)}
-                  >
-                    {it.label}
-                  </button>
-                )
-              )}
-            </div>
+            <nav
+              className="max-h-[min(52dvh,420px)] overflow-y-auto overscroll-contain px-3 pb-2"
+              aria-label="منوی موبایل"
+            >
+              <ul className="space-y-1">
+                {items.map((it, index) => {
+                  const active = it.type === "link" && it.href === pathname;
+                  const className = cn(
+                    "flex min-h-12 w-full cursor-pointer items-center justify-between rounded-2xl px-4 py-3.5 text-right text-[15px] transition-colors duration-200",
+                    active
+                      ? "bg-primary/12 font-iranianSansDemiBold text-primary"
+                      : "font-iranianSansMedium text-foreground hover:bg-muted/80"
+                  );
 
-            <div className="mt-6 border-t border-white/10 pt-4">
-              {session?.token ? (
+                  const motionProps = reduceMotion
+                    ? {}
+                    : {
+                        initial: { opacity: 0, y: -10 },
+                        animate: { opacity: 1, y: 0 },
+                        transition: {
+                          delay: 0.04 + index * 0.04,
+                          duration: 0.28,
+                          ease: easeOut,
+                        },
+                      };
+
+                  if (it.type === "link") {
+                    return (
+                      <motion.li key={itemKey(it)} {...motionProps}>
+                        <Link href={it.href} onClick={onClose} className={className}>
+                          <span>{it.label}</span>
+                          <FiChevronLeft className="text-muted-foreground" />
+                        </Link>
+                      </motion.li>
+                    );
+                  }
+
+                  return (
+                    <motion.li key={itemKey(it)} {...motionProps}>
+                      <button
+                        type="button"
+                        className={className}
+                        onClick={() => onItemClick(it)}
+                      >
+                        <span>{it.label}</span>
+                        <FiChevronLeft className="text-muted-foreground" />
+                      </button>
+                    </motion.li>
+                  );
+                })}
+              </ul>
+            </nav>
+
+            <div className="space-y-2 border-t border-border/60 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+              {isAuthed ? (
                 <>
                   <Link
                     href={panelHref}
                     onClick={onClose}
-                    className="block rounded-xl px-3 py-3 text-sm text-zinc-200 hover:bg-white/8"
+                    className="flex min-h-12 items-center gap-3 rounded-2xl bg-muted/70 px-3.5 py-3 text-sm font-iranianSansDemiBold text-foreground transition-colors hover:bg-muted"
                   >
-                    {session.name || "پنل من"}
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-background text-primary shadow-sm ring-1 ring-border/60">
+                      <FiUser className="text-lg" />
+                    </span>
+                    <span className="min-w-0 truncate">
+                      {session.name || "پنل من"}
+                    </span>
                   </Link>
                   <button
                     type="button"
@@ -79,39 +163,32 @@ export default function MobileDrawer({ open, onClose, items, onItemClick, sessio
                       onClose();
                       onLogout?.();
                     }}
-                    className="mt-2 flex w-full items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-zinc-200 hover:bg-white/10"
+                    className="flex min-h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border border-border px-3.5 py-3 text-sm font-iranianSansMedium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                   >
                     <FiLogOut />
-                    خروج
+                    خروج از حساب
                   </button>
                 </>
               ) : (
                 <>
                   <Link
-                    href="/auth/login"
+                    href="/auth"
                     onClick={onClose}
-                    className="block rounded-xl px-3 py-3 text-sm text-zinc-200 hover:bg-white/8"
+                    className="flex min-h-12 w-full items-center justify-center rounded-2xl border border-border px-3.5 py-3 text-sm font-iranianSansDemiBold text-foreground transition-colors hover:bg-muted"
                   >
-                    ورود
-                  </Link>
-                  <Link
-                    href="/auth/register"
-                    onClick={onClose}
-                    className="mt-2 block rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-center text-sm font-medium text-zinc-100 hover:bg-white/10"
-                  >
-                    ثبت‌نام دانشجو
+                    ورود / ثبت‌نام
                   </Link>
                   <Link
                     href="/auth/register/coach"
                     onClick={onClose}
-                    className="mt-2 block rounded-xl bg-gradient-to-l from-emerald-400 to-cyan-400 px-3 py-3 text-center text-sm font-extrabold text-zinc-950"
+                    className="gradient-bg flex min-h-12 w-full items-center justify-center rounded-2xl px-3.5 py-3 text-sm font-iranianSansBlack text-primary-foreground shadow-sm transition hover:opacity-90"
                   >
-                    ثبت‌نام مربی
+                    ثبت‌نام به‌عنوان مربی
                   </Link>
                 </>
               )}
             </div>
-          </motion.aside>
+          </motion.div>
         </>
       )}
     </AnimatePresence>

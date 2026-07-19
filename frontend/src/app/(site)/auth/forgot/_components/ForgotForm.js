@@ -1,19 +1,49 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { FiSmartphone, FiKey, FiLock, FiArrowLeft, FiEdit3 } from "react-icons/fi";
+import {
+  ArrowLeft,
+  KeyRound,
+  Loader2,
+  Lock,
+  Pencil,
+  Phone,
+  RefreshCw,
+} from "lucide-react";
 import {
   isValidIranPhone,
   isValidOtp,
+  normalizeIranPhone,
+  toEnglishDigits,
   toastError,
   toastSuccess,
 } from "../../_components/helpers";
 import { useOtpResendCooldown } from "../../_components/useOtpResendCooldown";
 import { api } from "@/lib/axios/client";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+
+const inputClass =
+  "h-12 rounded-xl border-border/80 bg-background/60 ps-10 text-base transition-[box-shadow,border-color] duration-200 focus-visible:ring-2 focus-visible:ring-ring/40";
 
 export default function ForgotForm() {
+  const formId = useId();
   const [phone, setPhone] = useState("");
   const [phoneLocked, setPhoneLocked] = useState(false);
 
@@ -24,8 +54,11 @@ export default function ForgotForm() {
   const [newPass, setNewPass] = useState("");
   const [newPass2, setNewPass2] = useState("");
   const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
   const { secondsLeft, canResend, startCooldown, syncFromResponse, resetCooldown } =
     useOtpResendCooldown();
+
+  const busy = isSendingOtp || isResetting;
 
   const resetOtpFlow = () => {
     setOtpSent(false);
@@ -38,183 +71,246 @@ export default function ForgotForm() {
   };
 
   const sendOtp = async () => {
-    if (!isValidIranPhone(phone)) {
+    const normalizedPhone = normalizeIranPhone(phone);
+    if (!isValidIranPhone(normalizedPhone)) {
       return toastError("شماره نامعتبر", "شماره موبایل را با فرمت 09xxxxxxxxx وارد کنید.");
     }
+    setPhone(normalizedPhone);
 
     setIsSendingOtp(true);
     try {
-      await api.post("/auth/forgot/send-otp", { phone });
+      await api.post("/auth/forgot/send-otp", { phone: normalizedPhone });
       setOtpSent(true);
       setPhoneLocked(true);
       setOtp("");
       startCooldown();
-      return toastSuccess("ارسال شد", "کد بازیابی ارسال شد.");
+      toastSuccess("ارسال شد", "کد بازیابی ارسال شد.");
     } catch (error) {
       syncFromResponse(error);
       const msg =
         error?.response?.data?.error ||
         "خطا در ارسال کد. لطفاً چند لحظه دیگر دوباره تلاش کنید.";
-      return toastError("ارسال پیامک", msg);
+      toastError("ارسال پیامک", msg);
     } finally {
       setIsSendingOtp(false);
     }
   };
 
   const verifyOtp = async () => {
-    if (!otpSent) return toastError("کد ارسال نشده", "ابتدا روی «ارسال رمز» بزنید.");
-    if (!isValidOtp(otp)) return toastError("کد نامعتبر", "کد را صحیح وارد کنید.");
-
-    // در این مرحله فقط تأیید اولیه انجام می‌شود؛ صحت نهایی کد هنگام تغییر رمز چک می‌شود.
+    if (!otpSent) return toastError("کد ارسال نشده", "ابتدا کد را دریافت کنید.");
+    const code = toEnglishDigits(otp).trim();
+    if (!isValidOtp(code)) return toastError("کد نامعتبر", "کد را صحیح وارد کنید.");
+    setOtp(code);
     setOtpVerified(true);
-    return toastSuccess("تایید شد", "حالا رمز جدید را تعیین کنید.");
+    toastSuccess("تایید شد", "حالا رمز جدید را تعیین کنید.");
   };
 
-  const resetPassword = async () => {
+  const resetPassword = async (e) => {
+    e?.preventDefault?.();
     if (!otpVerified) return toastError("تایید نشده", "ابتدا OTP را تایید کنید.");
     if (newPass.length < 6) return toastError("رمز کوتاه است", "رمز باید حداقل ۶ کاراکتر باشد.");
     if (newPass !== newPass2) return toastError("عدم تطابق", "رمزها یکسان نیستند.");
 
+    setIsResetting(true);
     try {
       await api.post("/auth/reset-password", {
-        phone,
-        code: otp,
+        phone: normalizeIranPhone(phone),
+        code: toEnglishDigits(otp).trim(),
         new_password: newPass,
       });
-      await toastSuccess("موفق", "رمز عبور با موفقیت تغییر کرد.");
+      toastSuccess("موفق", "رمز عبور با موفقیت تغییر کرد.");
       resetOtpFlow();
     } catch (error) {
       const msg = error?.response?.data?.error || "تغییر رمز ناموفق بود.";
-      return toastError("خطا در تغییر رمز", msg);
+      toastError("خطا در تغییر رمز", msg);
+    } finally {
+      setIsResetting(false);
     }
   };
 
   return (
-    <div>
-      <div className="flex items-center justify_between">
-        <h1 className="text-lg font-extrabold">فراموشی رمز عبور</h1>
-        <Link href="/auth/login" className="text-sm text-emerald-200 hover:text-emerald-100">
-          برگشت به ورود
-        </Link>
-      </div>
+    <Card className="rounded-2xl border-0 bg-card/90 shadow-lg shadow-black/5 ring-1 ring-border/60 backdrop-blur-sm">
+      <CardHeader className="space-y-1.5">
+        <CardTitle className="font-iranianSansBlack text-xl sm:text-2xl">
+          فراموشی رمز عبور
+        </CardTitle>
+        <CardDescription className="text-pretty text-sm leading-relaxed">
+          با شماره موبایل کد بازیابی بگیرید و رمز جدید بسازید.
+        </CardDescription>
+      </CardHeader>
 
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35 }}
-        className="mt-5 space-y-3"
-      >
-        {/* Phone + Edit */}
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <FiSmartphone className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400" />
-            <input
-              value={phone}
-              onChange={(e) => setPhone(e.target.value.trim())}
-              placeholder="شماره موبایل (09xxxxxxxxx)"
-              className="w-full rounded-2xl border border-white/10 bg-zinc-950/35 py-3 pl-4 pr-11 text-sm text-white placeholder:text-zinc-500 outline-none focus:border-emerald-400/40 disabled:opacity-70"
-              inputMode="numeric"
-              disabled={phoneLocked}
-            />
-          </div>
+      <CardContent>
+        <FieldGroup className="gap-5">
+          <Field>
+            <FieldLabel htmlFor={`${formId}-phone`}>شماره موبایل</FieldLabel>
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Phone className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  id={`${formId}-phone`}
+                  value={phone}
+                  onChange={(e) => setPhone(normalizeIranPhone(e.target.value))}
+                  placeholder="09xxxxxxxxx"
+                  className={cn(inputClass, "tracking-wide")}
+                  inputMode="numeric"
+                  autoComplete="tel"
+                  dir="ltr"
+                  disabled={phoneLocked || busy}
+                />
+              </div>
+              {phoneLocked && !otpVerified && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-12 shrink-0 cursor-pointer gap-1.5 px-3"
+                  onClick={resetOtpFlow}
+                  disabled={busy}
+                >
+                  <Pencil className="size-4" />
+                  ویرایش
+                </Button>
+              )}
+            </div>
+          </Field>
 
-          {phoneLocked && !otpVerified && (
-            <button
-              onClick={resetOtpFlow}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-sm font-bold text-zinc-100 hover:bg-white/10"
-              aria-label="ویرایش شماره موبایل"
-              title="ویرایش شماره"
+          {!otpSent && !otpVerified && (
+            <Button
+              type="button"
+              size="lg"
+              className="h-12 w-full cursor-pointer gap-2 rounded-xl text-base font-iranianSansDemiBold"
+              onClick={sendOtp}
+              disabled={busy}
             >
-              <FiEdit3 />
-            </button>
+              {isSendingOtp ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <KeyRound className="size-4" />
+              )}
+              {isSendingOtp ? "در حال ارسال..." : "ارسال کد بازیابی"}
+            </Button>
           )}
-        </div>
 
-        {/* Send OTP (hidden after sending) */}
-        {!otpSent && !otpVerified && (
-          <button
-            onClick={sendOtp}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border_white/10 bg-white/5 px-4 py-3 text-sm font-extrabold text-white hover:bg-white/10"
-          >
-            ارسال رمز <FiKey />
-          </button>
-        )}
+          {otpSent && !otpVerified && (
+            <>
+              <Field>
+                <FieldLabel htmlFor={`${formId}-otp`}>کد تایید</FieldLabel>
+                <div className="relative">
+                  <KeyRound className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id={`${formId}-otp`}
+                    value={otp}
+                    onChange={(e) => setOtp(toEnglishDigits(e.target.value).trim())}
+                    placeholder="کد پیامک‌شده"
+                    className={cn(inputClass, "tracking-[0.25em]")}
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    dir="ltr"
+                    disabled={busy}
+                  />
+                </div>
+              </Field>
 
-        {/* OTP input (shown after sending, before verification) */}
-        {otpSent && !otpVerified && (
-          <>
-            <div className="relative">
-              <FiKey className="pointer-events-none absolute right-4 top-0 bottom-0 my-auto -translate-y-3 text-zinc-400" />
-              <input
-                value={otp}
-                onChange={(e) => setOtp(e.target.value.trim())}
-                placeholder="کد OTP"
-                className="w-full rounded-2xl border border-white/10 bg-zinc-950/35 py-3 pl-4 pr-11 text-sm text-white placeholder:text-zinc-500 outline-none focus:border-emerald-400/40"
-                inputMode="numeric"
-              />
-            </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-11 w-full cursor-pointer gap-2"
+                  onClick={sendOtp}
+                  disabled={busy || !canResend}
+                >
+                  {isSendingOtp ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="size-4" />
+                  )}
+                  {secondsLeft > 0 ? `ارسال مجدد (${secondsLeft})` : "ارسال مجدد"}
+                </Button>
+                <Button
+                  type="button"
+                  className="h-11 w-full cursor-pointer gap-2"
+                  onClick={verifyOtp}
+                  disabled={busy}
+                >
+                  تایید کد
+                </Button>
+              </div>
+            </>
+          )}
 
-            <div className="flex items-center justify-between">
-              <button
-                onClick={sendOtp}
-                disabled={isSendingOtp || !canResend}
-                className="text-xs text-emerald-200 hover:text-emerald-100 disabled:opacity-50 disabled:hover:text-emerald-200"
-              >
-                {isSendingOtp
-                  ? "در حال ارسال..."
-                  : secondsLeft > 0
-                    ? `ارسال مجدد (${secondsLeft})`
-                    : "ارسال مجدد"}
-              </button>
-              <button onClick={verifyOtp} className="text-xs text-zinc-200 hover:text-white">
-                تایید کد
-              </button>
-            </div>
-          </>
-        )}
+          {otpVerified && (
+            <form onSubmit={resetPassword}>
+              <FieldGroup className="gap-5">
+                <div className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-foreground">
+                  شماره تایید شد. رمز جدید را وارد کنید.
+                </div>
 
-        {/* After OTP verified: show new password fields */}
-        {otpVerified && (
-          <>
-            <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-100">
-              کد تایید شد ✅
-            </div>
+                <Field>
+                  <FieldLabel htmlFor={`${formId}-pass`}>رمز جدید</FieldLabel>
+                  <div className="relative">
+                    <Lock className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      id={`${formId}-pass`}
+                      type="password"
+                      value={newPass}
+                      onChange={(e) => setNewPass(e.target.value)}
+                      className={inputClass}
+                      autoComplete="new-password"
+                      disabled={busy}
+                    />
+                  </div>
+                  <FieldDescription>حداقل ۶ کاراکتر</FieldDescription>
+                </Field>
 
-            <div className="relative">
-              <FiLock className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400" />
-              <input
-                type="password"
-                value={newPass}
-                onChange={(e) => setNewPass(e.target.value)}
-                placeholder="رمز جدید"
-                className="w-full rounded-2xl border border-white/10 bg-zinc-950/35 py-3 pl-4 pr-11 text-sm text-white placeholder:text-zinc-500 outline-none focus:border-emerald-400/40"
-              />
-            </div>
+                <Field>
+                  <FieldLabel htmlFor={`${formId}-pass2`}>تکرار رمز جدید</FieldLabel>
+                  <div className="relative">
+                    <Lock className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      id={`${formId}-pass2`}
+                      type="password"
+                      value={newPass2}
+                      onChange={(e) => setNewPass2(e.target.value)}
+                      className={inputClass}
+                      autoComplete="new-password"
+                      disabled={busy}
+                    />
+                  </div>
+                </Field>
 
-            <input
-              type="password"
-              value={newPass2}
-              onChange={(e) => setNewPass2(e.target.value)}
-              placeholder="تکرار رمز جدید"
-              className="w-full rounded-2xl border border-white/10 bg-zinc-950/35 px-4 py-3 text-sm text-white placeholder:text-zinc-500 outline-none focus:border-emerald-400/40"
-            />
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="h-12 w-full cursor-pointer gap-2 rounded-xl text-base font-iranianSansDemiBold"
+                  disabled={busy}
+                >
+                  {isResetting ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <ArrowLeft className="size-4" />
+                  )}
+                  {isResetting ? "در حال تغییر..." : "تغییر رمز عبور"}
+                </Button>
 
-            <button
-              onClick={resetPassword}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-extrabold text-zinc-950 hover:bg-zinc-200"
-            >
-              تغییر رمز <FiArrowLeft />
-            </button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-11 w-full cursor-pointer"
+                  onClick={resetOtpFlow}
+                  disabled={busy}
+                >
+                  شروع مجدد با شماره دیگر
+                </Button>
+              </FieldGroup>
+            </form>
+          )}
+        </FieldGroup>
+      </CardContent>
 
-            <button
-              onClick={resetOtpFlow}
-              className="inline-flex w-full items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-extrabold text-white hover:bg-white/10"
-            >
-              تغییر شماره موبایل / شروع مجدد
-            </button>
-          </>
-        )}
-      </motion.div>
-    </div>
+      <CardFooter className="flex-col gap-3 border-t border-border/50 pt-4">
+        <Button variant="outline" className="h-11 w-full cursor-pointer" asChild>
+          <Link href="/auth">برگشت به ورود / ثبت‌نام</Link>
+        </Button>
+      </CardFooter>
+    </Card>
   );
 }

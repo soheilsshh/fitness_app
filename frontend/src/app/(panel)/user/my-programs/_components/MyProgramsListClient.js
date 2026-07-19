@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Zap } from "lucide-react";
+import { Dumbbell, Zap } from "lucide-react";
 import { api } from "@/lib/axios/client";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import MetaBadge from "../../_components/ui/MetaBadge";
+import PageHeader from "../../_components/ui/PageHeader";
+import PanelEmptyState from "../../_components/ui/PanelEmptyState";
 import { computeTimeline, mapApiProgram } from "./helpers";
 import FilterChips from "./FilterChips";
 import Pagination from "../../_components/Pagination";
@@ -94,30 +96,24 @@ export default function MyProgramsListClient() {
 
   return (
     <div className="flex flex-col gap-4 md:gap-6" dir="rtl">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div className="text-start">
-          <h2 className="text-lg font-semibold tracking-tight">برنامه‌های من</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            برنامه‌های خریداری‌شده را فیلتر کنید و برای جزئیات، روی برنامه کلیک
-            کنید.
-          </p>
-        </div>
-
-        <Badge variant="outline" className="gap-1.5 px-3 py-1.5 text-sm">
-          <Zap className="size-3.5 text-primary" />
-          تعداد:
-          <span className="font-semibold tabular-nums text-foreground">
-            {filtered.length.toLocaleString("fa-IR")}
-          </span>
-        </Badge>
-      </div>
+      <PageHeader
+        title="برنامه‌های من"
+        description="برنامه‌های خریداری‌شده را فیلتر کنید و برای جزئیات، روی برنامه کلیک کنید."
+        meta={
+          <MetaBadge
+            icon={Zap}
+            label="تعداد:"
+            value={filtered.length.toLocaleString("fa-IR")}
+          />
+        }
+      />
 
       <Card>
         <CardContent className="flex flex-wrap items-center justify-between gap-3 pt-6">
           <FilterChips value={filter} onChange={onChangeFilter} />
-          <p className="text-sm text-muted-foreground">
-            تعداد:{" "}
-            <span className="font-semibold tabular-nums text-foreground">
+          <p className="text-sm font-iranianSansMedium text-muted-foreground">
+            نمایش:{" "}
+            <span className="font-iranianSansDemiBold tabular-nums text-foreground">
               {filtered.length.toLocaleString("fa-IR")}
             </span>
           </p>
@@ -131,13 +127,13 @@ export default function MyProgramsListClient() {
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <Card>
-          <CardContent className="py-10 text-center text-sm text-muted-foreground">
-            برنامه‌ای برای نمایش وجود ندارد.
-          </CardContent>
-        </Card>
+        <PanelEmptyState
+          icon={Dumbbell}
+          title="برنامه‌ای برای نمایش وجود ندارد"
+          description="با خرید یا فعال‌سازی برنامه، فهرست اینجا نمایش داده می‌شود."
+        />
       ) : (
-        <div className="grid gap-4 grid-cols-">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {paged.map(({ program, timeline }) => (
             <div key={program.id} className="h-full">
               <ProgramCardLink program={program} timeline={timeline} />

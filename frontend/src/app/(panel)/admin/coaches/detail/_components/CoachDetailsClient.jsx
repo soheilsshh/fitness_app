@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import Swal from "sweetalert2";
 import { ChevronLeft, ExternalLink } from "lucide-react";
 import { api } from "@/lib/axios/client";
+import { getApiErrorMessage } from "@/lib/api/translateError";
 import { getCoachPublicPath } from "@/lib/routes/coach-public";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 
 function cn(...xs) {
@@ -28,12 +31,17 @@ export default function CoachDetailsClient() {
   const [coach, setCoach] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [branding, setBranding] = useState({ displayName: "", slug: "" });
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
       const res = await api.get(`/admin/coaches/${id}`);
       setCoach(res.data);
+      setBranding({
+        displayName: res.data?.displayName || "",
+        slug: res.data?.slug || "",
+      });
     } catch {
       setCoach(null);
     } finally {
@@ -50,17 +58,47 @@ export default function CoachDetailsClient() {
     try {
       const res = await api.patch(`/admin/coaches/${id}`, patchBody);
       setCoach(res.data);
-    } catch {
+      setBranding({
+        displayName: res.data?.displayName || "",
+        slug: res.data?.slug || "",
+      });
+      return true;
+    } catch (error) {
       await Swal.fire({
         icon: "error",
         title: "خطا",
-        text: "بروزرسانی انجام نشد.",
+        text: getApiErrorMessage(error, "بروزرسانی انجام نشد."),
         confirmButtonText: "باشه",
         background: "#0a0a0a",
         color: "#fff",
       });
+      return false;
     } finally {
       setSaving(false);
+    }
+  };
+
+  const saveBranding = async () => {
+    const displayName = branding.displayName.trim();
+    const slug = branding.slug.trim();
+    if (!displayName) {
+      await Swal.fire({
+        icon: "warning",
+        title: "نام نمایشی الزامی است",
+        confirmButtonText: "باشه",
+      });
+      return;
+    }
+    const ok = await patch({ displayName, slug });
+    if (ok) {
+      await Swal.fire({
+        icon: "success",
+        title: "ذخیره شد",
+        text: "نام نمایشی و شناسه لینک به‌روز شد.",
+        confirmButtonText: "باشه",
+        timer: 1800,
+        showConfirmButton: false,
+      });
     }
   };
 
@@ -102,7 +140,11 @@ export default function CoachDetailsClient() {
         </div>
         {coach.isPublished && coach.slug ? (
           <Button asChild variant="outline">
-            <Link href={getCoachPublicPath(coach.slug)} target="_blank" className="inline-flex items-center gap-2">
+            <Link
+              href={getCoachPublicPath(coach.slug)}
+              target="_blank"
+              className="inline-flex items-center gap-2"
+            >
               صفحه عمومی
               <ExternalLink className="size-4" />
             </Link>
@@ -112,13 +154,61 @@ export default function CoachDetailsClient() {
 
       <Card>
         <CardHeader>
+          <CardTitle>برندینگ عمومی</CardTitle>
+          <CardDescription>
+            نام نمایشی و شناسه لینک فقط توسط ادمین تنظیم می‌شود؛ مربی نمی‌تواند
+            آن‌ها را تغییر دهد.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="admin-display-name">نام نمایشی</Label>
+              <Input
+                id="admin-display-name"
+                value={branding.displayName}
+                onChange={(e) =>
+                  setBranding((prev) => ({
+                    ...prev,
+                    displayName: e.target.value,
+                  }))
+                }
+                placeholder="مثلاً علی رضایی"
+                disabled={saving}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="admin-slug">شناسه لینک (slug)</Label>
+              <Input
+                id="admin-slug"
+                dir="ltr"
+                value={branding.slug}
+                onChange={(e) =>
+                  setBranding((prev) => ({ ...prev, slug: e.target.value }))
+                }
+                placeholder="ali-rezaei"
+                disabled={saving}
+              />
+            </div>
+          </div>
+          <Button type="button" onClick={saveBranding} disabled={saving}>
+            {saving ? "در حال ذخیره..." : "ذخیره برندینگ"}
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle>جزئیات مربی</CardTitle>
           <CardDescription>اطلاعات عمومی و وضعیت انتشار</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2">
             <InfoItem label="عنوان" value={coach.title || "—"} />
-            <InfoItem label="اسلاگ" value={coach.slug ? `/${coach.slug}` : "—"} />
+            <InfoItem
+              label="اسلاگ فعلی"
+              value={coach.slug ? `/${coach.slug}` : "—"}
+            />
             <InfoItem label="تخصص" value={coach.specialty || "—"} />
             <InfoItem label="تعداد دانشجویان" value={coach.studentCount} />
           </div>
@@ -141,22 +231,22 @@ export default function CoachDetailsClient() {
           </div>
 
           <div className="mt-3 flex flex-wrap gap-3">
-          <ToggleButton
-            label="انتشار"
-            active={coach.isPublished}
-            disabled={saving}
-            onToggle={() => patch({ isPublished: !coach.isPublished })}
-            activeText="منتشر شده"
-            inactiveText="پیش‌نویس"
-          />
-          <ToggleButton
-            label="وضعیت"
-            active={coach.isActive}
-            disabled={saving}
-            onToggle={() => patch({ isActive: !coach.isActive })}
-            activeText="فعال"
-            inactiveText="غیرفعال"
-          />
+            <ToggleButton
+              label="انتشار"
+              active={coach.isPublished}
+              disabled={saving}
+              onToggle={() => patch({ isPublished: !coach.isPublished })}
+              activeText="منتشر شده"
+              inactiveText="پیش‌نویس"
+            />
+            <ToggleButton
+              label="وضعیت"
+              active={coach.isActive}
+              disabled={saving}
+              onToggle={() => patch({ isActive: !coach.isActive })}
+              activeText="فعال"
+              inactiveText="غیرفعال"
+            />
           </div>
         </CardContent>
       </Card>
@@ -164,7 +254,14 @@ export default function CoachDetailsClient() {
   );
 }
 
-function ToggleButton({ label, active, disabled, onToggle, activeText, inactiveText }) {
+function ToggleButton({
+  label,
+  active,
+  disabled,
+  onToggle,
+  activeText,
+  inactiveText,
+}) {
   return (
     <Button
       variant="outline"
@@ -174,7 +271,7 @@ function ToggleButton({ label, active, disabled, onToggle, activeText, inactiveT
         "h-auto px-4 py-3 text-sm font-extrabold transition disabled:opacity-50",
         active
           ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 hover:bg-emerald-500/15 dark:text-emerald-300"
-          : "text-muted-foreground"
+          : "text-muted-foreground",
       )}
     >
       {label}: {active ? activeText : inactiveText}

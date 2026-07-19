@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -54,6 +54,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import ExercisePickerModal from "./ExercisePickerModal";
 import ManualExerciseModal from "./ManualExerciseModal";
+import TemplatePickerModal from "../../_components/TemplatePickerModal";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.fitinoo.ir";
@@ -85,40 +86,37 @@ export default function WorkoutEditorClient({
   const [dayExercises, setDayExercises] = useState(emptyDayExercises());
   const [pickerOpen, setPickerOpen] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
+  const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
   const [selectedUids, setSelectedUids] = useState([]);
 
   useEffect(() => {
     setSelectedUids([]);
   }, [selectedDay]);
 
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      setLoading(true);
-      try {
-        const res = await api.get(`/coach/students/${studentId}/programs`);
-        if (cancelled) return;
-        const data = res.data || {};
-        setProgramId(data.workoutProgramId || null);
-        if (data.workoutProgramId && data.schedule?.restDays) {
-          setRestDays(data.schedule.restDays);
-        } else {
-          setRestDays([]);
-        }
-        if (data.planByDay) {
-          setDayExercises(planByDayToDayExercises(data.planByDay));
-        }
-      } catch {
-        // برنامه جدید
-      } finally {
-        if (!cancelled) setLoading(false);
+  const loadPrograms = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await api.get(`/coach/students/${studentId}/programs`);
+      const data = res.data || {};
+      setProgramId(data.workoutProgramId || null);
+      if (data.workoutProgramId && data.schedule?.restDays) {
+        setRestDays(data.schedule.restDays);
+      } else {
+        setRestDays([]);
       }
+      if (data.planByDay) {
+        setDayExercises(planByDayToDayExercises(data.planByDay));
+      }
+    } catch {
+      // برنامه جدید
+    } finally {
+      setLoading(false);
     }
-    load();
-    return () => {
-      cancelled = true;
-    };
   }, [studentId]);
+
+  useEffect(() => {
+    loadPrograms();
+  }, [loadPrograms]);
 
   const isRestDay = restDays.includes(selectedDay);
   const currentExercises = dayExercises[selectedDay] || [];
@@ -428,6 +426,15 @@ export default function WorkoutEditorClient({
                 <Plus data-icon="inline-start" />
                 اضافه کردن حرکت
               </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => setTemplatePickerOpen(true)}
+              >
+                <Dumbbell data-icon="inline-start" />
+                انتخاب از بانک تمپلیت
+              </Button>
 
               {currentExercises.length > 0 ? (
                 <div className="space-y-3">
@@ -552,6 +559,17 @@ export default function WorkoutEditorClient({
         onClose={() => setManualOpen(false)}
         dayLabel={DAY_LABELS[selectedDay]}
         onAdd={(entry) => addExercise(entry)}
+      />
+      <TemplatePickerModal
+        open={templatePickerOpen}
+        onClose={() => setTemplatePickerOpen(false)}
+        mode="workout"
+        studentId={studentId}
+        onApplied={async () => {
+          await loadPrograms();
+          onSaved?.();
+          if (embedded) router.refresh();
+        }}
       />
     </div>
   );

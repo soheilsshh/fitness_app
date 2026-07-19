@@ -3,11 +3,13 @@ package service
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
 
 	"github.com/yourusername/fitness-management/internal/models"
+	"github.com/yourusername/fitness-management/internal/pkg/slug"
 	"github.com/yourusername/fitness-management/internal/repository"
 )
 
@@ -17,20 +19,42 @@ type AdminCoachItem struct {
 	DisplayName  string    `json:"displayName"`
 	Slug         string    `json:"slug"`
 	Title        string    `json:"title"`
+	Status       string    `json:"status"`
+	Phone        string    `json:"phone"`
+	City         string    `json:"city"`
 	IsPublished  bool      `json:"isPublished"`
 	IsActive     bool      `json:"isActive"`
 	StudentCount int64     `json:"studentCount"`
 	CreatedAt    time.Time `json:"createdAt"`
 }
 
+// AdminCoachAchievement for admin review detail.
+type AdminCoachAchievement struct {
+	ID          uint   `json:"id"`
+	Type        string `json:"type"`
+	Title       string `json:"title"`
+	Issuer      string `json:"issuer,omitempty"`
+	Year        *int   `json:"year,omitempty"`
+	Description string `json:"description,omitempty"`
+	ImageURL    string `json:"imageUrl,omitempty"`
+	SortOrder   int    `json:"sortOrder"`
+}
+
 // AdminCoachDetail for GET /admin/coaches/:id.
 type AdminCoachDetail struct {
 	AdminCoachItem
-	Bio       string `json:"bio"`
-	Specialty string `json:"specialty"`
-	AvatarURL string `json:"avatarUrl"`
-	Phone     string `json:"phone"`
-	PublicURL string `json:"publicUrl"`
+	Bio           string                  `json:"bio"`
+	AboutCoach    string                  `json:"aboutCoach"`
+	Specialty     string                  `json:"specialty"`
+	NationalID    string                  `json:"nationalId"`
+	AvatarURL     string                  `json:"avatarUrl"`
+	CoverImageURL string                  `json:"coverImageUrl"`
+	Instagram     string                  `json:"instagram,omitempty"`
+	Telegram      string                  `json:"telegram,omitempty"`
+	WhatsApp      string                  `json:"whatsapp,omitempty"`
+	Website       string                  `json:"website,omitempty"`
+	PublicURL     string                  `json:"publicUrl"`
+	Achievements  []AdminCoachAchievement `json:"achievements"`
 }
 
 // AdminCoachListResponse for paginated coach list.
@@ -43,25 +67,35 @@ type AdminCoachListResponse struct {
 
 // AdminCoachPatchRequest for PATCH /admin/coaches/:id.
 type AdminCoachPatchRequest struct {
-	IsPublished *bool `json:"isPublished"`
-	IsActive    *bool `json:"isActive"`
+	IsPublished *bool   `json:"isPublished"`
+	IsActive    *bool   `json:"isActive"`
+	Status      *string `json:"status"`
+	DisplayName *string `json:"displayName"`
+	Slug        *string `json:"slug"`
 }
 
 type AdminCoachService interface {
-	ListCoaches(ctx context.Context, page, pageSize int, query string) (*AdminCoachListResponse, error)
+	ListCoaches(ctx context.Context, page, pageSize int, query, status string) (*AdminCoachListResponse, error)
 	GetCoachByID(ctx context.Context, coachUserID uint) (*AdminCoachDetail, error)
 	UpdateCoach(ctx context.Context, coachUserID uint, req *AdminCoachPatchRequest) (*AdminCoachDetail, error)
 }
 
 type adminCoachService struct {
-	coachRepo repository.CoachProfileRepository
+	coachRepo       repository.CoachProfileRepository
+	achievementRepo repository.CoachAchievementRepository
 }
 
-func NewAdminCoachService(coachRepo repository.CoachProfileRepository) AdminCoachService {
-	return &adminCoachService{coachRepo: coachRepo}
+func NewAdminCoachService(
+	coachRepo repository.CoachProfileRepository,
+	achievementRepo repository.CoachAchievementRepository,
+) AdminCoachService {
+	return &adminCoachService{
+		coachRepo:       coachRepo,
+		achievementRepo: achievementRepo,
+	}
 }
 
-func (s *adminCoachService) ListCoaches(ctx context.Context, page, pageSize int, query string) (*AdminCoachListResponse, error) {
+func (s *adminCoachService) ListCoaches(ctx context.Context, page, pageSize int, query, status string) (*AdminCoachListResponse, error) {
 	if page <= 0 {
 		page = 1
 	}
@@ -72,7 +106,7 @@ func (s *adminCoachService) ListCoaches(ctx context.Context, page, pageSize int,
 		pageSize = 100
 	}
 
-	profiles, total, err := s.coachRepo.ListCoaches(ctx, page, pageSize, query)
+	profiles, total, err := s.coachRepo.ListCoaches(ctx, page, pageSize, query, status)
 	if err != nil {
 		return nil, err
 	}
@@ -106,13 +140,30 @@ func (s *adminCoachService) GetCoachByID(ctx context.Context, coachUserID uint) 
 	if err != nil {
 		return nil, err
 	}
+
+	achievements, err := s.achievementRepo.ListByCoachUserID(ctx, coachUserID)
+	if err != nil {
+		return nil, err
+	}
+	achievementDTOs := make([]AdminCoachAchievement, 0, len(achievements))
+	for i := range achievements {
+		achievementDTOs = append(achievementDTOs, toAdminCoachAchievement(&achievements[i]))
+	}
+
 	return &AdminCoachDetail{
 		AdminCoachItem: *item,
 		Bio:            profile.Bio,
+		AboutCoach:     profile.AboutCoach,
 		Specialty:      profile.Specialty,
+		NationalID:     profile.NationalID,
 		AvatarURL:      profile.AvatarURL,
-		Phone:          profile.ContactPhone,
+		CoverImageURL:  profile.CoverImageURL,
+		Instagram:      profile.Instagram,
+		Telegram:       profile.Telegram,
+		WhatsApp:       profile.WhatsApp,
+		Website:        profile.Website,
 		PublicURL:      "/coach/" + profile.Slug,
+		Achievements:   achievementDTOs,
 	}, nil
 }
 
@@ -124,11 +175,45 @@ func (s *adminCoachService) UpdateCoach(ctx context.Context, coachUserID uint, r
 		}
 		return nil, err
 	}
+	if req.Status != nil {
+		status := *req.Status
+		if !models.IsValidCoachProfileStatus(status) {
+			return nil, errors.New("invalid status")
+		}
+		profile.Status = status
+		if status != models.CoachProfileStatusApproved {
+			profile.IsPublished = false
+		}
+	}
 	if req.IsPublished != nil {
+		if *req.IsPublished && profile.Status != models.CoachProfileStatusApproved {
+			return nil, errors.New("coach must be approved before publishing")
+		}
 		profile.IsPublished = *req.IsPublished
 	}
 	if req.IsActive != nil {
 		profile.IsActive = *req.IsActive
+	}
+	if req.DisplayName != nil {
+		name := strings.TrimSpace(*req.DisplayName)
+		if name == "" {
+			return nil, errors.New("displayName cannot be empty")
+		}
+		profile.DisplayName = name
+	}
+	if req.Slug != nil {
+		normalized := slug.Normalize(*req.Slug)
+		if normalized == "" {
+			return nil, ErrInvalidSlug
+		}
+		taken, err := s.coachRepo.SlugExists(ctx, normalized, coachUserID)
+		if err != nil {
+			return nil, err
+		}
+		if taken {
+			return nil, ErrSlugTaken
+		}
+		profile.Slug = normalized
 	}
 	if err := s.coachRepo.Update(ctx, profile); err != nil {
 		return nil, err
@@ -141,14 +226,34 @@ func (s *adminCoachService) profileToItem(ctx context.Context, p *models.CoachPr
 	if err != nil {
 		return nil, err
 	}
+	status := p.Status
+	if status == "" {
+		status = models.CoachProfileStatusPending
+	}
 	return &AdminCoachItem{
 		ID:           p.UserID,
 		DisplayName:  p.DisplayName,
 		Slug:         p.Slug,
 		Title:        p.Title,
+		Status:       status,
+		Phone:        p.ContactPhone,
+		City:         p.City,
 		IsPublished:  p.IsPublished,
 		IsActive:     p.IsActive,
 		StudentCount: count,
 		CreatedAt:    p.CreatedAt,
 	}, nil
+}
+
+func toAdminCoachAchievement(a *models.CoachAchievement) AdminCoachAchievement {
+	return AdminCoachAchievement{
+		ID:          a.ID,
+		Type:        a.Type,
+		Title:       a.Title,
+		Issuer:      a.Issuer,
+		Year:        a.Year,
+		Description: a.Description,
+		ImageURL:    a.ImageURL,
+		SortOrder:   a.SortOrder,
+	}
 }

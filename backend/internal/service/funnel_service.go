@@ -15,6 +15,7 @@ import (
 	"github.com/yourusername/fitness-management/config"
 
 	"github.com/yourusername/fitness-management/internal/models"
+	"github.com/yourusername/fitness-management/internal/pkg/digits"
 	"github.com/yourusername/fitness-management/internal/repository"
 )
 
@@ -240,7 +241,7 @@ func (s *funnelService) CreateLead(ctx context.Context, req *CreateFunnelLeadReq
 
 	return &CreateFunnelLeadResponse{
 		CheckoutToken: token,
-		PaymentURL:    "/leadfunnel/payment?token=" + token,
+		PaymentURL:    "/ali-rashidabadi/payment?token=" + token,
 	}, nil
 }
 
@@ -464,10 +465,7 @@ func generateFunnelTrackingCode() string {
 }
 
 func normalizePhone(phone string) string {
-	p := strings.TrimSpace(phone)
-	p = strings.ReplaceAll(p, " ", "")
-	p = strings.ReplaceAll(p, "-", "")
-	return p
+	return digits.NormalizePhone(phone)
 }
 
 func isValidPrimaryGoal(v string) bool {
