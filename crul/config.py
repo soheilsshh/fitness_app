@@ -33,14 +33,30 @@ DIET_API_PARAMS = {
 }
 
 OUTPUT_DIR = _CRUL_DIR / "output"
-TEMPLATES_FILE = OUTPUT_DIR / "exercise_templates.json"
-DIET_TEMPLATES_FILE = OUTPUT_DIR / "food" / "diet_templates.json"
+# Canonical seed location used by the Go API — each dataset in its own folder.
+_BACKEND_DATA = _CRUL_DIR.parent / "backend" / "data"
 
-# Flat media folders — filename matches basename in JSON (action_pic_url / action_video_ur)
-IMAGES_DIR = OUTPUT_DIR / "images"
-VIDEOS_DIR = OUTPUT_DIR / "videos"
+_EXERCISE_TPL = _BACKEND_DATA / "exercise-templates"
+_DIET_TPL = _BACKEND_DATA / "diet-templates"
+_EXERCISES_FA = _BACKEND_DATA / "exercises-fa"
+
+TEMPLATES_FILE = Path(
+    os.getenv("CRUL_EXERCISE_TEMPLATES_FILE", str(_EXERCISE_TPL / "exercise_templates.json"))
+)
+DIET_TEMPLATES_FILE = Path(
+    os.getenv("CRUL_DIET_TEMPLATES_FILE", str(_DIET_TPL / "diet_templates.json"))
+)
+
+# Template media — MUST stay under exercise-templates/ (not exercises-fa/)
+IMAGES_DIR = Path(os.getenv("CRUL_IMAGES_DIR", str(_EXERCISE_TPL / "images")))
+VIDEOS_DIR = Path(os.getenv("CRUL_VIDEOS_DIR", str(_EXERCISE_TPL / "videos")))
+
 FOOD_DIR = OUTPUT_DIR / "food"
-FOOD_IMAGES_DIR = FOOD_DIR / "images"
+FOOD_IMAGES_DIR = Path(os.getenv("CRUL_FOOD_IMAGES_DIR", str(_DIET_TPL / "images")))
+
+# Catalog media (separate from template media)
+CATALOG_IMAGES_DIR = _EXERCISES_FA / "images"
+CATALOG_VIDEOS_DIR = _EXERCISES_FA / "videos"
 
 STORAGE_BASE = os.getenv("MORABIHA_STORAGE_BASE", "https://storage.morabiha.com")
 

@@ -49,7 +49,9 @@ type Config struct {
 	} `mapstructure:"upload"`
 
 	Seed struct {
-		DevData bool `mapstructure:"dev_data"`
+		DevData       bool `mapstructure:"dev_data"`
+		Catalogs      bool `mapstructure:"catalogs"`
+		CatalogsForce bool `mapstructure:"catalogs_force"`
 	} `mapstructure:"seed"`
 
 	Funnel struct {
@@ -208,6 +210,8 @@ func setDefaults() {
 	viper.SetDefault("jwt.refresh_token_duration_days", 7)
 	viper.SetDefault("upload.dir", "uploads")
 	viper.SetDefault("seed.dev_data", false)
+	viper.SetDefault("seed.catalogs", true)
+	viper.SetDefault("seed.catalogs_force", false)
 	viper.SetDefault("sms.otp_pattern_code", "fittino-otp")
 	viper.SetDefault("sms.otp_ttl_minutes", 10)
 	viper.SetDefault("sms.otp_resend_cooldown_seconds", 60)
@@ -232,6 +236,8 @@ func bindEnvKeys() {
 	_ = viper.BindEnv("jwt.refresh_token_duration_days", "REFRESH_TOKEN_DURATION_DAYS")
 	_ = viper.BindEnv("upload.dir", "UPLOAD_DIR")
 	_ = viper.BindEnv("seed.dev_data", "SEED_DEV_DATA")
+	_ = viper.BindEnv("seed.catalogs", "SEED_CATALOGS")
+	_ = viper.BindEnv("seed.catalogs_force", "SEED_CATALOGS_FORCE")
 	_ = viper.BindEnv("funnel.coach_name", "FUNNEL_COACH_NAME")
 	_ = viper.BindEnv("funnel.coach_id", "FUNNEL_COACH_ID")
 	_ = viper.BindEnv("funnel.amount", "FUNNEL_AMOUNT")

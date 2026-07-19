@@ -37,8 +37,12 @@ upload:
   dir: uploads
 
 seed:
-  # Always false in production (also blocked by APP_ENV=production)
+  # Mock coaches/students (blocked when app.env=production)
   dev_data: false
+  # On API startup: seed exercises + foods + crul templates (skip if tables already filled)
+  catalogs: true
+  # Re-import catalogs even when rows already exist
+  catalogs_force: false
 
 funnel:
   coach_name: ""

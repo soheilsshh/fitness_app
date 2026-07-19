@@ -18,15 +18,20 @@ from __future__ import annotations
 import argparse
 import json
 import shutil
+import sys
 from pathlib import Path
 from urllib.parse import urlparse
 
 
 CRUL_ROOT = Path(__file__).resolve().parents[1]
-FOOD_OUTPUT_DIR = CRUL_ROOT / "output" / "food"
-DEFAULT_INPUT = FOOD_OUTPUT_DIR / "diet_templates.json"
-DEFAULT_IMAGES_DIR = FOOD_OUTPUT_DIR / "images"
-DEFAULT_VIDEOS_DIR = FOOD_OUTPUT_DIR / "videos"
+if str(CRUL_ROOT) not in sys.path:
+    sys.path.insert(0, str(CRUL_ROOT))
+
+from config import DIET_TEMPLATES_FILE, FOOD_IMAGES_DIR  # noqa: E402
+
+DEFAULT_INPUT = DIET_TEMPLATES_FILE
+DEFAULT_IMAGES_DIR = FOOD_IMAGES_DIR
+DEFAULT_VIDEOS_DIR = FOOD_IMAGES_DIR.parent / "videos"
 
 DEFAULT_IMAGE_FIELDS = [
     "food_image",

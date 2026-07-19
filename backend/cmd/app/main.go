@@ -324,7 +324,11 @@ func NewServer(db *gorm.DB) *Server {
 
 	// Serve uploaded files (e.g. user body photos) at /uploads/*
 	router.Static("/uploads", "./uploads")
-	router.Static("/exercises-media", "./exercises-dataset-main")
+	// Exercise catalog media: data/exercises-fa/{images,videos} → /exercises-media/...
+	router.Static("/exercises-media", seed.ExercisesMediaDir())
+	// Template media kept separate so filenames never collide with the catalog.
+	router.Static("/exercise-templates-media", seed.ExerciseTemplatesMediaDir())
+	router.Static("/diet-templates-media", seed.DietTemplatesMediaDir())
 
 	// Swagger endpoint
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
@@ -374,6 +378,9 @@ func main() {
 	}
 	if err := seedDefaultAdmin(db); err != nil {
 		log.Fatalf("failed to seed default admin: %v", err)
+	}
+	if err := seed.SeedCatalogsFromConfig(context.Background(), db); err != nil {
+		log.Printf("WARNING: catalog seed failed: %v", err)
 	}
 	if err := maybeSeedDevData(db); err != nil {
 		log.Fatalf("failed to seed development data: %v", err)

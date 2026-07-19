@@ -86,12 +86,20 @@ func MaybeSeedDevData(db *gorm.DB) error {
 	return err
 }
 
-// PrepareDatabase runs migrations, default admin seed, and optional dev fixtures.
+// SeedCatalogs loads exercises, foods, and crul templates when seed.catalogs is enabled.
+func SeedCatalogs(db *gorm.DB) error {
+	return seed.SeedCatalogsFromConfig(context.Background(), db)
+}
+
+// PrepareDatabase runs migrations, default admin seed, reference catalogs, and optional dev fixtures.
 func PrepareDatabase(db *gorm.DB) error {
 	if err := RunMigrations(db); err != nil {
 		return err
 	}
 	if err := SeedDefaultAdmin(db); err != nil {
+		return err
+	}
+	if err := SeedCatalogs(db); err != nil {
 		return err
 	}
 	if err := MaybeSeedDevData(db); err != nil {

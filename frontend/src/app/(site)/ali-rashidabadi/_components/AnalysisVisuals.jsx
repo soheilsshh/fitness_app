@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { Flame, Gauge, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -21,8 +20,8 @@ const BODY_TYPES = [
     metaValue: "سریع",
     chartLabel: "Fuel efficiency",
     color: "#3cc9f5",
+    image: "/body-types/ectomorph.png",
     trend: [8, 16, 22, 30, 34, 46, 52, 66, 82],
-    proportions: { shoulder: 15, waist: 11, hip: 13, arm: 4.5, leg: 6 },
   },
   {
     key: "mesomorph",
@@ -33,8 +32,8 @@ const BODY_TYPES = [
     metaValue: "عضله‌سازی کارآمد",
     chartLabel: "Anabolic rate",
     color: "#3ee27f",
+    image: "/body-types/mesomorph.png",
     trend: [14, 26, 40, 48, 60, 66, 74, 80, 86],
-    proportions: { shoulder: 25, waist: 12, hip: 16, arm: 7, leg: 9 },
   },
   {
     key: "endomorph",
@@ -45,8 +44,8 @@ const BODY_TYPES = [
     metaValue: "آهسته‌تر",
     chartLabel: "Storage potential",
     color: "#ff8a3c",
+    image: "/body-types/endomorph.png",
     trend: [30, 52, 66, 74, 79, 82, 84, 85, 86],
-    proportions: { shoulder: 21, waist: 22.5, hip: 22, arm: 8, leg: 11 },
   },
 ];
 
@@ -57,71 +56,27 @@ export function resolveBodyTypeKey(bodyType = "") {
   return "mesomorph";
 }
 
-const CX = 60;
-
-function figurePaths({ shoulder, waist, hip, arm, leg }) {
-  const torso = [
-    `M ${CX - 5} 42`,
-    `L ${CX - shoulder} 50`,
-    `C ${CX - shoulder - 2} 66 ${CX - waist - 4} 92 ${CX - waist} 116`,
-    `C ${CX - waist} 128 ${CX - hip} 136 ${CX - hip} 150`,
-    `L ${CX + hip} 150`,
-    `C ${CX + hip} 136 ${CX + waist} 128 ${CX + waist} 116`,
-    `C ${CX + waist + 4} 92 ${CX + shoulder + 2} 66 ${CX + shoulder} 50`,
-    `L ${CX + 5} 42`,
-    "Z",
-  ].join(" ");
-
-  const leftArm = `M ${CX - shoulder + 2} 54 Q ${CX - shoulder - 9} 92 ${CX - shoulder - 3} 128`;
-  const rightArm = `M ${CX + shoulder - 2} 54 Q ${CX + shoulder + 9} 92 ${CX + shoulder + 3} 128`;
-  const leftLeg = `M ${CX - hip + 5} 150 Q ${CX - hip + 1} 195 ${CX - hip + 3} 236`;
-  const rightLeg = `M ${CX + hip - 5} 150 Q ${CX + hip - 1} 195 ${CX + hip - 3} 236`;
-
-  return { torso, leftArm, rightArm, leftLeg, rightLeg, arm, leg };
-}
-
 function BodyFigure({ type, active }) {
-  const p = useMemo(() => figurePaths(type.proportions), [type.proportions]);
-  const color = active ? type.color : "#5b6472";
   const glow = active
-    ? `drop-shadow(0 0 6px ${type.color}) drop-shadow(0 0 14px ${type.color}55)`
+    ? `drop-shadow(0 0 8px ${type.color}) drop-shadow(0 0 18px ${type.color}66)`
     : "none";
 
   return (
-    <svg
-      viewBox="0 0 120 250"
-      className="mx-auto h-44 w-auto md:h-52"
-      style={{ filter: glow, opacity: active ? 1 : 0.5, transition: "all .35s ease" }}
-      fill="none"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+    <div
+      className="relative mx-auto mt-2 flex h-44 w-full items-end justify-center md:h-52"
+      style={{ filter: glow, opacity: active ? 1 : 0.42, transition: "all .35s ease" }}
     >
-      <defs>
-        <linearGradient id={`torso-${type.key}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity={active ? 0.22 : 0.06} />
-          <stop offset="100%" stopColor={color} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-
-      <circle cx={CX} cy={26} r={12.5} stroke={color} strokeWidth={2.4} />
-      <path d={p.torso} fill={`url(#torso-${type.key})`} stroke={color} strokeWidth={2.4} />
-      <path d={p.leftArm} stroke={color} strokeWidth={p.arm} />
-      <path d={p.rightArm} stroke={color} strokeWidth={p.arm} />
-      <path d={p.leftLeg} stroke={color} strokeWidth={p.leg} />
-      <path d={p.rightLeg} stroke={color} strokeWidth={p.leg} />
-
-      <g stroke={color} strokeWidth={1} opacity={active ? 0.55 : 0.3}>
-        <line x1={CX} y1={54} x2={CX} y2={112} />
-        <line
-          x1={CX - type.proportions.shoulder + 6}
-          y1={62}
-          x2={CX + type.proportions.shoulder - 6}
-          y2={62}
-        />
-        <line x1={CX - 8} y1={82} x2={CX + 8} y2={82} />
-        <line x1={CX - 7} y1={94} x2={CX + 7} y2={94} />
-      </g>
-    </svg>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={type.image}
+        alt={type.fa}
+        className={cn(
+          "h-full w-auto max-w-full object-contain object-bottom transition duration-300",
+          !active && "grayscale"
+        )}
+        draggable={false}
+      />
+    </div>
   );
 }
 

@@ -30,10 +30,11 @@ CRUL_ROOT = Path(__file__).resolve().parents[1]
 if str(CRUL_ROOT) not in sys.path:
     sys.path.insert(0, str(CRUL_ROOT))
 
-EXERCISE_OUTPUT_DIR = CRUL_ROOT / "output" / "exercise"
-DEFAULT_INPUT = EXERCISE_OUTPUT_DIR / "exercise_templates.json"
-DEFAULT_VIDEOS_DIR = EXERCISE_OUTPUT_DIR / "videos"
-DEFAULT_IMAGES_DIR = EXERCISE_OUTPUT_DIR / "images"
+from config import IMAGES_DIR, TEMPLATES_FILE, VIDEOS_DIR
+
+DEFAULT_INPUT = TEMPLATES_FILE
+DEFAULT_VIDEOS_DIR = VIDEOS_DIR
+DEFAULT_IMAGES_DIR = IMAGES_DIR
 
 
 def extract_filename(value: str) -> str:

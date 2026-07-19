@@ -17,8 +17,8 @@ import (
 )
 
 const (
-	defaultExerciseTemplatesFile = "../crul/output/exercise/exercise_templates.json"
-	defaultDietTemplatesFile     = "../crul/output/food/diet_templates.json"
+	defaultExerciseTemplatesFile = DefaultExerciseTemplatesFile
+	defaultDietTemplatesFile     = DefaultDietTemplatesFile
 )
 
 type crulExerciseFile struct {
@@ -134,14 +134,14 @@ func SeedTemplatesFromCrul(ctx context.Context, db *gorm.DB) error {
 	return totalErr
 }
 
-func resolveCrulPath(envKey, defaultRel string) string {
+func resolveCrulPath(envKey, defaultName string) string {
 	if v := strings.TrimSpace(os.Getenv(envKey)); v != "" {
-		return v
+		if filepath.IsAbs(v) {
+			return v
+		}
+		return DataFile(v)
 	}
-	if filepath.IsAbs(defaultRel) {
-		return defaultRel
-	}
-	return filepath.Clean(filepath.Join(".", defaultRel))
+	return DataFile(defaultName)
 }
 
 func seedWorkoutTemplates(

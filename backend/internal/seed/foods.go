@@ -1,4 +1,4 @@
-package main
+package seed
 
 import (
 	"context"
@@ -12,9 +12,10 @@ import (
 	"strconv"
 	"strings"
 
+	"gorm.io/gorm"
+
 	"github.com/yourusername/fitness-management/internal/models"
 	"github.com/yourusername/fitness-management/internal/repository"
-	"gorm.io/gorm"
 )
 
 type csvFoodRow struct {
@@ -28,7 +29,8 @@ type csvFoodRow struct {
 	Sugar      *float64
 }
 
-func importFoodsCSV(db *gorm.DB, filePath string) error {
+// ImportFoodsCSV upserts the global food catalog from Persian_food_facts.csv.
+func ImportFoodsCSV(ctx context.Context, db *gorm.DB, filePath string) error {
 	f, err := os.Open(filePath)
 	if err != nil {
 		return fmt.Errorf("open file: %w", err)
@@ -46,7 +48,6 @@ func importFoodsCSV(db *gorm.DB, filePath string) error {
 	colIndex := mapCSVFoodHeader(header)
 
 	repo := repository.NewFoodRepository(db)
-	ctx := context.Background()
 	created, updated, skipped := 0, 0, 0
 	lineNum := 1
 
@@ -57,14 +58,14 @@ func importFoodsCSV(db *gorm.DB, filePath string) error {
 		}
 		lineNum++
 		if err != nil {
-			log.Printf("line %d: read error: %v", lineNum, err)
+			log.Printf("[catalog-seed] food line %d: read error: %v", lineNum, err)
 			skipped++
 			continue
 		}
 
 		row, err := parseCSVFoodRow(record, colIndex)
 		if err != nil {
-			log.Printf("line %d: skip: %v", lineNum, err)
+			log.Printf("[catalog-seed] food line %d: skip: %v", lineNum, err)
 			skipped++
 			continue
 		}
@@ -74,7 +75,7 @@ func importFoodsCSV(db *gorm.DB, filePath string) error {
 		isUpdate := findErr == nil
 
 		if err := repo.UpsertByExternalID(ctx, food); err != nil {
-			log.Printf("line %d: upsert failed: %v", lineNum, err)
+			log.Printf("[catalog-seed] food line %d: upsert failed: %v", lineNum, err)
 			skipped++
 			continue
 		}
@@ -85,7 +86,8 @@ func importFoodsCSV(db *gorm.DB, filePath string) error {
 		}
 	}
 
-	log.Printf("food seed complete: created=%d updated=%d skipped=%d", created, updated, skipped)
+	log.Printf("[catalog-seed] foods: created=%d updated=%d skipped=%d file=%s",
+		created, updated, skipped, filePath)
 	return nil
 }
 

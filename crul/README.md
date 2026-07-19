@@ -28,13 +28,9 @@ The code is split by domain under `exercise/` and `diet/`, while shared modules 
   - `download_images.py` — download unique diet images
   - `normalize_media_paths.py` — rewrite media paths in diet JSON to local relative paths
 
-- `output/`
-  - `exercise/exercise_templates.json`
-  - `exercise/images/`
-  - `exercise/videos/`
-  - `food/diet_templates.json`
-  - `food/images/`
-  - (optional) `food/videos/` if you add video download for diet later
+- `output/`  
+  Legacy scratch. **Canonical files are under `backend/data/<dataset>/`**  
+  (each dataset has its own folder so media filenames never collide).
 
 ---
 
