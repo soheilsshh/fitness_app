@@ -3,6 +3,7 @@ package seed
 import (
 	"context"
 	"log"
+	"strconv"
 	"strings"
 
 	"golang.org/x/crypto/bcrypt"
@@ -33,7 +34,7 @@ func EnsureAliFunnel(ctx context.Context, db *gorm.DB) error {
 		coachSlug = slug.Normalize(v)
 	}
 
-	user, err := ensureAliFunnelUser(db)
+	user, err := ensureAliFunnelUser(db, coachSlug)
 	if err != nil {
 		return err
 	}
@@ -49,32 +50,33 @@ func EnsureAliFunnel(ctx context.Context, db *gorm.DB) error {
 	return nil
 }
 
-func ensureAliFunnelUser(db *gorm.DB) (*models.User, error) {
+func ensureAliFunnelUser(db *gorm.DB, coachSlug string) (*models.User, error) {
 	var user models.User
 	err := db.Where("email = ?", aliFunnelCoachEmail).First(&user).Error
 	if err == nil {
-		changed := false
-		if user.Role != models.RoleCoach {
-			user.Role = models.RoleCoach
-			changed = true
-		}
-		if user.CoachStatus != "approved" {
-			user.CoachStatus = "approved"
-			changed = true
-		}
-		if user.Name != aliFunnelDisplayName {
-			user.Name = aliFunnelDisplayName
-			changed = true
-		}
-		if changed {
-			if err := db.Save(&user).Error; err != nil {
-				return nil, err
-			}
-		}
-		return &user, nil
+		return syncAliFunnelUser(db, &user)
 	}
 	if err != gorm.ErrRecordNotFound {
 		return nil, err
+	}
+
+	// Reuse the coach who already owns the funnel slug (legacy / demo seed).
+	var existing models.CoachProfile
+	if e := db.Where("slug = ?", coachSlug).First(&existing).Error; e == nil && existing.UserID > 0 {
+		if err := db.First(&user, existing.UserID).Error; err != nil {
+			return nil, err
+		}
+		user.Email = aliFunnelCoachEmail
+		user.Phone = aliFunnelCoachPhone
+		hashed, herr := bcrypt.GenerateFromPassword([]byte(aliFunnelCoachPass), bcrypt.DefaultCost)
+		if herr != nil {
+			return nil, herr
+		}
+		user.Password = string(hashed)
+		log.Printf("reclaimed funnel_1 coach user id=%d for slug=%s → %s", user.ID, coachSlug, aliFunnelCoachEmail)
+		return syncAliFunnelUser(db, &user)
+	} else if e != nil && e != gorm.ErrRecordNotFound {
+		return nil, e
 	}
 
 	hashed, err := bcrypt.GenerateFromPassword([]byte(aliFunnelCoachPass), bcrypt.DefaultCost)
@@ -98,36 +100,92 @@ func ensureAliFunnelUser(db *gorm.DB) (*models.User, error) {
 	return &user, nil
 }
 
+func syncAliFunnelUser(db *gorm.DB, user *models.User) (*models.User, error) {
+	changed := false
+	if user.Role != models.RoleCoach {
+		user.Role = models.RoleCoach
+		changed = true
+	}
+	if user.CoachStatus != "approved" {
+		user.CoachStatus = "approved"
+		changed = true
+	}
+	if user.Name != aliFunnelDisplayName {
+		user.Name = aliFunnelDisplayName
+		changed = true
+	}
+	if changed {
+		if err := db.Save(user).Error; err != nil {
+			return nil, err
+		}
+	}
+	return user, nil
+}
+
 func ensureAliFunnelProfile(db *gorm.DB, userID uint, coachSlug string) error {
 	var profile models.CoachProfile
+
 	err := db.Where("user_id = ?", userID).First(&profile).Error
 	if err == gorm.ErrRecordNotFound {
-		profile = models.CoachProfile{
-			UserID:      userID,
-			Slug:        coachSlug,
-			DisplayName: aliFunnelDisplayName,
-			Title:       "مربی بدنسازی و فیتنس",
-			Bio:         "مربی اختصاصی فانل ۱ فیتینو — برنامه تمرین، تغذیه و پایش هوشمند.",
-			AboutCoach:  "این پروفایل برای فانل فروش اختصاصی علی رشیدآبادی (فانل ۱) طراحی شده است.",
-			Specialty:   "بدنسازی، کاهش وزن، عضله‌سازی",
-			City:        "تهران",
-			Status:      models.CoachProfileStatusApproved,
-			IsPublished: true,
-			IsActive:    true,
+		// Slug already taken by another coach → reclaim for funnel user.
+		err = db.Where("slug = ?", coachSlug).First(&profile).Error
+		if err == nil {
+			log.Printf("reclaimed funnel_1 coach_profile id=%d slug=%s → user_id=%d", profile.ID, coachSlug, userID)
+			profile.UserID = userID
+		} else if err == gorm.ErrRecordNotFound {
+			profile = models.CoachProfile{
+				UserID:      userID,
+				Slug:        coachSlug,
+				DisplayName: aliFunnelDisplayName,
+				Title:       "مربی بدنسازی و فیتنس",
+				Bio:         "مربی اختصاصی فانل ۱ فیتینو — برنامه تمرین، تغذیه و پایش هوشمند.",
+				AboutCoach:  "این پروفایل برای فانل فروش اختصاصی علی رشیدآبادی (فانل ۱) طراحی شده است.",
+				Specialty:   "بدنسازی، کاهش وزن، عضله‌سازی",
+				City:        "تهران",
+				Status:      models.CoachProfileStatusApproved,
+				IsPublished: true,
+				IsActive:    true,
+			}
+			return db.Create(&profile).Error
+		} else {
+			return err
 		}
-		return db.Create(&profile).Error
-	}
-	if err != nil {
+	} else if err != nil {
 		return err
 	}
 
-	profile.Slug = coachSlug
+	// If this user's profile has a different slug, free the target slug first.
+	if profile.Slug != coachSlug {
+		var conflict models.CoachProfile
+		if e := db.Where("slug = ? AND id <> ?", coachSlug, profile.ID).First(&conflict).Error; e == nil {
+			conflict.Slug = coachSlug + "-legacy-" + strings.TrimSpace(strings.ReplaceAll(
+				strings.ToLower(conflict.DisplayName), " ", "-"))
+			if len(conflict.Slug) > 80 {
+				conflict.Slug = conflict.Slug[:80]
+			}
+			if err := db.Save(&conflict).Error; err != nil {
+				// Last resort: soft-clear slug uniqueness by appending id.
+				conflict.Slug = coachSlug + "-old-" + strconv.FormatUint(uint64(conflict.ID), 10)
+				if err := db.Save(&conflict).Error; err != nil {
+					return err
+				}
+			}
+		} else if e != gorm.ErrRecordNotFound {
+			return e
+		}
+		profile.Slug = coachSlug
+	}
+
+	profile.UserID = userID
 	profile.DisplayName = aliFunnelDisplayName
 	profile.Status = models.CoachProfileStatusApproved
 	profile.IsPublished = true
 	profile.IsActive = true
 	if strings.TrimSpace(profile.Title) == "" {
 		profile.Title = "مربی بدنسازی و فیتنس"
+	}
+	if strings.TrimSpace(profile.Bio) == "" {
+		profile.Bio = "مربی اختصاصی فانل ۱ فیتینو — برنامه تمرین، تغذیه و پایش هوشمند."
 	}
 	return db.Save(&profile).Error
 }

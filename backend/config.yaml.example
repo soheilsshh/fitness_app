@@ -37,18 +37,20 @@ upload:
   dir: uploads
 
 seed:
-  # Mock coaches/students (blocked when app.env=production)
+  # Full JSON fixtures (orders/programs/…) — blocked when app.env=production
   dev_data: false
+  # Lightweight mock coaches/students for demos/videos (idempotent)
+  demo_data: true
   # On API startup: seed exercises + foods + crul templates (skip if tables already filled)
   catalogs: true
   # Re-import catalogs even when rows already exist
   catalogs_force: false
 
 funnel:
-  coach_name: ""
-  coach_id: ""
-  amount: ""
-  package_title: ""
+  # Funnel 1 — علی رشیدآبادی only (/ali-rashidabadi).
+  # Funnel 2 would be another dedicated funnel later.
+  # Pricing comes from this coach's ServicePlan rows in the DB.
+  coach_slug: "ali-rashidabadi"
 
 sms:
   # Kavenegar Verify Lookup — https://kavenegar.com

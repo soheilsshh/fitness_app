@@ -14,6 +14,13 @@ server {
         add_header Cache-Control "public, immutable";
     }
 
+    # Static files: never fall through to index.html (200 + HTML breaks <img>).
+    location ~* \.(?:png|jpe?g|gif|webp|svg|ico|mp4|webm|woff2?|ttf|css|js|map)$ {
+        try_files $uri =404;
+        expires 7d;
+        add_header Cache-Control "public";
+    }
+
     location / {
         try_files $uri $uri/ =404;
     }
