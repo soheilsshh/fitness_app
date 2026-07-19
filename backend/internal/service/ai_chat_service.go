@@ -35,7 +35,13 @@ const (
 	aiProgramRedirectMsg = "برای تهیه برنامه تمرین یا تغذیه باید از طریق مربی‌های فیتینو اقدام کنی. من نمی‌تونم برنامه تمرین، رژیم غذایی یا مکمل/داروی نیروزا پیشنهاد یا تجویز کنم."
 	aiOutOfScopeMsg      = "من دستیار فیتینو هستم و فقط درباره امکانات اپ، حساب کاربری و مسیر استفاده از فیتینو راهنمایی می‌کنم. برای موضوعات خارج از این حیطه متأسفانه پاسخ نمی‌دم."
 	aiSteroidRefuseMsg   = "درباره استروئید، داروهای نیروزا یا روش‌های غیرقانونی/غیرایمن هیچ راهنمایی ارائه نمی‌کنم. برای برنامه اصولی تمرین و تغذیه از مربی‌های فیتینو کمک بگیر."
+	aiDevMockMsg         = "این پاسخ تستی محیط توسعه است (کلید هوش مصنوعی تنظیم نشده). در پروداکشن با OPENAI_API_KEY پاسخ واقعی از مدل دریافت می‌شود. بپرس درباره ورود، پنل شاگرد، مربی یا پرداخت — من فقط راهنمای امکانات فیتینو هستم."
 )
+
+func aiDevMockReply(userMessage string) string {
+	_ = userMessage
+	return aiDevMockMsg
+}
 
 type AIChatMessage struct {
 	Role    string `json:"role"`
@@ -92,6 +98,9 @@ func (s *AIChatService) Chat(ctx context.Context, userID uint, req *AIChatReques
 
 	cfg := config.Get()
 	if strings.TrimSpace(cfg.OpenAI.APIKey) == "" {
+		if config.IsDevelopment() {
+			return &AIChatResponse{Reply: aiDevMockReply(message)}, nil
+		}
 		return nil, ErrAINotConfigured
 	}
 

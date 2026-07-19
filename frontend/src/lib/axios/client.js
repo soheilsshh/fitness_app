@@ -2,9 +2,9 @@ import axios from "axios";
 import { toast } from "sonner";
 import { clearAuthSession } from "@/lib/auth/session";
 import { translateApiError } from "@/lib/api/translateError";
+import { API_BASE_URL } from "@/lib/api/baseUrl";
 
-const baseURL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.fitinoo.ir";
+const baseURL = API_BASE_URL;
 
 export const api = axios.create({
   baseURL,

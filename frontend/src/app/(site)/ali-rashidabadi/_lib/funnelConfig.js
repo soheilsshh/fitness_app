@@ -148,9 +148,65 @@ export const LEAD_COPY = {
 
 export const RESULT_COPY = {
   title: "گزارش اولیه آنالیز هوشمند بدنی شما آماده شد",
-  cta: "دریافت راهکار و برنامه اختصاصی از مربی علی",
+  cta: "دریافت راهکار و برنامه اختصاصی از مربی علی 🚀",
   aiWarning:
-    "تحلیل سیستم: الگوی پاسخ‌های شما نشان می‌دهد بدنتان مقاومت بالایی به استپ وزنی در هفته‌های سوم به بعد دارد. مربی علی برای شکستن این استپ عضلانی، نیاز به اعمال یک سیستم بارگذاری متناوب در تمرین شما دارد.",
+    "تحلیل سیستم: الگوی پاسخ‌های شما نشان می‌دهد بدنتان مقاومت بالایی به استپ وزنی در هفته‌های سوم به بعد دارد. مربی علی رشیدآبادی برای شکستن این استپ عضلانی، نیاز به اعمال یک سیستم بارگذاری متناوب در تمرین شما دارد.",
+  aiGuard:
+    "پایش ضد استپ فیتینو: «این برنامه مجهز به پروتکل پایش روزانه است. به محض اینکه سرعت چربی‌سوزی شما کند شود، سیستم هوشمند تغییرات را به مربی علی گزارش داده و برنامه شما بدون هزینه اضافه آپدیت می‌شود.»",
+  urgency:
+    "به دلیل ترافیک بالای سرور پردازش و محدودیت در ظرفیت پذیرش مربی علی، این آنالیز اختصاصی و رزرو پنل شما فقط تا ۱۰:۰۰ دقیقه دیگر محفوظ می‌ماند.",
+};
+
+/** Canonical coach display name — keep consistent across funnel UI. */
+export const COACH_FULL_NAME = "مربی علی رشیدآبادی";
+export const COACH_SHORT_NAME = "علی رشیدآبادی";
+
+const TARGET_ZONES = {
+  weight_loss: "چربی‌های مقاوم شکم و پهلو",
+  muscle_gain: "گروه‌های عضلانی اصلی با تمرکز بر هایپرتروفی",
+  fitness: "فرم کلی بدن، انرژی روزانه و تعادل عضلانی",
+};
+
+const PHYSIO_BY_GOAL = {
+  weight_loss: "سرعت سوخت‌وساز بدن شما کاهش یافته",
+  muscle_gain: "بدن شما تمایل بالایی به کاتابولیسم (ریزش عضله) دارد",
+  fitness: "ثبات تمرینی و بازیابی انرژی شما هنوز بهینه نشده",
+};
+
+const METABOLIC_STATUS = {
+  weight_loss: "مقاوم",
+  muscle_gain: "کاتابولیک سریع",
+  fitness: "نامتعادل و ناپایدار",
+};
+
+const PROBLEM_INTENSITY = {
+  weight_loss: "شدید",
+  muscle_gain: "متوسط رو به بالا",
+  fitness: "قابل کنترل اما مزمن",
+};
+
+const COMMON_MISTAKE = {
+  weight_loss: "رژیم‌های کم‌کالری سنتی",
+  muscle_gain: "حجم‌خوری بدون چگالی کالری و برنامه اصولی",
+  fitness: "برنامه‌های پراکنده بدون پیگیری مستمر",
+};
+
+const SIDE_EFFECT = {
+  weight_loss: "تخریب بافت عضلانی",
+  muscle_gain: "عدم افزایش حجم باکیفیت و خستگی متابولیک",
+  fitness: "نتایج ناپایدار و بازگشت سریع به نقطه شروع",
+};
+
+const SUCCESS_PCT = {
+  weight_loss: 88,
+  muscle_gain: 84,
+  fitness: 86,
+};
+
+const STRATEGY_FOCUS = {
+  weight_loss: "چربی‌سوزی همزمان با حفظ کامل بافت عضلانی و بازیابی توان متابولیک بدن شماست",
+  muscle_gain: "افزایش حجم عضلانی باکیفیت بدون چربی زائد و تثبیت ریکاوری شماست",
+  fitness: "فرم‌دهی پایدار، افزایش انرژی روزانه و ساخت عادت تمرینی ماندگار است",
 };
 
 export const PAYMENT_COPY = {
@@ -249,7 +305,7 @@ export function buildMacroSplit(primaryGoal, bmr) {
   };
 }
 
-export function buildAnalysis(answers, coachName = "علی رشید آبادی") {
+export function buildAnalysis(answers, coachName = COACH_SHORT_NAME) {
   const {
     primaryGoal,
     activityLevel,
@@ -263,16 +319,78 @@ export function buildAnalysis(answers, coachName = "علی رشید آبادی")
   } = answers;
 
   const scenario = getScenario(primaryGoal);
-  const activity = ACTIVITY_LABELS[activityLevel] || "";
+  const activity = ACTIVITY_LABELS[activityLevel] || "سطح فعالیت فعلی";
   const env = ENV_LABELS[trainingEnv] || "محیط تمرینی شما";
-  const exp = EXPERIENCE_LABELS[experience] || "";
+  const exp = EXPERIENCE_LABELS[experience] || "فعلی";
   const nutrition = NUTRITION_LABELS[nutritionChallenge] || "چالش تغذیه‌ای شما";
-  const obstacle = OBSTACLE_LABELS[mainObstacle] || "";
+  const obstacle = OBSTACLE_LABELS[mainObstacle] || "موانع قبلی";
   const meta = SCENARIO_META[scenario];
   const bmr = calculateBmr(age, heightCm, weightKg);
   const bmi = calculateBmi(heightCm, weightKg);
   const bodyType = estimateBodyType(primaryGoal, bmi);
   const macros = buildMacroSplit(primaryGoal, bmr);
+  const coachLabel = COACH_FULL_NAME;
+  const goalKey = primaryGoal || "fitness";
+
+  // Template variables (developer guide)
+  const physiologicIndex = PHYSIO_BY_GOAL[goalKey] || PHYSIO_BY_GOAL.fitness;
+  const metabolicStatus = METABOLIC_STATUS[goalKey] || METABOLIC_STATUS.fitness;
+  const problemIntensity = PROBLEM_INTENSITY[goalKey] || PROBLEM_INTENSITY.fitness;
+  const commonMistake = COMMON_MISTAKE[goalKey] || COMMON_MISTAKE.fitness;
+  const sideEffect = SIDE_EFFECT[goalKey] || SIDE_EFFECT.fitness;
+  const biggestObstacle =
+    mainObstacle === "plateau"
+      ? "استپ‌های مکرر وزنی شما"
+      : obstacle || "بزرگ‌ترین مانع قبلی شما";
+  const methodName = meta?.method || "پروتکل اختصاصی فیتینو";
+  const readinessLevel = exp;
+  const trainingPlace = env;
+  const targetZones = TARGET_ZONES[goalKey] || TARGET_ZONES.fitness;
+  const successPct = SUCCESS_PCT[goalKey] || 86;
+  const strategyFocus = STRATEGY_FOCUS[goalKey] || STRATEGY_FOCUS.fitness;
+
+  const statusSummary = {
+    title: "خلاصه وضعیت",
+    vars: {
+      physiologicIndex,
+      metabolicStatus,
+      problemIntensity,
+      commonMistake,
+      sideEffect,
+      biggestObstacle,
+      nutrition,
+    },
+    body:
+      goalKey === "weight_loss"
+        ? `تحلیل داده‌های فیزیولوژیک نشان می‌دهد ${physiologicIndex} و سیستم متابولیک در وضعیت ${metabolicStatus} قرار دارد. در این شرایط (${problemIntensity})، استفاده از ${commonMistake} نه تنها موثر نیست، بلکه با ${sideEffect}، عامل اصلی ${biggestObstacle} خواهد بود. چالش تغذیه‌ای شما یعنی «${nutrition}» این الگو را تشدید می‌کند.`
+        : goalKey === "muscle_gain"
+          ? `تحلیل داده‌های فیزیولوژیک نشان می‌دهد ${physiologicIndex} و سیستم متابولیک در وضعیت ${metabolicStatus} قرار دارد. در این شرایط (${problemIntensity})، ${commonMistake} نه تنها موثر نیست، بلکه با ${sideEffect}، مانع اصلی رشد شماست. چالش «${nutrition}» و «${biggestObstacle}» باید در پروتکل جدید خنثی شوند.`
+          : `تحلیل داده‌های فیزیولوژیک نشان می‌دهد ${physiologicIndex} و سیستم متابولیک در وضعیت ${metabolicStatus} قرار دارد. در این شرایط (${problemIntensity})، ${commonMistake} معمولاً به ${sideEffect} منجر می‌شود. بزرگ‌ترین مانع شما «${biggestObstacle}» است که با چالش «${nutrition}» هم‌پوشانی دارد.`,
+  };
+
+  const customSolution = {
+    title: `راهکار اختصاصی ${coachLabel}`,
+    vars: {
+      methodName,
+      readinessLevel,
+      trainingPlace,
+      targetZones,
+      activity,
+    },
+    body:
+      goalKey === "weight_loss"
+        ? `اعمال پروتکل اختصاصی «${methodName}» جهت وادار کردن بدن به چربی‌سوزی فعال. این متد به همراه تمرینات هدفمند متناسب با سطح آمادگی «${readinessLevel}» و امکانات (${trainingPlace}) تنظیم می‌شود تا بدون گرسنگی طاقت‌فرسا، ${targetZones} را از بین ببرد.`
+        : goalKey === "muscle_gain"
+          ? `اعمال پروتکل اختصاصی «${methodName}» برای ساخت عضله باکیفیت. این متد همراه با تغذیه چگال و تمرینات متناسب با سطح «${readinessLevel}» در (${trainingPlace}) طراحی می‌شود تا ${targetZones} بدون چربی زائد رشد کنند.`
+          : `اعمال پروتکل اختصاصی «${methodName}» برای فرم‌دهی پایدار. برنامه با سطح «${readinessLevel}»، فعالیت روزانه «${activity}» و امکانات (${trainingPlace}) هماهنگ می‌شود تا ${targetZones} هدف قرار گیرد.`,
+  };
+
+  const routePrediction = {
+    title: "پیش‌بینی مسیر",
+    successPct,
+    vars: { successPct, strategyFocus },
+    body: `شاخص سازگاری و موفقیت شما در این دوره ${new Intl.NumberFormat("fa-IR").format(successPct)}٪ برآورد شده است. استراتژی اصلی این مسیر، ${strategyFocus}.`,
+  };
 
   const metricsHighlights = [
     { label: "تیپ بدنی تخمینی", value: bodyType, icon: "body" },
@@ -302,125 +420,75 @@ export function buildAnalysis(answers, coachName = "علی رشید آبادی")
           { label: "حجم", value: 85 },
           { label: "استقامت", value: 58 },
           { label: "ریکاوری", value: 64 },
+          { label: "ثبات", value: 68 },
         ]
       : primaryGoal === "weight_loss"
         ? [
             { label: "چربی‌سوزی", value: 88 },
             { label: "حفظ عضله", value: 70 },
-            { label: "متابولیسم", value: 55 },
             { label: "ثبات", value: 62 },
+            { label: "متابولیسم", value: 55 },
+            { label: "استقامت", value: 60 },
           ]
         : [
             { label: "فرم", value: 78 },
             { label: "انرژی", value: 82 },
             { label: "قدرت", value: 68 },
             { label: "تعادل", value: 75 },
+            { label: "ثبات", value: 72 },
           ];
 
-  if (primaryGoal === "weight_loss") {
-    return {
-      scenario,
-      title: RESULT_COPY.title,
-      subtitle: "تحلیل اختصاصی بر اساس ۷ پاسخ تخصصی و شاخص‌های فیزیولوژیک شما",
-      meta,
-      bmr,
-      bmi,
-      bodyType,
-      macros,
-      chartBars,
-      aiWarning: RESULT_COPY.aiWarning,
-      highlights: metricsHighlights,
-      sections: [
-        {
-          title: "خلاصه وضعیت",
-          body: `با توجه به پاسخ‌های شما، بدن شما احتمالاً در شرایط مقاومت انسولینی یا استپ متابولیک قرار دارد؛ به‌خصوص به دلیل چالشِ «${nutrition}». رژیم‌های کم‌کالریِ سنتی فقط باعث ریزش عضلات شما می‌شوند و دلیل اصلی ${mainObstacle === "plateau" ? "استپ‌های مکرر وزنی" : "نتایج ضعیف قبلی"} شماست.`,
-        },
-        {
-          title: "راهکار اختصاصی استاد " + coachName,
-          body: `اعمال متد ${meta.method} برای دور زدن استپ وزنی، به همراه تمرینات چربی‌سوزی هوشمند متناسب با سطح «${exp || "فعلی"}» شما و امکانات «${env}». با این روش بدون گرسنگی کشیدن، چربی‌های مقاوم شکم و پهلو هدف قرار می‌گیرند.`,
-        },
-        {
-          title: "پیش‌بینی مسیر",
-          body: "پتانسیل کاهش سایز شما در این دوره ۸۸٪ برآورد شده است. تمرکز اصلی روی حفظ عضله در حین کاهش چربی و بازآموزی متابولیسم خواهد بود.",
-        },
-      ],
-      recommendations: [
-        "برنامه تغذیه چرخه‌ای (کرب‌سایکلینگ) متناسب با متابولیسم شما",
-        "تمرینات ترکیبی برای چربی‌سوزی هدفمند",
-        "پیگیری و چکاپ هفتگی توسط تیم مربی",
-      ],
-      closing: LEAD_COPY.subtitle,
-    };
-  }
+  const recommendations =
+    goalKey === "weight_loss"
+      ? [
+          "برنامه تغذیه چرخه‌ای (کرب‌سایکلینگ) متناسب با متابولیسم شما",
+          "تمرینات ترکیبی برای چربی‌سوزی هدفمند",
+          "پیگیری و چکاپ هفتگی توسط تیم مربی",
+        ]
+      : goalKey === "muscle_gain"
+        ? [
+            "برنامه تمرینی ۴-۵ روزه با تمرکز ترکیبی",
+            "رژیم پرکالریِ زودهضم و شخصی‌سازی‌شده",
+            "مکمل‌سازی و زمان‌بندی دقیق وعده‌ها",
+          ]
+        : [
+            "تمرینات کوتاه و مؤثر (۳-۴ روز در هفته)",
+            "رژیم متعادل بدون محرومیت شدید",
+            "گزارش‌دهی و چکاپ هفتگی در پنل اختصاصی",
+          ];
 
-  if (primaryGoal === "muscle_gain") {
-    return {
-      scenario,
-      title: RESULT_COPY.title,
-      subtitle: "تحلیل ژنتیک و متابولیسم اختصاصی شما",
-      meta,
-      bmr,
-      bmi,
-      bodyType,
-      macros,
-      chartBars,
-      aiWarning: RESULT_COPY.aiWarning,
-      highlights: metricsHighlights,
-      sections: [
-        {
-          title: "خلاصه وضعیت",
-          body: `پاسخ‌های شما نشان می‌دهد تیپ بدنی شما تمایل شدیدی به کاتابولیسم (سوزاندن عضلات) دارد، به‌ویژه به این دلیل که با چالشِ «${nutrition}» روبرو هستید. شما برای حجم گرفتن نیاز به خوردن حجم زیادی غذا ندارید، بلکه نیاز به چگالی کالری بالا دارید.`,
-        },
-        {
-          title: "راهکار اختصاصی استاد " + coachName,
-          body: `طراحی رژیم غذایی زودهضم با بافت کالری متراکم، به همراه برنامه‌ریزی تمرینات بر پایه ${meta.method} در «${env}». با این روش، بدون افزایش چربی شکم و پهلو، عضلات شما فرم حجمی باکیفیت به خود می‌گیرند.`,
-        },
-        {
-          title: "پیش‌بینی مسیر",
-          body: `چانس موفقیت شما در این مسیر بالا و پایدار است. تمرکز روی افزایش تدریجی وزنه، ریکاوری کافی و دریافت پروتئین به‌موقع، متناسب با سطح «${exp || "تمرینی"}» شما خواهد بود.`,
-        },
-      ],
-      recommendations: [
-        "برنامه تمرینی ۴-۵ روزه با تمرکز ترکیبی",
-        "رژیم پرکالریِ زودهضم و شخصی‌سازی‌شده",
-        "مکمل‌سازی و زمان‌بندی دقیق وعده‌ها",
-      ],
-      closing: LEAD_COPY.subtitle,
-    };
-  }
+  const subtitle =
+    goalKey === "muscle_gain"
+      ? "تحلیل ژنتیک و متابولیسم اختصاصی شما"
+      : goalKey === "fitness"
+        ? "برنامه انعطاف‌پذیر برای یک تغییر ماندگار"
+        : "تحلیل اختصاصی بر اساس ۷ پاسخ تخصصی و شاخص‌های فیزیولوژیک شما";
 
   return {
     scenario,
     title: RESULT_COPY.title,
-    subtitle: "برنامه انعطاف‌پذیر برای یک تغییر ماندگار",
+    subtitle,
     meta,
     bmr,
     bmi,
     bodyType,
     macros,
     chartBars,
+    successPct,
     aiWarning: RESULT_COPY.aiWarning,
     highlights: metricsHighlights,
+    statusSummary,
+    customSolution,
+    routePrediction,
+    // Keep flat sections for PNG export / legacy consumers
     sections: [
-      {
-        title: "خلاصه وضعیت",
-        body: `هدف شما داشتن بدنی کات، بدون چربی زائد و با ماندگاری بالاست. بررسی پاسخ‌های شما نشان می‌دهد بزرگ‌ترین حلقه مفقوده شما «${obstacle}» بوده است. بدن شما پتانسیل عضلانی خوبی دارد اما نیاز به ثبات در تمرین دارد.`,
-      },
-      {
-        title: "راهکار اختصاصی استاد " + coachName,
-        body: `تنظیم برنامه‌ای که به‌راحتی با وضعیت فعالیت شما یعنی «${activity}» و امکانات «${env}» هماهنگ شود. همچنین سیستم ${meta.method} و چکاپ هفتگی در پنل سایت، شما را در این مسیر متعهد نگه می‌دارد تا به لایف‌استایل ایده‌آل خود برسید.`,
-      },
-      {
-        title: "پیش‌بینی مسیر",
-        body: "با توجه به تعهد شما، برنامه طوری طراحی می‌شود که در کمترین زمان بیشترین بازدهی را بگیرید. شما کاملاً آماده یک تغییر ماندگار هستید.",
-      },
+      { title: statusSummary.title, body: statusSummary.body },
+      { title: customSolution.title, body: customSolution.body },
+      { title: routePrediction.title, body: routePrediction.body },
     ],
-    recommendations: [
-      "تمرینات کوتاه و مؤثر (۳-۴ روز در هفته)",
-      "رژیم متعادل بدون محرومیت شدید",
-      "گزارش‌دهی و چکاپ هفتگی در پنل اختصاصی",
-    ],
+    recommendations,
     closing: LEAD_COPY.subtitle,
+    coachName: coachLabel,
   };
 }
 
@@ -428,7 +496,7 @@ export const ANALYZING_STEPS = [
   "محاسبه دقیق نرخ متابولیسم و تفکیک ماکروها انجام شد.",
   "متصل کردن متغیرهای شما به سیستم پایش لحظه‌ای هوش مصنوعی...",
   "تحلیل موانع غذایی و شخصی‌سازی منوی منعطف فیتینو...",
-  "ارسال گزارش اولیه به پنل کاربری مربی علی جهت تایید نهایی...",
+  "ارسال گزارش اولیه به پنل کاربری مربی علی رشیدآبادی جهت تایید نهایی...",
 ];
 
 export const ANALYZING_TITLE = "در حال تحلیل داده‌های ساختاری و طراحی استراتژی بدنی شما...";
@@ -462,6 +530,28 @@ export const STATUS_LABELS = {
   contacted: "تماس گرفته شد",
   failed: "ناموفق",
 };
+
+/** Admin pipeline stages for Ali Rashidabadi funnel CRM. */
+export const FUNNEL_PIPELINE = [
+  {
+    key: "pending_payment",
+    label: "ثبت لید",
+    short: "لید",
+    desc: "ارزیابی تمام + شماره ثبت شده — هنوز پرداخت نکرده",
+  },
+  {
+    key: "paid",
+    label: "خرید نهایی",
+    short: "خرید",
+    desc: "پرداخت انجام شده — منتظر تماس تیم",
+  },
+  {
+    key: "contacted",
+    label: "تماس گرفته شد",
+    short: "تماس",
+    desc: "تیم مربی با لید هماهنگ شده",
+  },
+];
 
 /** Progress for smart-processor bar: quiz 15→70, metrics 80, analyzing 90, result/lead 95+. */
 export function funnelProgress(stage, qIndex) {

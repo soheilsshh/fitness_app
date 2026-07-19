@@ -37,7 +37,7 @@ export const adminNav = [
   },
   {
     href: "/admin/funnel-leads",
-    label: "قیف فروش",
+    label: "لید و فانل",
     icon: FilterIcon,
   },
   {

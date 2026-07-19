@@ -7,6 +7,7 @@ import {
   ArrowLeft,
   ArrowRight,
   CheckCircle2,
+  Download,
   Loader2,
   Lock,
   Settings2,
@@ -15,12 +16,16 @@ import { api } from "@/lib/axios/client";
 import {
   isValidIranPhone,
   normalizeIranPhone,
+  normalizeNumericInput,
+  toPersianDigits,
   toastError,
+  toastSuccess,
 } from "@/app/(site)/auth/_components/helpers";
 import { cn } from "@/lib/utils";
 import {
   ANALYZING_STEPS,
   ANALYZING_TITLE,
+  COACH_SHORT_NAME,
   LEAD_COPY,
   METRICS_COPY,
   PREPARING_MESSAGES,
@@ -29,6 +34,15 @@ import {
   buildAnalysis,
   funnelProgress,
 } from "../_lib/funnelConfig";
+import { downloadAnalysisPng } from "../_lib/exportAnalysisImage";
+import {
+  clearFunnelDraft,
+  hasFunnelProgress,
+  loadFunnelDraft,
+  saveFunnelDraft,
+} from "../_lib/funnelDraft";
+import AnalysisNarrative from "./AnalysisNarrative";
+import AnalysisVisuals from "./AnalysisVisuals";
 import FinalAnalyzeLoader from "./FinalAnalyzeLoader";
 import FunnelHero from "./FunnelHero";
 import { LogoAnchor } from "./FunnelLogoLayer";
@@ -49,6 +63,7 @@ export default function LeadFunnelWizard() {
   const searchParams = useSearchParams();
 
   const [config, setConfig] = useState(null);
+  const [ready, setReady] = useState(false);
   // hero | quiz | metrics | analyzing | result | lead
   const [stage, setStage] = useState("hero");
   const [qIndex, setQIndex] = useState(0);
@@ -61,11 +76,52 @@ export default function LeadFunnelWizard() {
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [downloading, setDownloading] = useState(false);
 
   const lockTimer = useRef(null);
+  const persistReady = useRef(false);
 
   const utmSource = searchParams.get("utm_source") || "";
   const utmCampaign = searchParams.get("utm_campaign") || "";
+
+  // Restore mid-funnel progress so leaving the page does not restart from hero.
+  useEffect(() => {
+    const draft = loadFunnelDraft();
+    if (draft && hasFunnelProgress(draft)) {
+      if (draft.stage === "checkout" && draft.checkoutToken) {
+        persistReady.current = true;
+        setReady(true);
+        router.replace(`/ali-rashidabadi/payment?token=${draft.checkoutToken}`);
+        return;
+      }
+      setAnswers(draft.answers || {});
+      setQIndex(draft.qIndex || 0);
+      setAge(draft.age || "");
+      setHeightCm(draft.heightCm || "");
+      setWeightKg(draft.weightKg || "");
+      setFullName(draft.fullName || "");
+      setPhone(draft.phone || "");
+      setPhase("options");
+      setStage(draft.stage === "hero" ? "quiz" : draft.stage);
+    }
+    persistReady.current = true;
+    setReady(true);
+  }, [router]);
+
+  useEffect(() => {
+    if (!persistReady.current || !ready) return;
+    if (stage === "hero") return;
+    saveFunnelDraft({
+      stage,
+      qIndex,
+      answers,
+      age,
+      heightCm,
+      weightKg,
+      fullName,
+      phone,
+    });
+  }, [ready, stage, qIndex, answers, age, heightCm, weightKg, fullName, phone]);
 
   useEffect(() => {
     api
@@ -73,7 +129,7 @@ export default function LeadFunnelWizard() {
       .then((res) => setConfig(res.data))
       .catch(() => {
         setConfig({
-          coachName: "علی رشید آبادی",
+          coachName: COACH_SHORT_NAME,
           packageTitle: "پکیج مربیگری اختصاصی",
           amount: 2500000,
         });
@@ -82,7 +138,7 @@ export default function LeadFunnelWizard() {
 
   useEffect(() => () => clearTimeout(lockTimer.current), []);
 
-  const coachName = config?.coachName || "علی رشید آبادی";
+  const coachName = config?.coachName || COACH_SHORT_NAME;
   const currentQ = QUESTIONS[qIndex];
 
   const analysis = useMemo(() => {
@@ -107,17 +163,37 @@ export default function LeadFunnelWizard() {
   }, [stage, phase]);
 
   const startQuiz = useCallback(() => {
-    setAnswers({});
-    setQIndex(0);
-    setPhase("typing");
-    setAge("");
-    setHeightCm("");
-    setWeightKg("");
-    setStage("quiz");
+    const draft = loadFunnelDraft();
+    if (draft && hasFunnelProgress(draft)) {
+      if (draft.stage === "checkout" && draft.checkoutToken) {
+        router.push(`/ali-rashidabadi/payment?token=${draft.checkoutToken}`);
+        return;
+      }
+      setAnswers(draft.answers || {});
+      setQIndex(draft.qIndex || 0);
+      setAge(draft.age || "");
+      setHeightCm(draft.heightCm || "");
+      setWeightKg(draft.weightKg || "");
+      setFullName(draft.fullName || "");
+      setPhone(draft.phone || "");
+      setPhase("options");
+      setStage(draft.stage === "hero" ? "quiz" : draft.stage);
+    } else {
+      clearFunnelDraft();
+      setAnswers({});
+      setQIndex(0);
+      setPhase("typing");
+      setAge("");
+      setHeightCm("");
+      setWeightKg("");
+      setFullName("");
+      setPhone("");
+      setStage("quiz");
+    }
     if (typeof window !== "undefined") {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
-  }, []);
+  }, [router]);
 
   const onTitleDone = useCallback(() => {
     setPhase((p) => (p === "typing" ? "options" : p));
@@ -146,9 +222,9 @@ export default function LeadFunnelWizard() {
 
   const submitMetrics = (e) => {
     e.preventDefault();
-    const a = Number(age);
-    const h = Number(heightCm);
-    const w = Number(weightKg);
+    const a = Number(normalizeNumericInput(age));
+    const h = Number(normalizeNumericInput(heightCm));
+    const w = Number(normalizeNumericInput(weightKg, { allowDecimal: true }));
     if (!a || a < 14 || a > 80) {
       return toastError("سن نامعتبر", "سن را بین ۱۴ تا ۸۰ وارد کنید.");
     }
@@ -158,6 +234,9 @@ export default function LeadFunnelWizard() {
     if (!w || w < 35 || w > 250) {
       return toastError("وزن نامعتبر", "وزن را به کیلوگرم وارد کنید.");
     }
+    setAge(String(a));
+    setHeightCm(String(h));
+    setWeightKg(String(w));
     setAnswers((prev) => ({ ...prev, age: a, heightCm: h, weightKg: w }));
     setStage("analyzing");
   };
@@ -201,6 +280,17 @@ export default function LeadFunnelWizard() {
       });
       const token = res.data?.checkoutToken;
       if (!token) throw new Error("no token");
+      saveFunnelDraft({
+        stage: "checkout",
+        checkoutToken: token,
+        answers,
+        qIndex,
+        age,
+        heightCm,
+        weightKg,
+        fullName,
+        phone: normalizedPhone,
+      });
       router.push(`/ali-rashidabadi/payment?token=${token}`);
     } catch (err) {
       const msg = err?.response?.data?.error || "ثبت اطلاعات ناموفق بود.";
@@ -210,8 +300,33 @@ export default function LeadFunnelWizard() {
     }
   };
 
+  const handleDownloadReport = async () => {
+    if (!analysis || downloading) return;
+    setDownloading(true);
+    try {
+      await downloadAnalysisPng(analysis, {
+        coachName,
+        fileName: "fitino-analyz-badani.png",
+      });
+      toastSuccess("دانلود شد", "گزارش آنالیز بدنی به‌صورت تصویر ذخیره شد.");
+    } catch {
+      toastError("خطا", "دانلود گزارش ناموفق بود. دوباره تلاش کنید.");
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  if (!ready) {
+    return (
+      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-[#0e0e0e] text-white/50">
+        <Loader2 className="size-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   if (stage === "hero") {
-    return <FunnelHero coachName={coachName} onStart={startQuiz} />;
+    const canResume = hasFunnelProgress(loadFunnelDraft());
+    return <FunnelHero coachName={coachName} onStart={startQuiz} resume={canResume} />;
   }
 
   const progressValue = funnelProgress(stage, qIndex);
@@ -364,13 +479,21 @@ export default function LeadFunnelWizard() {
               <form onSubmit={submitMetrics} className="space-y-5">
                 <div className="grid gap-4 sm:grid-cols-3">
                   {[
-                    { id: "age", label: "سن (سال)", value: age, set: setAge, placeholder: "۲۸" },
+                    {
+                      id: "age",
+                      label: "سن (سال)",
+                      value: age,
+                      set: setAge,
+                      placeholder: "۲۸",
+                      allowDecimal: false,
+                    },
                     {
                       id: "height",
                       label: "قد (سانتی‌متر)",
                       value: heightCm,
                       set: setHeightCm,
                       placeholder: "۱۷۸",
+                      allowDecimal: false,
                     },
                     {
                       id: "weight",
@@ -378,17 +501,27 @@ export default function LeadFunnelWizard() {
                       value: weightKg,
                       set: setWeightKg,
                       placeholder: "۸۲",
+                      allowDecimal: true,
                     },
                   ].map((field) => (
                     <label key={field.id} className="block space-y-2 text-start">
                       <span className="text-xs text-white/50">{field.label}</span>
                       <input
                         id={field.id}
-                        type="number"
+                        type="text"
                         inputMode="numeric"
-                        dir="ltr"
-                        value={field.value}
-                        onChange={(e) => field.set(e.target.value)}
+                        pattern="[0-9۰-۹٠-٩.]*"
+                        dir="rtl"
+                        lang="fa"
+                        autoComplete="off"
+                        value={field.value ? toPersianDigits(field.value) : ""}
+                        onChange={(e) =>
+                          field.set(
+                            normalizeNumericInput(e.target.value, {
+                              allowDecimal: field.allowDecimal,
+                            })
+                          )
+                        }
                         placeholder={field.placeholder}
                         required
                         className="h-12 w-full rounded-xl border border-white/15 bg-black/40 px-3 text-center text-lg font-bold text-white outline-none transition placeholder:text-white/25 focus:border-primary/60 focus:shadow-[0_0_0_3px_oklch(0.58_0.11_187_/_0.2)]"
@@ -434,73 +567,45 @@ export default function LeadFunnelWizard() {
             </div>
 
             <FunnelGlass className="overflow-hidden">
-              <div className="flex justify-center border-b border-white/10 px-5 py-4">
-                <span className="inline-flex rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs text-primary">
+              <div
+                dir="ltr"
+                className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-4 sm:px-5"
+              >
+                <button
+                  type="button"
+                  onClick={handleDownloadReport}
+                  disabled={downloading}
+                  title="دانلود گزارش به‌صورت تصویر"
+                  className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/85 backdrop-blur-md transition hover:border-primary/40 hover:bg-primary/10 hover:text-white disabled:opacity-60"
+                >
+                  {downloading ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : (
+                    <Download className="size-3.5" />
+                  )}
+                  دانلود
+                </button>
+                <span className="inline-flex max-w-[70%] shrink rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-end text-xs text-primary">
                   {analysis.meta.badge}
                 </span>
               </div>
               <div className="space-y-6 p-5 md:p-6">
-                <div className="grid grid-cols-2 gap-3">
-                  {analysis.highlights.map((h, i) => (
-                    <motion.div
-                      key={h.label}
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.08 + i * 0.06 }}
-                      className="rounded-2xl border border-white/10 bg-black/30 p-3 text-center"
-                    >
-                      <div className="text-[11px] text-white/45">{h.label}</div>
-                      <div className="mt-1 text-sm font-bold text-white">{h.value}</div>
-                    </motion.div>
-                  ))}
-                </div>
-
-                {analysis.chartBars && (
-                  <div className="space-y-3">
-                    <p className="text-xs font-medium text-white/45">نمای بیومکانیک تخمینی</p>
-                    {analysis.chartBars.map((bar) => (
-                      <div key={bar.label} className="space-y-1.5">
-                        <div className="flex justify-between text-xs text-white/55">
-                          <span>{bar.label}</span>
-                          <span className="tabular-nums">{bar.value}٪</span>
-                        </div>
-                        <div className="h-2 overflow-hidden rounded-full bg-white/5">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${bar.value}%` }}
-                            transition={{ duration: 0.8, delay: 0.2 }}
-                            className="h-full rounded-full bg-gradient-to-l from-primary to-chart-2"
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <AnalysisVisuals analysis={analysis} />
 
                 <div className="rounded-2xl border border-orange-400/35 bg-orange-500/10 p-4 shadow-[0_0_28px_-10px_rgba(251,146,60,0.4)]">
                   <p className="text-xs font-bold text-orange-300">هشدار هوش مصنوعی</p>
                   <p className="mt-2 text-sm leading-8 text-orange-50/90">{analysis.aiWarning}</p>
                 </div>
 
-                {analysis.sections.map((sec, i) => (
-                  <motion.div
-                    key={sec.title}
-                    initial={{ opacity: 0, x: 16 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.25 + i * 0.1 }}
-                    className="space-y-2"
-                  >
-                    <h3 className="text-sm font-bold text-primary">{sec.title}</h3>
-                    <p className="text-sm leading-8 text-white/60">{sec.body}</p>
-                  </motion.div>
-                ))}
+                <AnalysisNarrative analysis={analysis} />
               </div>
             </FunnelGlass>
 
-            <FunnelCta onClick={() => setStage("lead")}>
-              {RESULT_COPY.cta}
-              <ArrowLeft className="size-5" />
-            </FunnelCta>
+            <div className="sticky bottom-0 z-30 -mx-4 mt-1 bg-gradient-to-t from-[#0e0e0e] via-[#0e0e0e] via-60% to-transparent px-4 pb-4 pt-6">
+              <FunnelCta onClick={() => setStage("lead")}>
+                {RESULT_COPY.cta}
+              </FunnelCta>
+            </div>
           </motion.div>
         )}
 

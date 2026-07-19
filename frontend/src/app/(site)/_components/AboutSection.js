@@ -10,7 +10,6 @@ import {
 } from "react-icons/fi";
 import { FaDumbbell, FaAppleAlt, FaHeartbeat } from "react-icons/fa";
 
-// Maps a pillar icon key (from the API) to its icon component.
 const PILLAR_ICONS = {
   award: FiAward,
   dumbbell: FaDumbbell,
@@ -20,30 +19,60 @@ const PILLAR_ICONS = {
   heartbeat: FaHeartbeat,
 };
 
-// Fallback value pillars — used when the API doesn't provide custom ones.
-const DEFAULT_PILLARS = [
-  { icon: "award", title: "مربیان متخصص و تاییدشده", desc: "تیم مربیان حرفه‌ای و دارای مدرک، همراه شخصی شما در تمام مسیر تمرین." },
-  { icon: "dumbbell", title: "برنامه تمرین اختصاصی", desc: "هر حرکت و هر ست متناسب با بدن، سطح و هدف شما طراحی و به‌روزرسانی می‌شود." },
-  { icon: "apple", title: "برنامه تغذیه علمی", desc: "رژیم غذایی دقیق و قابل اجرا، کاملاً هماهنگ با تمرینات و سبک زندگی شما." },
-  { icon: "trending", title: "پیگیری پیشرفت", desc: "نتایج خود را با عدد و آمار دنبال کنید؛ هر هفته یک قدم به هدف نزدیک‌تر." },
-  { icon: "message", title: "پشتیبانی همیشگی مربی", desc: "هر زمان سوال یا چالشی داشتی، مربی‌ات مستقیماً کنارت است." },
-  { icon: "heartbeat", title: "تمرین در باشگاه یا خانه", desc: "برنامه‌ها برای هر امکانات و شرایطی قابل اجرا هستند، هرجا که باشی." },
+const PILLARS = [
+  {
+    icon: "award",
+    title: "👤 نظارت مستقیم مربی ارشد",
+    desc: "هدایت، بازبینی و تایید مداوم روند پیشرفت شما توسط مربی علی جهت اطمینان از صحت و کارایی تمام برنامه‌ها.",
+  },
+  {
+    icon: "dumbbell",
+    title: "🏋️‍♂️ طراحی سیستماتیک تمرینات",
+    desc: "تنظیم دقیق تک‌تک حرکت‌ها و ست‌ها متناسب با ساختار فیزیولوژیک، سطح توانایی و اهداف اختصاصی شما.",
+  },
+  {
+    icon: "apple",
+    title: "🍏 منوی غذایی منعطف و علمی",
+    desc: "رژیم غذایی منطبق بر سفره ایرانی و ترجیحات شما، با هدف تنظیم متابولیسم و بدون محدودیت‌های طاقت‌فرسا.",
+  },
+  {
+    icon: "trending",
+    title: "🤖 پایش هوشمند و مداوم",
+    desc: "تحلیل روزانه شاخص‌های بدنی توسط سیستم هوشمند جهت پیشگیری از استپ وزنی و اصلاح فوری مسیر حرکت.",
+  },
+  {
+    icon: "message",
+    title: "💬 پشتیبانی متعهدانه و مستمر",
+    desc: "امکان ارتباط مستقیم و رفع ابهام در تمام مراحل دوره، با هدف حفظ بالاترین سطح انگیزه و استمرار شما.",
+  },
+  {
+    icon: "heartbeat",
+    title: "🏠 انطباق کامل با سبک زندگی",
+    desc: "طراحی هوشمندانه برنامه‌ها بر اساس بستر تمرینی مورد نظر شما (باشگاه یا منزل) با حداقل تجهیزات در دسترس.",
+  },
 ];
 
-// Onboarding flow — used when the API doesn't provide custom steps.
-const DEFAULT_STEPS = [
-  { id: "s1", title: "ثبت‌نام", text: "پروفایل خود را تکمیل کنید و هدفتان را مشخص کنید." },
-  { id: "s2", title: "انتخاب مربی", text: "از بین مربیان منتشرشده، پلن مناسب را انتخاب کنید." },
-  { id: "s3", title: "شروع برنامه", text: "برنامه تمرین و تغذیه را در پنل کاربری دنبال کنید." },
+const STEPS = [
+  {
+    id: "s1",
+    title: "ثبت شاخص‌های پیشرفت",
+    text: "اطلاعات اولیه، رکوردهای تمرینی و تغییرات بدنی خود را به‌سادگی در پنل کاربری ثبت کنید.",
+  },
+  {
+    id: "s2",
+    title: "تحلیل هوشمند روند",
+    text: "سیستم تغییرات شما را ارزیابی کرده و برنامه را جهت بازدهی بیشتر به‌روزرسانی می‌کند.",
+  },
+  {
+    id: "s3",
+    title: "تثبیت و ماندگاری نتیجه",
+    text: "با هدایت مستمر مربی علی، مسیر تغییرات خود را بدون استپ وزنی و با پایداری کامل طی کنید.",
+  },
 ];
 
-export default function AboutSection({ steps, pillars }) {
-  const stepItems = steps?.length ? steps : DEFAULT_STEPS;
-  const pillarItems = pillars?.length ? pillars : DEFAULT_PILLARS;
-
+export default function AboutSection() {
   return (
     <section id="about" className="mx-auto max-w-7xl scroll-mt-24 overflow-hidden px-6 py-12 md:py-16">
-      {/* How it works — onboarding flow */}
       <div className="mb-20">
         <motion.h3
           initial={{ opacity: 0, y: 16 }}
@@ -52,13 +81,13 @@ export default function AboutSection({ steps, pillars }) {
           transition={{ duration: 0.6 }}
           className="mb-10 text-center text-3xl font-extrabold text-primary md:text-4xl"
         >
-          فقط <span className="gradient-text">سه قدم</span> تا شروع
+          فقط <span className="gradient-text">۳ قدم</span> تا آغاز تحول
         </motion.h3>
 
         <div className="grid gap-6 md:grid-cols-3">
-          {stepItems.map((s, idx) => (
+          {STEPS.map((s, idx) => (
             <motion.div
-              key={s.id || s.title}
+              key={s.id}
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.25 }}
@@ -81,16 +110,15 @@ export default function AboutSection({ steps, pillars }) {
 
         <div className="mt-10 flex justify-center">
           <Link
-            href="/coaches"
+            href="/ali-rashidabadi"
             className="inline-flex items-center gap-2 rounded-full bg-surface-tint px-8 py-4 font-bold text-on-primary shadow-2xl transition-transform hover:scale-105"
           >
+            ورود به آنالیز هوشمند و شروع دوره 🚀
             <FiArrowLeft className="text-xl" />
-            انتخاب مربی و شروع
           </Link>
         </div>
       </div>
 
-      {/* Intro */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -100,25 +128,25 @@ export default function AboutSection({ steps, pillars }) {
       >
         <div className="glass inline-flex items-center gap-2 rounded-full border border-surface-tint/20 px-4 py-1 text-xs text-surface-tint">
           <span className="h-2 w-2 animate-pulse rounded-full bg-surface-tint" />
-          باشگاه هوشمند و مربیگری اختصاصی
+          ⚡️ نسل نوین مدیریت تندرستی و تناسب اندام
         </div>
         <h2 className="text-4xl font-extrabold text-primary md:text-5xl">
-          چرا <span className="gradient-text">فیتینو؟</span>
+          چرا <span className="gradient-text">فیتینو</span> متمایز است؟
         </h2>
         <p className="max-w-2xl text-base leading-8 text-foreground md:text-lg">
-          فیتینو یک باشگاه دیجیتال است که تمرین، تغذیه و مربیگری حرفه‌ای را در یک پلتفرم
-          جمع می‌کند؛ از انتخاب مربی تا رسیدن به فرم ایده‌آل، در هر قدم کنار شما هستیم.
+          فیتینو با تلفیق نظارت مربی پیشرو و تحلیل مداوم الگوریتم‌های هوشمند، تمام نیازهای تمرینی،
+          تغذیه‌ای و پایش روزانه شما را در یک بستر یکپارچه برطرف می‌کند تا دستیابی به هدف، قطعی
+          باشد.
         </p>
       </motion.div>
 
-      {/* Value pillars */}
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {pillarItems.map((p, idx) => {
+        {PILLARS.map((p, idx) => {
           const Icon = PILLAR_ICONS[p.icon] || FiAward;
           const color = idx % 2 === 0 ? "text-surface-tint" : "text-secondary-container";
           return (
             <motion.div
-              key={p.id || p.title}
+              key={p.title}
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.25 }}

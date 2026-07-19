@@ -3,45 +3,43 @@
 import { useRef } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Activity, Award, Star, ThumbsUp, Users, Wrench, Zap } from "lucide-react";
+import { Activity, TrendingUp, Users, Wrench, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import baseStatue from "@/assets/landing-page/non_body_builder_statue.png";
 import sculptedStatue from "@/assets/landing-page/body_builder_statue.png";
 
-const DEFAULT_STATS = [
-  { value: "۱۲,۵۰۰+", label: "شاگردان فعال" },
-  { value: "۸۷٪", label: "رضایت کاربران" },
-  { value: "۴.۹/۵", label: "امتیاز رضایت" },
-  { value: "۳۲۰+", label: "نتایج درخشان" },
+const STATS = [
+  {
+    icon: Users,
+    value: "+۱۲,۵۰۰",
+    label: "تغییر بدنی موفق در پلتفرم فیتینو",
+  },
+  {
+    icon: TrendingUp,
+    value: "۸۷٪",
+    label: "ماندگاری و پایبندی بیشتر به رژیم غذایی",
+  },
 ];
-
-const STAT_ICONS = [Users, ThumbsUp, Star, Award];
 
 const FEATURES = [
   {
     icon: Wrench,
-    title: "دقت مهندسی",
-    desc: "هر تکرار و هر وعده غذایی با دقت ریاضی برای فیزیولوژی شما طراحی می‌شود.",
+    title: "تنظیم علمی و دقیق",
+    desc: "طراحی سیستماتیک تمرینات و محاسبه دقیق رژیم غذایی بر اساس ساختار فیزیولوژیک شما.",
   },
   {
     icon: Zap,
-    title: "تحول سریع",
-    desc: "استفاده از پروتکل‌های فشرده برای رسیدن به حداکثر نتیجه در حداقل زمان ممکن.",
+    title: "بازدهی حداکثری در زمان",
+    desc: "استفاده از متدهای بهینه‌شده جهت دستیابی به بالاترین سطح آمادگی جسمانی در کوتاه‌ترین زمان ممکن.",
   },
   {
     icon: Activity,
-    title: "ماندگاری نتیجه",
-    desc: "تمرکز ما فقط روی تغییر موقت نیست، بلکه سبک زندگی شما را بازطراحی می‌کنیم.",
+    title: "ماندگاری نتایج",
+    desc: "تمرکز بر تثبیت دستاوردها و اصلاح هوشمندانه سبک زندگی جهت جلوگیری از بازگشت به وضعیت قبل.",
   },
 ];
 
-export default function RecordsSection({ stats: apiStats }) {
-  const STATS = (apiStats?.length ? apiStats : DEFAULT_STATS).map((s, i) => ({
-    icon: STAT_ICONS[i % STAT_ICONS.length],
-    value: s.value,
-    label: s.label,
-  }));
-
+export default function RecordsSection() {
   const overlayRef = useRef(null);
 
   const onRevealMove = (e) => {
@@ -63,24 +61,23 @@ export default function RecordsSection({ stats: apiStats }) {
       <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-muted/40 via-background to-background" />
 
       <div className="relative z-10 mx-auto max-w-7xl px-5 sm:px-6">
-        {/* Header — matches Contact / Programs rhythm */}
         <div className="mb-8 space-y-3 text-center md:mb-10">
           <p className="text-xs font-iranianSansDemiBold tracking-wide text-primary">
-            نتایج قابل اندازه‌گیری
+            📊 سنجش علمی پیشرفت بر اساس داده‌های واقعی
           </p>
           <h2 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl md:text-4xl">
-            مسیرت رو با{" "}
+            مسیر پیشرفت خود را با{" "}
             <span className="bg-linear-to-l from-primary via-chart-2 to-chart-3 bg-clip-text text-transparent">
-              عدد و نتیجه
+              اعداد و نتایج واقعی
             </span>{" "}
-            ببین
+            ارزیابی کنید
           </h2>
-          <p className="mx-auto max-w-xl text-sm leading-7 text-foreground/85 md:text-base">
-            ما به خروجی کارمان ایمان داریم؛ این آمار گویای همه‌چیز است.
+          <p className="mx-auto max-w-2xl text-sm leading-7 text-foreground/85 md:text-base">
+            ترکیب پایش هوشمند و نظارت مستقیم مربی، رسیدن به هدف را از یک احتمال، به یک مسیر
+            مطمئن و مهندسی‌شده تبدیل می‌کند:
           </p>
         </div>
 
-        {/* Reveal + stats bento */}
         <div className="mb-8 grid items-stretch gap-4 md:mb-10 md:grid-cols-2 md:gap-5">
           <motion.div
             initial={{ opacity: 0, y: 14 }}
@@ -93,7 +90,6 @@ export default function RecordsSection({ stats: apiStats }) {
           >
             <div className="pointer-events-none absolute inset-0 z-30 bg-linear-to-t from-background/50 via-transparent to-transparent" />
 
-            {/* Mobile: sculpted only */}
             <Image
               src={sculptedStatue}
               alt="مجسمه تراش‌خورده — نتیجه نهایی"
@@ -103,7 +99,6 @@ export default function RecordsSection({ stats: apiStats }) {
               priority={false}
             />
 
-            {/* Desktop: hover reveal */}
             <Image
               src={baseStatue}
               alt="مجسمه پیش از تراش"
@@ -127,16 +122,15 @@ export default function RecordsSection({ stats: apiStats }) {
             </div>
 
             <div className="absolute inset-x-0 bottom-0 z-40 p-4 md:p-5">
-              <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/80 px-3 py-1.5 text-[11px] text-foreground/90 backdrop-blur-md">
-                <span className="hidden size-1.5 animate-pulse rounded-full bg-primary md:inline-block" />
-                <span className="md:hidden">نتیجه نهایی</span>
-                <span className="hidden md:inline">موس را حرکت بده تا تحول را ببینی</span>
+              <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-border/60 bg-background/80 px-3 py-1.5 text-[11px] leading-snug text-foreground/90 backdrop-blur-md">
+                <span className="hidden size-1.5 shrink-0 animate-pulse rounded-full bg-primary md:inline-block" />
+                <span>🔄 تصویر را جابجا کنید تا قدرت تغییر با فیتینو را مشاهده کنید</span>
               </div>
             </div>
           </motion.div>
 
           <div className="flex flex-col gap-4">
-            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
               {STATS.map((s, idx) => {
                 const Icon = s.icon;
                 return (
@@ -148,11 +142,11 @@ export default function RecordsSection({ stats: apiStats }) {
                     transition={{ duration: 0.4, delay: idx * 0.05 }}
                     className="rounded-3xl border border-border/70 bg-card p-4 shadow-sm transition-colors hover:border-primary/30 sm:p-5"
                   >
-                    <div className="flex items-center gap-2.5">
+                    <div className="flex items-start gap-2.5">
                       <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
                         <Icon className="size-4" aria-hidden />
                       </span>
-                      <span className="truncate text-xs text-foreground/75">{s.label}</span>
+                      <span className="text-xs leading-5 text-foreground/75">{s.label}</span>
                     </div>
                     <div
                       className="mt-3 text-2xl font-iranianSansBlack tabular-nums tracking-tight text-foreground sm:text-3xl"
@@ -173,17 +167,18 @@ export default function RecordsSection({ stats: apiStats }) {
               className="flex flex-1 flex-col justify-center rounded-3xl border border-primary/25 bg-primary/5 p-5 text-start sm:p-6"
             >
               <h3 className="text-lg font-iranianSansBlack text-foreground sm:text-xl">
-                برنامه‌ای که «واقعاً» انجام می‌دی
+                ⚡️ برنامه‌ای اجراشدنی، بدون خستگی و رها شدن در مسیر
               </h3>
               <p className="mt-2 text-sm leading-7 text-foreground/85 md:text-base">
-                ما متعهد می‌شویم که تا رسیدن به فرم ایده‌آل، لحظه به لحظه کنار
-                شما باشیم. هنر ما، تراشیدن عضلات شماست.
+                بزرگترین عامل شکست رژیم‌ها، سختی بیش از حد منو و عدم پیگیری مربی است. فیتینو
+                برنامه غذایی شما را بر اساس غذاهای روزمره و خانگی تنظیم می‌کند. سیستم هوشمند با
+                همراهی مربی علی، روزانه روند شما را پایش می‌کند تا بدون استپ وزنی به اندام ایده‌آل
+                خود برسید.
               </p>
             </motion.div>
           </div>
         </div>
 
-        {/* Feature pillars — icon + title one line */}
         <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
           {FEATURES.map((f, idx) => {
             const Icon = f.icon;

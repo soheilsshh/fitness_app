@@ -358,7 +358,11 @@ func main() {
 		cfg.Database.Name,
 		len(cfg.CORS.AllowedOrigins),
 	)
-	log.Printf("config: sms_delivery=%s", service.SMSDeliveryMode())
+	log.Printf("config: sms_delivery=%s zarinpal_sandbox=%v openai_configured=%v",
+		service.SMSDeliveryMode(),
+		cfg.Payments.Zarinpal.Sandbox,
+		strings.TrimSpace(cfg.OpenAI.APIKey) != "",
+	)
 
 	db, err := config.NewMySQLGORM()
 	if err != nil {

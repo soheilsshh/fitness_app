@@ -96,7 +96,7 @@ func (h *AdminFunnelController) ListLeads(c *gin.Context) {
 	}
 	status := c.Query("status")
 	if status == "" {
-		status = "paid"
+		status = "all"
 	}
 
 	query := c.Query("query")

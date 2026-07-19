@@ -18,9 +18,9 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { newExerciseEntry } from "../../_components/exerciseHelpers";
+import { API_BASE_URL } from "@/lib/api/baseUrl";
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.fitinoo.ir";
+const API_BASE = API_BASE_URL;
 
 function mediaUrl(path) {
   if (!path) return null;

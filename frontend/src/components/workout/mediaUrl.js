@@ -1,5 +1,6 @@
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.fitinoo.ir";
+import { API_BASE_URL } from "@/lib/api/baseUrl";
+
+const API_BASE = API_BASE_URL;
 
 const VIDEO_EXT = /\.(mp4|webm|mov|m4v)(\?.*)?$/i;
 

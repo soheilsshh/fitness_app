@@ -7,6 +7,23 @@ export function toEnglishDigits(value) {
     .replace(/[٠-٩]/g, (d) => String("٠١٢٣٤٥٦٧٨٩".indexOf(d)));
 }
 
+/** Convert ASCII digits to Persian (۰-۹). */
+export function toPersianDigits(value) {
+  return String(value ?? "").replace(/\d/g, (d) => "۰۱۲۳۴۵۶۷۸۹"[d]);
+}
+
+/** Keep only digits (Persian/Arabic/English) and return English digit string. */
+export function normalizeNumericInput(value, { allowDecimal = false } = {}) {
+  let s = toEnglishDigits(value);
+  if (allowDecimal) {
+    s = s.replace(/[^\d.]/g, "");
+    const parts = s.split(".");
+    if (parts.length > 2) s = parts[0] + "." + parts.slice(1).join("");
+    return s;
+  }
+  return s.replace(/\D/g, "");
+}
+
 /** Normalize phone for validation / API (English digits, no spaces/dashes). */
 export function normalizeIranPhone(phone) {
   return toEnglishDigits(phone).replace(/[\s\-()]/g, "");

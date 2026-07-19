@@ -5,16 +5,19 @@ import { FiInstagram, FiSend, FiMail } from "react-icons/fi";
 import Enamad from "@/components/enamad";
 import { Logo } from "@/components/Logo";
 
+const TAGLINE =
+  "پلتفرم تخصصی تمرین و تغذیه؛ مدیریت هوشمند و علمی تناسب اندام زیر نظر مربی.";
+
 const QUICK_LINKS = [
-  { id: "home", label: "صفحه اصلی" },
-  { id: "programs", label: "برنامه‌ها" },
-  { id: "about", label: "داستان ما" },
+  { href: "/#home", label: "صفحه نخست" },
+  { href: "/ali-rashidabadi", label: "آغاز ارزیابی و برنامه‌ها" },
+  { href: "/#about", label: "درباره فیتینو" },
 ];
 
 const LEGAL_LINKS = [
-  { href: "#", label: "حریم خصوصی" },
-  { href: "#", label: "شرایط استفاده" },
-  { href: "#contact", label: "تماس با ما" },
+  { href: "#", label: "حریم خصوصی کاربران" },
+  { href: "#", label: "ضوابط و شرایط استفاده" },
+  { href: "/#contact", label: "پشتیبانی و تماس با ما" },
 ];
 
 const SOCIALS = [
@@ -38,9 +41,7 @@ export default function Footer() {
           </span>
         </Link>
 
-        <p className="mt-3 max-w-[16rem] text-sm leading-7 text-muted-foreground">
-          مربیگری علمی، تمرین و تغذیه — مسیر فرم ایده‌آل.
-        </p>
+        <p className="mt-3 max-w-xs text-sm leading-7 text-muted-foreground">{TAGLINE}</p>
 
         <div className="mt-6 flex items-center gap-3">
           {SOCIALS.map(({ Icon, label }) => (
@@ -55,21 +56,16 @@ export default function Footer() {
           ))}
         </div>
 
-        <nav
-          aria-label="لینک‌های فوتر"
-          className="mt-8 flex w-full flex-col gap-1"
-        >
-          {[...QUICK_LINKS.map((l) => ({ href: `/#${l.id}`, label: l.label })), ...LEGAL_LINKS].map(
-            (link) => (
-              <Link
-                key={link.label}
-                href={link.href}
-                className="flex min-h-11 items-center justify-center text-sm text-foreground/80 transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                {link.label}
-              </Link>
-            )
-          )}
+        <nav aria-label="لینک‌های فوتر" className="mt-8 flex w-full flex-col gap-1">
+          {[...QUICK_LINKS, ...LEGAL_LINKS].map((link) => (
+            <Link
+              key={link.label}
+              href={link.href}
+              className="flex min-h-11 items-center justify-center text-sm text-foreground/80 transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              {link.label}
+            </Link>
+          ))}
         </nav>
 
         <div className="mt-8">
@@ -77,27 +73,21 @@ export default function Footer() {
         </div>
 
         <div className="mt-8 w-full border-t border-border/50 pt-5">
-          <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} فیتینو
-          </p>
+          <p className="text-xs text-muted-foreground">© 2026 فیتینو</p>
           <p className="mt-1 text-[11px] leading-5 text-muted-foreground/80">
-            توسعه فناوری Q-Tech
+            تمامی حقوق مادی و معنوی این پلتفرم برای شرکت توسعه فناوری Q-Tech محفوظ است.
           </p>
         </div>
       </div>
 
-      {/* ── Desktop (unchanged structure) ── */}
+      {/* ── Desktop ── */}
       <div className="mx-auto hidden max-w-7xl gap-6 px-6 py-9 text-right md:grid md:grid-cols-[1.4fr_1fr_1fr]">
         <div className="space-y-3">
           <Link href="/" className="inline-flex items-center gap-2.5">
             <Logo className="h-9 w-9 object-contain" />
-            <span className="font-iranianSansBlack text-xl text-foreground">
-              فیتینو
-            </span>
+            <span className="font-iranianSansBlack text-xl text-foreground">فیتینو</span>
           </Link>
-          <p className="max-w-sm text-sm leading-7 text-foreground/90">
-            مربیگری علمی، تمرین و تغذیه در یک پلتفرم — مسیر رسیدن به فرم ایده‌آل.
-          </p>
+          <p className="max-w-sm text-sm leading-7 text-foreground/90">{TAGLINE}</p>
           <div className="flex items-center gap-2 pt-1">
             {SOCIALS.map(({ Icon, label }) => (
               <Link
@@ -118,9 +108,9 @@ export default function Footer() {
           </h5>
           <ul className="space-y-2">
             {QUICK_LINKS.map((x) => (
-              <li key={x.id}>
+              <li key={x.label}>
                 <Link
-                  href={`/#${x.id}`}
+                  href={x.href}
                   className="text-sm text-muted-foreground transition-colors hover:text-primary"
                 >
                   {x.label}
@@ -132,7 +122,7 @@ export default function Footer() {
 
         <div className="space-y-3">
           <h5 className="text-xs font-iranianSansDemiBold tracking-wide text-foreground/80">
-            حقوقی
+            بخش حقوقی
           </h5>
           <div className="flex items-start gap-5">
             <ul className="space-y-2">
@@ -154,11 +144,9 @@ export default function Footer() {
 
       <div className="hidden border-t border-border/60 md:block">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-6 py-4">
-          <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} فیتینو
-          </p>
+          <p className="text-xs text-muted-foreground">© 2026 فیتینو</p>
           <p className="text-xs text-muted-foreground/90">
-            تمامی حقوق برای شرکت توسعه فناوری Q-Tech محفوظ می‌باشد.
+            تمامی حقوق مادی و معنوی این پلتفرم برای شرکت توسعه فناوری Q-Tech محفوظ است.
           </p>
         </div>
       </div>

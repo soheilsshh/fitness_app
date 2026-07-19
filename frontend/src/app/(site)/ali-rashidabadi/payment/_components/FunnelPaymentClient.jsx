@@ -6,7 +6,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Bot,
-  CreditCard,
   Loader2,
   ShieldCheck,
   Smartphone,
@@ -15,9 +14,11 @@ import {
 } from "lucide-react";
 import { api } from "@/lib/axios/client";
 import { toastError } from "@/app/(site)/auth/_components/helpers";
-import { PAYMENT_COPY } from "../../_lib/funnelConfig";
+import { PAYMENT_COPY, RESULT_COPY } from "../../_lib/funnelConfig";
+import { clearFunnelDraft, saveFunnelDraft } from "../../_lib/funnelDraft";
 import FunnelShell, { FunnelCta, FunnelGlass } from "../../_components/FunnelShell";
 import { LogoAnchor } from "../../_components/FunnelLogoLayer";
+import PaymentConversionBlocks from "../../_components/PaymentConversionBlocks";
 
 function formatToman(n) {
   return new Intl.NumberFormat("fa-IR").format(Number(n || 0)) + " تومان";
@@ -60,7 +61,14 @@ export default function FunnelPaymentClient() {
   }, [token]);
 
   useEffect(() => {
+    if (!token) return;
+    // Keep checkout token so leaving payment and reopening /ali-rashidabadi resumes here.
+    saveFunnelDraft({ stage: "checkout", checkoutToken: token });
+  }, [token]);
+
+  useEffect(() => {
     if (checkout?.status === "paid" && token) {
+      clearFunnelDraft();
       router.replace(
         `/ali-rashidabadi/success?token=${token}&code=${encodeURIComponent(checkout.trackingCode || "")}`
       );
@@ -79,6 +87,7 @@ export default function FunnelPaymentClient() {
     setPaying(true);
     try {
       const res = await api.post(`/public/funnel/checkout/${token}/pay`);
+      clearFunnelDraft();
       router.push(
         `/ali-rashidabadi/success?token=${token}&code=${encodeURIComponent(res.data?.trackingCode || "")}`
       );
@@ -243,6 +252,9 @@ export default function FunnelPaymentClient() {
               <ShieldCheck className="size-4 text-primary" />
               پرداخت امن — در صورت نیاز به درگاه واقعی، همین صفحه متصل می‌شود.
             </div>
+
+            <PaymentConversionBlocks storageKey={token || "default"} />
+
             <FunnelCta onClick={handlePay} disabled={paying}>
               {paying ? (
                 <>
@@ -251,8 +263,7 @@ export default function FunnelPaymentClient() {
                 </>
               ) : (
                 <>
-                  <CreditCard className="size-5" />
-                  {PAYMENT_COPY.cta}
+                  {RESULT_COPY.cta}
                 </>
               )}
             </FunnelCta>

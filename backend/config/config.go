@@ -112,7 +112,11 @@ func Get() Config {
 }
 
 func loadConfig() error {
-	_ = godotenv.Load()
+	// Optional: .env overrides config.yaml when present. Production needs no .env —
+	// only config.yaml. Remove .env if you want yaml-only settings.
+	if err := godotenv.Load(); err == nil {
+		log.Println("config: .env loaded (overrides config.yaml) — delete .env for yaml-only production")
+	}
 
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
@@ -155,6 +159,19 @@ func applyExplicitEnvOverrides(c *Config) {
 	if v, ok := os.LookupEnv("OPENAI_MODEL"); ok && strings.TrimSpace(v) != "" {
 		c.OpenAI.Model = v
 	}
+	// Honor empty DB password in .env (viper would otherwise keep YAML password).
+	if v, ok := os.LookupEnv("DB_PASSWORD"); ok {
+		c.Database.Password = v
+	}
+	if v, ok := os.LookupEnv("DB_USER"); ok && strings.TrimSpace(v) != "" {
+		c.Database.User = v
+	}
+	if v, ok := os.LookupEnv("DB_HOST"); ok && strings.TrimSpace(v) != "" {
+		c.Database.Host = v
+	}
+	if v, ok := os.LookupEnv("DB_NAME"); ok && strings.TrimSpace(v) != "" {
+		c.Database.Name = v
+	}
 }
 
 // syncProcessEnv mirrors selected yaml values into the process environment so
@@ -170,7 +187,7 @@ func syncProcessEnv(c *Config) {
 }
 
 func setDefaults() {
-	viper.SetDefault("app.env", "development")
+	viper.SetDefault("app.env", "production")
 	viper.SetDefault("server.host", "0.0.0.0")
 	viper.SetDefault("server.port", "8088")
 	viper.SetDefault("cors.allowed_origins", []string{
@@ -178,16 +195,15 @@ func setDefaults() {
 		"https://www.fitinoo.ir",
 		"http://fitinoo.ir",
 		"http://www.fitinoo.ir",
-		"http://localhost:3000",
 	})
-	viper.SetDefault("cors.allow_localhost", true)
+	viper.SetDefault("cors.allow_localhost", false)
 	viper.SetDefault("cors.allow_credentials", false)
 	viper.SetDefault("database.host", "localhost")
 	viper.SetDefault("database.port", "3306")
-	viper.SetDefault("database.user", "root")
+	viper.SetDefault("database.user", "fitino")
 	viper.SetDefault("database.password", "")
 	viper.SetDefault("database.name", "fitness_db")
-	viper.SetDefault("jwt.secret", "dev-secret-change-me")
+	viper.SetDefault("jwt.secret", "change-me-in-production")
 	viper.SetDefault("jwt.access_token_duration_minutes", 15)
 	viper.SetDefault("jwt.refresh_token_duration_days", 7)
 	viper.SetDefault("upload.dir", "uploads")
@@ -195,10 +211,12 @@ func setDefaults() {
 	viper.SetDefault("sms.otp_pattern_code", "fittino-otp")
 	viper.SetDefault("sms.otp_ttl_minutes", 10)
 	viper.SetDefault("sms.otp_resend_cooldown_seconds", 60)
-	viper.SetDefault("payments.zarinpal.sandbox", true)
+	viper.SetDefault("payments.zarinpal.sandbox", false)
+	viper.SetDefault("payments.zarinpal.callback_base_url", "https://api.fitinoo.ir")
+	viper.SetDefault("payments.zarinpal.web_result_url", "https://fitinoo.ir/payment/result")
 	viper.SetDefault("payments.zarinpal.mobile_deep_link_scheme", "fitinoo")
-	viper.SetDefault("openai.model", "gpt-4o-mini")
-	viper.SetDefault("openai.base_url", "https://api.openai.com/v1")
+	viper.SetDefault("openai.model", "gemini-3.1-flash-lite")
+	viper.SetDefault("openai.base_url", "https://api.gapgpt.app/v1")
 }
 
 func bindEnvKeys() {
@@ -281,11 +299,62 @@ func normalize(c *Config) {
 	c.OpenAI.Model = strings.TrimSpace(c.OpenAI.Model)
 	c.OpenAI.BaseURL = strings.TrimRight(strings.TrimSpace(c.OpenAI.BaseURL), "/")
 	if c.OpenAI.Model == "" {
-		c.OpenAI.Model = "gpt-4o-mini"
+		c.OpenAI.Model = "gemini-3.1-flash-lite"
 	}
 	if c.OpenAI.BaseURL == "" {
-		c.OpenAI.BaseURL = "https://api.openai.com/v1"
+		c.OpenAI.BaseURL = "https://api.gapgpt.app/v1"
 	}
+
+	// Dev: force ZarinPal sandbox so local never hits live merchant.
+	// Prod: leave yaml/env as-is, but warn loudly if sandbox is still on.
+	if isDevEnv(c.App.Env) {
+		c.Payments.Zarinpal.Sandbox = true
+	} else if c.Payments.Zarinpal.Sandbox {
+		log.Println("WARNING: payments.zarinpal.sandbox=true while APP_ENV=production — live charges will not run")
+	}
+
+	if isProductionEnv(c.App.Env) {
+		if c.JWT.Secret == "" || c.JWT.Secret == "change-me-in-production" || c.JWT.Secret == "dev-secret-change-me" {
+			log.Println("WARNING: jwt.secret is still a placeholder — set a strong secret in config.yaml")
+		}
+		if strings.TrimSpace(c.SMS.APIKey) == "" {
+			log.Println("WARNING: sms.api_key empty — OTP SMS will fail in production")
+		}
+		if strings.TrimSpace(c.OpenAI.APIKey) == "" {
+			log.Println("WARNING: openai.api_key empty — AI chat will return not-configured in production")
+		}
+		if strings.TrimSpace(c.Payments.Zarinpal.MerchantID) == "" {
+			log.Println("WARNING: payments.zarinpal.merchant_id empty — payments will fail")
+		}
+	}
+}
+
+func isProductionEnv(env string) bool {
+	switch strings.ToLower(strings.TrimSpace(env)) {
+	case "production", "prod":
+		return true
+	default:
+		return false
+	}
+}
+
+func isDevEnv(env string) bool {
+	switch strings.ToLower(strings.TrimSpace(env)) {
+	case "development", "dev", "local":
+		return true
+	default:
+		return false
+	}
+}
+
+// IsDevelopment reports local/dev environments (OTP console, AI mock, payment sandbox).
+func IsDevelopment() bool {
+	return isDevEnv(Get().App.Env)
+}
+
+// IsProduction reports production / prod environments.
+func IsProduction() bool {
+	return isProductionEnv(Get().App.Env)
 }
 
 func splitCSV(value string) []string {

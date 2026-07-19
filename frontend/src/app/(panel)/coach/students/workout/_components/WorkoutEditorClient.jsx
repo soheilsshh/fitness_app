@@ -55,9 +55,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import ExercisePickerModal from "./ExercisePickerModal";
 import ManualExerciseModal from "./ManualExerciseModal";
 import TemplatePickerModal from "../../_components/TemplatePickerModal";
+import { API_BASE_URL } from "@/lib/api/baseUrl";
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.fitinoo.ir";
+const API_BASE = API_BASE_URL;
 
 function mediaUrl(path) {
   if (!path) return null;

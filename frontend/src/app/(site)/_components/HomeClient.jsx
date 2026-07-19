@@ -65,11 +65,11 @@ export default function HomeClient() {
       <main className="relative overflow-x-hidden bg-background text-foreground">
         <ScrollProgress />
         <section id="home" className="scroll-mt-24">
-          <Hero settings={settings} />
+          <Hero />
         </section>
         {settings?.showCoachesSection ? <ProgramsSection /> : null}
-        <RecordsSection stats={settings?.stats} />
-        <AboutSection steps={settings?.steps} pillars={settings?.pillars} />
+        <RecordsSection />
+        <AboutSection />
         <ContactSection contactInfo={settings?.contactInfo} />
         <Footer />
       </main>

@@ -87,10 +87,14 @@ type AdminFunnelLeadItem struct {
 	CoachName          string     `json:"coachName"`
 	Amount             int64      `json:"amount"`
 	Status             string     `json:"status"`
+	StageKey           string     `json:"stageKey"`
+	StageLabel         string     `json:"stageLabel"`
+	StageIndex         int        `json:"stageIndex"`
 	TrackingCode       string     `json:"trackingCode"`
 	Converted          bool       `json:"converted"`
 	RegisteredUserID   uint       `json:"registeredUserId,omitempty"`
 	PaidAt             *time.Time `json:"paidAt,omitempty"`
+	ContactedAt        *time.Time `json:"contactedAt,omitempty"`
 	CreatedAt          time.Time  `json:"createdAt"`
 }
 
@@ -431,6 +435,7 @@ func leadToCheckoutDTO(lead *models.FunnelLead) *FunnelCheckoutDTO {
 }
 
 func leadToAdminItem(lead *models.FunnelLead) AdminFunnelLeadItem {
+	stageKey, stageLabel, stageIndex := funnelStage(lead.Status)
 	return AdminFunnelLeadItem{
 		ID:                 lead.ID,
 		FullName:           strings.TrimSpace(lead.FirstName + " " + lead.LastName),
@@ -446,9 +451,30 @@ func leadToAdminItem(lead *models.FunnelLead) AdminFunnelLeadItem {
 		CoachName:          lead.CoachName,
 		Amount:             lead.AmountCents,
 		Status:             lead.Status,
+		StageKey:           stageKey,
+		StageLabel:         stageLabel,
+		StageIndex:         stageIndex,
 		TrackingCode:       lead.TrackingCode,
 		PaidAt:             lead.PaidAt,
+		ContactedAt:        lead.ContactedAt,
 		CreatedAt:          lead.CreatedAt,
+	}
+}
+
+// funnelStage maps CRM status to a human pipeline stage for the Ali Rashidabadi funnel.
+// Index: 1=ارزیابی+ثبت لید, 2=در انتظار پرداخت, 3=خرید شده, 4=تماس گرفته شده
+func funnelStage(status string) (key, label string, index int) {
+	switch status {
+	case models.FunnelStatusContacted:
+		return "contacted", "تماس گرفته شد", 4
+	case models.FunnelStatusPaid:
+		return "paid", "خرید نهایی انجام شد", 3
+	case models.FunnelStatusFailed:
+		return "failed", "پرداخت ناموفق", 2
+	case models.FunnelStatusPendingPayment:
+		fallthrough
+	default:
+		return "pending_payment", "ثبت لید — در انتظار پرداخت", 2
 	}
 }
 

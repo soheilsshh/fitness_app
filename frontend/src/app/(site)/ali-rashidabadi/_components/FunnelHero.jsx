@@ -31,7 +31,7 @@ const TRUST = [
  * logo front and center, a human-typed headline and a CTA that reveals
  * 1 s after typing finishes (funnel spec intro, orb → logo).
  */
-export default function FunnelHero({ coachName = "علی رشید آبادی", onStart }) {
+export default function FunnelHero({ coachName = "علی رشیدآبادی", onStart, resume = false }) {
   const reduceMotion = useReducedMotion();
   const [imgError, setImgError] = useState(false);
   const { typingDone, onTypingDone } = useTypingBubbleGate(1000);
@@ -100,7 +100,7 @@ export default function FunnelHero({ coachName = "علی رشید آبادی", o
 
         <div className="w-full max-w-md space-y-3 pt-1">
           <DelayedFunnelCta typingDone={typingDone} onClick={onStart}>
-            شروع ارزیابی هوشمند بدنم
+            {resume ? "ادامه ارزیابی از جایی که رها کردی" : "شروع ارزیابی هوشمند بدنم"}
             <ArrowLeft className="size-4" />
           </DelayedFunnelCta>
           {typingDone && (

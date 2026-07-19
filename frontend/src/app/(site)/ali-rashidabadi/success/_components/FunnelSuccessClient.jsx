@@ -8,6 +8,7 @@ import { CheckCircle2, Phone } from "lucide-react";
 import { api } from "@/lib/axios/client";
 import { toastError, toastSuccess } from "@/app/(site)/auth/_components/helpers";
 import { SUCCESS_COPY } from "../../_lib/funnelConfig";
+import { clearFunnelDraft } from "../../_lib/funnelDraft";
 import FunnelShell, { FunnelCta, FunnelGlass } from "../../_components/FunnelShell";
 import { LogoAnchor } from "../../_components/FunnelLogoLayer";
 import { cn } from "@/lib/utils";
@@ -24,6 +25,10 @@ export default function FunnelSuccessClient() {
   const [checkout, setCheckout] = useState(null);
   const [selectedSlot, setSelectedSlot] = useState("");
   const [booked, setBooked] = useState(false);
+
+  useEffect(() => {
+    clearFunnelDraft();
+  }, []);
 
   useEffect(() => {
     if (!token) return;

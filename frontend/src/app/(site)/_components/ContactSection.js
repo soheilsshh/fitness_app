@@ -63,7 +63,7 @@ export default function ContactSection({ contactInfo }) {
   const validate = () => {
     const next = {};
     if (!fullName.trim()) next.fullName = "نام و نام خانوادگی را وارد کنید.";
-    if (!contact.trim()) next.contact = "شماره موبایل یا ایمیل را وارد کنید.";
+    if (!contact.trim()) next.contact = "شماره موبایل را وارد کنید.";
     if (!message.trim()) next.message = "متن پیام نمی‌تواند خالی باشد.";
     return next;
   };
@@ -103,21 +103,23 @@ export default function ContactSection({ contactInfo }) {
     <section id="contact" dir="rtl" className="mx-auto max-w-7xl scroll-mt-24 px-5 py-12 sm:px-6 md:py-16">
       <div className="mb-8 space-y-2 text-center md:mb-10">
         <p className="text-xs font-iranianSansDemiBold tracking-wide text-primary">
-          تماس با فیتینو
+          ⚡️ ارتباط با آکادمی فیتینو
         </p>
         <h2 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl md:text-4xl">
-          راهنمایی می‌خوای؟{" "}
+          نیاز به مشاوره و{" "}
           <span className="bg-linear-to-l from-primary via-chart-2 to-chart-3 bg-clip-text text-transparent">
-            پیام بده
-          </span>
+            راهنمایی
+          </span>{" "}
+          دارید؟
         </h2>
-        <p className="mx-auto max-w-xl text-sm leading-7 text-foreground/85 md:text-base">
-          سوالی داری؟ مستقیم بپرس — تیم ما برای مشاوره رایگان آماده‌ست.
+        <p className="mx-auto max-w-2xl text-sm leading-7 text-foreground/85 md:text-base">
+          چنانچه پیش از شروع دوره نیاز به اطلاعات بیشتری دارید، سوال خود را مطرح کنید؛ تیم
+          کارشناسان فیتینو آماده پاسخگویی به شما هستند.
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
-        {/* Info */}
+        {/* Info — visually right in RTL */}
         <motion.aside
           initial={{ opacity: 0, y: 14 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -130,28 +132,40 @@ export default function ContactSection({ contactInfo }) {
 
           <div className="relative space-y-5">
             <div className="space-y-1.5 text-start">
-              <h3 className="text-lg font-iranianSansBlack text-foreground">راه‌های ارتباطی</h3>
+              <h3 className="text-lg font-iranianSansBlack text-foreground">
+                کانال‌های ارتباط مستقیم
+              </h3>
               <p className="text-sm leading-7 text-foreground/80">
-                از ایمیل و تماس تا شبکه‌های اجتماعی — هر جا راحت‌تری.
+                از طریق بسترهای زیر می‌توانید به‌صورت مستقیم با آکادمی فیتینو در ارتباط باشید:
               </p>
             </div>
 
             <div className="space-y-2.5">
-              <ContactRow icon={Mail} label="ایمیل" value={info.email} dir="ltr" />
-              <ContactRow icon={Phone} label="تلفن" value={info.phone} dir="ltr" />
-              <ContactRow icon={MapPin} label="آدرس" value={info.address} />
+              <ContactRow
+                icon={Mail}
+                label="✉️ پست الکترونیک (ایمیل)"
+                value={info.email}
+                dir="ltr"
+              />
+              <ContactRow
+                icon={Phone}
+                label="📞 شماره تماس پشتیبانی"
+                value={info.phone}
+                dir="ltr"
+              />
+              <ContactRow icon={MapPin} label="📍 آدرس مرکزی آکادمی" value={info.address} />
             </div>
 
             <div className="border-t border-border/60 pt-4">
               <div className="mb-2.5 text-start text-[11px] text-muted-foreground">
-                شبکه‌های اجتماعی
+                📱 شبکه‌های اجتماعی
               </div>
               <InlineSocialIcons links={socialLinks} />
             </div>
           </div>
         </motion.aside>
 
-        {/* Form */}
+        {/* Form — visually left in RTL */}
         <motion.div
           initial={{ opacity: 0, y: 14 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -163,9 +177,11 @@ export default function ContactSection({ contactInfo }) {
 
           <form className="relative space-y-4 text-start" onSubmit={onSubmit} noValidate>
             <div className="space-y-1.5 pb-1">
-              <h3 className="text-lg font-iranianSansBlack text-foreground">درخواست مشاوره</h3>
+              <h3 className="text-lg font-iranianSansBlack text-foreground">
+                درخواست مشاوره اختصاصی
+              </h3>
               <p className="text-sm leading-7 text-foreground/80">
-                فرم رو پر کن؛ کمتر از ۲۴ ساعت پاسخ می‌دیم.
+                فرم زیر را تکمیل کنید؛ کمتر از ۲۴ ساعت کاری با شما تماس می‌گیریم.
               </p>
             </div>
 
@@ -179,7 +195,7 @@ export default function ContactSection({ contactInfo }) {
                   ref={nameRef}
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  placeholder="مثلاً علی محمدی"
+                  placeholder="مثال: علی محمدی"
                   className={cn(
                     "h-11 rounded-xl border-border/70 bg-background/60 text-start",
                     errors.fullName && "border-destructive/50"
@@ -200,21 +216,21 @@ export default function ContactSection({ contactInfo }) {
 
               <div className="space-y-1.5 sm:col-span-2">
                 <Label htmlFor={contactId} className="text-xs text-foreground/90">
-                  شماره موبایل یا ایمیل <span className="text-destructive">*</span>
+                  شماره موبایل <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id={contactId}
                   ref={contactRef}
                   value={contact}
                   onChange={(e) => setContact(e.target.value)}
-                  placeholder="09123456789"
+                  placeholder="۰۹۱۲۳۴۵۶۷۸۹"
                   className={cn(
                     "h-11 rounded-xl border-border/70 bg-background/60 text-start",
                     errors.contact && "border-destructive/50"
                   )}
                   name="contact"
-                  inputMode="email"
-                  autoComplete="email"
+                  inputMode="tel"
+                  autoComplete="tel"
                   dir="ltr"
                   required
                   aria-required="true"
@@ -238,7 +254,7 @@ export default function ContactSection({ contactInfo }) {
                 ref={messageRef}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="هدف و سوالت رو کوتاه بنویس..."
+                placeholder="هدف ورزشی یا سوال خود را به‌طور خلاصه بنویسید..."
                 rows={4}
                 className={cn(
                   "min-h-28 rounded-xl border-border/70 bg-background/60 text-start leading-7",
@@ -267,8 +283,8 @@ export default function ContactSection({ contactInfo }) {
                 "در حال ارسال..."
               ) : (
                 <>
+                  ثبت و ارسال درخواست مشاوره 📨
                   <Send className="size-4" />
-                  ارسال درخواست مشاوره
                 </>
               )}
             </Button>
