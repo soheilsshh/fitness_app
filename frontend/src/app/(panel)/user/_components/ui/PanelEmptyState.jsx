@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 /**
- * Premium empty state — icon jewel, calm copy, optional CTA.
+ * Premium empty state — icon jewel, calm copy, optional CTA / custom body.
  */
 export default function PanelEmptyState({
   icon: Icon,
@@ -11,6 +11,7 @@ export default function PanelEmptyState({
   description,
   actionHref,
   actionLabel,
+  children,
   className,
 }) {
   return (
@@ -39,6 +40,7 @@ export default function PanelEmptyState({
           {description}
         </p>
       ) : null}
+      {children ? <div className="relative mt-6 text-start">{children}</div> : null}
       {actionHref && actionLabel ? (
         <div className="relative mt-5">
           <Button asChild size="lg">

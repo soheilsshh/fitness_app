@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { FiActivity, FiPlus, FiSearch } from "react-icons/fi";
 import { api } from "@/lib/axios/client";
+import { apiAssetUrl } from "@/lib/api/assets";
 import RowActions from "@/app/(panel)/_shared/RowActions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -170,7 +171,7 @@ export default function ExercisesClient() {
                         {exercise.imageUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
-                            src={exercise.imageUrl}
+                            src={apiAssetUrl(exercise.imageUrl)}
                             alt=""
                             className="size-10 shrink-0 rounded-lg border bg-muted object-cover"
                           />

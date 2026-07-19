@@ -6,9 +6,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Bot,
+  Check,
+  Crown,
   Loader2,
   ShieldCheck,
   Smartphone,
+  Sparkles,
   UserRound,
   Utensils,
 } from "lucide-react";
@@ -16,13 +19,11 @@ import { api } from "@/lib/axios/client";
 import { toastError } from "@/app/(site)/auth/_components/helpers";
 import { PAYMENT_COPY, RESULT_COPY } from "../../_lib/funnelConfig";
 import { clearFunnelDraft, saveFunnelDraft } from "../../_lib/funnelDraft";
+import { formatToman } from "@/lib/funnel/offer";
 import FunnelShell, { FunnelCta, FunnelGlass } from "../../_components/FunnelShell";
 import { LogoAnchor } from "../../_components/FunnelLogoLayer";
 import PaymentConversionBlocks from "../../_components/PaymentConversionBlocks";
-
-function formatToman(n) {
-  return new Intl.NumberFormat("fa-IR").format(Number(n || 0)) + " تومان";
-}
+import { cn } from "@/lib/utils";
 
 const FEATURE_ICONS = {
   bot: Bot,
@@ -39,6 +40,7 @@ export default function FunnelPaymentClient() {
   const [checkout, setCheckout] = useState(null);
   const [loading, setLoading] = useState(Boolean(token));
   const [paying, setPaying] = useState(false);
+  const [selecting, setSelecting] = useState(false);
   const [slide, setSlide] = useState(0);
 
   useEffect(() => {
@@ -62,7 +64,6 @@ export default function FunnelPaymentClient() {
 
   useEffect(() => {
     if (!token) return;
-    // Keep checkout token so leaving payment and reopening /ali-rashidabadi resumes here.
     saveFunnelDraft({ stage: "checkout", checkoutToken: token });
   }, [token]);
 
@@ -81,6 +82,32 @@ export default function FunnelPaymentClient() {
     const id = setInterval(() => setSlide((s) => (s + 1) % transforms.length), 4500);
     return () => clearInterval(id);
   }, []);
+
+  const plans = Array.isArray(checkout?.plans) ? checkout.plans : [];
+  const selectedKey =
+    checkout?.packageKey ||
+    (checkout?.planId ? String(checkout.planId) : "") ||
+    (plans[0] ? String(plans[0].id || plans[0].key) : "");
+
+  const handleSelectPlan = async (plan) => {
+    const planId = Number(plan?.id || plan?.key);
+    const packageKey = String(plan?.key || plan?.id || "");
+    if (!token || paying || selecting || !planId) return;
+    if (String(planId) === String(selectedKey) || packageKey === selectedKey) return;
+    setSelecting(true);
+    try {
+      const res = await api.post(`/public/funnel/checkout/${token}/plan`, {
+        planId,
+        packageKey,
+      });
+      setCheckout(res.data);
+    } catch (err) {
+      const msg = err?.response?.data?.error || "انتخاب پلن ناموفق بود.";
+      toastError("خطا", msg);
+    } finally {
+      setSelecting(false);
+    }
+  };
 
   const handlePay = async () => {
     if (!token || paying) return;
@@ -233,6 +260,62 @@ export default function FunnelPaymentClient() {
           </FunnelGlass>
         </section>
 
+        <section className="space-y-3">
+          <h2 className="text-center text-base font-bold text-white">انتخاب پلن</h2>
+          {plans.length === 0 ? (
+            <FunnelGlass className="p-5 text-center text-sm text-white/55">
+              هنوز پلنی برای این مربی در سیستم ثبت نشده است.
+            </FunnelGlass>
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-2">
+              {plans.map((plan) => {
+                const planKey = String(plan.key || plan.id);
+                const active = planKey === String(selectedKey);
+                const Icon = plan.popular ? Crown : Sparkles;
+                return (
+                  <button
+                    key={planKey}
+                    type="button"
+                    disabled={selecting || paying}
+                    onClick={() => handleSelectPlan(plan)}
+                    className={cn(
+                      "relative rounded-2xl border p-5 text-start transition",
+                      active
+                        ? "border-primary/55 bg-primary/10 shadow-[0_0_32px_-12px_oklch(0.58_0.11_187_/_0.55)]"
+                        : "border-white/12 bg-white/[0.03] hover:border-white/25"
+                    )}
+                  >
+                    {plan.popular ? (
+                      <span className="absolute start-3 top-3 rounded-full border border-primary/35 bg-primary/15 px-2 py-0.5 text-[10px] font-bold text-primary">
+                        پیشنهاد اصلی
+                      </span>
+                    ) : null}
+                    <div className="mt-5 flex items-center gap-2">
+                      <span className="flex size-9 items-center justify-center rounded-xl border border-primary/30 bg-primary/10">
+                        <Icon className="size-4 text-primary" />
+                      </span>
+                      <div>
+                        <p className="font-bold text-white">{plan.title}</p>
+                        <p className="text-xs text-white/45">{plan.subtitle}</p>
+                      </div>
+                      {active ? <Check className="ms-auto size-5 text-primary" /> : null}
+                    </div>
+                    <p className="mt-4 text-2xl font-extrabold text-white">{formatToman(plan.amount)}</p>
+                    <ul className="mt-3 space-y-1.5">
+                      {(plan.features || []).slice(0, 3).map((f) => (
+                        <li key={f} className="flex items-start gap-2 text-xs text-white/55">
+                          <Check className="mt-0.5 size-3.5 shrink-0 text-primary" />
+                          <span>{f}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
         <FunnelGlass className="overflow-hidden">
           <div className="border-b border-white/10 bg-gradient-to-l from-primary/15 to-transparent px-6 py-5">
             <p className="text-xs text-white/45">مربی</p>
@@ -255,7 +338,7 @@ export default function FunnelPaymentClient() {
 
             <PaymentConversionBlocks storageKey={token || "default"} />
 
-            <FunnelCta onClick={handlePay} disabled={paying}>
+            <FunnelCta onClick={handlePay} disabled={paying || selecting}>
               {paying ? (
                 <>
                   <Loader2 className="size-5 animate-spin" />

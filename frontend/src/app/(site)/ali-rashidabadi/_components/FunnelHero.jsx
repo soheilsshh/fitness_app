@@ -65,7 +65,7 @@ export default function FunnelHero({ coachName = "علی رشیدآبادی", on
           className="gap-2 border-white/15 bg-black/45 px-4 py-1.5 text-[11px] tracking-widest text-white/90 backdrop-blur-md"
         >
           <span className="size-2 animate-pulse rounded-full bg-primary" />
-          مربی {coachName} · ارزیابی هوشمند بدن
+          {HERO_COPY.funnelBadge || `مربی ${coachName} · ارزیابی هوشمند بدن`}
         </Badge>
       </div>
 

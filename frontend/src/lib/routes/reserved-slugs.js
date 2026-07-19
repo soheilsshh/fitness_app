@@ -17,6 +17,8 @@ export const RESERVED_PUBLIC_SLUGS = new Set([
   "login",
   "register",
   "forgot",
+  "ali-rashidabadi",
+  "leadfunnel",
 ]);
 
 export function isReservedPublicSlug(slug) {

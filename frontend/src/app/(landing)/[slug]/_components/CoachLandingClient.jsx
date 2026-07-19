@@ -9,10 +9,12 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { addToCart, selectCartCoach, selectCartItems } from "@/store/slices/cartSlice";
 import { toastError, toastSuccess } from "@/app/(site)/auth/_components/helpers";
 import { getAuthSession } from "@/lib/auth/session";
+import { getCoachPublicPath } from "@/lib/routes/coach-public";
 import BorderGlow from "@/components/ui/BorderGlow";
 import ContainerTextFlip from "@/components/ui/ContainerTextFlip";
 import AuroraBackground from "@/components/ui/aurora-background";
 import BlurTextAnimation from "@/components/ui/blur-text-animation";
+import { useRouter } from "next/navigation";
 
 const HERO_PIXEL_COLORS = ["#34d399", "#6ee7b7", "#a7f3d0", "#ecfdf5", "#ffffff"];
 
@@ -21,6 +23,7 @@ function formatToman(amount) {
 }
 
 export default function CoachLandingClient({ slug }) {
+  const router = useRouter();
   const dispatch = useAppDispatch();
   const cartCoach = useAppSelector(selectCartCoach);
   const cartItems = useAppSelector(selectCartItems);
@@ -292,7 +295,12 @@ export default function CoachLandingClient({ slug }) {
         )}
 
         <section id="plans" className="mt-10 scroll-mt-20">
-          <h2 className="mb-4 text-xl font-extrabold text-white md:text-2xl">پلن‌های قابل خرید</h2>
+          <div className="mb-4">
+            <h2 className="text-xl font-extrabold text-white md:text-2xl">خرید برنامه</h2>
+            <p className="mt-1 text-sm text-zinc-400">
+              پلن را انتخاب کنید و پرداخت را تکمیل کنید — بدون فانل اختصاصی.
+            </p>
+          </div>
           {hasOtherCoach ? (
             <div className="mb-4 rounded-2xl border border-amber-400/25 bg-amber-400/10 p-4 text-sm text-amber-100">
               شما قبلاً زیر نظر مربی{" "}
@@ -301,7 +309,7 @@ export default function CoachLandingClient({ slug }) {
               {assignedCoach.slug ? (
                 <>
                   {" "}
-                  <Link href={`/coach/${assignedCoach.slug}`} className="underline text-teal-200">
+                  <Link href={getCoachPublicPath(assignedCoach.slug)} className="underline text-teal-200">
                     مشاهده لندینگ مربی شما
                   </Link>
                 </>
@@ -310,7 +318,7 @@ export default function CoachLandingClient({ slug }) {
           ) : null}
           {plans.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-white/15 p-6 text-sm text-zinc-400">
-              فعلاً پلن فعالی برای این مربی ثبت نشده است.
+              فعلاً پلن فعالی برای خرید ثبت نشده است. مربی می‌تواند از پنل، پلن‌های فروش را فعال کند.
             </div>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 md:gap-6">
@@ -386,54 +394,72 @@ export default function CoachLandingClient({ slug }) {
 
                       {canPurchase ? (() => {
                         const hasOtherPlan = cartItems.length > 0 && !inCart;
+                        const addPlan = ({ goCheckout } = {}) => {
+                          if (
+                            cartCoach.coachId &&
+                            String(cartCoach.coachId) !== String(coach.coachId)
+                          ) {
+                            return toastError(
+                              "سبد خرید",
+                              "فقط می‌توانید از یک مربی خرید کنید. ابتدا سبد را خالی کنید."
+                            );
+                          }
+                          if (!inCart) {
+                            dispatch(
+                              addToCart({
+                                planId: plan.id,
+                                id: String(plan.id),
+                                title: plan.title,
+                                price: plan.discountPrice > 0 ? plan.discountPrice : plan.price,
+                                coachId: coach.coachId,
+                                coachName: coach.displayName,
+                                coachSlug: slug,
+                              })
+                            );
+                          }
+                          if (goCheckout) {
+                            toastSuccess("آماده پرداخت", "در حال انتقال به صفحه پرداخت...");
+                            router.push("/payment");
+                            return;
+                          }
+                          if (inCart) {
+                            return toastError("سبد خرید", "این پلن قبلاً در سبد است.");
+                          }
+                          toastSuccess(
+                            hasOtherPlan ? "جایگزین شد" : "افزوده شد",
+                            hasOtherPlan
+                              ? "پلن قبلی از سبد حذف و این پلن انتخاب شد."
+                              : "پلن به سبد خرید اضافه شد."
+                          );
+                        };
                         return (
-                          <button
-                            type="button"
-                            disabled={inCart}
-                            onClick={() => {
-                              if (
-                                cartCoach.coachId &&
-                                String(cartCoach.coachId) !== String(coach.coachId)
-                              ) {
-                                return toastError(
-                                  "سبد خرید",
-                                  "فقط می‌توانید از یک مربی خرید کنید. ابتدا سبد را خالی کنید."
-                                );
-                              }
-                              if (inCart) {
-                                return toastError("سبد خرید", "این پلن قبلاً در سبد است.");
-                              }
-                              dispatch(
-                                addToCart({
-                                  planId: plan.id,
-                                  id: String(plan.id),
-                                  title: plan.title,
-                                  price: plan.discountPrice > 0 ? plan.discountPrice : plan.price,
-                                  coachId: coach.coachId,
-                                  coachName: coach.displayName,
-                                  coachSlug: slug,
-                                })
-                              );
-                              toastSuccess(
-                                hasOtherPlan ? "جایگزین شد" : "افزوده شد",
-                                hasOtherPlan
-                                  ? "پلن قبلی از سبد حذف و این پلن انتخاب شد."
-                                  : "پلن به سبد خرید اضافه شد."
-                              );
-                            }}
-                            className={[
-                              "mt-5 w-full rounded-full px-4 py-3.5 text-sm font-bold transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950",
-                              inCart
-                                ? popular
-                                  ? "cursor-not-allowed bg-teal-950/40 text-teal-50 ring-1 ring-white/30 focus-visible:ring-white"
-                                  : "cursor-not-allowed bg-teal-400/10 text-teal-200 ring-1 ring-teal-400/30 focus-visible:ring-teal-400"
-                                : popular
+                          <div className="mt-5 flex flex-col gap-2">
+                            <button
+                              type="button"
+                              onClick={() => addPlan({ goCheckout: true })}
+                              className={[
+                                "w-full rounded-full px-4 py-3.5 text-sm font-bold transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950",
+                                popular
                                   ? "cursor-pointer bg-white text-teal-700 shadow-[0_4px_14px_-2px_rgba(0,0,0,0.25)] hover:bg-teal-50 focus-visible:ring-white"
-                                  : "cursor-pointer bg-zinc-950 text-zinc-200 ring-1 ring-white/10 hover:bg-zinc-800 focus-visible:ring-teal-400",
-                            ].join(" ")}
-                          >
-                            {inCart ? "در سبد خرید است" : "انتخاب این پلن"}
-                          </button>
+                                  : "cursor-pointer bg-teal-500/90 text-zinc-950 hover:bg-teal-400 focus-visible:ring-teal-400",
+                              ].join(" ")}
+                            >
+                              خرید برنامه
+                            </button>
+                            <button
+                              type="button"
+                              disabled={inCart}
+                              onClick={() => addPlan()}
+                              className={[
+                                "w-full rounded-full px-4 py-2.5 text-xs font-bold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950",
+                                inCart
+                                  ? "cursor-not-allowed bg-teal-400/10 text-teal-200 ring-1 ring-teal-400/30"
+                                  : "cursor-pointer bg-transparent text-zinc-300 ring-1 ring-white/15 hover:bg-white/5 focus-visible:ring-teal-400",
+                              ].join(" ")}
+                            >
+                              {inCart ? "در سبد خرید است" : "فقط افزودن به سبد"}
+                            </button>
+                          </div>
                         );
                       })() : null}
 
@@ -496,7 +522,8 @@ export default function CoachLandingClient({ slug }) {
             href="#plans"
             className="flex w-full items-center justify-center rounded-2xl bg-white px-4 py-3 text-sm font-extrabold text-zinc-950 transition-colors hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400"
           >
-            مشاهده پلن‌ها · از {new Intl.NumberFormat("fa-IR").format(minPrice)} تومان
+            مشاهده پلن‌ها و خرید برنامه · از{" "}
+            {new Intl.NumberFormat("fa-IR").format(minPrice)} تومان
           </a>
         </div>
       )}

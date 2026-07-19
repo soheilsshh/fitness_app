@@ -23,6 +23,7 @@ type FunnelStats struct {
 type FunnelLeadRepository interface {
 	Create(ctx context.Context, lead *models.FunnelLead) error
 	FindByCheckoutToken(ctx context.Context, token string) (*models.FunnelLead, error)
+	FindLatestPendingByPhone(ctx context.Context, phone string) (*models.FunnelLead, error)
 	Update(ctx context.Context, lead *models.FunnelLead) error
 	List(ctx context.Context, status string, query string, page, pageSize int) ([]models.FunnelLead, int64, error)
 	FindByID(ctx context.Context, id uint) (*models.FunnelLead, error)
@@ -30,6 +31,9 @@ type FunnelLeadRepository interface {
 	// RegisteredPhones returns phone->userID for any of the given phones that
 	// belong to a registered (non-deleted) user — the basis for conversion.
 	RegisteredPhones(ctx context.Context, phones []string) (map[string]uint, error)
+	// PhoneHasActiveSubscription reports whether the phone belongs to a user
+	// with a non-expired subscription (paid / assigned program).
+	PhoneHasActiveSubscription(ctx context.Context, phone string) (bool, error)
 	Stats(ctx context.Context) (*FunnelStats, error)
 }
 
@@ -48,6 +52,18 @@ func (r *funnelLeadRepository) Create(ctx context.Context, lead *models.FunnelLe
 func (r *funnelLeadRepository) FindByCheckoutToken(ctx context.Context, token string) (*models.FunnelLead, error) {
 	var lead models.FunnelLead
 	if err := r.db.WithContext(ctx).Where("checkout_token = ?", token).First(&lead).Error; err != nil {
+		return nil, err
+	}
+	return &lead, nil
+}
+
+func (r *funnelLeadRepository) FindLatestPendingByPhone(ctx context.Context, phone string) (*models.FunnelLead, error) {
+	var lead models.FunnelLead
+	err := r.db.WithContext(ctx).
+		Where("phone = ? AND status = ?", phone, models.FunnelStatusPendingPayment).
+		Order("created_at DESC").
+		First(&lead).Error
+	if err != nil {
 		return nil, err
 	}
 	return &lead, nil
@@ -118,6 +134,26 @@ func (r *funnelLeadRepository) RegisteredPhones(ctx context.Context, phones []st
 		}
 	}
 	return result, nil
+}
+
+func (r *funnelLeadRepository) PhoneHasActiveSubscription(ctx context.Context, phone string) (bool, error) {
+	phone = strings.TrimSpace(phone)
+	if phone == "" {
+		return false, nil
+	}
+	var count int64
+	err := r.db.WithContext(ctx).Raw(`
+		SELECT COUNT(1)
+		FROM subscriptions s
+		JOIN users u ON u.id = s.user_id AND u.deleted_at IS NULL
+		WHERE u.phone = ?
+		  AND s.deleted_at IS NULL
+		  AND (s.ends_at IS NULL OR s.ends_at > NOW())
+	`, phone).Scan(&count).Error
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
 }
 
 func (r *funnelLeadRepository) Stats(ctx context.Context) (*FunnelStats, error) {

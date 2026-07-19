@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { Camera, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { apiAssetUrl } from "@/lib/api/assets";
 import ImageLightboxModal from "./ImageLightboxModal";
 
 function cn(...xs) {
@@ -11,7 +12,14 @@ function cn(...xs) {
 }
 
 export default function UserBodySection({ heightCm, weightKg, photos = [] }) {
-  const safePhotos = useMemo(() => (Array.isArray(photos) ? photos.slice(0, 5) : []), [photos]);
+  const safePhotos = useMemo(
+    () =>
+      (Array.isArray(photos) ? photos.slice(0, 5) : []).map((p) => ({
+        ...p,
+        url: apiAssetUrl(p.url),
+      })),
+    [photos]
+  );
 
   const [open, setOpen] = useState(false);
   const [idx, setIdx] = useState(0);

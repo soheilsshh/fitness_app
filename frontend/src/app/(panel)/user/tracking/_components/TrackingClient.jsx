@@ -5,6 +5,7 @@ import { Camera, CreditCard, Scale, Upload } from "lucide-react";
 import { api } from "@/lib/axios/client";
 import PageHeader from "@/app/(panel)/user/_components/ui/PageHeader";
 import PanelEmptyState from "@/app/(panel)/user/_components/ui/PanelEmptyState";
+import ProgramOffer from "@/app/(panel)/user/_components/ProgramOffer";
 import PhotoCompareBox from "@/components/tracking/PhotoCompareBox";
 import TrackingAlerts from "@/components/tracking/TrackingAlerts";
 import WeightChart from "@/components/tracking/WeightChart";
@@ -107,11 +108,14 @@ export default function TrackingClient({ showWeightChart = true }) {
         />
         <PanelEmptyState
           icon={CreditCard}
-          title="اشتراک فعال لازم است"
-          description="برای استفاده از پایش، ابتدا باید اشتراک فعال داشته باشید."
-          actionHref="/user/orders"
-          actionLabel="مشاهده سفارش‌ها"
-        />
+          title="برای پایش به برنامه فعال نیاز دارید"
+          description="پلن‌های فعال مربی را ببینید و با تهیه برنامه وارد ارزیابی و پرداخت شوید."
+        >
+          <ProgramOffer
+            title="پلن‌های برنامه"
+            description="یکی را انتخاب کنید؛ بعد از ارزیابی در فانل، به صفحه پرداخت می‌روید."
+          />
+        </PanelEmptyState>
       </div>
     );
   }

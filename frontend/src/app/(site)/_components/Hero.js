@@ -89,7 +89,7 @@ export default function Hero() {
             <CardContent className="px-4 py-0 text-start">
               <span className="mb-1 block text-xs tracking-widest text-chart-2">⚙️ طراحی</span>
               <span className="text-sm font-bold leading-snug text-foreground">
-                اختصاصی ویژه آقایان
+                اختصاصی برای شما
               </span>
             </CardContent>
           </Card>
@@ -118,7 +118,7 @@ export default function Hero() {
         </h1>
 
         <p className="mx-auto max-w-xl text-base leading-8 text-foreground/95 md:me-auto md:ms-0 md:text-lg md:text-foreground">
-          در فیتینو، سیستم هوشمند روزانه تغییرات وزنی شما را تحلیل کرده و به مربی علی
+          در فیتینو، سیستم هوشمند روزانه تغییرات وزنی شما را تحلیل کرده و به مربی
           گزارش می‌دهد. این نظارت مداوم مانع از استپ وزنی شده و رسیدن شما به نتیجه قطعی
           را تضمین می‌کند.
         </p>

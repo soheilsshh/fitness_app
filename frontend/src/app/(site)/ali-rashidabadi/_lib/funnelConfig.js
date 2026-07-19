@@ -125,11 +125,23 @@ const SCENARIO_META = {
   },
 };
 
+/** Funnel 1 — dedicated sales funnel for علی رشیدآبادی.
+ *  Funnel 2 (future) would be a separate route for another coach.
+ */
+export const FUNNEL_META = {
+  key: "funnel_1",
+  label: "فانل ۱",
+  coachName: "علی رشیدآبادی",
+  description: "اختصاصی طراحی‌شده برای علی رشیدآبادی",
+  path: "/ali-rashidabadi",
+};
+
 export const HERO_COPY = {
   title: "فرمول اختصاصی بدن تو؛ ترکیب علم مربیگری و پایش ۲۴ ساعته هوش مصنوعی",
   subtitle:
     "رژیم‌های تکراری و برنامه‌های رها شده را فراموش کن. در فیتینو، مربی علی و ایجنت‌های هوش مصنوعی، لحظه به لحظه مسیر تغییر بدنت را زیر نظر دارند تا مطمئن شویم این‌بار حتماً به نتیجه می‌رسی.",
   cta: "شروع ارزیابی هوشمند بدنم (رایگان)",
+  funnelBadge: "فانل ۱ · اختصاصی علی رشیدآبادی",
 };
 
 export const METRICS_COPY = {
@@ -186,7 +198,7 @@ const PROBLEM_INTENSITY = {
 };
 
 const COMMON_MISTAKE = {
-  weight_loss: "رژیم‌های کم‌کالری سنتی",
+  weight_loss: "رژیم‌های کم-کالری سنتی",
   muscle_gain: "حجم‌خوری بدون چگالی کالری و برنامه اصولی",
   fitness: "برنامه‌های پراکنده بدون پیگیری مستمر",
 };
@@ -362,7 +374,7 @@ export function buildAnalysis(answers, coachName = COACH_SHORT_NAME) {
     },
     body:
       goalKey === "weight_loss"
-        ? `تحلیل داده‌های فیزیولوژیک نشان می‌دهد ${physiologicIndex} و سیستم متابولیک در وضعیت ${metabolicStatus} قرار دارد. در این شرایط (${problemIntensity})، استفاده از ${commonMistake} نه تنها موثر نیست، بلکه با ${sideEffect}، عامل اصلی ${biggestObstacle} خواهد بود. چالش تغذیه‌ای شما یعنی «${nutrition}» این الگو را تشدید می‌کند.`
+        ? `تحلیل داده‌های فیزیولوژیک نشان می‌دهد ${physiologicIndex} و سیستم متابولیک در وضعیت ${metabolicStatus} قرار دارد. در این شرایط، استفاده از ${commonMistake} نه تنها موثر نیست، بلکه با ${sideEffect}، عامل اصلی ${biggestObstacle} خواهد بود.`
         : goalKey === "muscle_gain"
           ? `تحلیل داده‌های فیزیولوژیک نشان می‌دهد ${physiologicIndex} و سیستم متابولیک در وضعیت ${metabolicStatus} قرار دارد. در این شرایط (${problemIntensity})، ${commonMistake} نه تنها موثر نیست، بلکه با ${sideEffect}، مانع اصلی رشد شماست. چالش «${nutrition}» و «${biggestObstacle}» باید در پروتکل جدید خنثی شوند.`
           : `تحلیل داده‌های فیزیولوژیک نشان می‌دهد ${physiologicIndex} و سیستم متابولیک در وضعیت ${metabolicStatus} قرار دارد. در این شرایط (${problemIntensity})، ${commonMistake} معمولاً به ${sideEffect} منجر می‌شود. بزرگ‌ترین مانع شما «${biggestObstacle}» است که با چالش «${nutrition}» هم‌پوشانی دارد.`,
@@ -379,7 +391,7 @@ export function buildAnalysis(answers, coachName = COACH_SHORT_NAME) {
     },
     body:
       goalKey === "weight_loss"
-        ? `اعمال پروتکل اختصاصی «${methodName}» جهت وادار کردن بدن به چربی‌سوزی فعال. این متد به همراه تمرینات هدفمند متناسب با سطح آمادگی «${readinessLevel}» و امکانات (${trainingPlace}) تنظیم می‌شود تا بدون گرسنگی طاقت‌فرسا، ${targetZones} را از بین ببرد.`
+        ? `اعمال پروتکل اختصاصی «${methodName}» جهت وادار کردن بدن به چربی‌سوزی فعال. این متد به همراه تمرینات هدفمند متناسب با سطح آمادگی ${readinessLevel} و امکانات (${trainingPlace}) تنظیم می‌شود تا بدون گرسنگی طاقت‌فرسا، ${targetZones} را از بین ببرد.`
         : goalKey === "muscle_gain"
           ? `اعمال پروتکل اختصاصی «${methodName}» برای ساخت عضله باکیفیت. این متد همراه با تغذیه چگال و تمرینات متناسب با سطح «${readinessLevel}» در (${trainingPlace}) طراحی می‌شود تا ${targetZones} بدون چربی زائد رشد کنند.`
           : `اعمال پروتکل اختصاصی «${methodName}» برای فرم‌دهی پایدار. برنامه با سطح «${readinessLevel}»، فعالیت روزانه «${activity}» و امکانات (${trainingPlace}) هماهنگ می‌شود تا ${targetZones} هدف قرار گیرد.`,

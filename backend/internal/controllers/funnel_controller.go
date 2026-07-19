@@ -32,11 +32,18 @@ func (h *FunnelController) CreateLead(c *gin.Context) {
 
 	resp, err := h.funnelService.CreateLead(c.Request.Context(), &req)
 	if err != nil {
-		if errors.Is(err, service.ErrFunnelInvalidInput) {
+		switch {
+		case errors.Is(err, service.ErrFunnelInvalidInput):
 			c.JSON(http.StatusBadRequest, gin.H{"error": "اطلاعات وارد شده نامعتبر است"})
-			return
+		case errors.Is(err, service.ErrFunnelAlreadySubscribed):
+			c.JSON(http.StatusConflict, gin.H{
+				"error":    "شما قبلاً برنامه فعال دارید",
+				"code":     "already_subscribed",
+				"panelUrl": "/user/dashboard",
+			})
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusCreated, resp)
@@ -51,6 +58,31 @@ func (h *FunnelController) GetCheckout(c *gin.Context) {
 			return
 		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, resp)
+}
+
+func (h *FunnelController) SelectPlan(c *gin.Context) {
+	token := c.Param("token")
+	var req service.SelectFunnelPlanRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid body"})
+		return
+	}
+
+	resp, err := h.funnelService.SelectPlan(c.Request.Context(), token, &req)
+	if err != nil {
+		switch {
+		case errors.Is(err, service.ErrFunnelLeadNotFound):
+			c.JSON(http.StatusNotFound, gin.H{"error": "lead not found"})
+		case errors.Is(err, service.ErrFunnelAlreadyPaid):
+			c.JSON(http.StatusConflict, gin.H{"error": "already paid"})
+		case errors.Is(err, service.ErrFunnelInvalidInput), errors.Is(err, service.ErrFunnelInvalidStatus):
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid plan selection"})
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
 		return
 	}
 	c.JSON(http.StatusOK, resp)

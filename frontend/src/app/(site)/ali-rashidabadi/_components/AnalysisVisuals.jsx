@@ -3,6 +3,10 @@
 import { motion } from "framer-motion";
 import { Flame, Gauge, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
+// Import → /_next/static/media (safe if nginx SPA-falls / back to index.html)
+import ectomorphImg from "@/assets/body-types/ectomorph.png";
+import mesomorphImg from "@/assets/body-types/mesomorph.png";
+import endomorphImg from "@/assets/body-types/endomorph.png";
 
 const faNum = new Intl.NumberFormat("fa-IR");
 
@@ -20,7 +24,7 @@ const BODY_TYPES = [
     metaValue: "سریع",
     chartLabel: "Fuel efficiency",
     color: "#3cc9f5",
-    image: "/body-types/ectomorph.png",
+    image: ectomorphImg.src ?? ectomorphImg,
     trend: [8, 16, 22, 30, 34, 46, 52, 66, 82],
   },
   {
@@ -32,7 +36,7 @@ const BODY_TYPES = [
     metaValue: "عضله‌سازی کارآمد",
     chartLabel: "Anabolic rate",
     color: "#3ee27f",
-    image: "/body-types/mesomorph.png",
+    image: mesomorphImg.src ?? mesomorphImg,
     trend: [14, 26, 40, 48, 60, 66, 74, 80, 86],
   },
   {
@@ -44,7 +48,7 @@ const BODY_TYPES = [
     metaValue: "آهسته‌تر",
     chartLabel: "Storage potential",
     color: "#ff8a3c",
-    image: "/body-types/endomorph.png",
+    image: endomorphImg.src ?? endomorphImg,
     trend: [30, 52, 66, 74, 79, 82, 84, 85, 86],
   },
 ];

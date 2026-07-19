@@ -91,13 +91,22 @@ func SeedCatalogs(db *gorm.DB) error {
 	return seed.SeedCatalogsFromConfig(context.Background(), db)
 }
 
-// PrepareDatabase runs migrations, default admin seed, reference catalogs, and optional dev fixtures.
+// PrepareDatabase runs migrations, default admin seed, Ali funnel coach/plans,
+// reference catalogs, and optional dev fixtures.
 func PrepareDatabase(db *gorm.DB) error {
 	if err := RunMigrations(db); err != nil {
 		return err
 	}
 	if err := SeedDefaultAdmin(db); err != nil {
 		return err
+	}
+	if err := seed.EnsureAliFunnel(context.Background(), db); err != nil {
+		return err
+	}
+	if config.Get().Seed.DemoData {
+		if err := seed.EnsureDemoData(context.Background(), db); err != nil {
+			return err
+		}
 	}
 	if err := SeedCatalogs(db); err != nil {
 		return err

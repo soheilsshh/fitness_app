@@ -50,15 +50,16 @@ type Config struct {
 
 	Seed struct {
 		DevData       bool `mapstructure:"dev_data"`
+		DemoData      bool `mapstructure:"demo_data"`
 		Catalogs      bool `mapstructure:"catalogs"`
 		CatalogsForce bool `mapstructure:"catalogs_force"`
 	} `mapstructure:"seed"`
 
 	Funnel struct {
-		CoachName    string `mapstructure:"coach_name"`
-		CoachID      string `mapstructure:"coach_id"`
-		Amount       string `mapstructure:"amount"`
-		PackageTitle string `mapstructure:"package_title"`
+		// CoachSlug binds Funnel 1 (/ali-rashidabadi) to one coach.
+		// Plans/prices come from that coach's ServicePlan rows in DB.
+		// Funnel 2 (future) would be a separate route + binding.
+		CoachSlug string `mapstructure:"coach_slug"`
 	} `mapstructure:"funnel"`
 
 	SMS struct {
@@ -210,6 +211,7 @@ func setDefaults() {
 	viper.SetDefault("jwt.refresh_token_duration_days", 7)
 	viper.SetDefault("upload.dir", "uploads")
 	viper.SetDefault("seed.dev_data", false)
+	viper.SetDefault("seed.demo_data", true)
 	viper.SetDefault("seed.catalogs", true)
 	viper.SetDefault("seed.catalogs_force", false)
 	viper.SetDefault("sms.otp_pattern_code", "fittino-otp")
@@ -236,12 +238,10 @@ func bindEnvKeys() {
 	_ = viper.BindEnv("jwt.refresh_token_duration_days", "REFRESH_TOKEN_DURATION_DAYS")
 	_ = viper.BindEnv("upload.dir", "UPLOAD_DIR")
 	_ = viper.BindEnv("seed.dev_data", "SEED_DEV_DATA")
+	_ = viper.BindEnv("seed.demo_data", "SEED_DEMO_DATA")
 	_ = viper.BindEnv("seed.catalogs", "SEED_CATALOGS")
 	_ = viper.BindEnv("seed.catalogs_force", "SEED_CATALOGS_FORCE")
-	_ = viper.BindEnv("funnel.coach_name", "FUNNEL_COACH_NAME")
-	_ = viper.BindEnv("funnel.coach_id", "FUNNEL_COACH_ID")
-	_ = viper.BindEnv("funnel.amount", "FUNNEL_AMOUNT")
-	_ = viper.BindEnv("funnel.package_title", "FUNNEL_PACKAGE_TITLE")
+	_ = viper.BindEnv("funnel.coach_slug", "FUNNEL_COACH_SLUG")
 	_ = viper.BindEnv("sms.api_key", "SMS_API_KEY")
 	_ = viper.BindEnv("sms.originator", "SMS_ORIGINATOR")
 	_ = viper.BindEnv("sms.otp_pattern_code", "SMS_OTP_PATTERN_CODE")

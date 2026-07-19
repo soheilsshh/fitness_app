@@ -13,6 +13,8 @@ import (
 
 func main() {
 	devFlag := flag.Bool("dev", false, "load development/UI test fixtures (coaches, students, orders, programs)")
+	demoFlag := flag.Bool("demo", false, "ensure lightweight demo coaches/students/subscriptions + print logins")
+	aliFlag := flag.Bool("ali", false, "ensure Funnel 1 coach (علی رشیدآبادی) + VIP/CIP plans")
 	foodsFlag := flag.Bool("foods", false, "import food facts from CSV (default: data/Persian_food_facts.csv)")
 	templatesFlag := flag.Bool("templates", false, "import workout/nutrition templates from data/*.json")
 	catalogsFlag := flag.Bool("catalogs", false, "import exercises + foods + templates (same as startup seed.catalogs)")
@@ -34,13 +36,28 @@ func main() {
 
 	ctx := context.Background()
 
+	if *demoFlag {
+		if err := seed.EnsureDemoData(ctx, db); err != nil {
+			log.Fatalf("demo seed failed: %v", err)
+		}
+		seed.LogDemoCredentials()
+		return
+	}
+
+	if *aliFlag {
+		if err := seed.EnsureAliFunnel(ctx, db); err != nil {
+			log.Fatalf("ali funnel seed failed: %v", err)
+		}
+		log.Println("funnel_1: ali.rashidabadi@fitino.ir / 12345678")
+		log.Println("  VIP 1,490,000 · CIP 2,900,000 (90 days)")
+		return
+	}
+
 	if *devFlag {
 		if _, err := seed.RunDev(ctx, db, seed.RunDevOptions{ForceCLI: true}); err != nil {
 			log.Fatalf("dev seed failed: %v", err)
 		}
-		log.Println("dev accounts (password: 12345678):")
-		log.Println("  coaches:  coach.ali@fitness.dev, coach.sara@fitness.dev")
-		log.Println("  students: student.reza@fitness.dev, student.maryam@fitness.dev, student.amir@fitness.dev, student.neda@fitness.dev")
+		seed.LogDemoCredentials()
 		return
 	}
 

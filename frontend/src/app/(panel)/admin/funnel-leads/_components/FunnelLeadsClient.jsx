@@ -230,7 +230,7 @@ function PipelineBar({ stats, filter, onSelect }) {
       <CardContent className="space-y-4 p-4 md:p-5">
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div>
-            <h2 className="text-sm font-bold text-foreground">مسیر قیف علی رشیدآبادی</h2>
+            <h2 className="text-sm font-bold text-foreground">مسیر فانل ۱ · علی رشیدآبادی</h2>
             <p className="mt-0.5 text-xs text-muted-foreground">
               از ثبت لید تا خرید نهایی و تماس تیم — روی هر مرحله کلیک کنید تا فیلتر شود
             </p>
@@ -423,9 +423,9 @@ export default function FunnelLeadsClient() {
   return (
     <div className="flex flex-col gap-4 md:gap-6" dir="rtl">
       <div>
-        <h1 className="text-xl font-extrabold md:text-2xl">لید و فانل</h1>
+        <h1 className="text-xl font-extrabold md:text-2xl">فانل ۱ · لید و فانل</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          قیف فروش مربی علی رشیدآبادی — وضعیت هر لید، پاسخ سوالات، و خرید نهایی
+          اختصاصی طراحی‌شده برای علی رشیدآبادی — وضعیت هر لید، پاسخ سوالات، و خرید نهایی
         </p>
       </div>
 

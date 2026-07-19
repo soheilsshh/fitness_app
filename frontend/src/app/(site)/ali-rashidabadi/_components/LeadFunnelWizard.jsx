@@ -7,7 +7,6 @@ import {
   ArrowLeft,
   ArrowRight,
   CheckCircle2,
-  Download,
   Loader2,
   Lock,
   Settings2,
@@ -19,7 +18,6 @@ import {
   normalizeNumericInput,
   toPersianDigits,
   toastError,
-  toastSuccess,
 } from "@/app/(site)/auth/_components/helpers";
 import { cn } from "@/lib/utils";
 import {
@@ -34,7 +32,6 @@ import {
   buildAnalysis,
   funnelProgress,
 } from "../_lib/funnelConfig";
-import { downloadAnalysisPng } from "../_lib/exportAnalysisImage";
 import {
   clearFunnelDraft,
   hasFunnelProgress,
@@ -47,6 +44,7 @@ import FinalAnalyzeLoader from "./FinalAnalyzeLoader";
 import FunnelHero from "./FunnelHero";
 import { LogoAnchor } from "./FunnelLogoLayer";
 import FunnelShell, { FunnelCta, FunnelGlass, FunnelProgressBar } from "./FunnelShell";
+import PaymentConversionBlocks from "./PaymentConversionBlocks";
 import Typewriter from "./Typewriter";
 
 const LAST_INDEX = QUESTIONS.length - 1;
@@ -76,7 +74,6 @@ export default function LeadFunnelWizard() {
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [downloading, setDownloading] = useState(false);
 
   const lockTimer = useRef(null);
   const persistReady = useRef(false);
@@ -130,8 +127,8 @@ export default function LeadFunnelWizard() {
       .catch(() => {
         setConfig({
           coachName: COACH_SHORT_NAME,
-          packageTitle: "پکیج مربیگری اختصاصی",
-          amount: 2500000,
+          coachSlug: "ali-rashidabadi",
+          plans: [],
         });
       });
   }, []);
@@ -258,8 +255,18 @@ export default function LeadFunnelWizard() {
     try {
       const metricsLine =
         answers.age && answers.heightCm && answers.weightKg
-          ? `\n\nشاخص‌ها: سن ${answers.age} | قد ${answers.heightCm} | وزن ${answers.weightKg} | BMR ${analysis.bmr ?? "—"} | تیپ ${analysis.bodyType}`
+          ? `\n\nشاخص‌ها: سن ${answers.age} | قد ${answers.heightCm} | وزن ${answers.weightKg} | BMR ${analysis.bmr ?? "—"} | تیپ ${analysis.bodyType} | موفقیت ${analysis.successPct ?? "—"}٪`
           : "";
+      const narrativeBody = [
+        analysis.statusSummary &&
+          `${analysis.statusSummary.title}\n${analysis.statusSummary.body}`,
+        analysis.customSolution &&
+          `${analysis.customSolution.title}\n${analysis.customSolution.body}`,
+        analysis.routePrediction &&
+          `${analysis.routePrediction.title}\n${analysis.routePrediction.body}`,
+      ]
+        .filter(Boolean)
+        .join("\n\n");
       const res = await api.post("/public/funnel/leads", {
         firstName,
         lastName,
@@ -273,8 +280,7 @@ export default function LeadFunnelWizard() {
         commitment: answers.commitment,
         scenario: analysis.scenario,
         analysisTitle: analysis.title,
-        analysisBody:
-          analysis.sections.map((s) => `${s.title}\n${s.body}`).join("\n\n") + metricsLine,
+        analysisBody: (narrativeBody || analysis.sections.map((s) => `${s.title}\n${s.body}`).join("\n\n")) + metricsLine,
         utmSource,
         utmCampaign,
       });
@@ -293,26 +299,16 @@ export default function LeadFunnelWizard() {
       });
       router.push(`/ali-rashidabadi/payment?token=${token}`);
     } catch (err) {
+      const code = err?.response?.data?.code;
+      if (code === "already_subscribed") {
+        toastError("برنامه فعال دارید", "شما قبلاً برنامه فعال دارید. به پنل کاربری بروید.");
+        router.push(err?.response?.data?.panelUrl || "/user/dashboard");
+        return;
+      }
       const msg = err?.response?.data?.error || "ثبت اطلاعات ناموفق بود.";
       toastError("خطا", msg);
     } finally {
       setSubmitting(false);
-    }
-  };
-
-  const handleDownloadReport = async () => {
-    if (!analysis || downloading) return;
-    setDownloading(true);
-    try {
-      await downloadAnalysisPng(analysis, {
-        coachName,
-        fileName: "fitino-analyz-badani.png",
-      });
-      toastSuccess("دانلود شد", "گزارش آنالیز بدنی به‌صورت تصویر ذخیره شد.");
-    } catch {
-      toastError("خطا", "دانلود گزارش ناموفق بود. دوباره تلاش کنید.");
-    } finally {
-      setDownloading(false);
     }
   };
 
@@ -567,25 +563,8 @@ export default function LeadFunnelWizard() {
             </div>
 
             <FunnelGlass className="overflow-hidden">
-              <div
-                dir="ltr"
-                className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-4 sm:px-5"
-              >
-                <button
-                  type="button"
-                  onClick={handleDownloadReport}
-                  disabled={downloading}
-                  title="دانلود گزارش به‌صورت تصویر"
-                  className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/85 backdrop-blur-md transition hover:border-primary/40 hover:bg-primary/10 hover:text-white disabled:opacity-60"
-                >
-                  {downloading ? (
-                    <Loader2 className="size-3.5 animate-spin" />
-                  ) : (
-                    <Download className="size-3.5" />
-                  )}
-                  دانلود
-                </button>
-                <span className="inline-flex max-w-[70%] shrink rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-end text-xs text-primary">
+              <div className="flex justify-end border-b border-white/10 px-4 py-4 sm:px-5">
+                <span className="inline-flex rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs text-primary">
                   {analysis.meta.badge}
                 </span>
               </div>
@@ -600,6 +579,8 @@ export default function LeadFunnelWizard() {
                 <AnalysisNarrative analysis={analysis} />
               </div>
             </FunnelGlass>
+
+            <PaymentConversionBlocks storageKey="result" />
 
             <div className="sticky bottom-0 z-30 -mx-4 mt-1 bg-gradient-to-t from-[#0e0e0e] via-[#0e0e0e] via-60% to-transparent px-4 pb-4 pt-6">
               <FunnelCta onClick={() => setStage("lead")}>

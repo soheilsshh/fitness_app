@@ -26,6 +26,8 @@ const EXACT = {
   "phone already in use": "این شماره موبایل قبلاً ثبت شده است.",
   "email already exists": "این ایمیل قبلاً ثبت شده است.",
   "phone already exists": "این شماره موبایل قبلاً ثبت شده است.",
+  "already has active subscription": "شما قبلاً برنامه فعال دارید.",
+  "شما قبلاً برنامه فعال دارید": "شما قبلاً برنامه فعال دارید.",
   "slug already in use": "این نامک قبلاً استفاده شده است.",
   "name, email, phone and password are required": "نام، ایمیل، شماره و رمز عبور الزامی است.",
   "phone is required": "شماره موبایل الزامی است.",

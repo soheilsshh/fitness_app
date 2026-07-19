@@ -140,7 +140,7 @@ func NewServer(db *gorm.DB) *Server {
 	notificationService := service.NewNotificationService(notificationRepo)
 	notificationController := controllers.NewNotificationController(notificationService)
 	funnelLeadRepo := repository.NewFunnelLeadRepository(db)
-	funnelService := service.NewFunnelService(funnelLeadRepo)
+	funnelService := service.NewFunnelService(funnelLeadRepo, coachProfileRepo, servicePlanRepo)
 	funnelController := controllers.NewFunnelController(funnelService)
 	adminFunnelController := controllers.NewAdminFunnelController(funnelService)
 
@@ -175,6 +175,7 @@ func NewServer(db *gorm.DB) *Server {
 	router.GET("/public/funnel/config", funnelController.GetConfig)
 	router.POST("/public/funnel/leads", funnelController.CreateLead)
 	router.GET("/public/funnel/checkout/:token", funnelController.GetCheckout)
+	router.POST("/public/funnel/checkout/:token/plan", funnelController.SelectPlan)
 	router.POST("/public/funnel/checkout/:token/pay", funnelController.PayDemo)
 	router.GET("/payments/zarinpal/callback", paymentController.ZarinpalCallback)
 	router.GET("/payments/result", paymentController.PaymentsResultPage)
@@ -378,6 +379,15 @@ func main() {
 	}
 	if err := seedDefaultAdmin(db); err != nil {
 		log.Fatalf("failed to seed default admin: %v", err)
+	}
+	if err := seed.EnsureAliFunnel(context.Background(), db); err != nil {
+		log.Fatalf("failed to seed Ali funnel (funnel_1): %v", err)
+	}
+	if config.Get().Seed.DemoData {
+		if err := seed.EnsureDemoData(context.Background(), db); err != nil {
+			log.Fatalf("failed to seed demo accounts: %v", err)
+		}
+		seed.LogDemoCredentials()
 	}
 	if err := seed.SeedCatalogsFromConfig(context.Background(), db); err != nil {
 		log.Printf("WARNING: catalog seed failed: %v", err)

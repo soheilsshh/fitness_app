@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { MessageSquare } from "lucide-react";
+import { CreditCard, MessageSquare } from "lucide-react";
 import { api } from "@/lib/axios/client";
 import MetaBadge from "@/app/(panel)/user/_components/ui/MetaBadge";
 import PageHeader from "@/app/(panel)/user/_components/ui/PageHeader";
+import PanelEmptyState from "@/app/(panel)/user/_components/ui/PanelEmptyState";
+import ProgramOffer from "@/app/(panel)/user/_components/ProgramOffer";
 import CoachSocialCards from "./CoachSocialCards";
 import TicketCreateForm from "./TicketCreateForm";
 import TicketsList from "./TicketsList";
@@ -115,10 +117,19 @@ export default function ContactClient() {
             <Skeleton className="h-24 w-full" />
           </CardContent>
         </Card>
+      ) : !canSendTicket ? (
+        <PanelEmptyState
+          icon={CreditCard}
+          title="برای ارتباط با مربی، برنامه لازم است"
+          description="پس از تهیه برنامه و تخصیص مربی، می‌توانید تیکت بفرستید."
+        >
+          <ProgramOffer />
+        </PanelEmptyState>
       ) : (
         <CoachSocialCards coach={coach} assignedCoachName={assignedName} assignedCoachSlug={assignedSlug} />
       )}
 
+      {canSendTicket ? (
       <div className="grid gap-4 lg:grid-cols-2">
         <TicketCreateForm
           disabled={!canSendTicket}
@@ -135,6 +146,7 @@ export default function ContactClient() {
           </CardContent>
         </Card>
       </div>
+      ) : null}
     </div>
   );
 }

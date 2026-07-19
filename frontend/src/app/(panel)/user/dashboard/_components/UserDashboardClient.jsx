@@ -35,6 +35,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { cn } from "@/lib/utils";
+import { FUNNEL_PATH, GET_PROGRAM_LABEL } from "@/lib/funnel/offer";
 
 /* ---------------- helpers ---------------- */
 
@@ -309,13 +310,18 @@ function StatCard({ icon: Icon, accent, label, value, sub, loading }) {
   );
 }
 
-function EmptyState({ icon: Icon, text }) {
+function EmptyState({ icon: Icon, text, actionHref, actionLabel }) {
   return (
     <div className="flex flex-col items-center justify-center gap-2.5 py-8 text-center">
       <span className="fitino-empty-icon flex size-12 items-center justify-center rounded-2xl">
         <Icon className="size-5 text-[#187272] opacity-80 dark:text-[#6ceade]" />
       </span>
       <p className="text-sm font-iranianSansMedium text-muted-foreground">{text}</p>
+      {actionHref && actionLabel ? (
+        <Button asChild size="sm" className="mt-1">
+          <Link href={actionHref}>{actionLabel}</Link>
+        </Button>
+      ) : null}
     </div>
   );
 }
@@ -465,7 +471,12 @@ function CheckinTasksCard({ loading, tracking }) {
       {loading ? (
         <Skeleton className="h-28 w-full" />
       ) : !tracking ? (
-        <EmptyState icon={ClipboardList} text="اشتراک فعالی برای پایش یافت نشد." />
+        <EmptyState
+          icon={ClipboardList}
+          text="اشتراک فعالی برای پایش یافت نشد."
+          actionHref={FUNNEL_PATH}
+          actionLabel={GET_PROGRAM_LABEL}
+        />
       ) : (
         <div className="flex flex-col gap-3">
           <TaskRow done={weightDone} label="ثبت وزن این دوره" />
@@ -512,7 +523,12 @@ function TodayPlanCard({ loading, program }) {
       {loading ? (
         <Skeleton className="h-32 w-full" />
       ) : !program ? (
-        <EmptyState icon={Dumbbell} text="برنامه تمرینی فعالی ندارید." />
+        <EmptyState
+          icon={Dumbbell}
+          text="برنامه تمرینی فعالی ندارید."
+          actionHref={FUNNEL_PATH}
+          actionLabel={GET_PROGRAM_LABEL}
+        />
       ) : todays.length === 0 ? (
         <div className="flex flex-col gap-3">
           <p className="text-sm text-muted-foreground">امروز ({DAY_LABELS[num]}) روز استراحت است. 🛌</p>
@@ -737,7 +753,12 @@ function SubscriptionCard({ loading, sub }) {
       {loading ? (
         <Skeleton className="h-28 w-full" />
       ) : !sub ? (
-        <EmptyState icon={CreditCard} text="اشتراک فعالی ندارید." />
+        <EmptyState
+          icon={CreditCard}
+          text="اشتراک فعالی ندارید."
+          actionHref={FUNNEL_PATH}
+          actionLabel={GET_PROGRAM_LABEL}
+        />
       ) : (
         <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between">

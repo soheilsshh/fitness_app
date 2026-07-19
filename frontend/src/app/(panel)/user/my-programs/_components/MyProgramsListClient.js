@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import MetaBadge from "../../_components/ui/MetaBadge";
 import PageHeader from "../../_components/ui/PageHeader";
 import PanelEmptyState from "../../_components/ui/PanelEmptyState";
+import ProgramOffer from "../../_components/ProgramOffer";
 import { computeTimeline, mapApiProgram } from "./helpers";
 import FilterChips from "./FilterChips";
 import Pagination from "../../_components/Pagination";
@@ -129,9 +130,11 @@ export default function MyProgramsListClient() {
       ) : filtered.length === 0 ? (
         <PanelEmptyState
           icon={Dumbbell}
-          title="برنامه‌ای برای نمایش وجود ندارد"
-          description="با خرید یا فعال‌سازی برنامه، فهرست اینجا نمایش داده می‌شود."
-        />
+          title="هنوز برنامه‌ای ندارید"
+          description="با تهیه یکی از پلن‌های فعال مربی، برنامه‌تان اینجا نمایش داده می‌شود."
+        >
+          <ProgramOffer />
+        </PanelEmptyState>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {paged.map(({ program, timeline }) => (
