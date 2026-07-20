@@ -41,11 +41,13 @@ type FunnelLead struct {
 	PackageKey    string `gorm:"size:40;not null;default:''"` // stringified ServicePlanID (UI key)
 	PackageTitle  string `gorm:"size:255;not null"`
 	AmountCents   int64  `gorm:"not null"`
-	Status        string `gorm:"size:30;not null;index"`
-	TrackingCode  string `gorm:"size:100;uniqueIndex"`
-	PaymentMethod string `gorm:"size:100"`
-	UTMSource     string `gorm:"size:120"`
-	UTMCampaign   string `gorm:"size:120"`
+	Status        string  `gorm:"size:30;not null;index"`
+	// TrackingCode is set only after payment. Use pointer so unpaid leads store NULL
+	// (MySQL unique index allows multiple NULLs; empty string '' would collide).
+	TrackingCode  *string `gorm:"size:100;uniqueIndex"`
+	PaymentMethod string  `gorm:"size:100"`
+	UTMSource     string  `gorm:"size:120"`
+	UTMCampaign   string  `gorm:"size:120"`
 
 	PaidAt      *time.Time
 	ContactedAt *time.Time

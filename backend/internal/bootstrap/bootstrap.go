@@ -27,6 +27,12 @@ func RunMigrations(db *gorm.DB) error {
 		return err
 	}
 
+	// Unpaid funnel leads must not store '' under unique tracking_code (MySQL duplicate).
+	if err := db.Exec("UPDATE funnel_leads SET tracking_code = NULL WHERE tracking_code = ''").Error; err != nil {
+		log.Printf("failed backfilling funnel_leads.tracking_code: %v", err)
+		return err
+	}
+
 	return nil
 }
 

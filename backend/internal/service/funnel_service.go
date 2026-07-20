@@ -527,7 +527,8 @@ func (s *funnelService) PayDemo(ctx context.Context, token string) (*FunnelCheck
 	now := time.Now()
 	lead.Status = models.FunnelStatusPaid
 	lead.PaymentMethod = "درگاه آنلاین (دمو)"
-	lead.TrackingCode = generateFunnelTrackingCode()
+	code := generateFunnelTrackingCode()
+	lead.TrackingCode = &code
 	lead.PaidAt = &now
 
 	if err := s.repo.Update(ctx, lead); err != nil {
@@ -691,7 +692,7 @@ func (s *funnelService) leadToCheckoutDTO(ctx context.Context, lead *models.Funn
 		PackageTitle:  lead.PackageTitle,
 		Amount:        lead.AmountCents,
 		Status:        lead.Status,
-		TrackingCode:  lead.TrackingCode,
+		TrackingCode:  derefString(lead.TrackingCode),
 		AnalysisTitle: lead.AnalysisTitle,
 		PaidAt:        lead.PaidAt,
 		Plans:         plans,
@@ -718,11 +719,18 @@ func leadToAdminItem(lead *models.FunnelLead) AdminFunnelLeadItem {
 		StageKey:           stageKey,
 		StageLabel:         stageLabel,
 		StageIndex:         stageIndex,
-		TrackingCode:       lead.TrackingCode,
+		TrackingCode:       derefString(lead.TrackingCode),
 		PaidAt:             lead.PaidAt,
 		ContactedAt:        lead.ContactedAt,
 		CreatedAt:          lead.CreatedAt,
 	}
+}
+
+func derefString(p *string) string {
+	if p == nil {
+		return ""
+	}
+	return *p
 }
 
 // funnelStage maps CRM status to a human pipeline stage for the Ali Rashidabadi funnel.
