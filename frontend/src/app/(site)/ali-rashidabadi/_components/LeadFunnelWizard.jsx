@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -134,6 +134,15 @@ export default function LeadFunnelWizard() {
   }, []);
 
   useEffect(() => () => clearTimeout(lockTimer.current), []);
+
+  // Result/lead are tall; sticky CTA + scroll anchoring otherwise opens at the bottom.
+  useLayoutEffect(() => {
+    if (stage !== "result" && stage !== "lead") return;
+    const toTop = () => window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    toTop();
+    const raf = requestAnimationFrame(toTop);
+    return () => cancelAnimationFrame(raf);
+  }, [stage]);
 
   const coachName = config?.coachName || COACH_SHORT_NAME;
   const currentQ = QUESTIONS[qIndex];
@@ -554,7 +563,7 @@ export default function LeadFunnelWizard() {
             key="result"
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            className="space-y-5"
+            className="space-y-5 [overflow-anchor:none]"
           >
             <div className="text-center">
               <LogoAnchor id="result" size={64} className="mx-auto mb-3 rounded-full" />
@@ -582,7 +591,7 @@ export default function LeadFunnelWizard() {
 
             <PaymentConversionBlocks storageKey="result" />
 
-            <div className="sticky bottom-0 z-30 -mx-4 mt-1 bg-gradient-to-t from-[#0e0e0e] via-[#0e0e0e] via-60% to-transparent px-4 pb-4 pt-6">
+            <div className="sticky bottom-0 z-30 -mx-4 mt-1 bg-gradient-to-t from-[#0e0e0e] via-[#0e0e0e] via-60% to-transparent px-4 pb-4 pt-6 [overflow-anchor:none]">
               <FunnelCta onClick={() => setStage("lead")}>
                 {RESULT_COPY.cta}
               </FunnelCta>

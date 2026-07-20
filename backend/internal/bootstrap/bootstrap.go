@@ -106,6 +106,9 @@ func PrepareDatabase(db *gorm.DB) error {
 	if err := SeedDefaultAdmin(db); err != nil {
 		return err
 	}
+	if err := seed.EnsureSiteContact(context.Background(), db); err != nil {
+		return err
+	}
 	if err := seed.EnsureAliFunnel(context.Background(), db); err != nil {
 		return err
 	}

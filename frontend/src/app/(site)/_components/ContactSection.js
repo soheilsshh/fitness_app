@@ -13,12 +13,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 const DEFAULT_CONTACT = {
-  address: "تهران، سعادت آباد، برج فیتینو",
-  phone: "+۹۸ ۲۱ ۲۸۴۲ ۱۰۰۰",
-  email: "info@fitino.academy",
-  instagram: "https://instagram.com/",
-  telegram: "https://t.me/",
-  whatsapp: "https://wa.me/989000000000",
+  address: "",
+  phone: "09921906934",
+  email: "fitinoo.ir@gmail.com",
+  instagram: "https://instagram.com/fiti.noo",
+  telegram: "https://t.me/fiti_noo",
+  whatsapp: "https://wa.me/989921906934",
 };
 
 function ContactRow({ icon: Icon, label, value, dir }) {
@@ -153,7 +153,9 @@ export default function ContactSection({ contactInfo }) {
                 value={info.phone}
                 dir="ltr"
               />
-              <ContactRow icon={MapPin} label="📍 آدرس مرکزی آکادمی" value={info.address} />
+              {info.address ? (
+                <ContactRow icon={MapPin} label="📍 آدرس مرکزی آکادمی" value={info.address} />
+              ) : null}
             </div>
 
             <div className="border-t border-border/60 pt-4">

@@ -380,6 +380,9 @@ func main() {
 	if err := seedDefaultAdmin(db); err != nil {
 		log.Fatalf("failed to seed default admin: %v", err)
 	}
+	if err := seed.EnsureSiteContact(context.Background(), db); err != nil {
+		log.Fatalf("failed to seed site contact: %v", err)
+	}
 	if err := seed.EnsureAliFunnel(context.Background(), db); err != nil {
 		log.Fatalf("failed to seed Ali funnel (funnel_1): %v", err)
 	}

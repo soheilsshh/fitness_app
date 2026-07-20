@@ -1,9 +1,10 @@
 import { FunnelLogoLayer } from "./_components/FunnelLogoLayer";
 
 /**
- * Funnel chrome: centered 430px phone frame on desktop, full-bleed on mobile
- * (site navbar hides itself on /ali-rashidabadi). One FunnelLogoLayer wraps
- * every funnel page so the brand mark travels between phases.
+ * Funnel chrome:
+ * - Mobile: original full-bleed phone UI
+ * - Desktop/laptop: full viewport (no 430px framed device)
+ * Site navbar hides itself on /ali-rashidabadi.
  */
 export default function LeadFunnelLayout({ children }) {
   return (

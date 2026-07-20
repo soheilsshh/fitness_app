@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"strings"
 
 	"github.com/yourusername/fitness-management/internal/models"
 	"github.com/yourusername/fitness-management/internal/repository"
@@ -115,12 +116,12 @@ var defaultSiteSettingsDTO = SiteSettingsDTO{
 		{ID: "p6", Icon: "heartbeat", Title: "تمرین در باشگاه یا خانه", Desc: "برنامه‌ها برای هر امکانات و شرایطی قابل اجرا هستند، هرجا که باشی."},
 	},
 	ContactInfo: ContactInfoDTO{
-		Address:   "تهران، ...",
-		Phone:     "09xxxxxxxxx",
-		Email:     "support@example.com",
-		Instagram: "https://instagram.com/",
-		Telegram:  "https://t.me/",
-		Whatsapp:  "https://wa.me/989000000000",
+		Address:   "",
+		Phone:     "09921906934",
+		Email:     "fitinoo.ir@gmail.com",
+		Instagram: "https://instagram.com/fiti.noo",
+		Telegram:  "https://t.me/fiti_noo",
+		Whatsapp:  "https://wa.me/989921906934",
 	},
 	AcademyItems: []AcademyItemDTO{
 		{
@@ -331,6 +332,9 @@ func rowToDTO(row *models.SiteSettings) (*SiteSettingsDTO, error) {
 	}
 	if len(row.ContactInfo) > 0 {
 		_ = json.Unmarshal(row.ContactInfo, &dto.ContactInfo)
+	}
+	if strings.TrimSpace(dto.ContactInfo.Phone) == "" && strings.TrimSpace(dto.ContactInfo.Email) == "" {
+		dto.ContactInfo = defaultSiteSettingsDTO.ContactInfo
 	}
 	if len(row.AcademyItems) > 0 {
 		_ = json.Unmarshal(row.AcademyItems, &dto.AcademyItems)

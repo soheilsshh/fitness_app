@@ -59,7 +59,7 @@ export default function ContactInfoEditor({ value, onChange }) {
           label="ایمیل"
           value={v.email}
           onChange={(x) => setField("email", x)}
-          placeholder="مثال: support@example.com"
+          placeholder="مثال: fitinoo.ir@gmail.com"
           icon={<FiMail />}
         />
       </CardContent>
@@ -69,7 +69,7 @@ export default function ContactInfoEditor({ value, onChange }) {
           label="لینک اینستاگرام"
           value={v.instagram}
           onChange={(x) => setField("instagram", x)}
-          placeholder="https://instagram.com/yourpage"
+          placeholder="https://instagram.com/fiti.noo"
           icon={<FiInstagram />}
         />
 
@@ -77,7 +77,7 @@ export default function ContactInfoEditor({ value, onChange }) {
           label="لینک تلگرام"
           value={v.telegram}
           onChange={(x) => setField("telegram", x)}
-          placeholder="https://t.me/yourchannel"
+          placeholder="https://t.me/fiti_noo"
           icon={<FaTelegramPlane />}
         />
 
@@ -85,7 +85,7 @@ export default function ContactInfoEditor({ value, onChange }) {
           label="لینک واتساپ"
           value={v.whatsapp}
           onChange={(x) => setField("whatsapp", x)}
-          placeholder="https://wa.me/989xxxxxxxxx"
+          placeholder="https://wa.me/989921906934"
           icon={<FaWhatsapp />}
         />
       </CardContent>

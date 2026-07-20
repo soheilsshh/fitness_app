@@ -25,7 +25,7 @@ export default function FunnelShell({
       </div>
       <div
         className={cn(
-          "relative z-10 mx-auto w-full max-w-3xl px-4 py-8 md:py-10",
+          "relative z-10 mx-auto w-full max-w-3xl px-4 py-8 md:py-10 lg:px-8 lg:max-w-4xl",
           centered && "funnel-screen flex flex-col justify-center",
           contentClassName
         )}
