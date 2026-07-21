@@ -312,6 +312,21 @@ func normalize(c *Config) {
 	if c.Payments.Zarinpal.MobileDeepLink == "" {
 		c.Payments.Zarinpal.MobileDeepLink = "fitinoo"
 	}
+	c.Payments.Zarinpal.MerchantID = strings.TrimSpace(c.Payments.Zarinpal.MerchantID)
+	// Shared/proxy gateways (e.g. checkout.rapexa.ir) are intentional — only fix URL typos.
+	c.Payments.Zarinpal.CallbackBaseURL = normalizePublicBaseURL(
+		c.Payments.Zarinpal.CallbackBaseURL,
+		"https://api.fitinoo.ir",
+	)
+	if !strings.HasPrefix(c.Payments.Zarinpal.CallbackBaseURL, "https://") &&
+		!strings.HasPrefix(c.Payments.Zarinpal.CallbackBaseURL, "http://") {
+		log.Printf("WARNING: payments.zarinpal.callback_base_url invalid %q — using https://api.fitinoo.ir", c.Payments.Zarinpal.CallbackBaseURL)
+		c.Payments.Zarinpal.CallbackBaseURL = "https://api.fitinoo.ir"
+	}
+	c.Payments.Zarinpal.WebResultURL = strings.TrimSpace(c.Payments.Zarinpal.WebResultURL)
+	if c.Payments.Zarinpal.WebResultURL == "" {
+		c.Payments.Zarinpal.WebResultURL = "https://fitinoo.ir/payment/result"
+	}
 
 	c.OpenAI.APIKey = strings.TrimSpace(c.OpenAI.APIKey)
 	c.OpenAI.Model = strings.TrimSpace(c.OpenAI.Model)
@@ -439,6 +454,22 @@ func IsOriginAllowed(origin string) bool {
 	}
 
 	return false
+}
+
+// normalizePublicBaseURL fixes common typos like "https:/host" → "https://host".
+// Does not rewrite hosts — shared payment proxies (CDN / rapexa checkout) are allowed as-is.
+func normalizePublicBaseURL(raw, fallback string) string {
+	v := strings.TrimSpace(raw)
+	if v == "" {
+		return fallback
+	}
+	if strings.HasPrefix(v, "https:/") && !strings.HasPrefix(v, "https://") {
+		v = "https://" + strings.TrimPrefix(v, "https:/")
+	}
+	if strings.HasPrefix(v, "http:/") && !strings.HasPrefix(v, "http://") {
+		v = "http://" + strings.TrimPrefix(v, "http:/")
+	}
+	return strings.TrimRight(v, "/")
 }
 
 // GetJWTSecret returns the JWT secret key from configuration.

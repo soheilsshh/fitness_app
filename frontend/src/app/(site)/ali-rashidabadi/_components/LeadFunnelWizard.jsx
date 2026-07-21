@@ -73,6 +73,10 @@ export default function LeadFunnelWizard() {
   const [weightKg, setWeightKg] = useState("");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
+  const [otpCode, setOtpCode] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [sendingOtp, setSendingOtp] = useState(false);
+  const [otpCooldown, setOtpCooldown] = useState(0);
   const [submitting, setSubmitting] = useState(false);
 
   const lockTimer = useRef(null);
@@ -134,6 +138,12 @@ export default function LeadFunnelWizard() {
   }, []);
 
   useEffect(() => () => clearTimeout(lockTimer.current), []);
+
+  useEffect(() => {
+    if (otpCooldown <= 0) return;
+    const id = setTimeout(() => setOtpCooldown((s) => Math.max(0, s - 1)), 1000);
+    return () => clearTimeout(id);
+  }, [otpCooldown]);
 
   // Result/lead are tall; sticky CTA + scroll anchoring otherwise opens at the bottom.
   useLayoutEffect(() => {
@@ -260,6 +270,28 @@ export default function LeadFunnelWizard() {
     setPhone(normalizedPhone);
     if (!analysis) return;
 
+    if (!otpSent) {
+      setSendingOtp(true);
+      try {
+        await api.post("/public/funnel/otp/request", { phone: normalizedPhone });
+        setOtpSent(true);
+        setOtpCooldown(60);
+      } catch (err) {
+        const retry = Number(err?.response?.data?.retry_after_seconds || 0);
+        if (retry > 0) setOtpCooldown(retry);
+        const msg = err?.response?.data?.error || "ارسال کد تایید ناموفق بود.";
+        toastError("خطا", msg);
+      } finally {
+        setSendingOtp(false);
+      }
+      return;
+    }
+
+    const code = normalizeNumericInput(otpCode).slice(0, 6);
+    if (code.length !== 6) {
+      return toastError("کد ناقص", "کد ۶ رقمی پیامک‌شده را وارد کنید.");
+    }
+
     setSubmitting(true);
     try {
       const metricsLine =
@@ -280,6 +312,7 @@ export default function LeadFunnelWizard() {
         firstName,
         lastName,
         phone: normalizedPhone,
+        otpCode: code,
         primaryGoal: answers.primaryGoal,
         activityLevel: answers.activityLevel,
         trainingEnv: answers.trainingEnv,
@@ -308,16 +341,36 @@ export default function LeadFunnelWizard() {
       });
       router.push(`/ali-rashidabadi/payment?token=${token}`);
     } catch (err) {
-      const code = err?.response?.data?.code;
-      if (code === "already_subscribed") {
+      const codeErr = err?.response?.data?.code;
+      if (codeErr === "already_subscribed") {
         toastError("برنامه فعال دارید", "شما قبلاً برنامه فعال دارید. به پنل کاربری بروید.");
         router.push(err?.response?.data?.panelUrl || "/user/dashboard");
+        return;
+      }
+      if (codeErr === "invalid_otp") {
+        toastError("کد نامعتبر", err?.response?.data?.error || "کد تایید اشتباه است.");
         return;
       }
       const msg = err?.response?.data?.error || "ثبت اطلاعات ناموفق بود.";
       toastError("خطا", msg);
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const resendOtp = async () => {
+    const normalizedPhone = normalizeIranPhone(phone);
+    if (!isValidIranPhone(normalizedPhone) || otpCooldown > 0 || sendingOtp) return;
+    setSendingOtp(true);
+    try {
+      await api.post("/public/funnel/otp/request", { phone: normalizedPhone });
+      setOtpCooldown(60);
+    } catch (err) {
+      const retry = Number(err?.response?.data?.retry_after_seconds || 0);
+      if (retry > 0) setOtpCooldown(retry);
+      toastError("خطا", err?.response?.data?.error || "ارسال مجدد ناموفق بود.");
+    } finally {
+      setSendingOtp(false);
     }
   };
 
@@ -611,48 +664,106 @@ export default function LeadFunnelWizard() {
             <div className="text-center">
               <LogoAnchor id="lead" size={64} className="mx-auto mb-3 rounded-full" />
               <h2 className="text-xl font-extrabold text-white md:text-2xl">{LEAD_COPY.title}</h2>
-              <p className="mt-3 text-sm leading-8 text-white/55">{LEAD_COPY.subtitle}</p>
+              <p className="mt-3 text-sm leading-8 text-white/55">
+                {otpSent ? LEAD_COPY.otpSubtitle : LEAD_COPY.subtitle}
+              </p>
             </div>
 
             <FunnelGlass className="p-6" glow="green">
               <form id="funnel-lead-form" onSubmit={handleSubmit} className="space-y-4">
-                <label className="block space-y-2 text-start">
-                  <span className="text-xs text-white/50">نام و نام خانوادگی</span>
-                  <input
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder="نام و نام خانوادگی"
-                    required
-                    className="h-12 w-full rounded-xl border border-white/15 bg-black/40 px-4 text-sm text-white outline-none transition placeholder:text-white/25 focus:border-primary/50"
-                  />
-                </label>
-                <label className="block space-y-2 text-start">
-                  <span className="text-xs text-white/50">شماره موبایل</span>
-                  <input
-                    type="tel"
-                    inputMode="numeric"
-                    dir="ltr"
-                    value={phone}
-                    onChange={(e) => setPhone(normalizeIranPhone(e.target.value))}
-                    placeholder="09123456789"
-                    required
-                    className="h-12 w-full rounded-xl border border-white/15 bg-black/40 px-4 text-start text-sm text-white outline-none transition placeholder:text-white/25 focus:border-primary/50"
-                  />
-                </label>
+                {!otpSent ? (
+                  <>
+                    <label className="block space-y-2 text-start">
+                      <span className="text-xs text-white/50">نام و نام خانوادگی</span>
+                      <input
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        placeholder="نام و نام خانوادگی"
+                        required
+                        className="h-12 w-full rounded-xl border border-white/15 bg-black/40 px-4 text-sm text-white outline-none transition placeholder:text-white/25 focus:border-primary/50"
+                      />
+                    </label>
+                    <label className="block space-y-2 text-start">
+                      <span className="text-xs text-white/50">شماره موبایل</span>
+                      <input
+                        type="tel"
+                        inputMode="numeric"
+                        dir="ltr"
+                        value={phone}
+                        onChange={(e) => setPhone(normalizeIranPhone(e.target.value))}
+                        placeholder="09123456789"
+                        required
+                        className="h-12 w-full rounded-xl border border-white/15 bg-black/40 px-4 text-start text-sm text-white outline-none transition placeholder:text-white/25 focus:border-primary/50"
+                      />
+                    </label>
+                  </>
+                ) : (
+                  <>
+                    <div className="rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-start">
+                      <p className="text-xs text-white/45">کد به این شماره ارسال شد</p>
+                      <p className="mt-1 font-medium text-white" dir="ltr">
+                        {phone}
+                      </p>
+                      <button
+                        type="button"
+                        className="mt-2 text-[11px] text-primary underline-offset-2 hover:underline"
+                        onClick={() => {
+                          setOtpSent(false);
+                          setOtpCode("");
+                        }}
+                      >
+                        {LEAD_COPY.changePhone}
+                      </button>
+                    </div>
+                    <label className="block space-y-2 text-start">
+                      <span className="text-xs text-white/50">کد تایید ۶ رقمی</span>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        autoComplete="one-time-code"
+                        dir="ltr"
+                        maxLength={6}
+                        value={otpCode}
+                        onChange={(e) => setOtpCode(normalizeNumericInput(e.target.value).slice(0, 6))}
+                        placeholder="------"
+                        required
+                        className="h-12 w-full rounded-xl border border-white/15 bg-black/40 px-4 text-center text-lg tracking-[0.35em] text-white outline-none transition placeholder:text-white/25 focus:border-primary/50"
+                      />
+                    </label>
+                    <div className="flex items-center justify-between text-[11px] text-white/45">
+                      <button
+                        type="button"
+                        disabled={otpCooldown > 0 || sendingOtp}
+                        onClick={resendOtp}
+                        className="text-primary disabled:text-white/30"
+                      >
+                        {sendingOtp
+                          ? "در حال ارسال..."
+                          : otpCooldown > 0
+                            ? `ارسال مجدد (${toPersianDigits(otpCooldown)})`
+                            : LEAD_COPY.resendOtp}
+                      </button>
+                    </div>
+                  </>
+                )}
               </form>
             </FunnelGlass>
 
             <FunnelStickyBar>
-              <FunnelCta type="submit" form="funnel-lead-form" disabled={submitting}>
-                {submitting ? (
+              <FunnelCta
+                type="submit"
+                form="funnel-lead-form"
+                disabled={submitting || sendingOtp}
+              >
+                {submitting || sendingOtp ? (
                   <>
                     <Loader2 className="size-5 animate-spin" />
-                    در حال ثبت...
+                    {otpSent ? "در حال تایید..." : "در حال ارسال کد..."}
                   </>
                 ) : (
                   <>
                     <Lock className="size-5" />
-                    {LEAD_COPY.cta}
+                    {otpSent ? LEAD_COPY.otpCta : LEAD_COPY.sendOtp}
                   </>
                 )}
               </FunnelCta>

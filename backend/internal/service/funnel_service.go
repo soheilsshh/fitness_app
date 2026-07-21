@@ -27,7 +27,10 @@ var (
 	ErrFunnelInvalidInput      = errors.New("invalid funnel input")
 	ErrFunnelInvalidStatus     = errors.New("invalid status transition")
 	ErrFunnelAlreadySubscribed = errors.New("already has active subscription")
+	ErrFunnelInvalidOTP        = errors.New("invalid or expired funnel otp")
 )
+
+const FunnelOTPPurpose = "funnel"
 
 const (
 	// DefaultFunnelCoachSlug binds the /ali-rashidabadi funnel when config is empty.
@@ -64,6 +67,7 @@ type CreateFunnelLeadRequest struct {
 	FirstName          string `json:"firstName"`
 	LastName           string `json:"lastName"`
 	Phone              string `json:"phone"`
+	OtpCode            string `json:"otpCode"`
 	PlanID             uint   `json:"planId"`
 	PackageKey         string `json:"packageKey"` // optional: stringified plan id
 	PrimaryGoal        string `json:"primaryGoal"`
@@ -78,6 +82,10 @@ type CreateFunnelLeadRequest struct {
 	AnalysisBody       string `json:"analysisBody"`
 	UTMSource          string `json:"utmSource"`
 	UTMCampaign        string `json:"utmCampaign"`
+}
+
+type FunnelOTPRequest struct {
+	Phone string `json:"phone"`
 }
 
 type CreateFunnelLeadResponse struct {
@@ -175,6 +183,7 @@ type FunnelPayResponse struct {
 
 type FunnelService interface {
 	GetConfig(ctx context.Context) FunnelConfigDTO
+	RequestLeadOTP(ctx context.Context, phone string) error
 	CreateLead(ctx context.Context, req *CreateFunnelLeadRequest) (*CreateFunnelLeadResponse, error)
 	GetCheckout(ctx context.Context, token string) (*FunnelCheckoutDTO, error)
 	SelectPlan(ctx context.Context, token string, req *SelectFunnelPlanRequest) (*FunnelCheckoutDTO, error)
@@ -372,6 +381,17 @@ func applyPlanToLead(lead *models.FunnelLead, plan *models.ServicePlan) {
 	lead.AmountCents = dto.Amount
 }
 
+func (s *funnelService) RequestLeadOTP(ctx context.Context, phone string) error {
+	phone = normalizePhone(phone)
+	if phone == "" {
+		return ErrFunnelInvalidInput
+	}
+	if s.auth == nil {
+		return ErrFunnelInvalidStatus
+	}
+	return s.auth.RequestOTPForPurpose(ctx, phone, FunnelOTPPurpose)
+}
+
 func (s *funnelService) CreateLead(ctx context.Context, req *CreateFunnelLeadRequest) (*CreateFunnelLeadResponse, error) {
 	if req == nil {
 		return nil, ErrFunnelInvalidInput
@@ -379,8 +399,12 @@ func (s *funnelService) CreateLead(ctx context.Context, req *CreateFunnelLeadReq
 	firstName := strings.TrimSpace(req.FirstName)
 	lastName := strings.TrimSpace(req.LastName)
 	phone := normalizePhone(req.Phone)
+	otpCode := digits.ToEnglish(strings.TrimSpace(req.OtpCode))
 	if firstName == "" || lastName == "" || phone == "" {
 		return nil, ErrFunnelInvalidInput
+	}
+	if otpCode == "" {
+		return nil, ErrFunnelInvalidOTP
 	}
 	if !isValidPrimaryGoal(req.PrimaryGoal) || !isValidActivityLevel(req.ActivityLevel) || !isValidMainObstacle(req.MainObstacle) {
 		return nil, ErrFunnelInvalidInput
@@ -394,6 +418,16 @@ func (s *funnelService) CreateLead(ctx context.Context, req *CreateFunnelLeadReq
 		return nil, err
 	} else if hasSub {
 		return nil, ErrFunnelAlreadySubscribed
+	}
+
+	if s.auth == nil {
+		return nil, ErrFunnelInvalidStatus
+	}
+	if err := s.auth.ConsumeOTPCode(ctx, phone, FunnelOTPPurpose, otpCode); err != nil {
+		if errors.Is(err, ErrInvalidOTP) {
+			return nil, ErrFunnelInvalidOTP
+		}
+		return nil, err
 	}
 
 	profile, err := s.loadFunnelCoach(ctx)

@@ -173,6 +173,7 @@ func NewServer(db *gorm.DB) *Server {
 	router.GET("/coaches/:slug", publicCoachController.GetCoachBySlug)
 	router.GET("/coaches/:slug/plans", publicCoachController.GetCoachPlans)
 	router.GET("/public/funnel/config", funnelController.GetConfig)
+	router.POST("/public/funnel/otp/request", funnelController.RequestLeadOTP)
 	router.POST("/public/funnel/leads", funnelController.CreateLead)
 	router.GET("/public/funnel/checkout/:token", funnelController.GetCheckout)
 	router.POST("/public/funnel/checkout/:token/plan", funnelController.SelectPlan)

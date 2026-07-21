@@ -155,7 +155,12 @@ export const LEAD_COPY = {
   title: "اتصال دیتای ارزیابی به پنل اختصاصی مربی علی",
   subtitle:
     "برای ذخیره دایمی این آنالیز در بانک داده فیتینو و فعال‌سازی پروتکل پایش هوشمند، نام و شماره موبایل خود را وارد کنید.",
+  otpSubtitle: "کد ۶ رقمی پیامک‌شده را وارد کنید تا هویت شما تایید شود.",
+  sendOtp: "ارسال کد تایید",
+  resendOtp: "ارسال مجدد کد",
+  changePhone: "تغییر شماره",
   cta: "تایید و ورود به بخش دریافت برنامه اختصاصی",
+  otpCta: "تایید کد و ادامه",
 };
 
 export const RESULT_COPY = {
@@ -254,8 +259,28 @@ export const PAYMENT_COPY = {
     },
   ],
   transformations: [
-    { before: "/images/1.png", after: "/images/11.png", name: "نتیجه واقعی ۱" },
-    { before: "/images/2.png", after: "/images/22.png", name: "نتیجه واقعی ۲" },
+    {
+      before: "/images/1.png",
+      after: "/images/11.png",
+      name: "سارا محمدی",
+      age: 28,
+      heightCm: 165,
+      weightKg: 72,
+      bodyType: "اندومورف",
+      quote:
+        "بعد از سه ماه با مربی علی، نه فقط وزنم ریخت — حس می‌کنم بالاخره کسی رهایم نکرد و برنامه هر هفته با بدنم آپدیت شد.",
+    },
+    {
+      before: "/images/2.png",
+      after: "/images/22.png",
+      name: "امیر حسینی",
+      age: 34,
+      heightCm: 178,
+      weightKg: 86,
+      bodyType: "مزومورف",
+      quote:
+        "قبلاً هر برنامه‌ای را وسط راه رها می‌کردم. اینجا پایش روزانه و تماس مربی باعث شد تا آخر مسیر بمونم.",
+    },
   ],
   vipValueTable: {
     title: "۱. جدول ارزش‌گذاری پلن VIP (۳ ماهه)",
@@ -320,6 +345,15 @@ export const SUCCESS_COPY = {
   dashboardCta: "ورود به داشبورد کاربر",
   copyTracking: "کپی کد پیگیری",
   copiedTracking: "کپی شد",
+};
+
+export const PAY_RESULT_COPY = {
+  failedTitle: "پرداخت کامل نشد",
+  failedSubtitle:
+    "نگران نباشید — سفارش شما هنوز باز است. می‌توانید دوباره به درگاه امن زرین‌پال برگردید و پرداخت را تمام کنید.",
+  retryCta: "تلاش مجدد پرداخت",
+  backToPlans: "بازگشت به انتخاب پلن",
+  successRedirect: "پرداخت تایید شد — در حال انتقال...",
 };
 
 function getScenario(primaryGoal) {

@@ -34,6 +34,8 @@ type AuthService interface {
 	RegisterCoach(ctx context.Context, name, email, phone, password, displayName, slugInput string) (*AuthResult, error)
 	LoginWithPassword(ctx context.Context, identifier, password string) (*AuthResult, error)
 	RequestOTP(ctx context.Context, phone string) error
+	RequestOTPForPurpose(ctx context.Context, phone, purpose string) error
+	ConsumeOTPCode(ctx context.Context, phone, purpose, code string) error
 	VerifyOTP(ctx context.Context, phone, code string) (*AuthResult, error)
 	Logout(ctx context.Context, userID uint, refreshToken string) error
 	GetMe(ctx context.Context, userID uint) (*models.User, error)
@@ -262,6 +264,28 @@ func (s *authService) RequestOTP(ctx context.Context, phone string) error {
 		return errors.New("phone is required")
 	}
 	return s.sendOTP(ctx, phone, "login")
+}
+
+func (s *authService) RequestOTPForPurpose(ctx context.Context, phone, purpose string) error {
+	phone = digits.NormalizePhone(phone)
+	purpose = strings.TrimSpace(purpose)
+	if phone == "" {
+		return errors.New("phone is required")
+	}
+	if purpose == "" {
+		purpose = "login"
+	}
+	return s.sendOTP(ctx, phone, purpose)
+}
+
+func (s *authService) ConsumeOTPCode(ctx context.Context, phone, purpose, code string) error {
+	phone = digits.NormalizePhone(phone)
+	purpose = strings.TrimSpace(purpose)
+	code = digits.ToEnglish(strings.TrimSpace(code))
+	if phone == "" || purpose == "" || code == "" {
+		return ErrInvalidOTP
+	}
+	return s.consumeOTP(ctx, phone, purpose, code)
 }
 
 func (s *authService) VerifyOTP(ctx context.Context, phone, code string) (*AuthResult, error) {

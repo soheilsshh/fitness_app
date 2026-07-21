@@ -2,8 +2,10 @@ package controllers
 
 import (
 	"errors"
+	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 
@@ -24,6 +26,35 @@ func (h *FunnelController) GetConfig(c *gin.Context) {
 	c.JSON(http.StatusOK, cfg)
 }
 
+func (h *FunnelController) RequestLeadOTP(c *gin.Context) {
+	var req service.FunnelOTPRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid body"})
+		return
+	}
+	if err := h.funnelService.RequestLeadOTP(c.Request.Context(), req.Phone); err != nil {
+		var cooldownErr *service.OTPCooldownError
+		if errors.As(err, &cooldownErr) {
+			c.JSON(http.StatusTooManyRequests, gin.H{
+				"error":               "لطفاً کمی بعد دوباره تلاش کنید",
+				"retry_after_seconds": cooldownErr.RetryAfterSeconds,
+			})
+			return
+		}
+		if errors.Is(err, service.ErrFunnelInvalidInput) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "شماره موبایل نامعتبر است"})
+			return
+		}
+		if errors.Is(err, service.ErrSMSSendFailed) {
+			c.JSON(http.StatusBadGateway, gin.H{"error": service.SMSErrorMessage(err)})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "کد تایید ارسال شد"})
+}
+
 func (h *FunnelController) CreateLead(c *gin.Context) {
 	var req service.CreateFunnelLeadRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -34,6 +65,8 @@ func (h *FunnelController) CreateLead(c *gin.Context) {
 	resp, err := h.funnelService.CreateLead(c.Request.Context(), &req)
 	if err != nil {
 		switch {
+		case errors.Is(err, service.ErrFunnelInvalidOTP):
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "کد تایید نامعتبر یا منقضی است", "code": "invalid_otp"})
 		case errors.Is(err, service.ErrFunnelInvalidInput):
 			c.JSON(http.StatusBadRequest, gin.H{"error": "اطلاعات وارد شده نامعتبر است"})
 		case errors.Is(err, service.ErrFunnelAlreadySubscribed):
@@ -105,7 +138,16 @@ func (h *FunnelController) PayDemo(c *gin.Context) {
 		case errors.Is(err, service.ErrCheckoutAlreadyHasCoach), errors.Is(err, service.ErrCheckoutNotStudent):
 			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 		case errors.Is(err, service.ErrPaymentGatewayFailed):
-			c.JSON(http.StatusBadGateway, gin.H{"error": "اتصال به درگاه زرین‌پال ناموفق بود"})
+			log.Printf("funnel pay gateway error: %v", err)
+			msg := "اتصال به درگاه زرین‌پال ناموفق بود"
+			if raw := err.Error(); strings.Contains(raw, "message=") {
+				if i := strings.LastIndex(raw, "message="); i >= 0 {
+					if detail := strings.TrimSpace(raw[i+len("message="):]); detail != "" {
+						msg = detail
+					}
+				}
+			}
+			c.JSON(http.StatusBadGateway, gin.H{"error": msg})
 		default:
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		}

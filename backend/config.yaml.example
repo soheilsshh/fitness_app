@@ -67,7 +67,9 @@ payments:
     # Required for live / funnel checkout — read by backend on every pay request.
     merchant_id: "YOUR-ZARINPAL-MERCHANT-UUID"
     sandbox: false
-    callback_base_url: "https://api.fitinoo.ir"
+    # Public base that ZarinPal calls back. May be Fitino API or a shared proxy
+    # (e.g. https://checkout.rapexa.ir) if CDN/IP routing forwards to this API.
+    callback_base_url: "https://checkout.rapexa.ir"
     web_result_url: "https://fitinoo.ir/payment/result"
     mobile_deep_link_scheme: "fitinoo"
 

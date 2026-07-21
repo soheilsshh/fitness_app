@@ -5,17 +5,15 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Bot,
   Check,
   Crown,
   Loader2,
-  Smartphone,
+  Quote,
+  ShieldCheck,
   Sparkles,
-  UserRound,
-  Utensils,
 } from "lucide-react";
 import { api } from "@/lib/axios/client";
-import { toastError } from "@/app/(site)/auth/_components/helpers";
+import { toastError, toPersianDigits } from "@/app/(site)/auth/_components/helpers";
 import { PAYMENT_COPY } from "../../_lib/funnelConfig";
 import { clearFunnelDraft, saveFunnelDraft } from "../../_lib/funnelDraft";
 import { formatToman } from "@/lib/funnel/offer";
@@ -25,15 +23,9 @@ import FunnelShell, {
   FunnelStickyBar,
 } from "../../_components/FunnelShell";
 import { LogoAnchor } from "../../_components/FunnelLogoLayer";
+import FeatureCarousel3D from "../../_components/FeatureCarousel3D";
 import PaymentConversionBlocks from "../../_components/PaymentConversionBlocks";
 import { cn } from "@/lib/utils";
-
-const FEATURE_ICONS = {
-  bot: Bot,
-  user: UserRound,
-  utensils: Utensils,
-  smartphone: Smartphone,
-};
 
 /** @typedef {"features" | "proof" | "plans"} PayStep */
 
@@ -86,7 +78,7 @@ export default function FunnelPaymentClient() {
   useEffect(() => {
     const transforms = PAYMENT_COPY.transformations;
     if (step !== "proof" || !transforms.length) return;
-    const id = setInterval(() => setSlide((s) => (s + 1) % transforms.length), 4500);
+    const id = setInterval(() => setSlide((s) => (s + 1) % transforms.length), 5200);
     return () => clearInterval(id);
   }, [step]);
 
@@ -205,7 +197,7 @@ export default function FunnelPaymentClient() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -12 }}
-            className="space-y-5"
+            className="flex min-h-[calc(100dvh-8rem)] flex-col justify-center space-y-6"
           >
             <div className="text-center">
               <LogoAnchor id="payment-features" size={56} className="mx-auto mb-2 rounded-full" />
@@ -218,24 +210,7 @@ export default function FunnelPaymentClient() {
               </p>
             </div>
 
-            {/* Mobile: horizontal snap slider · Desktop: 2×2 grid */}
-            <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-1 md:mx-0 md:grid md:grid-cols-2 md:overflow-visible md:px-0">
-              {PAYMENT_COPY.features.map((feat) => {
-                const Icon = FEATURE_ICONS[feat.icon] || Bot;
-                return (
-                  <FunnelGlass
-                    key={feat.title}
-                    className="w-[82vw] max-w-sm shrink-0 snap-center p-4 md:w-auto md:max-w-none"
-                  >
-                    <div className="mb-2 flex size-9 items-center justify-center rounded-xl border border-primary/25 bg-primary/10">
-                      <Icon className="size-4 text-primary" />
-                    </div>
-                    <h3 className="text-sm font-bold text-white">{feat.title}</h3>
-                    <p className="mt-1.5 text-xs leading-6 text-white/55">{feat.body}</p>
-                  </FunnelGlass>
-                );
-              })}
-            </div>
+            <FeatureCarousel3D features={PAYMENT_COPY.features} />
 
             <FunnelStickyBar>
               <FunnelCta onClick={() => setStep("proof")}>{PAYMENT_COPY.ctaFeatures}</FunnelCta>
@@ -249,59 +224,80 @@ export default function FunnelPaymentClient() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -12 }}
-            className="space-y-4"
+            className="flex min-h-[calc(100dvh-8rem)] flex-col justify-center space-y-5"
           >
-            <div className="text-center">
+            <div className="mx-auto max-w-lg text-center">
               <LogoAnchor id="payment-proof" size={56} className="mx-auto mb-2 rounded-full" />
               <h2 className="text-lg font-extrabold leading-relaxed text-white md:text-xl">
                 {PAYMENT_COPY.socialProof}
               </h2>
             </div>
 
-            <FunnelGlass className="overflow-hidden p-2.5" glow="green">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={slide}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  className="grid grid-cols-2 gap-2"
-                >
-                  {[
-                    { src: current.before, label: "قبل" },
-                    { src: current.after, label: "بعد" },
-                  ].map((img) => (
-                    <div
-                      key={img.label}
-                      className="relative overflow-hidden rounded-xl border border-white/10"
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={img.src}
-                        alt={`${current.name} — ${img.label}`}
-                        className="aspect-[3/4] w-full object-cover"
-                      />
-                      <span className="absolute bottom-2 start-2 rounded-md border border-white/20 bg-black/60 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur">
-                        {img.label}
-                      </span>
+            <div className="mx-auto w-full max-w-lg">
+              <FunnelGlass className="overflow-hidden p-3" glow="green">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={slide}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+                    className="space-y-3"
+                  >
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        { src: current.before, label: "قبل" },
+                        { src: current.after, label: "بعد" },
+                      ].map((img) => (
+                        <div
+                          key={img.label}
+                          className="relative overflow-hidden rounded-xl border border-white/10"
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={img.src}
+                            alt={`${current.name} — ${img.label}`}
+                            className="aspect-[3/4] w-full object-cover"
+                          />
+                          <span className="absolute bottom-2 start-2 rounded-md border border-white/20 bg-black/60 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur">
+                            {img.label}
+                          </span>
+                        </div>
+                      ))}
                     </div>
+
+                    <div className="rounded-2xl border border-white/10 bg-black/25 px-3.5 py-3 text-center">
+                      <p className="text-sm font-extrabold text-white">{current.name}</p>
+                      <p className="mt-1.5 text-[11px] leading-5 text-white/50">
+                        سن {toPersianDigits(current.age)} · قد{" "}
+                        {toPersianDigits(current.heightCm)} · وزن{" "}
+                        {toPersianDigits(current.weightKg)} · تیپ {current.bodyType}
+                      </p>
+                      {current.quote ? (
+                        <blockquote className="mt-3 flex gap-2 text-start text-[11px] leading-6 text-white/65">
+                          <Quote className="mt-0.5 size-3.5 shrink-0 text-primary/80" aria-hidden />
+                          <span>{current.quote}</span>
+                        </blockquote>
+                      ) : null}
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
+
+                <div className="mt-3 flex justify-center gap-2">
+                  {transforms.map((_, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      aria-label={`اسلاید ${i + 1}`}
+                      onClick={() => setSlide(i)}
+                      className={`h-1.5 rounded-full transition-all ${
+                        i === slide ? "w-6 bg-primary" : "w-1.5 bg-white/25"
+                      }`}
+                    />
                   ))}
-                </motion.div>
-              </AnimatePresence>
-              <div className="mt-2.5 flex justify-center gap-2">
-                {transforms.map((_, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    aria-label={`اسلاید ${i + 1}`}
-                    onClick={() => setSlide(i)}
-                    className={`h-1.5 rounded-full transition-all ${
-                      i === slide ? "w-6 bg-primary" : "w-1.5 bg-white/25"
-                    }`}
-                  />
-                ))}
-              </div>
-            </FunnelGlass>
+                </div>
+              </FunnelGlass>
+            </div>
 
             <FunnelStickyBar>
               <FunnelCta onClick={() => setStep("plans")}>{PAYMENT_COPY.ctaProof}</FunnelCta>
@@ -315,13 +311,14 @@ export default function FunnelPaymentClient() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -12 }}
-            className="space-y-3"
+            className="mx-auto max-w-lg space-y-4"
           >
             <div className="text-center">
-              <LogoAnchor id="payment-plans" size={48} className="mx-auto mb-1.5 rounded-full" />
-              <h2 className="text-lg font-extrabold text-white">انتخاب پلن</h2>
-              <p className="mt-1 text-xs text-white/45">
-                {checkout.coachName} · {formatToman(checkout.amount)}
+              <LogoAnchor id="payment-plans" size={52} className="mx-auto mb-2 rounded-full" />
+              <p className="mb-1 text-[11px] font-medium text-primary/85">فیتینو · سرمایه‌گذاری روی بدن</p>
+              <h2 className="text-xl font-extrabold text-white">انتخاب پلن اختصاصی</h2>
+              <p className="mt-1.5 text-xs text-white/45">
+                {checkout.coachName} · از {formatToman(checkout.amount)}
               </p>
             </div>
 
@@ -330,7 +327,7 @@ export default function FunnelPaymentClient() {
                 هنوز پلنی برای این مربی در سیستم ثبت نشده است.
               </FunnelGlass>
             ) : (
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-2.5">
                 {plans.map((plan) => {
                   const planKey = String(plan.key || plan.id);
                   const active = planKey === String(selectedKey);
@@ -342,14 +339,14 @@ export default function FunnelPaymentClient() {
                       disabled={selecting || paying}
                       onClick={() => handleSelectPlan(plan)}
                       className={cn(
-                        "relative rounded-2xl border p-3 text-start transition",
+                        "relative rounded-2xl border p-3.5 text-start transition duration-200",
                         active
-                          ? "border-primary/55 bg-primary/10 shadow-[0_0_28px_-12px_oklch(0.58_0.11_187_/_0.5)]"
-                          : "border-white/12 bg-white/[0.03]"
+                          ? "border-primary/60 bg-gradient-to-b from-primary/20 to-primary/5 shadow-[0_0_32px_-10px_oklch(0.58_0.11_187_/_0.55)]"
+                          : "border-white/12 bg-white/[0.03] hover:border-white/20"
                       )}
                     >
                       {plan.popular ? (
-                        <span className="mb-1.5 inline-block rounded-full border border-primary/35 bg-primary/15 px-1.5 py-0.5 text-[9px] font-bold text-primary">
+                        <span className="mb-1.5 inline-block rounded-md border border-primary/35 bg-primary/15 px-1.5 py-0.5 text-[9px] font-bold text-primary">
                           پیشنهاد اصلی
                         </span>
                       ) : (
@@ -362,7 +359,7 @@ export default function FunnelPaymentClient() {
                         <p className="truncate text-sm font-bold text-white">{plan.title}</p>
                         {active ? <Check className="ms-auto size-4 shrink-0 text-primary" /> : null}
                       </div>
-                      <p className="mt-2 text-lg font-extrabold text-white">
+                      <p className="mt-2.5 text-lg font-extrabold tracking-tight text-white">
                         {formatToman(plan.amount)}
                       </p>
                       <ul className="mt-2 space-y-1">
@@ -381,7 +378,7 @@ export default function FunnelPaymentClient() {
 
             {valueTable ? (
               <FunnelGlass className="overflow-hidden p-0">
-                <div className="border-b border-white/10 px-3 py-2.5">
+                <div className="border-b border-white/10 bg-gradient-to-l from-primary/10 to-transparent px-3 py-2.5">
                   <p className="text-xs font-bold text-white md:text-sm">
                     {valueTable.title}{" "}
                     <span aria-hidden>{valueEmoji}</span>
@@ -424,7 +421,8 @@ export default function FunnelPaymentClient() {
 
             <PaymentConversionBlocks storageKey={token || "checkout"} />
 
-            <p className="text-center text-[11px] leading-5 text-white/45">
+            <p className="flex items-center justify-center gap-1.5 text-center text-[11px] leading-5 text-white/45">
+              <ShieldCheck className="size-3.5 text-primary/80" aria-hidden />
               {PAYMENT_COPY.securePay}
             </p>
 

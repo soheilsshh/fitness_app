@@ -74,9 +74,15 @@ export default function FunnelSuccessClient() {
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: "spring", stiffness: 200, damping: 15 }}
-          className="mx-auto flex size-20 items-center justify-center rounded-full border border-primary/40 bg-primary/15 shadow-[0_0_40px_-8px_oklch(0.58_0.11_187_/_0.45)]"
+          className="relative mx-auto flex size-20 items-center justify-center rounded-full border border-primary/40 bg-primary/15 shadow-[0_0_40px_-8px_oklch(0.58_0.11_187_/_0.45)]"
         >
-          <CheckCircle2 className="size-10 text-primary" />
+          <motion.span
+            aria-hidden
+            className="absolute inset-0 rounded-full border border-primary/30"
+            animate={{ scale: [1, 1.35], opacity: [0.55, 0] }}
+            transition={{ duration: 1.6, repeat: Infinity, ease: "easeOut" }}
+          />
+          <CheckCircle2 className="relative size-10 text-primary" />
         </motion.div>
 
         {/* 1) Header */}

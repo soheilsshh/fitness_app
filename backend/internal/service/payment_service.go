@@ -113,12 +113,16 @@ func (s *paymentService) RequestZarinpalForOrder(ctx context.Context, userID, or
 	}
 
 	callbackURL := s.buildCallbackURL(order.ID)
-	description := fmt.Sprintf("Fitinoo subscription order #%d", order.ID)
+	description := fmt.Sprintf("Fitinoo order #%d", order.ID)
+	mobile := ""
+	if user, uerr := s.userRepo.FindByID(ctx, userID); uerr == nil && user != nil {
+		mobile = strings.TrimSpace(user.Phone)
+	}
 	authority, paymentURL, err := s.zarinpal.RequestPayment(
 		ZarinpalAmountRials(order.TotalAmountCents),
 		description,
 		callbackURL,
-		fmt.Sprintf("tx_%d", order.ID),
+		mobile,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrPaymentGatewayFailed, err)
@@ -155,27 +159,42 @@ func (s *paymentService) HandleZarinpalCallback(ctx context.Context, orderID uin
 
 	if !strings.EqualFold(strings.TrimSpace(status), "OK") {
 		_ = s.markOrderFailed(ctx, order)
+		if url := s.funnelPayResultURL(ctx, order.ID, "failed", ""); url != "" {
+			return url, nil
+		}
 		return s.buildResultURL("failed", order.ID, ""), nil
 	}
 
 	authority = strings.TrimSpace(authority)
 	if authority == "" {
 		_ = s.markOrderFailed(ctx, order)
+		if url := s.funnelPayResultURL(ctx, order.ID, "failed", ""); url != "" {
+			return url, nil
+		}
 		return s.buildResultURL("failed", order.ID, ""), nil
 	}
 
 	if order.GatewayAuthority != "" && order.GatewayAuthority != authority {
 		_ = s.markOrderFailed(ctx, order)
+		if url := s.funnelPayResultURL(ctx, order.ID, "failed", ""); url != "" {
+			return url, nil
+		}
 		return s.buildResultURL("failed", order.ID, ""), nil
 	}
 
 	refID, err := s.zarinpal.VerifyPayment(ZarinpalAmountRials(order.TotalAmountCents), authority)
 	if err != nil {
 		_ = s.markOrderFailed(ctx, order)
+		if url := s.funnelPayResultURL(ctx, order.ID, "failed", ""); url != "" {
+			return url, nil
+		}
 		return s.buildResultURL("failed", order.ID, ""), err
 	}
 
 	if err := s.fulfillPaidOrder(ctx, order, authority, refID); err != nil {
+		if url := s.funnelPayResultURL(ctx, order.ID, "failed", ""); url != "" {
+			return url, nil
+		}
 		return s.buildResultURL("failed", order.ID, ""), err
 	}
 
@@ -453,6 +472,31 @@ func (s *paymentService) buildFunnelSuccessURL(lead *models.FunnelLead) string {
 		strings.TrimRight(base, "/"),
 		url.QueryEscape(lead.CheckoutToken),
 		url.QueryEscape(code),
+	)
+}
+
+func (s *paymentService) funnelPayResultURL(ctx context.Context, orderID uint, status, refID string) string {
+	if s.funnelRepo == nil || orderID == 0 {
+		return ""
+	}
+	lead, err := s.funnelRepo.FindByOrderID(ctx, orderID)
+	if err != nil || lead == nil || strings.TrimSpace(lead.CheckoutToken) == "" {
+		return ""
+	}
+	webURL := strings.TrimSpace(config.Get().Payments.Zarinpal.WebResultURL)
+	base := "https://fitinoo.ir"
+	if webURL != "" {
+		if u, err := url.Parse(webURL); err == nil && u.Scheme != "" && u.Host != "" {
+			base = u.Scheme + "://" + u.Host
+		}
+	}
+	return fmt.Sprintf(
+		"%s/ali-rashidabadi/payment/result?status=%s&token=%s&tx_id=%d&ref_id=%s",
+		strings.TrimRight(base, "/"),
+		url.QueryEscape(status),
+		url.QueryEscape(lead.CheckoutToken),
+		orderID,
+		url.QueryEscape(refID),
 	)
 }
 
