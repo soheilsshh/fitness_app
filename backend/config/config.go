@@ -117,13 +117,19 @@ func Get() Config {
 func loadConfig() error {
 	// Optional: .env overrides config.yaml when present. Production needs no .env —
 	// only config.yaml. Remove .env if you want yaml-only settings.
-	if err := godotenv.Load(); err == nil {
-		log.Println("config: .env loaded (overrides config.yaml) — delete .env for yaml-only production")
+	for _, envPath := range []string{".env", "backend/.env"} {
+		if err := godotenv.Load(envPath); err == nil {
+			log.Printf("config: %s loaded (overrides config.yaml) — delete it for yaml-only", envPath)
+			break
+		}
 	}
 
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath(".")
+	// Support running from backend/ or monorepo root (fitness_app/).
+	for _, p := range []string{".", "backend", "./backend"} {
+		viper.AddConfigPath(p)
+	}
 
 	setDefaults()
 	bindEnvKeys()

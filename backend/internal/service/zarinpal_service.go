@@ -32,30 +32,33 @@ type zarinpalAPIResponse struct {
 	Errors json.RawMessage `json:"errors"`
 }
 
+// ZarinpalClient talks to ZarinPal using payments.zarinpal.* from config.yaml
+// (re-read on every call so yaml/env changes after restart are not cached incorrectly).
 type ZarinpalClient struct {
-	merchantID string
-	sandbox    bool
 	httpClient *http.Client
 }
 
 func NewZarinpalClient() *ZarinpalClient {
-	cfg := config.Get().Payments.Zarinpal
-	return &ZarinpalClient{
-		merchantID: strings.TrimSpace(cfg.MerchantID),
-		sandbox:    cfg.Sandbox,
-		httpClient: &http.Client{},
-	}
+	return &ZarinpalClient{httpClient: &http.Client{}}
+}
+
+func (z *ZarinpalClient) merchantID() string {
+	return strings.TrimSpace(config.Get().Payments.Zarinpal.MerchantID)
+}
+
+func (z *ZarinpalClient) sandbox() bool {
+	return config.Get().Payments.Zarinpal.Sandbox
 }
 
 func (z *ZarinpalClient) apiBase() string {
-	if z.sandbox {
+	if z.sandbox() {
 		return "https://sandbox.zarinpal.com/pg/v4/payment"
 	}
 	return "https://api.zarinpal.com/pg/v4/payment"
 }
 
 func (z *ZarinpalClient) startPayBase() string {
-	if z.sandbox {
+	if z.sandbox() {
 		return "https://sandbox.zarinpal.com/pg/StartPay/"
 	}
 	return "https://www.zarinpal.com/pg/StartPay/"
@@ -67,15 +70,16 @@ func ZarinpalAmountRials(tomans int64) int64 {
 }
 
 func (z *ZarinpalClient) RequestPayment(amountRials int64, description, callbackURL, orderRef string) (authority, paymentURL string, err error) {
-	if z.merchantID == "" {
-		return "", "", errors.New("zarinpal merchant_id is not configured")
+	merchantID := z.merchantID()
+	if merchantID == "" {
+		return "", "", errors.New("zarinpal merchant_id is not configured in config.yaml (payments.zarinpal.merchant_id)")
 	}
 	if amountRials <= 0 {
 		return "", "", errors.New("invalid payment amount")
 	}
 
 	body := map[string]interface{}{
-		"merchant_id":  z.merchantID,
+		"merchant_id":  merchantID,
 		"amount":       amountRials,
 		"description":  description,
 		"callback_url": callbackURL,
@@ -98,15 +102,16 @@ func (z *ZarinpalClient) RequestPayment(amountRials int64, description, callback
 }
 
 func (z *ZarinpalClient) VerifyPayment(amountRials int64, authority string) (refID string, err error) {
-	if z.merchantID == "" {
-		return "", errors.New("zarinpal merchant_id is not configured")
+	merchantID := z.merchantID()
+	if merchantID == "" {
+		return "", errors.New("zarinpal merchant_id is not configured in config.yaml (payments.zarinpal.merchant_id)")
 	}
 	if strings.TrimSpace(authority) == "" {
 		return "", errors.New("authority is required")
 	}
 
 	body := map[string]interface{}{
-		"merchant_id": z.merchantID,
+		"merchant_id": merchantID,
 		"amount":      amountRials,
 		"authority":   authority,
 	}

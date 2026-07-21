@@ -363,9 +363,11 @@ func main() {
 		cfg.Database.Name,
 		len(cfg.CORS.AllowedOrigins),
 	)
-	log.Printf("config: sms_delivery=%s zarinpal_sandbox=%v openai_configured=%v",
+	log.Printf("config: sms_delivery=%s zarinpal_sandbox=%v zarinpal_merchant=%v callback=%s openai_configured=%v",
 		service.SMSDeliveryMode(),
 		cfg.Payments.Zarinpal.Sandbox,
+		strings.TrimSpace(cfg.Payments.Zarinpal.MerchantID) != "",
+		cfg.Payments.Zarinpal.CallbackBaseURL,
 		strings.TrimSpace(cfg.OpenAI.APIKey) != "",
 	)
 
