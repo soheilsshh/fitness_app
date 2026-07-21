@@ -7,10 +7,10 @@ import { motion } from "framer-motion";
 import { AlertTriangle, Loader2, RefreshCw } from "lucide-react";
 import { api } from "@/lib/axios/client";
 import { toastError } from "@/app/(site)/auth/_components/helpers";
-import { PAY_RESULT_COPY } from "../../_lib/funnelConfig";
-import { clearFunnelDraft } from "../../_lib/funnelDraft";
-import FunnelShell, { FunnelCta, FunnelGlass, FunnelStickyBar } from "../../_components/FunnelShell";
-import { LogoAnchor } from "../../_components/FunnelLogoLayer";
+import { PAY_RESULT_COPY } from "../../../_lib/funnelConfig";
+import { clearFunnelDraft } from "../../../_lib/funnelDraft";
+import FunnelShell, { FunnelCta, FunnelGlass, FunnelStickyBar } from "../../../_components/FunnelShell";
+import { LogoAnchor } from "../../../_components/FunnelLogoLayer";
 
 export default function FunnelPaymentResultClient() {
   const router = useRouter();
