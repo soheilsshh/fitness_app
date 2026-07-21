@@ -57,11 +57,14 @@ sms:
   api_key: "YOUR_KAVENEGAR_API_KEY"
   originator: ""
   otp_pattern_code: "fittino-otp"
+  # Verify Lookup template for "program ready" SMS (token = first name). Create in Kavenegar panel.
+  program_ready_pattern_code: "fittino-program"
   otp_ttl_minutes: 10
   otp_resend_cooldown_seconds: 60
 
 payments:
   zarinpal:
+    # Required for live / funnel checkout — read by backend on every pay request.
     merchant_id: "YOUR-ZARINPAL-MERCHANT-UUID"
     sandbox: false
     callback_base_url: "https://api.fitinoo.ir"
