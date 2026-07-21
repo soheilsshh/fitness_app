@@ -90,13 +90,21 @@ func (h *FunnelController) SelectPlan(c *gin.Context) {
 
 func (h *FunnelController) PayDemo(c *gin.Context) {
 	token := c.Param("token")
-	resp, err := h.funnelService.PayDemo(c.Request.Context(), token)
+	resp, err := h.funnelService.StartPayment(c.Request.Context(), token)
 	if err != nil {
 		switch {
 		case errors.Is(err, service.ErrFunnelLeadNotFound):
 			c.JSON(http.StatusNotFound, gin.H{"error": "lead not found"})
+		case errors.Is(err, service.ErrFunnelAlreadyPaid):
+			c.JSON(http.StatusConflict, gin.H{"error": "already paid"})
 		case errors.Is(err, service.ErrFunnelInvalidStatus):
 			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid payment status"})
+		case errors.Is(err, service.ErrFunnelInvalidInput):
+			c.JSON(http.StatusBadRequest, gin.H{"error": "پلن پرداخت انتخاب نشده است"})
+		case errors.Is(err, service.ErrCheckoutAlreadyHasCoach), errors.Is(err, service.ErrCheckoutNotStudent):
+			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+		case errors.Is(err, service.ErrPaymentGatewayFailed):
+			c.JSON(http.StatusBadGateway, gin.H{"error": "اتصال به درگاه زرین‌پال ناموفق بود"})
 		default:
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		}

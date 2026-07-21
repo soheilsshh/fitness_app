@@ -42,6 +42,8 @@ type FunnelLead struct {
 	PackageTitle  string `gorm:"size:255;not null"`
 	AmountCents   int64  `gorm:"not null"`
 	Status        string  `gorm:"size:30;not null;index"`
+	// OrderID links the lead to a real ZarinPal checkout order (0 until pay starts).
+	OrderID uint `gorm:"index;not null;default:0"`
 	// TrackingCode is set only after payment. Use pointer so unpaid leads store NULL
 	// (MySQL unique index allows multiple NULLs; empty string '' would collide).
 	TrackingCode  *string `gorm:"size:100;uniqueIndex"`

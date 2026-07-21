@@ -43,7 +43,7 @@ import AnalysisVisuals from "./AnalysisVisuals";
 import FinalAnalyzeLoader from "./FinalAnalyzeLoader";
 import FunnelHero from "./FunnelHero";
 import { LogoAnchor } from "./FunnelLogoLayer";
-import FunnelShell, { FunnelCta, FunnelGlass, FunnelProgressBar } from "./FunnelShell";
+import FunnelShell, { FunnelCta, FunnelGlass, FunnelProgressBar, FunnelStickyBar } from "./FunnelShell";
 import PaymentConversionBlocks from "./PaymentConversionBlocks";
 import Typewriter from "./Typewriter";
 
@@ -481,7 +481,7 @@ export default function LeadFunnelWizard() {
             </div>
 
             <FunnelGlass className="p-6">
-              <form onSubmit={submitMetrics} className="space-y-5">
+              <form id="funnel-metrics-form" onSubmit={submitMetrics} className="space-y-5">
                 <div className="grid gap-4 sm:grid-cols-3">
                   {[
                     {
@@ -534,12 +534,14 @@ export default function LeadFunnelWizard() {
                     </label>
                   ))}
                 </div>
-                <FunnelCta type="submit">
-                  <Settings2 className="size-5" />
-                  {METRICS_COPY.cta}
-                </FunnelCta>
               </form>
             </FunnelGlass>
+            <FunnelStickyBar>
+              <FunnelCta type="submit" form="funnel-metrics-form">
+                <Settings2 className="size-5" />
+                {METRICS_COPY.cta}
+              </FunnelCta>
+            </FunnelStickyBar>
           </motion.div>
         )}
 
@@ -591,11 +593,11 @@ export default function LeadFunnelWizard() {
 
             <PaymentConversionBlocks storageKey="result" />
 
-            <div className="sticky bottom-0 z-30 -mx-4 mt-1 bg-gradient-to-t from-[#0e0e0e] via-[#0e0e0e] via-60% to-transparent px-4 pb-4 pt-6 [overflow-anchor:none]">
+            <FunnelStickyBar>
               <FunnelCta onClick={() => setStage("lead")}>
                 {RESULT_COPY.cta}
               </FunnelCta>
-            </div>
+            </FunnelStickyBar>
           </motion.div>
         )}
 
@@ -613,7 +615,7 @@ export default function LeadFunnelWizard() {
             </div>
 
             <FunnelGlass className="p-6" glow="green">
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form id="funnel-lead-form" onSubmit={handleSubmit} className="space-y-4">
                 <label className="block space-y-2 text-start">
                   <span className="text-xs text-white/50">نام و نام خانوادگی</span>
                   <input
@@ -637,21 +639,24 @@ export default function LeadFunnelWizard() {
                     className="h-12 w-full rounded-xl border border-white/15 bg-black/40 px-4 text-start text-sm text-white outline-none transition placeholder:text-white/25 focus:border-primary/50"
                   />
                 </label>
-                <FunnelCta type="submit" disabled={submitting}>
-                  {submitting ? (
-                    <>
-                      <Loader2 className="size-5 animate-spin" />
-                      در حال ثبت...
-                    </>
-                  ) : (
-                    <>
-                      <Lock className="size-5" />
-                      {LEAD_COPY.cta}
-                    </>
-                  )}
-                </FunnelCta>
               </form>
             </FunnelGlass>
+
+            <FunnelStickyBar>
+              <FunnelCta type="submit" form="funnel-lead-form" disabled={submitting}>
+                {submitting ? (
+                  <>
+                    <Loader2 className="size-5 animate-spin" />
+                    در حال ثبت...
+                  </>
+                ) : (
+                  <>
+                    <Lock className="size-5" />
+                    {LEAD_COPY.cta}
+                  </>
+                )}
+              </FunnelCta>
+            </FunnelStickyBar>
           </motion.div>
         )}
       </AnimatePresence>

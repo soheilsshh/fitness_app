@@ -20,8 +20,7 @@ const BODY_TYPES = [
     en: "ECTOMORPH",
     fa: "اکتومورف",
     desc: "ساختار بلند و باریک",
-    metaLabel: "متابولیسم",
-    metaValue: "سریع",
+    meta: "متابولیسم سریع",
     chartLabel: "Fuel efficiency",
     color: "#3cc9f5",
     image: ectomorphImg.src ?? ectomorphImg,
@@ -31,9 +30,8 @@ const BODY_TYPES = [
     key: "mesomorph",
     en: "MESOMORPH",
     fa: "مزومورف",
-    desc: "ساختار عضلانی و شکل V",
-    metaLabel: "ساختار",
-    metaValue: "عضله‌سازی کارآمد",
+    desc: "ساختار عضلانی · شکل V",
+    meta: "عضله‌سازی کارآمد",
     chartLabel: "Anabolic rate",
     color: "#3ee27f",
     image: mesomorphImg.src ?? mesomorphImg,
@@ -44,8 +42,7 @@ const BODY_TYPES = [
     en: "ENDOMORPH",
     fa: "اندومورف",
     desc: "ساختار پهن و نرم",
-    metaLabel: "متابولیسم",
-    metaValue: "آهسته‌تر",
+    meta: "متابولیسم آهسته‌تر",
     chartLabel: "Storage potential",
     color: "#ff8a3c",
     image: endomorphImg.src ?? endomorphImg,
@@ -134,7 +131,7 @@ function BodyTypeShowcase({ selectedKey }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-black/25 p-3 md:p-5">
       <p className="mb-4 text-center text-sm font-bold text-white/85">تیپ‌های بدنی اصلی</p>
-      <div className="grid grid-cols-3 gap-2 md:gap-3">
+      <div className="grid grid-cols-3 items-stretch gap-2 md:gap-3">
         {BODY_TYPES.map((type, i) => {
           const active = type.key === selectedKey;
           return (
@@ -144,7 +141,7 @@ function BodyTypeShowcase({ selectedKey }) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 + i * 0.08 }}
               className={cn(
-                "relative flex flex-col items-center rounded-2xl border px-1.5 py-3 text-center transition md:px-2",
+                "relative flex h-full min-w-0 flex-col items-center rounded-2xl border px-1.5 py-3 text-center transition md:px-2.5",
                 active ? "border-white/25 bg-white/[0.06]" : "border-white/[0.06] bg-transparent"
               )}
               style={
@@ -157,14 +154,14 @@ function BodyTypeShowcase({ selectedKey }) {
             >
               {active && (
                 <span
-                  className="absolute -top-2 right-1/2 translate-x-1/2 whitespace-nowrap rounded-full px-2 py-0.5 text-[9px] font-bold text-black"
+                  className="absolute -top-2 right-1/2 z-10 translate-x-1/2 whitespace-nowrap rounded-full px-2 py-0.5 text-[9px] font-bold text-black"
                   style={{ background: type.color }}
                 >
                   تحلیل شما
                 </span>
               )}
               <span
-                className="text-[10px] font-black tracking-[0.12em] md:text-xs"
+                className="shrink-0 text-[10px] font-black tracking-[0.12em] md:text-xs"
                 style={{ color: active ? type.color : "#7a828e" }}
               >
                 {type.en}
@@ -173,27 +170,45 @@ function BodyTypeShowcase({ selectedKey }) {
               <BodyFigure type={type} active={active} />
 
               <span
-                className="mt-1 inline-block size-1.5 rounded-full"
+                className="mt-1 inline-block size-1.5 shrink-0 rounded-full"
                 style={{ background: active ? type.color : "#5b6472" }}
               />
 
-              <span className={cn("mt-1 text-sm font-extrabold", active ? "text-white" : "text-white/45")}>
-                {type.fa}
-              </span>
-              <span className={cn("mt-0.5 text-[10px] leading-4", active ? "text-white/65" : "text-white/30")}>
-                {type.desc}
-              </span>
-              <span className={cn("mt-1 text-[9px]", active ? "text-white/45" : "text-white/25")}>
-                {type.metaLabel}: {type.metaValue}
-              </span>
+              {/* Fixed text band so sparkline boxes share one baseline */}
+              <div className="mt-1 flex w-full min-w-0 flex-col items-center gap-0.5 px-0.5">
+                <span
+                  className={cn(
+                    "w-full truncate text-sm font-extrabold",
+                    active ? "text-white" : "text-white/45"
+                  )}
+                >
+                  {type.fa}
+                </span>
+                <span
+                  className={cn(
+                    "w-full text-[10px] leading-4",
+                    active ? "text-white/65" : "text-white/30"
+                  )}
+                >
+                  {type.desc}
+                </span>
+                <span
+                  className={cn(
+                    "w-full text-[9px] leading-4",
+                    active ? "text-white/45" : "text-white/25"
+                  )}
+                >
+                  {type.meta}
+                </span>
+              </div>
 
               <div
-                className="mt-2 w-full rounded-lg border bg-black/40 px-1.5 pt-1.5"
+                className="mt-auto w-full min-w-0 rounded-lg border bg-black/40 px-1.5 pt-1.5"
                 style={{ borderColor: active ? `${type.color}44` : "rgba(255,255,255,0.08)" }}
               >
                 <span
                   dir="ltr"
-                  className="block text-[9px] font-medium"
+                  className="block truncate text-[9px] font-medium"
                   style={{ color: active ? type.color : "#7a828e" }}
                 >
                   {type.chartLabel}

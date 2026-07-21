@@ -23,6 +23,7 @@ type FunnelStats struct {
 type FunnelLeadRepository interface {
 	Create(ctx context.Context, lead *models.FunnelLead) error
 	FindByCheckoutToken(ctx context.Context, token string) (*models.FunnelLead, error)
+	FindByOrderID(ctx context.Context, orderID uint) (*models.FunnelLead, error)
 	FindLatestPendingByPhone(ctx context.Context, phone string) (*models.FunnelLead, error)
 	Update(ctx context.Context, lead *models.FunnelLead) error
 	List(ctx context.Context, status string, query string, page, pageSize int) ([]models.FunnelLead, int64, error)
@@ -52,6 +53,17 @@ func (r *funnelLeadRepository) Create(ctx context.Context, lead *models.FunnelLe
 func (r *funnelLeadRepository) FindByCheckoutToken(ctx context.Context, token string) (*models.FunnelLead, error) {
 	var lead models.FunnelLead
 	if err := r.db.WithContext(ctx).Where("checkout_token = ?", token).First(&lead).Error; err != nil {
+		return nil, err
+	}
+	return &lead, nil
+}
+
+func (r *funnelLeadRepository) FindByOrderID(ctx context.Context, orderID uint) (*models.FunnelLead, error) {
+	if orderID == 0 {
+		return nil, gorm.ErrRecordNotFound
+	}
+	var lead models.FunnelLead
+	if err := r.db.WithContext(ctx).Where("order_id = ?", orderID).First(&lead).Error; err != nil {
 		return nil, err
 	}
 	return &lead, nil

@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 
 	"github.com/yourusername/fitness-management/config"
@@ -165,12 +166,19 @@ type PatchFunnelLeadRequest struct {
 	Status *string `json:"status"`
 }
 
+type FunnelPayResponse struct {
+	PaymentURL    string `json:"paymentUrl"`
+	OrderID       uint   `json:"orderId"`
+	CheckoutToken string `json:"checkoutToken"`
+	Authority     string `json:"authority,omitempty"`
+}
+
 type FunnelService interface {
 	GetConfig(ctx context.Context) FunnelConfigDTO
 	CreateLead(ctx context.Context, req *CreateFunnelLeadRequest) (*CreateFunnelLeadResponse, error)
 	GetCheckout(ctx context.Context, token string) (*FunnelCheckoutDTO, error)
 	SelectPlan(ctx context.Context, token string, req *SelectFunnelPlanRequest) (*FunnelCheckoutDTO, error)
-	PayDemo(ctx context.Context, token string) (*FunnelCheckoutDTO, error)
+	StartPayment(ctx context.Context, token string) (*FunnelPayResponse, error)
 	ListLeads(ctx context.Context, status, query string, page, pageSize int) (*AdminFunnelLeadListResponse, error)
 	GetLeadByID(ctx context.Context, id uint) (*AdminFunnelLeadDetail, error)
 	PatchLead(ctx context.Context, id uint, req *PatchFunnelLeadRequest) error
@@ -182,14 +190,27 @@ type funnelService struct {
 	repo      repository.FunnelLeadRepository
 	coachRepo repository.CoachProfileRepository
 	planRepo  repository.ServicePlanRepository
+	userRepo  repository.UserRepository
+	orderRepo repository.OrderRepository
+	payment   PaymentService
 }
 
 func NewFunnelService(
 	repo repository.FunnelLeadRepository,
 	coachRepo repository.CoachProfileRepository,
 	planRepo repository.ServicePlanRepository,
+	userRepo repository.UserRepository,
+	orderRepo repository.OrderRepository,
+	payment PaymentService,
 ) FunnelService {
-	return &funnelService{repo: repo, coachRepo: coachRepo, planRepo: planRepo}
+	return &funnelService{
+		repo:      repo,
+		coachRepo: coachRepo,
+		planRepo:  planRepo,
+		userRepo:  userRepo,
+		orderRepo: orderRepo,
+		payment:   payment,
+	}
 }
 
 func funnelCoachSlug() string {
@@ -502,13 +523,17 @@ func (s *funnelService) SelectPlan(ctx context.Context, token string, req *Selec
 		return nil, err
 	}
 	applyPlanToLead(lead, plan)
+	lead.OrderID = 0 // force a fresh gateway order after plan change
 	if err := s.repo.Update(ctx, lead); err != nil {
 		return nil, err
 	}
 	return s.leadToCheckoutDTO(ctx, lead)
 }
 
-func (s *funnelService) PayDemo(ctx context.Context, token string) (*FunnelCheckoutDTO, error) {
+func (s *funnelService) StartPayment(ctx context.Context, token string) (*FunnelPayResponse, error) {
+	if s.payment == nil || s.userRepo == nil {
+		return nil, ErrPaymentGatewayFailed
+	}
 	lead, err := s.repo.FindByCheckoutToken(ctx, strings.TrimSpace(token))
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -516,25 +541,116 @@ func (s *funnelService) PayDemo(ctx context.Context, token string) (*FunnelCheck
 		}
 		return nil, err
 	}
-
 	if lead.Status == models.FunnelStatusPaid {
-		return s.leadToCheckoutDTO(ctx, lead)
+		return nil, ErrFunnelAlreadyPaid
 	}
 	if lead.Status != models.FunnelStatusPendingPayment {
 		return nil, ErrFunnelInvalidStatus
 	}
+	if lead.ServicePlanID == 0 || lead.AmountCents <= 0 {
+		return nil, ErrFunnelInvalidInput
+	}
 
-	now := time.Now()
-	lead.Status = models.FunnelStatusPaid
-	lead.PaymentMethod = "درگاه آنلاین (دمو)"
-	code := generateFunnelTrackingCode()
-	lead.TrackingCode = &code
-	lead.PaidAt = &now
+	user, err := s.ensureFunnelStudent(ctx, lead)
+	if err != nil {
+		return nil, err
+	}
 
+	orderID, err := s.resolveFunnelOrderID(ctx, lead, user.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	zarin, err := s.payment.RequestZarinpalForOrder(ctx, user.ID, orderID)
+	if err != nil {
+		return nil, err
+	}
+
+	lead.OrderID = orderID
+	lead.PaymentMethod = "زرین‌پال"
 	if err := s.repo.Update(ctx, lead); err != nil {
 		return nil, err
 	}
-	return s.leadToCheckoutDTO(ctx, lead)
+
+	return &FunnelPayResponse{
+		PaymentURL:    zarin.PaymentURL,
+		OrderID:       zarin.OrderID,
+		CheckoutToken: lead.CheckoutToken,
+		Authority:     zarin.Authority,
+	}, nil
+}
+
+func (s *funnelService) resolveFunnelOrderID(ctx context.Context, lead *models.FunnelLead, userID uint) (uint, error) {
+	if lead.OrderID > 0 && s.orderRepo != nil {
+		if order, err := s.orderRepo.GetByID(ctx, lead.OrderID); err == nil && order != nil {
+			if order.UserID == userID && order.Status == "pending" {
+				items, itemErr := s.orderRepo.GetOrderItems(ctx, order.ID)
+				if itemErr == nil && len(items) > 0 && items[0].PlanID == lead.ServicePlanID {
+					return order.ID, nil
+				}
+			}
+		}
+	}
+
+	prepared, err := s.payment.PrepareCheckoutOrder(ctx, userID, &CheckoutRequest{
+		Items: []CheckoutItemRequest{{PlanID: lead.ServicePlanID, Qty: 1}},
+	})
+	if err != nil {
+		return 0, err
+	}
+	return prepared.OrderID, nil
+}
+
+func (s *funnelService) ensureFunnelStudent(ctx context.Context, lead *models.FunnelLead) (*models.User, error) {
+	phone := strings.TrimSpace(lead.Phone)
+	if phone == "" {
+		return nil, ErrFunnelInvalidInput
+	}
+
+	user, err := s.userRepo.FindByPhone(ctx, phone)
+	if err == nil && user != nil {
+		if user.Role != models.RoleStudent {
+			return nil, ErrCheckoutNotStudent
+		}
+		return user, nil
+	}
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, err
+	}
+
+	name := strings.TrimSpace(lead.FirstName + " " + lead.LastName)
+	if name == "" {
+		name = "کاربر فیتینو"
+	}
+	email := "funnel_" + phone + "@fitino.guest"
+	rawPass := generateFunnelToken()
+	hashed, hashErr := hashFunnelPassword(rawPass)
+	if hashErr != nil {
+		return nil, hashErr
+	}
+	user = &models.User{
+		Name:     name,
+		Email:    email,
+		Phone:    phone,
+		Password: hashed,
+		Role:     models.RoleStudent,
+	}
+	if err := s.userRepo.Create(ctx, user); err != nil {
+		// Race: another request created the same phone — reuse it.
+		if existing, findErr := s.userRepo.FindByPhone(ctx, phone); findErr == nil && existing != nil {
+			return existing, nil
+		}
+		return nil, err
+	}
+	return user, nil
+}
+
+func hashFunnelPassword(raw string) (string, error) {
+	b, err := bcrypt.GenerateFromPassword([]byte(raw), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
 }
 
 func (s *funnelService) ListLeads(ctx context.Context, status, query string, page, pageSize int) (*AdminFunnelLeadListResponse, error) {

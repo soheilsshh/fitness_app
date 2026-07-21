@@ -44,6 +44,7 @@ type paymentService struct {
 	planRepo    repository.ServicePlanRepository
 	orderRepo   repository.OrderRepository
 	subRepo     repository.SubscriptionRepository
+	funnelRepo  repository.FunnelLeadRepository
 	zarinpal    *ZarinpalClient
 }
 
@@ -54,13 +55,25 @@ func NewPaymentService(
 	orderRepo repository.OrderRepository,
 	subRepo repository.SubscriptionRepository,
 ) PaymentService {
+	return NewPaymentServiceWithFunnel(db, userRepo, planRepo, orderRepo, subRepo, nil)
+}
+
+func NewPaymentServiceWithFunnel(
+	db *gorm.DB,
+	userRepo repository.UserRepository,
+	planRepo repository.ServicePlanRepository,
+	orderRepo repository.OrderRepository,
+	subRepo repository.SubscriptionRepository,
+	funnelRepo repository.FunnelLeadRepository,
+) PaymentService {
 	return &paymentService{
-		db:        db,
-		userRepo:  userRepo,
-		planRepo:  planRepo,
-		orderRepo: orderRepo,
-		subRepo:   subRepo,
-		zarinpal:  NewZarinpalClient(),
+		db:         db,
+		userRepo:   userRepo,
+		planRepo:   planRepo,
+		orderRepo:  orderRepo,
+		subRepo:    subRepo,
+		funnelRepo: funnelRepo,
+		zarinpal:   NewZarinpalClient(),
 	}
 }
 
@@ -134,6 +147,9 @@ func (s *paymentService) HandleZarinpalCallback(ctx context.Context, orderID uin
 	}
 
 	if order.Status == "paid" {
+		if url := s.funnelSuccessURL(ctx, order.ID); url != "" {
+			return url, nil
+		}
 		return s.buildResultURL("success", order.ID, order.GatewayRefID), nil
 	}
 
@@ -161,6 +177,10 @@ func (s *paymentService) HandleZarinpalCallback(ctx context.Context, orderID uin
 
 	if err := s.fulfillPaidOrder(ctx, order, authority, refID); err != nil {
 		return s.buildResultURL("failed", order.ID, ""), err
+	}
+
+	if url := s.markFunnelLeadPaid(ctx, order.ID, refID); url != "" {
+		return url, nil
 	}
 
 	return s.buildResultURL("success", order.ID, refID), nil
@@ -376,6 +396,64 @@ func (s *paymentService) markOrderFailed(ctx context.Context, order *models.Orde
 	return s.db.WithContext(ctx).Model(&models.Order{}).
 		Where("id = ? AND status = ?", order.ID, "pending").
 		Update("status", "failed").Error
+}
+
+// markFunnelLeadPaid finalizes a funnel checkout linked to this order and returns
+// the funnel success redirect URL (empty when the order is not a funnel payment).
+func (s *paymentService) markFunnelLeadPaid(ctx context.Context, orderID uint, refID string) string {
+	if s.funnelRepo == nil || orderID == 0 {
+		return ""
+	}
+	lead, err := s.funnelRepo.FindByOrderID(ctx, orderID)
+	if err != nil || lead == nil {
+		return ""
+	}
+	if lead.Status != models.FunnelStatusPaid {
+		now := time.Now()
+		lead.Status = models.FunnelStatusPaid
+		lead.PaymentMethod = "زرین‌پال"
+		if lead.TrackingCode == nil || strings.TrimSpace(*lead.TrackingCode) == "" {
+			code := generateFunnelTrackingCode()
+			lead.TrackingCode = &code
+		}
+		lead.PaidAt = &now
+		_ = s.funnelRepo.Update(ctx, lead)
+	}
+	return s.buildFunnelSuccessURL(lead)
+}
+
+func (s *paymentService) funnelSuccessURL(ctx context.Context, orderID uint) string {
+	if s.funnelRepo == nil || orderID == 0 {
+		return ""
+	}
+	lead, err := s.funnelRepo.FindByOrderID(ctx, orderID)
+	if err != nil || lead == nil {
+		return ""
+	}
+	return s.buildFunnelSuccessURL(lead)
+}
+
+func (s *paymentService) buildFunnelSuccessURL(lead *models.FunnelLead) string {
+	if lead == nil || strings.TrimSpace(lead.CheckoutToken) == "" {
+		return ""
+	}
+	webURL := strings.TrimSpace(config.Get().Payments.Zarinpal.WebResultURL)
+	base := "https://fitinoo.ir"
+	if webURL != "" {
+		if u, err := url.Parse(webURL); err == nil && u.Scheme != "" && u.Host != "" {
+			base = u.Scheme + "://" + u.Host
+		}
+	}
+	code := ""
+	if lead.TrackingCode != nil {
+		code = strings.TrimSpace(*lead.TrackingCode)
+	}
+	return fmt.Sprintf(
+		"%s/ali-rashidabadi/success?token=%s&code=%s",
+		strings.TrimRight(base, "/"),
+		url.QueryEscape(lead.CheckoutToken),
+		url.QueryEscape(code),
+	)
 }
 
 func (s *paymentService) buildCallbackURL(orderID uint) string {

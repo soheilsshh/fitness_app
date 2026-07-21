@@ -9,6 +9,7 @@ import { useTypingBubbleGate } from "../_lib/useCtaAfterTyping";
 import TypedSegments from "./TypedSegments";
 import DelayedFunnelCta from "./DelayedFunnelCta";
 import { LogoAnchor } from "./FunnelLogoLayer";
+import { FunnelStickyBar } from "./FunnelShell";
 
 const IMAGE_SRC = "/images/coach-ali.jpg";
 
@@ -98,23 +99,6 @@ export default function FunnelHero({ coachName = "علی رشیدآبادی", on
           {HERO_COPY.subtitle}
         </motion.p>
 
-        <div className="w-full max-w-md space-y-3 pt-1">
-          <DelayedFunnelCta typingDone={typingDone} onClick={onStart}>
-            {resume ? "ادامه ارزیابی از جایی که رها کردی" : "شروع ارزیابی هوشمند بدنم"}
-            <ArrowLeft className="size-4" />
-          </DelayedFunnelCta>
-          {typingDone && (
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1.2, duration: 0.4 }}
-              className="text-xs text-white/45"
-            >
-              رایگان · بدون نیاز به ثبت‌نام اولیه
-            </motion.p>
-          )}
-        </div>
-
         <motion.ul
           initial={{ opacity: 0 }}
           animate={{ opacity: typingDone ? 1 : 0 }}
@@ -132,6 +116,18 @@ export default function FunnelHero({ coachName = "علی رشیدآبادی", on
           ))}
         </motion.ul>
       </div>
+
+      {typingDone ? (
+        <FunnelStickyBar className="border-white/10 bg-black/70" spacerClassName="h-28">
+          <DelayedFunnelCta typingDone={typingDone} delayMs={0} onClick={onStart}>
+            {resume ? "ادامه ارزیابی از جایی که رها کردی" : "شروع ارزیابی هوشمند بدنم"}
+            <ArrowLeft className="size-4" />
+          </DelayedFunnelCta>
+          <p className="mt-2 text-center text-xs text-white/45">
+            رایگان · بدون نیاز به ثبت‌نام اولیه
+          </p>
+        </FunnelStickyBar>
+      ) : null}
     </section>
   );
 }

@@ -73,13 +73,14 @@ func NewServer(db *gorm.DB) *Server {
 	notificationRepo := repository.NewNotificationRepository(db)
 	mobileDeviceRepo := repository.NewMobileDeviceRepository(db)
 	mobileReleaseRepo := repository.NewMobileReleaseRepository(db)
+	funnelLeadRepo := repository.NewFunnelLeadRepository(db)
 
 	// Initialize services
 	authService := service.NewAuthService(userRepo, coachProfileRepo, refreshTokenRepo, otpRepo)
 	coachProfileService := service.NewCoachProfileService(coachProfileRepo, servicePlanRepo, coachAchievementRepo)
 	coachAchievementService := service.NewCoachAchievementService(coachAchievementRepo)
 	coachPlanService := service.NewCoachPlanService(servicePlanRepo)
-	paymentService := service.NewPaymentService(db, userRepo, servicePlanRepo, orderRepo, subscriptionRepo)
+	paymentService := service.NewPaymentServiceWithFunnel(db, userRepo, servicePlanRepo, orderRepo, subscriptionRepo, funnelLeadRepo)
 	checkoutService := service.NewCheckoutService(db, userRepo, servicePlanRepo, orderRepo, subscriptionRepo, coachProfileRepo, paymentService)
 	studentService := service.NewStudentService(userRepo, subscriptionRepo, servicePlanRepo, programRepo)
 	meService := service.NewMeService(db, userRepo, orderRepo, subscriptionRepo, servicePlanRepo, programRepo, exerciseRepo, foodRepo)
@@ -139,8 +140,7 @@ func NewServer(db *gorm.DB) *Server {
 	meDashboardController := controllers.NewMeDashboardController(meDashboardService)
 	notificationService := service.NewNotificationService(notificationRepo)
 	notificationController := controllers.NewNotificationController(notificationService)
-	funnelLeadRepo := repository.NewFunnelLeadRepository(db)
-	funnelService := service.NewFunnelService(funnelLeadRepo, coachProfileRepo, servicePlanRepo)
+	funnelService := service.NewFunnelService(funnelLeadRepo, coachProfileRepo, servicePlanRepo, userRepo, orderRepo, paymentService)
 	funnelController := controllers.NewFunnelController(funnelService)
 	adminFunnelController := controllers.NewAdminFunnelController(funnelService)
 
