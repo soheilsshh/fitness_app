@@ -71,6 +71,14 @@ export default function PaymentConversionBlocks({ storageKey = "default" }) {
 
   return (
     <div className="space-y-3">
+      {/* Analysis ready — first conversion box */}
+      <div className="rounded-2xl border border-sky-400/40 bg-sky-500/[0.08] p-4 shadow-[0_0_28px_-12px_rgba(56,189,248,0.35)]">
+        <p className="text-sm font-bold leading-7 text-sky-100">
+          {RESULT_COPY.analysisReadyTitle}
+        </p>
+        <p className="mt-2 text-sm leading-8 text-sky-50/85">{RESULT_COPY.analysisReadyBody}</p>
+      </div>
+
       {/* AI Guard */}
       <div className="rounded-2xl border border-emerald-400/45 bg-emerald-500/[0.08] p-4 shadow-[0_0_28px_-12px_rgba(52,211,153,0.45)]">
         <div className="flex items-start gap-3">

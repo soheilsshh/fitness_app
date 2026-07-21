@@ -9,7 +9,6 @@ import {
   Check,
   Crown,
   Loader2,
-  ShieldCheck,
   Smartphone,
   Sparkles,
   UserRound,
@@ -26,6 +25,7 @@ import FunnelShell, {
   FunnelStickyBar,
 } from "../../_components/FunnelShell";
 import { LogoAnchor } from "../../_components/FunnelLogoLayer";
+import PaymentConversionBlocks from "../../_components/PaymentConversionBlocks";
 import { cn } from "@/lib/utils";
 
 const FEATURE_ICONS = {
@@ -422,17 +422,18 @@ export default function FunnelPaymentClient() {
               </FunnelGlass>
             ) : null}
 
-            <div className="flex items-center justify-center gap-1.5 text-[11px] text-white/40">
-              <ShieldCheck className="size-3.5 text-primary" />
-              پرداخت امن از طریق درگاه زرین‌پال
-            </div>
+            <PaymentConversionBlocks storageKey={token || "checkout"} />
+
+            <p className="text-center text-[11px] leading-5 text-white/45">
+              {PAYMENT_COPY.securePay}
+            </p>
 
             <FunnelStickyBar>
               <FunnelCta onClick={handlePay} disabled={paying || selecting || plans.length === 0}>
                 {paying ? (
                   <>
                     <Loader2 className="size-5 animate-spin" />
-                    در حال اتصال به زرین‌پال...
+                    در حال اتصال به درگاه...
                   </>
                 ) : (
                   PAYMENT_COPY.cta
