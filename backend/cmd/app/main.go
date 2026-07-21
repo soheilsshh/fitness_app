@@ -140,7 +140,7 @@ func NewServer(db *gorm.DB) *Server {
 	meDashboardController := controllers.NewMeDashboardController(meDashboardService)
 	notificationService := service.NewNotificationService(notificationRepo)
 	notificationController := controllers.NewNotificationController(notificationService)
-	funnelService := service.NewFunnelService(funnelLeadRepo, coachProfileRepo, servicePlanRepo, userRepo, orderRepo, paymentService)
+	funnelService := service.NewFunnelService(funnelLeadRepo, coachProfileRepo, servicePlanRepo, userRepo, orderRepo, paymentService, authService)
 	funnelController := controllers.NewFunnelController(funnelService)
 	adminFunnelController := controllers.NewAdminFunnelController(funnelService)
 
@@ -177,6 +177,7 @@ func NewServer(db *gorm.DB) *Server {
 	router.GET("/public/funnel/checkout/:token", funnelController.GetCheckout)
 	router.POST("/public/funnel/checkout/:token/plan", funnelController.SelectPlan)
 	router.POST("/public/funnel/checkout/:token/pay", funnelController.PayDemo)
+	router.POST("/public/funnel/checkout/:token/session", funnelController.IssueSession)
 	router.GET("/payments/zarinpal/callback", paymentController.ZarinpalCallback)
 	router.GET("/payments/result", paymentController.PaymentsResultPage)
 

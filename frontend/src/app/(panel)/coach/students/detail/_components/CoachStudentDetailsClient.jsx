@@ -127,7 +127,7 @@ export default function CoachStudentDetailsClient() {
                 : "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
             )}
           >
-            {isPending ? "در انتظار" : "فعال"}
+            {isPending ? "در انتظار برنامه" : "فعال"}
           </Badge>
         </div>
         <ProgramQuickActions studentId={id} student={student} isPending={isPending} />
@@ -168,12 +168,36 @@ export default function CoachStudentDetailsClient() {
 
       {isPending ? (
         <>
+          {(student.consultationRequested || student.orderNote || student.funnelAnalysisTitle) && (
+            <Card className="border-primary/25 bg-primary/5">
+              <CardHeader>
+                <CardTitle className="text-base">درخواست مشاوره و برنامه (فانل)</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  {student.orderNote ||
+                    "درخواست مشاوره و برنامه ثبت شده — می‌توانید هر زمان تماس بگیرید و برنامه بنویسید."}
+                </p>
+              </CardHeader>
+              {(student.funnelAnalysisTitle || student.funnelAnalysisBody) && (
+                <CardContent className="space-y-2 text-start">
+                  {student.funnelAnalysisTitle ? (
+                    <p className="text-sm font-semibold">{student.funnelAnalysisTitle}</p>
+                  ) : null}
+                  {student.funnelAnalysisBody ? (
+                    <p className="whitespace-pre-wrap text-xs leading-6 text-muted-foreground">
+                      {student.funnelAnalysisBody}
+                    </p>
+                  ) : null}
+                </CardContent>
+              )}
+            </Card>
+          )}
+
           <Card className="border-amber-500/20 bg-amber-500/5">
             <CardHeader>
-              <CardTitle className="text-base">ساخت برنامه اولیه</CardTitle>
+              <CardTitle className="text-base">ساخت و ارسال برنامه</CardTitle>
               <p className="text-sm text-muted-foreground">
-                این دانشجو پلن را خریداری کرده اما هنوز برنامه تمرینی دریافت نکرده.
-                حرکات را از دیتاست انتخاب کنید و برنامه را ارسال نمایید.
+                این شاگرد پلن را خریده و درخواست برنامه دارد. برنامه تمرین را بسازید و ارسال کنید؛
+                شاگرد در پنل خودش می‌بیند و پیامک یادآوری دریافت می‌کند.
               </p>
             </CardHeader>
             <CardContent>

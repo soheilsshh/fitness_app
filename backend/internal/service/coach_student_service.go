@@ -19,15 +19,20 @@ var (
 
 type CoachStudentDetail struct {
 	AdminStudentItem
-	Email               string     `json:"email"`
-	HeightCm            *float64   `json:"heightCm,omitempty"`
-	WeightKg            *float64   `json:"weightKg,omitempty"`
-	StartDate           *time.Time `json:"startDate,omitempty"`
-	DurationDays        int        `json:"durationDays,omitempty"`
-	RemainingDays       int        `json:"remainingDays,omitempty"`
-	SubscriptionID      uint       `json:"subscriptionId,omitempty"`
-	HasWorkoutProgram   bool       `json:"hasWorkoutProgram"`
-	HasNutritionProgram bool       `json:"hasNutritionProgram"`
+	Email                   string     `json:"email"`
+	HeightCm                *float64   `json:"heightCm,omitempty"`
+	WeightKg                *float64   `json:"weightKg,omitempty"`
+	StartDate               *time.Time `json:"startDate,omitempty"`
+	DurationDays            int        `json:"durationDays,omitempty"`
+	RemainingDays           int        `json:"remainingDays,omitempty"`
+	SubscriptionID          uint       `json:"subscriptionId,omitempty"`
+	HasWorkoutProgram       bool       `json:"hasWorkoutProgram"`
+	HasNutritionProgram     bool       `json:"hasNutritionProgram"`
+	NeedsProgram            bool       `json:"needsProgram"`
+	ConsultationRequested   bool       `json:"consultationRequested"`
+	OrderNote               string     `json:"orderNote,omitempty"`
+	FunnelAnalysisTitle     string     `json:"funnelAnalysisTitle,omitempty"`
+	FunnelAnalysisBody      string     `json:"funnelAnalysisBody,omitempty"`
 }
 
 type CoachStudentService interface {
@@ -216,6 +221,31 @@ func (s *coachStudentService) GetStudent(ctx context.Context, coachID, studentID
 		}
 		if np, err := s.programRepo.FindActiveNutritionBySubscriptionID(ctx, sub.ID); err == nil && np != nil {
 			detail.HasNutritionProgram = true
+		}
+	}
+	detail.NeedsProgram = !detail.HasWorkoutProgram || !detail.HasNutritionProgram
+
+	// Funnel consultation / analysis context for coach.
+	var order models.Order
+	if err := s.db.WithContext(ctx).
+		Where("user_id = ? AND coach_id = ? AND status = ?", studentID, coachID, "paid").
+		Order("id DESC").
+		First(&order).Error; err == nil {
+		detail.OrderNote = strings.TrimSpace(order.Note)
+		if strings.Contains(detail.OrderNote, "فانل") || strings.Contains(detail.OrderNote, "مشاوره") {
+			detail.ConsultationRequested = true
+		}
+	}
+	var lead models.FunnelLead
+	if err := s.db.WithContext(ctx).
+		Where("phone = ? AND status = ?", user.Phone, models.FunnelStatusPaid).
+		Order("id DESC").
+		First(&lead).Error; err == nil {
+		detail.ConsultationRequested = true
+		detail.FunnelAnalysisTitle = strings.TrimSpace(lead.AnalysisTitle)
+		detail.FunnelAnalysisBody = strings.TrimSpace(lead.AnalysisBody)
+		if detail.OrderNote == "" {
+			detail.OrderNote = "درخواست مشاوره و برنامه از فانل فیتینو — مربی می‌تواند هر زمان تماس بگیرد و برنامه بنویسد."
 		}
 	}
 

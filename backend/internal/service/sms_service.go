@@ -199,6 +199,44 @@ func persianKavenegarError(status int, providerMessage, template string) string 
 	}
 }
 
+// SendProgramReadySMS notifies the student that their program is ready in the panel.
+// Uses Kavenegar Verify Lookup template (sms.program_ready_pattern_code); token = first name.
+func SendProgramReadySMS(receptor, firstName string) error {
+	receptor = strings.TrimSpace(receptor)
+	if receptor == "" {
+		return errors.New("receptor is required")
+	}
+	token := sanitizeLookupName(firstName)
+	if token == "" {
+		token = "کاربر"
+	}
+	template := strings.TrimSpace(config.Get().SMS.ProgramReadyPattern)
+	if template == "" {
+		template = "fittino-program"
+	}
+	_, err := SendVerification(receptor, token, template)
+	return err
+}
+
+func sanitizeLookupName(name string) string {
+	name = strings.TrimSpace(name)
+	if name == "" {
+		return ""
+	}
+	// Kavenegar lookup tokens cannot contain spaces/underscores/newlines.
+	fields := strings.Fields(name)
+	if len(fields) == 0 {
+		return ""
+	}
+	token := fields[0]
+	token = invalidTokenChar.ReplaceAllString(token, "")
+	runes := []rune(token)
+	if len(runes) > 40 {
+		token = string(runes[:40])
+	}
+	return token
+}
+
 // SMSErrorMessage extracts a user-facing Persian message from an SMS error.
 func SMSErrorMessage(err error) string {
 	if err == nil {

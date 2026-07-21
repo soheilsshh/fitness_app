@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/yourusername/fitness-management/internal/models"
 	"github.com/yourusername/fitness-management/internal/service"
 )
 
@@ -111,6 +112,36 @@ func (h *FunnelController) PayDemo(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, resp)
+}
+
+func (h *FunnelController) IssueSession(c *gin.Context) {
+	token := c.Param("token")
+	result, err := h.funnelService.IssueSession(c.Request.Context(), token)
+	if err != nil {
+		switch {
+		case errors.Is(err, service.ErrFunnelLeadNotFound):
+			c.JSON(http.StatusNotFound, gin.H{"error": "سفارش یافت نشد"})
+		case errors.Is(err, service.ErrFunnelInvalidStatus):
+			c.JSON(http.StatusBadRequest, gin.H{"error": "پرداخت هنوز تایید نشده است"})
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
+		return
+	}
+	user := result.User
+	c.JSON(http.StatusOK, gin.H{
+		"access_token":  result.AccessToken,
+		"refresh_token": result.RefreshToken,
+		"user": gin.H{
+			"id":                user.ID,
+			"name":              user.Name,
+			"email":             user.Email,
+			"phone":             user.Phone,
+			"role":              user.Role,
+			"avatarUrl":         user.AvatarURL,
+			"isProfileComplete": models.IsStudentProfileComplete(user, nil),
+		},
+	})
 }
 
 type AdminFunnelController struct {

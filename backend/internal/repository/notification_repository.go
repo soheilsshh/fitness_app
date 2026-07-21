@@ -9,6 +9,7 @@ import (
 
 type NotificationRepository interface {
 	ListRecentByUserID(ctx context.Context, userID uint, limit int) ([]models.Notification, error)
+	Create(ctx context.Context, n *models.Notification) error
 }
 
 type notificationRepository struct {
@@ -30,4 +31,8 @@ func (r *notificationRepository) ListRecentByUserID(ctx context.Context, userID 
 		Limit(limit).
 		Find(&list).Error
 	return list, err
+}
+
+func (r *notificationRepository) Create(ctx context.Context, n *models.Notification) error {
+	return r.db.WithContext(ctx).Create(n).Error
 }

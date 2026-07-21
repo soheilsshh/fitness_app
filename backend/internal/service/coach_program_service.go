@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"log"
 	"strings"
 	"time"
 
@@ -171,7 +172,12 @@ func (s *coachProgramService) AssignWorkoutProgram(ctx context.Context, coachID,
 		title = "برنامه تمرین"
 	}
 
-	return s.createWorkoutProgram(ctx, coachID, sub.ID, title, durationWeeks, req.Notes, req.PlanByDay)
+	resp, err := s.createWorkoutProgram(ctx, coachID, sub.ID, title, durationWeeks, req.Notes, req.PlanByDay)
+	if err != nil {
+		return nil, err
+	}
+	s.notifyStudentProgramReady(ctx, studentID)
+	return resp, nil
 }
 
 func (s *coachProgramService) createWorkoutProgram(ctx context.Context, coachID, subscriptionID uint, title string, durationWeeks int, notes string, planByDay map[string]MeDayPlanDTO) (*CoachStudentProgramsResponse, error) {
@@ -300,7 +306,12 @@ func (s *coachProgramService) AssignNutritionProgram(ctx context.Context, coachI
 		durationWeeks = 4
 	}
 
-	return s.createNutritionProgram(ctx, coachID, sub.ID, title, durationWeeks, req.Notes, req.PlanByDay)
+	resp, err := s.createNutritionProgram(ctx, coachID, sub.ID, title, durationWeeks, req.Notes, req.PlanByDay)
+	if err != nil {
+		return nil, err
+	}
+	s.notifyStudentProgramReady(ctx, studentID)
+	return resp, nil
 }
 
 func (s *coachProgramService) createNutritionProgram(ctx context.Context, coachID, subscriptionID uint, title string, durationWeeks int, notes string, planByDay map[string]MeDayPlanDTO) (*CoachStudentProgramsResponse, error) {
@@ -477,7 +488,12 @@ func (s *coachProgramService) AssignWorkoutFromTemplate(ctx context.Context, coa
 		title = "برنامه تمرین"
 	}
 
-	return s.createWorkoutProgram(ctx, coachID, sub.ID, title, durationWeeks, "", planByDay)
+	resp, err := s.createWorkoutProgram(ctx, coachID, sub.ID, title, durationWeeks, "", planByDay)
+	if err != nil {
+		return nil, err
+	}
+	s.notifyStudentProgramReady(ctx, studentID)
+	return resp, nil
 }
 
 func (s *coachProgramService) AssignNutritionFromTemplate(ctx context.Context, coachID, studentID, templateID uint) (*CoachStudentProgramsResponse, error) {
@@ -501,5 +517,32 @@ func (s *coachProgramService) AssignNutritionFromTemplate(ctx context.Context, c
 	}
 	notes := strings.TrimSpace(template.Description)
 
-	return s.createNutritionProgram(ctx, coachID, sub.ID, title, 4, notes, planByDay)
+	resp, err := s.createNutritionProgram(ctx, coachID, sub.ID, title, 4, notes, planByDay)
+	if err != nil {
+		return nil, err
+	}
+	s.notifyStudentProgramReady(ctx, studentID)
+	return resp, nil
+}
+
+func (s *coachProgramService) notifyStudentProgramReady(ctx context.Context, studentID uint) {
+	if studentID == 0 {
+		return
+	}
+	var user models.User
+	if err := s.db.WithContext(ctx).First(&user, studentID).Error; err != nil {
+		return
+	}
+	n := &models.Notification{
+		UserID:  user.ID,
+		Type:    models.NotificationTypeProgramUpdated,
+		Title:   "برنامه شما آماده است",
+		Message: "برنامه اختصاصی شما توسط مربی آماده شده و می‌توانید آن را در پنل کاربری ببینید.",
+	}
+	if err := s.db.WithContext(ctx).Create(n).Error; err != nil {
+		log.Printf("notify: create program_ready notification failed user=%d err=%v", user.ID, err)
+	}
+	if err := SendProgramReadySMS(user.Phone, user.Name); err != nil {
+		log.Printf("sms: program ready failed phone=%s err=%v", user.Phone, err)
+	}
 }

@@ -99,7 +99,7 @@ export default function CoachStudentsClient() {
           >
             <ToggleGroupItem value="all">همه</ToggleGroupItem>
             <ToggleGroupItem value="active">فعال</ToggleGroupItem>
-            <ToggleGroupItem value="pending">در انتظار</ToggleGroupItem>
+            <ToggleGroupItem value="pending">در انتظار برنامه</ToggleGroupItem>
           </ToggleGroup>
           <Input
             value={q}
@@ -162,7 +162,7 @@ export default function CoachStudentsClient() {
                             : undefined
                         )}
                       >
-                        {student.status === "active" ? "فعال" : "در انتظار"}
+                        {student.status === "active" ? "فعال" : "در انتظار برنامه"}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-end">

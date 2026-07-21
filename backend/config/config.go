@@ -66,6 +66,7 @@ type Config struct {
 		APIKey                   string `mapstructure:"api_key"`
 		Originator               string `mapstructure:"originator"`
 		OtpPattern               string `mapstructure:"otp_pattern_code"`
+		ProgramReadyPattern      string `mapstructure:"program_ready_pattern_code"`
 		OtpTTLMinutes            int    `mapstructure:"otp_ttl_minutes"`
 		OtpResendCooldownSeconds int    `mapstructure:"otp_resend_cooldown_seconds"`
 	} `mapstructure:"sms"`
@@ -221,6 +222,7 @@ func setDefaults() {
 	viper.SetDefault("seed.catalogs", true)
 	viper.SetDefault("seed.catalogs_force", false)
 	viper.SetDefault("sms.otp_pattern_code", "fittino-otp")
+	viper.SetDefault("sms.program_ready_pattern_code", "fittino-program")
 	viper.SetDefault("sms.otp_ttl_minutes", 10)
 	viper.SetDefault("sms.otp_resend_cooldown_seconds", 60)
 	viper.SetDefault("payments.zarinpal.sandbox", false)
@@ -251,6 +253,7 @@ func bindEnvKeys() {
 	_ = viper.BindEnv("sms.api_key", "SMS_API_KEY")
 	_ = viper.BindEnv("sms.originator", "SMS_ORIGINATOR")
 	_ = viper.BindEnv("sms.otp_pattern_code", "SMS_OTP_PATTERN_CODE")
+	_ = viper.BindEnv("sms.program_ready_pattern_code", "SMS_PROGRAM_READY_PATTERN_CODE")
 	_ = viper.BindEnv("sms.otp_ttl_minutes", "SMS_OTP_TTL_MINUTES")
 	_ = viper.BindEnv("sms.otp_resend_cooldown_seconds", "SMS_OTP_RESEND_COOLDOWN_SECONDS")
 	_ = viper.BindEnv("payments.zarinpal.merchant_id", "ZARINPAL_MERCHANT_ID")
@@ -295,6 +298,9 @@ func normalize(c *Config) {
 
 	if c.SMS.OtpPattern == "" {
 		c.SMS.OtpPattern = "fittino-otp"
+	}
+	if c.SMS.ProgramReadyPattern == "" {
+		c.SMS.ProgramReadyPattern = "fittino-program"
 	}
 	if c.SMS.OtpTTLMinutes <= 0 {
 		c.SMS.OtpTTLMinutes = 10

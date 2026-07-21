@@ -1,30 +1,30 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { CheckCircle2, Phone } from "lucide-react";
+import { CheckCircle2, Copy, LayoutDashboard, Loader2 } from "lucide-react";
 import { api } from "@/lib/axios/client";
 import { toastError, toastSuccess } from "@/app/(site)/auth/_components/helpers";
+import { persistAuthSession } from "@/lib/auth/session";
 import { SUCCESS_COPY } from "../../_lib/funnelConfig";
 import { clearFunnelDraft } from "../../_lib/funnelDraft";
-import FunnelShell, { FunnelCta, FunnelGlass } from "../../_components/FunnelShell";
+import FunnelShell, { FunnelCta, FunnelGlass, FunnelStickyBar } from "../../_components/FunnelShell";
 import { LogoAnchor } from "../../_components/FunnelLogoLayer";
-import { cn } from "@/lib/utils";
 
 function formatToman(n) {
   return new Intl.NumberFormat("fa-IR").format(Number(n || 0)) + " تومان";
 }
 
 export default function FunnelSuccessClient() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
   const codeParam = searchParams.get("code");
 
   const [checkout, setCheckout] = useState(null);
-  const [selectedSlot, setSelectedSlot] = useState("");
-  const [booked, setBooked] = useState(false);
+  const [entering, setEntering] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     clearFunnelDraft();
@@ -40,17 +40,35 @@ export default function FunnelSuccessClient() {
 
   const trackingCode = codeParam || checkout?.trackingCode || "";
 
-  const handleBook = () => {
-    if (!selectedSlot) {
-      return toastError("زمان را انتخاب کنید", "یکی از بازه‌های مشاوره را انتخاب کنید.");
+  const copyTracking = async () => {
+    if (!trackingCode) return;
+    try {
+      await navigator.clipboard.writeText(trackingCode);
+      setCopied(true);
+      toastSuccess("کپی شد", SUCCESS_COPY.copiedTracking);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toastError("خطا", "کپی کد پیگیری ممکن نشد.");
     }
-    setBooked(true);
-    toastSuccess("رزرو شد", `زمان ${selectedSlot} برای تماس اولیه ثبت شد.`);
+  };
+
+  const enterDashboard = async () => {
+    if (!token || entering) return;
+    setEntering(true);
+    try {
+      const res = await api.post(`/public/funnel/checkout/${token}/session`);
+      persistAuthSession(res.data);
+      router.replace("/user/dashboard");
+    } catch (err) {
+      const msg = err?.response?.data?.error || "ورود به پنل ممکن نشد.";
+      toastError("خطا", msg);
+      setEntering(false);
+    }
   };
 
   return (
     <FunnelShell>
-      <div className="mx-auto max-w-lg space-y-8 text-center">
+      <div className="mx-auto max-w-lg space-y-7 text-center">
         <LogoAnchor id="success" size={72} className="mx-auto rounded-full" />
         <motion.div
           initial={{ scale: 0 }}
@@ -61,6 +79,7 @@ export default function FunnelSuccessClient() {
           <CheckCircle2 className="size-10 text-primary" />
         </motion.div>
 
+        {/* 1) Header */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -74,6 +93,7 @@ export default function FunnelSuccessClient() {
           </p>
         </motion.div>
 
+        {/* 2) Receipt */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -83,78 +103,79 @@ export default function FunnelSuccessClient() {
             <div className="space-y-3 p-6">
               {checkout && (
                 <>
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between gap-3 text-sm">
                     <span className="text-white/45">نام</span>
                     <span className="font-medium text-white">
                       {checkout.firstName} {checkout.lastName}
                     </span>
                   </div>
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between gap-3 text-sm">
                     <span className="text-white/45">موبایل</span>
                     <span className="font-medium text-white" dir="ltr">
                       {checkout.phone}
                     </span>
                   </div>
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between gap-3 text-sm">
                     <span className="text-white/45">مبلغ</span>
                     <span className="font-bold text-white">{formatToman(checkout.amount)}</span>
                   </div>
+                  {checkout.packageTitle ? (
+                    <div className="flex justify-between gap-3 text-sm">
+                      <span className="text-white/45">پلن</span>
+                      <span className="font-medium text-white">{checkout.packageTitle}</span>
+                    </div>
+                  ) : null}
                 </>
               )}
-              {trackingCode && (
-                <div className="flex justify-between border-t border-white/10 pt-3 text-sm">
+              {trackingCode ? (
+                <div className="flex items-center justify-between gap-3 border-t border-white/10 pt-3 text-sm">
                   <span className="text-white/45">کد پیگیری</span>
-                  <span className="font-bold text-primary">{trackingCode}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-primary" dir="ltr">
+                      {trackingCode}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={copyTracking}
+                      className="inline-flex items-center gap-1 rounded-lg border border-primary/30 bg-primary/10 px-2 py-1 text-[10px] font-bold text-primary transition hover:bg-primary/20"
+                    >
+                      <Copy className="size-3" />
+                      {copied ? SUCCESS_COPY.copiedTracking : SUCCESS_COPY.copyTracking}
+                    </button>
+                  </div>
                 </div>
-              )}
+              ) : null}
             </div>
           </FunnelGlass>
         </motion.div>
 
+        {/* 3) Consultation registered — no time slot */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
           className="space-y-4"
         >
-          <p className="text-sm leading-8 text-white/60">{SUCCESS_COPY.bookingPrompt}</p>
-
-          <FunnelGlass className="p-4">
-            <div className="grid grid-cols-2 gap-2">
-              {SUCCESS_COPY.slots.map((slot) => (
-                <button
-                  key={slot}
-                  type="button"
-                  disabled={booked}
-                  onClick={() => setSelectedSlot(slot)}
-                  className={cn(
-                    "rounded-xl border px-3 py-3 text-xs font-medium transition",
-                    selectedSlot === slot
-                      ? "border-primary/50 bg-primary/15 text-white"
-                      : "border-white/10 bg-white/[0.03] text-white/65 hover:border-white/25",
-                    booked && selectedSlot !== slot && "opacity-40"
-                  )}
-                >
-                  {slot}
-                </button>
-              ))}
-            </div>
+          <FunnelGlass className="p-5 text-start" glow="teal">
+            <p className="text-base font-extrabold text-white">{SUCCESS_COPY.consultationTitle}</p>
+            <p className="mt-2 text-sm leading-8 text-white/60">{SUCCESS_COPY.consultationBody}</p>
           </FunnelGlass>
 
-          {!booked ? (
-            <FunnelCta onClick={handleBook}>
-              <Phone className="size-5" />
-              {SUCCESS_COPY.cta}
+          <FunnelStickyBar>
+            <FunnelCta onClick={enterDashboard} disabled={entering || !token}>
+              {entering ? (
+                <>
+                  <Loader2 className="size-5 animate-spin" />
+                  در حال ورود...
+                </>
+              ) : (
+                <>
+                  <LayoutDashboard className="size-5" />
+                  {SUCCESS_COPY.dashboardCta}
+                </>
+              )}
             </FunnelCta>
-          ) : (
-            <div className="rounded-2xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm text-primary">
-              زمان {selectedSlot} رزرو شد. تیم مربی با شما هماهنگ می‌کند.
-            </div>
-          )}
-
-          <Link href="/" className="inline-block text-sm text-white/40 hover:text-white/70">
-            بازگشت به صفحه اصلی
-          </Link>
+          </FunnelStickyBar>
         </motion.div>
       </div>
     </FunnelShell>

@@ -179,6 +179,7 @@ type FunnelService interface {
 	GetCheckout(ctx context.Context, token string) (*FunnelCheckoutDTO, error)
 	SelectPlan(ctx context.Context, token string, req *SelectFunnelPlanRequest) (*FunnelCheckoutDTO, error)
 	StartPayment(ctx context.Context, token string) (*FunnelPayResponse, error)
+	IssueSession(ctx context.Context, token string) (*AuthResult, error)
 	ListLeads(ctx context.Context, status, query string, page, pageSize int) (*AdminFunnelLeadListResponse, error)
 	GetLeadByID(ctx context.Context, id uint) (*AdminFunnelLeadDetail, error)
 	PatchLead(ctx context.Context, id uint, req *PatchFunnelLeadRequest) error
@@ -193,6 +194,7 @@ type funnelService struct {
 	userRepo  repository.UserRepository
 	orderRepo repository.OrderRepository
 	payment   PaymentService
+	auth      AuthService
 }
 
 func NewFunnelService(
@@ -202,6 +204,7 @@ func NewFunnelService(
 	userRepo repository.UserRepository,
 	orderRepo repository.OrderRepository,
 	payment PaymentService,
+	auth AuthService,
 ) FunnelService {
 	return &funnelService{
 		repo:      repo,
@@ -210,6 +213,7 @@ func NewFunnelService(
 		userRepo:  userRepo,
 		orderRepo: orderRepo,
 		payment:   payment,
+		auth:      auth,
 	}
 }
 
@@ -572,12 +576,54 @@ func (s *funnelService) StartPayment(ctx context.Context, token string) (*Funnel
 		return nil, err
 	}
 
+	// Mark order as funnel consultation + program request for coach panel.
+	if s.orderRepo != nil {
+		if order, oerr := s.orderRepo.GetByID(ctx, orderID); oerr == nil && order != nil {
+			order.Note = "درخواست مشاوره و برنامه از فانل فیتینو — مربی می‌تواند هر زمان تماس بگیرد و برنامه بنویسد."
+			_ = s.orderRepo.Save(ctx, order)
+		}
+	}
+
 	return &FunnelPayResponse{
 		PaymentURL:    zarin.PaymentURL,
 		OrderID:       zarin.OrderID,
 		CheckoutToken: lead.CheckoutToken,
 		Authority:     zarin.Authority,
 	}, nil
+}
+
+func (s *funnelService) IssueSession(ctx context.Context, token string) (*AuthResult, error) {
+	if s.auth == nil || s.userRepo == nil {
+		return nil, ErrFunnelInvalidStatus
+	}
+	lead, err := s.repo.FindByCheckoutToken(ctx, strings.TrimSpace(token))
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrFunnelLeadNotFound
+		}
+		return nil, err
+	}
+	if lead.Status != models.FunnelStatusPaid {
+		return nil, ErrFunnelInvalidStatus
+	}
+
+	var userID uint
+	if lead.OrderID > 0 && s.orderRepo != nil {
+		if order, oerr := s.orderRepo.GetByID(ctx, lead.OrderID); oerr == nil && order != nil {
+			userID = order.UserID
+		}
+	}
+	if userID == 0 {
+		user, uerr := s.userRepo.FindByPhone(ctx, lead.Phone)
+		if uerr != nil {
+			return nil, ErrFunnelLeadNotFound
+		}
+		userID = user.ID
+		s.syncLeadProfileToUser(ctx, user, lead)
+	} else if user, uerr := s.userRepo.FindByID(ctx, userID); uerr == nil {
+		s.syncLeadProfileToUser(ctx, user, lead)
+	}
+	return s.auth.IssueSession(ctx, userID)
 }
 
 func (s *funnelService) resolveFunnelOrderID(ctx context.Context, lead *models.FunnelLead, userID uint) (uint, error) {
@@ -612,6 +658,7 @@ func (s *funnelService) ensureFunnelStudent(ctx context.Context, lead *models.Fu
 		if user.Role != models.RoleStudent {
 			return nil, ErrCheckoutNotStudent
 		}
+		s.syncLeadProfileToUser(ctx, user, lead)
 		return user, nil
 	}
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
@@ -629,20 +676,41 @@ func (s *funnelService) ensureFunnelStudent(ctx context.Context, lead *models.Fu
 		return nil, hashErr
 	}
 	user = &models.User{
-		Name:     name,
-		Email:    email,
-		Phone:    phone,
-		Password: hashed,
-		Role:     models.RoleStudent,
+		Name:        name,
+		Email:       email,
+		Phone:       phone,
+		Password:    hashed,
+		Role:        models.RoleStudent,
+		PrimaryGoal: strings.TrimSpace(lead.PrimaryGoal),
 	}
 	if err := s.userRepo.Create(ctx, user); err != nil {
 		// Race: another request created the same phone — reuse it.
 		if existing, findErr := s.userRepo.FindByPhone(ctx, phone); findErr == nil && existing != nil {
+			s.syncLeadProfileToUser(ctx, existing, lead)
 			return existing, nil
 		}
 		return nil, err
 	}
 	return user, nil
+}
+
+func (s *funnelService) syncLeadProfileToUser(ctx context.Context, user *models.User, lead *models.FunnelLead) {
+	if user == nil || lead == nil || s.userRepo == nil {
+		return
+	}
+	changed := false
+	name := strings.TrimSpace(lead.FirstName + " " + lead.LastName)
+	if name != "" && (strings.TrimSpace(user.Name) == "" || user.Name == "کاربر فیتینو" || user.Name == "کاربر جدید") {
+		user.Name = name
+		changed = true
+	}
+	if goal := strings.TrimSpace(lead.PrimaryGoal); goal != "" && strings.TrimSpace(user.PrimaryGoal) == "" {
+		user.PrimaryGoal = goal
+		changed = true
+	}
+	if changed {
+		_ = s.userRepo.Update(ctx, user)
+	}
 }
 
 func hashFunnelPassword(raw string) (string, error) {

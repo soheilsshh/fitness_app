@@ -38,6 +38,7 @@ type AuthService interface {
 	Logout(ctx context.Context, userID uint, refreshToken string) error
 	GetMe(ctx context.Context, userID uint) (*models.User, error)
 	ChangePassword(ctx context.Context, userID uint, currentPassword, newPassword string) error
+	IssueSession(ctx context.Context, userID uint) (*AuthResult, error)
 	RequestPasswordResetOTP(ctx context.Context, phone string) error
 	ResetPasswordWithOTP(ctx context.Context, phone, code, newPassword string) error
 }
@@ -444,6 +445,18 @@ func (s *authService) generateTokens(ctx context.Context, user *models.User) (*A
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 	}, nil
+}
+
+// IssueSession creates access/refresh tokens for an already-authenticated user (e.g. funnel post-pay).
+func (s *authService) IssueSession(ctx context.Context, userID uint) (*AuthResult, error) {
+	user, err := s.userRepo.FindByID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	if user.Role != models.RoleStudent {
+		return nil, errors.New("only students can enter the user dashboard from funnel")
+	}
+	return s.generateTokens(ctx, user)
 }
 
 func generateOTPCode() (string, error) {
