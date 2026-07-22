@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
+  ArrowLeft,
   Check,
   Crown,
   Loader2,
@@ -14,20 +15,26 @@ import {
 } from "lucide-react";
 import { api } from "@/lib/axios/client";
 import { toastError, toPersianDigits } from "@/app/(site)/auth/_components/helpers";
+import { persistAuthSession } from "@/lib/auth/session";
 import { PAYMENT_COPY } from "../../_lib/funnelConfig";
+import { detectGenderFromName } from "../../_lib/persianGender";
 import { clearFunnelDraft, saveFunnelDraft } from "../../_lib/funnelDraft";
 import { formatToman } from "@/lib/funnel/offer";
 import FunnelShell, {
-  FunnelCta,
   FunnelGlass,
   FunnelStickyBar,
 } from "../../_components/FunnelShell";
 import { LogoAnchor } from "../../_components/FunnelLogoLayer";
 import FeatureCarousel3D from "../../_components/FeatureCarousel3D";
 import PaymentConversionBlocks from "../../_components/PaymentConversionBlocks";
+import Typewriter from "../../_components/Typewriter";
+import DelayedFunnelCta from "../../_components/DelayedFunnelCta";
+import Enamad from "@/components/enamad";
 import { cn } from "@/lib/utils";
 
 /** @typedef {"features" | "proof" | "plans"} PayStep */
+
+const PAY_PENDING_KEY = "fitino:funnel:payPending";
 
 export default function FunnelPaymentClient() {
   const router = useRouter();
@@ -37,10 +44,13 @@ export default function FunnelPaymentClient() {
   const [checkout, setCheckout] = useState(null);
   const [loading, setLoading] = useState(Boolean(token));
   const [paying, setPaying] = useState(false);
+  const [freeStarting, setFreeStarting] = useState(false);
   const [selecting, setSelecting] = useState(false);
   const [slide, setSlide] = useState(0);
   /** @type {[PayStep, function]} */
   const [step, setStep] = useState("features");
+  const [typedStep, setTypedStep] = useState(null);
+  const typingDone = typedStep === step;
 
   useEffect(() => {
     if (!token) return;
@@ -75,12 +85,46 @@ export default function FunnelPaymentClient() {
     }
   }, [checkout, token, router]);
 
+  // Browser back / bfcache from ZarinPal leaves paying=true — always unlock UI.
   useEffect(() => {
-    const transforms = PAYMENT_COPY.transformations;
-    if (step !== "proof" || !transforms.length) return;
-    const id = setInterval(() => setSlide((s) => (s + 1) % transforms.length), 5200);
+    const unlock = () => {
+      setPaying(false);
+      setFreeStarting(false);
+      try {
+        sessionStorage.removeItem(PAY_PENDING_KEY);
+      } catch {
+        /* ignore */
+      }
+    };
+    unlock();
+    const onPageShow = () => unlock();
+    window.addEventListener("pageshow", onPageShow);
+    return () => window.removeEventListener("pageshow", onPageShow);
+  }, [token]);
+
+  const visitorGender = detectGenderFromName(
+    [checkout?.firstName, checkout?.lastName].filter(Boolean).join(" ")
+  );
+  const transforms = (PAYMENT_COPY.transformations || []).filter(
+    (t) => (t.gender || "male") === visitorGender
+  );
+  const safeTransforms =
+    transforms.length > 0
+      ? transforms
+      : (PAYMENT_COPY.transformations || []).filter((t) => t.gender === "male");
+
+  useEffect(() => {
+    setSlide(0);
+  }, [visitorGender]);
+
+  useEffect(() => {
+    if (step !== "proof" || !safeTransforms.length) return;
+    const id = setInterval(
+      () => setSlide((s) => (s + 1) % safeTransforms.length),
+      5200
+    );
     return () => clearInterval(id);
-  }, [step]);
+  }, [step, safeTransforms.length, visitorGender]);
 
   useLayoutEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
@@ -95,7 +139,7 @@ export default function FunnelPaymentClient() {
   const handleSelectPlan = async (plan) => {
     const planId = Number(plan?.id || plan?.key);
     const packageKey = String(plan?.key || plan?.id || "");
-    if (!token || paying || selecting || !planId) return;
+    if (!token || paying || selecting || freeStarting || !planId) return;
     if (String(planId) === String(selectedKey) || packageKey === selectedKey) return;
     setSelecting(true);
     try {
@@ -113,25 +157,53 @@ export default function FunnelPaymentClient() {
   };
 
   const handlePay = async () => {
-    if (!token || paying || selecting) return;
+    if (!token || paying || selecting || freeStarting) return;
     if (!selectedKey || plans.length === 0) {
       toastError("پلن لازم است", "ابتدا یکی از پلن‌ها را انتخاب کنید.");
       return;
     }
     setPaying(true);
     try {
+      sessionStorage.setItem(PAY_PENDING_KEY, token);
+    } catch {
+      /* ignore */
+    }
+    const safety = setTimeout(() => setPaying(false), 12000);
+    try {
       const res = await api.post(`/public/funnel/checkout/${token}/pay`);
       const paymentUrl = res.data?.paymentUrl;
       if (!paymentUrl) {
         throw new Error("آدرس درگاه دریافت نشد");
       }
-      clearFunnelDraft();
-      window.location.href = paymentUrl;
+      // Keep draft so back-from-gateway can resume this checkout.
+      window.location.assign(paymentUrl);
     } catch (err) {
+      clearTimeout(safety);
       const msg =
         err?.response?.data?.error || err?.message || "اتصال به درگاه زرین‌پال ناموفق بود.";
       toastError("خطا", msg);
       setPaying(false);
+      try {
+        sessionStorage.removeItem(PAY_PENDING_KEY);
+      } catch {
+        /* ignore */
+      }
+    }
+  };
+
+  const handleFreeStart = async () => {
+    if (!token || paying || selecting || freeStarting) return;
+    setFreeStarting(true);
+    try {
+      const res = await api.post(`/public/funnel/checkout/${token}/free`);
+      persistAuthSession(res.data);
+      clearFunnelDraft();
+      router.replace("/user/dashboard");
+    } catch (err) {
+      const msg =
+        err?.response?.data?.error || err?.message || "شروع رایگان ممکن نشد.";
+      toastError("خطا", msg);
+      setFreeStarting(false);
     }
   };
 
@@ -176,8 +248,13 @@ export default function FunnelPaymentClient() {
     );
   }
 
-  const transforms = PAYMENT_COPY.transformations;
-  const current = transforms[slide] || transforms[0];
+  const current = safeTransforms[slide] || safeTransforms[0];
+  const weightLabel =
+    current?.weightBefore != null && current?.weightAfter != null
+      ? `${toPersianDigits(current.weightBefore)}←${toPersianDigits(current.weightAfter)} کیلو`
+      : current?.weightKg != null
+        ? `${toPersianDigits(current.weightKg)} کیلو`
+        : "";
 
   const selectedPlan = plans.find(
     (p) => String(p.key || p.id) === String(selectedKey)
@@ -189,7 +266,8 @@ export default function FunnelPaymentClient() {
   const valueEmoji = selectedTitle.includes("CIP") ? "👑" : "💎";
 
   return (
-    <FunnelShell contentClassName="pb-2">
+    <FunnelShell contentClassName="flex min-h-[100dvh] flex-col !py-0 px-4 pt-6 md:pt-8 lg:px-8">
+      <div className="flex min-h-0 flex-1 flex-col">
       <AnimatePresence mode="wait">
         {step === "features" && (
           <motion.div
@@ -197,24 +275,56 @@ export default function FunnelPaymentClient() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -12 }}
-            className="flex min-h-[calc(100dvh-8rem)] flex-col justify-center space-y-6"
+            className="flex min-h-0 flex-1 flex-col"
           >
-            <div className="text-center">
-              <LogoAnchor id="payment-features" size={56} className="mx-auto mb-2 rounded-full" />
-              <p className="mb-2 text-xs text-primary/80">فیتینو · پیشنهاد نهایی</p>
-              <h1 className="text-xl font-extrabold leading-relaxed text-white md:text-2xl">
-                {PAYMENT_COPY.title}
-              </h1>
-              <p className="mt-2 text-xs text-white/45">
-                {checkout.firstName} {checkout.lastName} · {checkout.phone}
-              </p>
+            <div className="mx-auto flex w-full max-w-sm flex-1 flex-col items-center justify-center gap-6 px-1 py-4">
+              <div className="w-full text-center">
+                <LogoAnchor
+                  id="payment-features"
+                  size={56}
+                  thinking={!typingDone}
+                  className="mx-auto mb-5 rounded-full"
+                />
+                <p className="mb-2 text-xs text-primary/80">فیتینو · پیشنهاد نهایی</p>
+                <h1 className="min-h-[3.5rem] text-xl font-extrabold leading-relaxed text-white md:text-2xl">
+                  <Typewriter
+                    key="pay-tw-features"
+                    text={PAYMENT_COPY.title}
+                    onDone={() => setTypedStep("features")}
+                  />
+                </h1>
+                {typingDone ? (
+                  <motion.div
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mx-auto mt-4 max-w-xs rounded-2xl border border-primary/25 bg-primary/10 px-4 py-3"
+                  >
+                    <p className="text-sm font-extrabold text-white">
+                      {checkout.firstName} {checkout.lastName}
+                    </p>
+                    <p className="mt-1 text-sm font-bold text-primary" dir="ltr">
+                      {toPersianDigits(checkout.phone)}
+                    </p>
+                  </motion.div>
+                ) : null}
+              </div>
+
+              {typingDone ? (
+                <div className="flex w-full justify-center">
+                  <FeatureCarousel3D features={PAYMENT_COPY.features} />
+                </div>
+              ) : null}
             </div>
 
-            <FeatureCarousel3D features={PAYMENT_COPY.features} />
-
-            <FunnelStickyBar>
-              <FunnelCta onClick={() => setStep("proof")}>{PAYMENT_COPY.ctaFeatures}</FunnelCta>
-            </FunnelStickyBar>
+            {typingDone ? (
+              <FunnelStickyBar>
+                <DelayedFunnelCta typingDone={typingDone} onClick={() => setStep("proof")}>
+                  {PAYMENT_COPY.ctaFeatures}
+                </DelayedFunnelCta>
+              </FunnelStickyBar>
+            ) : (
+              <div className="h-24 shrink-0" aria-hidden />
+            )}
           </motion.div>
         )}
 
@@ -224,84 +334,119 @@ export default function FunnelPaymentClient() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -12 }}
-            className="flex min-h-[calc(100dvh-8rem)] flex-col justify-center space-y-5"
+            className="flex min-h-0 flex-1 flex-col"
           >
-            <div className="mx-auto max-w-lg text-center">
-              <LogoAnchor id="payment-proof" size={56} className="mx-auto mb-2 rounded-full" />
-              <h2 className="text-lg font-extrabold leading-relaxed text-white md:text-xl">
-                {PAYMENT_COPY.socialProof}
-              </h2>
-            </div>
+            <div className="mx-auto flex w-full max-w-lg flex-1 flex-col items-center justify-center gap-5 px-1 py-4">
+              <div className="w-full text-center">
+                <LogoAnchor
+                  id="payment-proof"
+                  size={56}
+                  thinking={!typingDone}
+                  className="mx-auto mb-5 rounded-full"
+                />
+                <h2 className="min-h-[3rem] text-lg font-extrabold leading-relaxed text-white md:text-xl">
+                  <Typewriter
+                    key="pay-tw-proof"
+                    text={PAYMENT_COPY.socialProof}
+                    onDone={() => setTypedStep("proof")}
+                  />
+                </h2>
+              </div>
 
-            <div className="mx-auto w-full max-w-lg">
-              <FunnelGlass className="overflow-hidden p-3" glow="green">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={slide}
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-                    className="space-y-3"
-                  >
-                    <div className="grid grid-cols-2 gap-2">
-                      {[
-                        { src: current.before, label: "قبل" },
-                        { src: current.after, label: "بعد" },
-                      ].map((img) => (
-                        <div
-                          key={img.label}
-                          className="relative overflow-hidden rounded-xl border border-white/10"
+              {typingDone ? (
+              <div className="w-full">
+                <FunnelGlass className="overflow-hidden p-3" glow="green">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={slide}
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+                      className="space-y-3"
+                    >
+                      <div className="relative grid grid-cols-2 gap-2">
+                        {[
+                          { src: current.before, label: "قبل" },
+                          { src: current.after, label: "بعد" },
+                        ].map((img) => (
+                          <div
+                            key={img.label}
+                            className="relative overflow-hidden rounded-xl border border-white/10"
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={img.src}
+                              alt={`${current.name} — ${img.label}`}
+                              className="aspect-[3/4] w-full object-cover"
+                            />
+                            <span className="absolute bottom-2 start-2 rounded-md border border-white/20 bg-black/60 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur">
+                              {img.label}
+                            </span>
+                          </div>
+                        ))}
+                        <motion.div
+                          className="pointer-events-none absolute start-1/2 top-1/2 z-10 flex size-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-primary/40 bg-black/70 text-primary shadow-lg backdrop-blur"
+                          animate={{ x: [6, -6, 6], scale: [1, 1.08, 1] }}
+                          transition={{
+                            duration: 1.35,
+                            repeat: Infinity,
+                            ease: "easeInOut",
+                          }}
+                          aria-hidden
                         >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={img.src}
-                            alt={`${current.name} — ${img.label}`}
-                            className="aspect-[3/4] w-full object-cover"
-                          />
-                          <span className="absolute bottom-2 start-2 rounded-md border border-white/20 bg-black/60 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur">
-                            {img.label}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
+                          <ArrowLeft className="size-4" strokeWidth={2.5} />
+                        </motion.div>
+                      </div>
 
-                    <div className="rounded-2xl border border-white/10 bg-black/25 px-3.5 py-3 text-center">
-                      <p className="text-sm font-extrabold text-white">{current.name}</p>
-                      <p className="mt-1.5 text-[11px] leading-5 text-white/50">
-                        سن {toPersianDigits(current.age)} · قد{" "}
-                        {toPersianDigits(current.heightCm)} · وزن{" "}
-                        {toPersianDigits(current.weightKg)} · تیپ {current.bodyType}
-                      </p>
-                      {current.quote ? (
-                        <blockquote className="mt-3 flex gap-2 text-start text-[11px] leading-6 text-white/65">
-                          <Quote className="mt-0.5 size-3.5 shrink-0 text-primary/80" aria-hidden />
-                          <span>{current.quote}</span>
-                        </blockquote>
-                      ) : null}
-                    </div>
-                  </motion.div>
-                </AnimatePresence>
+                      <div className="rounded-2xl border border-white/10 bg-black/25 px-3.5 py-3 text-center">
+                        <p className="text-sm font-extrabold text-white">{current.name}</p>
+                        <p className="mt-1.5 text-[11px] leading-5 text-white/50">
+                          سن {toPersianDigits(current.age)} · قد{" "}
+                          {toPersianDigits(current.heightCm)}
+                          {weightLabel ? ` · وزن ${weightLabel}` : ""} · تیپ{" "}
+                          {current.bodyType}
+                        </p>
+                        {current.quote ? (
+                          <blockquote className="mt-3 flex gap-2 text-start text-[11px] leading-6 text-white/65">
+                            <Quote
+                              className="mt-0.5 size-3.5 shrink-0 text-primary/80"
+                              aria-hidden
+                            />
+                            <span>{current.quote}</span>
+                          </blockquote>
+                        ) : null}
+                      </div>
+                    </motion.div>
+                  </AnimatePresence>
 
-                <div className="mt-3 flex justify-center gap-2">
-                  {transforms.map((_, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      aria-label={`اسلاید ${i + 1}`}
-                      onClick={() => setSlide(i)}
-                      className={`h-1.5 rounded-full transition-all ${
-                        i === slide ? "w-6 bg-primary" : "w-1.5 bg-white/25"
-                      }`}
-                    />
-                  ))}
-                </div>
-              </FunnelGlass>
+                  <div className="mt-3 flex justify-center gap-2">
+                    {safeTransforms.map((_, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        aria-label={`اسلاید ${i + 1}`}
+                        onClick={() => setSlide(i)}
+                        className={`h-1.5 rounded-full transition-all ${
+                          i === slide ? "w-6 bg-primary" : "w-1.5 bg-white/25"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </FunnelGlass>
+              </div>
+              ) : null}
             </div>
 
-            <FunnelStickyBar>
-              <FunnelCta onClick={() => setStep("plans")}>{PAYMENT_COPY.ctaProof}</FunnelCta>
-            </FunnelStickyBar>
+            {typingDone ? (
+              <FunnelStickyBar>
+                <DelayedFunnelCta typingDone={typingDone} onClick={() => setStep("plans")}>
+                  {PAYMENT_COPY.ctaProof}
+                </DelayedFunnelCta>
+              </FunnelStickyBar>
+            ) : (
+              <div className="h-24 shrink-0" aria-hidden />
+            )}
           </motion.div>
         )}
 
@@ -311,17 +456,34 @@ export default function FunnelPaymentClient() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -12 }}
-            className="mx-auto max-w-lg space-y-4"
+            className="mx-auto w-full max-w-lg space-y-4 pt-2"
           >
             <div className="text-center">
-              <LogoAnchor id="payment-plans" size={52} className="mx-auto mb-2 rounded-full" />
-              <p className="mb-1 text-[11px] font-medium text-primary/85">فیتینو · سرمایه‌گذاری روی بدن</p>
-              <h2 className="text-xl font-extrabold text-white">انتخاب پلن اختصاصی</h2>
-              <p className="mt-1.5 text-xs text-white/45">
-                {checkout.coachName} · از {formatToman(checkout.amount)}
+              <LogoAnchor
+                id="payment-plans"
+                size={52}
+                thinking={!typingDone}
+                className="mx-auto mb-2 rounded-full"
+              />
+              <p className="mb-1 text-[11px] font-medium text-primary/85">
+                {PAYMENT_COPY.plansEyebrow}
               </p>
+              <h2 className="min-h-[3.25rem] text-lg font-extrabold leading-relaxed text-white md:text-xl">
+                <Typewriter
+                  key="pay-tw-plans"
+                  text={PAYMENT_COPY.plansTitle}
+                  onDone={() => setTypedStep("plans")}
+                />
+              </h2>
+              {typingDone ? (
+                <p className="mx-auto mt-2 max-w-sm text-xs leading-6 text-white/50">
+                  {PAYMENT_COPY.plansSubtitle}
+                </p>
+              ) : null}
             </div>
 
+            {typingDone ? (
+              <>
             {plans.length === 0 ? (
               <FunnelGlass className="p-4 text-center text-sm text-white/55">
                 هنوز پلنی برای این مربی در سیستم ثبت نشده است.
@@ -331,7 +493,22 @@ export default function FunnelPaymentClient() {
                 {plans.map((plan) => {
                   const planKey = String(plan.key || plan.id);
                   const active = planKey === String(selectedKey);
-                  const Icon = plan.popular ? Crown : Sparkles;
+                  const isVip =
+                    plan.popular ||
+                    String(plan.title || "").includes("VIP");
+                  const Icon = isVip ? Crown : Sparkles;
+                  const badge = isVip
+                    ? PAYMENT_COPY.vipBadge
+                    : PAYMENT_COPY.cipBadge;
+                  const featureLines = isVip
+                    ? [
+                        "برنامه تمرین و تغذیه اختصاصی",
+                        "پشتیبانی از طریق پنل و تیکت",
+                      ]
+                    : [
+                        "همه امکانات پلن VIP",
+                        "پشتیبانی اختصاصی مربی علی رشیدآبادی",
+                      ];
                   return (
                     <button
                       key={planKey}
@@ -345,13 +522,16 @@ export default function FunnelPaymentClient() {
                           : "border-white/12 bg-white/[0.03] hover:border-white/20"
                       )}
                     >
-                      {plan.popular ? (
-                        <span className="mb-1.5 inline-block rounded-md border border-primary/35 bg-primary/15 px-1.5 py-0.5 text-[9px] font-bold text-primary">
-                          پیشنهاد اصلی
-                        </span>
-                      ) : (
-                        <span className="mb-1.5 block h-[18px]" aria-hidden />
-                      )}
+                      <span
+                        className={cn(
+                          "mb-1.5 inline-block rounded-md border px-1.5 py-0.5 text-[9px] font-bold",
+                          isVip
+                            ? "border-primary/35 bg-primary/15 text-primary"
+                            : "border-amber-400/35 bg-amber-500/10 text-amber-200"
+                        )}
+                      >
+                        {badge}
+                      </span>
                       <div className="flex items-center gap-1.5">
                         <span className="flex size-7 shrink-0 items-center justify-center rounded-lg border border-primary/30 bg-primary/10">
                           <Icon className="size-3.5 text-primary" />
@@ -363,7 +543,7 @@ export default function FunnelPaymentClient() {
                         {formatToman(plan.amount)}
                       </p>
                       <ul className="mt-2 space-y-1">
-                        {(plan.features || []).slice(0, 2).map((f) => (
+                        {featureLines.map((f) => (
                           <li key={f} className="flex items-start gap-1 text-[10px] leading-4 text-white/50">
                             <Check className="mt-0.5 size-3 shrink-0 text-primary" />
                             <span className="line-clamp-2">{f}</span>
@@ -426,8 +606,17 @@ export default function FunnelPaymentClient() {
               {PAYMENT_COPY.securePay}
             </p>
 
+            <div className="flex flex-col items-center gap-2 pb-2 pt-1">
+              <Enamad className="h-16 w-16" />
+              <p className="text-[10px] text-white/35">نماد اعتماد الکترونیکی</p>
+            </div>
+
             <FunnelStickyBar>
-              <FunnelCta onClick={handlePay} disabled={paying || selecting || plans.length === 0}>
+              <DelayedFunnelCta
+                typingDone={typingDone}
+                onClick={handlePay}
+                disabled={paying || selecting || freeStarting || plans.length === 0}
+              >
                 {paying ? (
                   <>
                     <Loader2 className="size-5 animate-spin" />
@@ -436,11 +625,34 @@ export default function FunnelPaymentClient() {
                 ) : (
                   PAYMENT_COPY.cta
                 )}
-              </FunnelCta>
+              </DelayedFunnelCta>
+              <button
+                type="button"
+                onClick={handleFreeStart}
+                disabled={paying || selecting || freeStarting}
+                className="mt-2 w-full rounded-2xl border border-white/15 bg-white/[0.04] px-4 py-3 text-sm font-bold text-white/75 transition hover:border-white/25 hover:bg-white/[0.07] hover:text-white disabled:opacity-50"
+              >
+                {freeStarting ? (
+                  <span className="inline-flex items-center justify-center gap-2">
+                    <Loader2 className="size-4 animate-spin" />
+                    در حال ورود...
+                  </span>
+                ) : (
+                  PAYMENT_COPY.freeStartCta
+                )}
+              </button>
+              <p className="mt-2 text-center text-[10px] leading-5 text-white/35">
+                {PAYMENT_COPY.freeStartHint}
+              </p>
             </FunnelStickyBar>
+              </>
+            ) : (
+              <div className="h-24" aria-hidden />
+            )}
           </motion.div>
         )}
       </AnimatePresence>
+      </div>
     </FunnelShell>
   );
 }

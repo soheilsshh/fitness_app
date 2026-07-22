@@ -58,16 +58,20 @@ export function FunnelGlass({ children, className, glow = "teal" }) {
 }
 
 export function FunnelProgressBar({ value, label }) {
-  const pct = Math.round(value);
+  const pct = Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
   return (
     <div className="mb-8 space-y-2">
-      <div className="flex items-center justify-between text-xs text-white/55">
-        <span>{label || `پردازش پردازنده هوشمند: ${pct}٪`}</span>
-        <span className="tabular-nums text-primary">{pct}٪</span>
+      <div className="flex items-center justify-between gap-3 text-xs text-white/55">
+        <span className="min-w-0 truncate">
+          {label || "پردازش پردازنده هوشمند"}
+        </span>
+        <span className="shrink-0 tabular-nums text-primary transition-all duration-700 ease-out">
+          {pct}٪
+        </span>
       </div>
       <div className="h-2 overflow-hidden rounded-full border border-white/10 bg-white/5">
         <div
-          className="h-full rounded-full gradient-bg transition-[width] duration-500 ease-out"
+          className="h-full rounded-full gradient-bg transition-[width] duration-700 ease-out motion-reduce:transition-none"
           style={{ width: `${pct}%` }}
         />
       </div>
@@ -91,14 +95,14 @@ export function FunnelCta({ children, className, type = "button", ...props }) {
   );
 }
 
-/** Fixed bottom CTA bar — always reachable without scrolling. */
+/** Bottom CTA bar — sticky so it stays inside the phone frame on desktop. */
 export function FunnelStickyBar({ children, className, spacerClassName }) {
   return (
     <>
       <div className={cn("h-24 shrink-0", spacerClassName)} aria-hidden />
       <div
         className={cn(
-          "fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#0e0e0e]/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-md",
+          "sticky bottom-0 z-40 border-t border-white/10 bg-[#0e0e0e]/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-md",
           className
         )}
       >

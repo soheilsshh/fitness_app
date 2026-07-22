@@ -119,7 +119,7 @@ export default function FunnelHero({ coachName = "علی رشیدآبادی", on
 
       {typingDone ? (
         <FunnelStickyBar className="border-white/10 bg-black/70" spacerClassName="h-28">
-          <DelayedFunnelCta typingDone={typingDone} delayMs={0} onClick={onStart}>
+          <DelayedFunnelCta typingDone={typingDone} onClick={onStart}>
             {resume ? "ادامه ارزیابی از جایی که رها کردی" : "شروع ارزیابی هوشمند بدنم"}
             <ArrowLeft className="size-4" />
           </DelayedFunnelCta>

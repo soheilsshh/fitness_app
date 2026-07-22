@@ -188,6 +188,7 @@ type FunnelService interface {
 	GetCheckout(ctx context.Context, token string) (*FunnelCheckoutDTO, error)
 	SelectPlan(ctx context.Context, token string, req *SelectFunnelPlanRequest) (*FunnelCheckoutDTO, error)
 	StartPayment(ctx context.Context, token string) (*FunnelPayResponse, error)
+	StartFreeAccess(ctx context.Context, token string) (*AuthResult, error)
 	IssueSession(ctx context.Context, token string) (*AuthResult, error)
 	ListLeads(ctx context.Context, status, query string, page, pageSize int) (*AdminFunnelLeadListResponse, error)
 	GetLeadByID(ctx context.Context, id uint) (*AdminFunnelLeadDetail, error)
@@ -624,6 +625,33 @@ func (s *funnelService) StartPayment(ctx context.Context, token string) (*Funnel
 		CheckoutToken: lead.CheckoutToken,
 		Authority:     zarin.Authority,
 	}, nil
+}
+
+// StartFreeAccess creates/finds the student account and issues a session without payment.
+// Lead stays pending_payment so they can buy a plan later from the panel.
+func (s *funnelService) StartFreeAccess(ctx context.Context, token string) (*AuthResult, error) {
+	if s.auth == nil || s.userRepo == nil {
+		return nil, ErrFunnelInvalidStatus
+	}
+	lead, err := s.repo.FindByCheckoutToken(ctx, strings.TrimSpace(token))
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrFunnelLeadNotFound
+		}
+		return nil, err
+	}
+	if lead.Status == models.FunnelStatusPaid {
+		return s.IssueSession(ctx, token)
+	}
+	if lead.Status != models.FunnelStatusPendingPayment && lead.Status != models.FunnelStatusFailed {
+		return nil, ErrFunnelInvalidStatus
+	}
+
+	user, err := s.ensureFunnelStudent(ctx, lead)
+	if err != nil {
+		return nil, err
+	}
+	return s.auth.IssueSession(ctx, user.ID)
 }
 
 func (s *funnelService) IssueSession(ctx context.Context, token string) (*AuthResult, error) {

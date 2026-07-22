@@ -1170,7 +1170,7 @@ select:focus-visible,
   animation: blink-cursor 1s step-start infinite;
 }
 
-/* Phone: full-bleed (original). Laptop/desktop: also full-bleed — no 430px phone frame. */
+/* Phone frame: full-bleed on mobile, centered 430px device on md+ */
 .funnel-frame-shell {
   min-height: 100dvh;
   width: 100%;
@@ -1190,29 +1190,26 @@ select:focus-visible,
   background: #0e0e0e;
 }
 
-/* Full-height section (navbar is hidden on funnel routes) */
+/* Full-height section inside the frame (navbar is hidden on funnel routes) */
 .funnel-screen {
   min-height: 100dvh;
 }
 
-/* Desktop/laptop only: stretch to full viewport (no inset phone chrome).
-   Mobile styles above stay unchanged. */
 @media (min-width: 768px) {
   .funnel-frame-shell {
-    padding: 0;
-    background: #0e0e0e;
+    padding: 18px 0;
   }
   .funnel-frame-device {
-    width: 100%;
-    min-height: 100dvh;
-    height: auto;
-    border-radius: 0;
-    border: none;
-    box-shadow: none;
-    overflow: visible;
+    width: min(430px, 100vw);
+    height: calc(100dvh - 36px);
+    border-radius: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 20px 70px rgba(0, 0, 0, 0.45);
+    overflow: hidden auto;
+    overscroll-behavior: contain;
   }
   .funnel-screen {
-    min-height: 100dvh;
+    min-height: calc(100dvh - 36px);
   }
 }
 

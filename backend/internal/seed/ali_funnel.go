@@ -191,11 +191,12 @@ func ensureAliFunnelProfile(db *gorm.DB, userID uint, coachSlug string) error {
 }
 
 func ensureAliFunnelPlans(db *gorm.DB, coachUserID uint) error {
+	// Card UI shows first 2 lines — both plans must surface support;
+	// only the support channel differs (panel/ticket vs direct coach).
 	vipFeatures := strings.Join([]string{
-		"برنامه تمرین شخصی‌سازی‌شده",
-		"برنامه تغذیه متناسب با هدف",
-		"پایش هوش مصنوعی پیشرفت",
+		"برنامه تمرین و تغذیه اختصاصی",
 		"پشتیبانی از طریق پنل و تیکت",
+		"پایش هوش مصنوعی پیشرفت",
 		"دسترسی کامل به اپ و پنل کاربری",
 	}, "\n")
 	cipFeatures := strings.Join([]string{

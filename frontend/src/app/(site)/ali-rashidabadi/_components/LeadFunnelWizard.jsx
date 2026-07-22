@@ -10,6 +10,7 @@ import {
   Loader2,
   Lock,
   Settings2,
+  UserRound,
 } from "lucide-react";
 import { api } from "@/lib/axios/client";
 import {
@@ -43,8 +44,10 @@ import AnalysisVisuals from "./AnalysisVisuals";
 import FinalAnalyzeLoader from "./FinalAnalyzeLoader";
 import FunnelHero from "./FunnelHero";
 import { LogoAnchor } from "./FunnelLogoLayer";
-import FunnelShell, { FunnelCta, FunnelGlass, FunnelProgressBar, FunnelStickyBar } from "./FunnelShell";
+import FunnelShell, { FunnelGlass, FunnelProgressBar, FunnelStickyBar } from "./FunnelShell";
 import PaymentConversionBlocks from "./PaymentConversionBlocks";
+import DelayedFunnelCta from "./DelayedFunnelCta";
+import OtpSixSlots from "./OtpSixSlots";
 import Typewriter from "./Typewriter";
 
 const LAST_INDEX = QUESTIONS.length - 1;
@@ -78,6 +81,9 @@ export default function LeadFunnelWizard() {
   const [sendingOtp, setSendingOtp] = useState(false);
   const [otpCooldown, setOtpCooldown] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  /** Stage whose headline finished typing (null = still typing current stage). */
+  const [typedStage, setTypedStage] = useState(null);
+  const headlineDone = typedStage === stage;
 
   const lockTimer = useRef(null);
   const persistReady = useRef(false);
@@ -102,8 +108,14 @@ export default function LeadFunnelWizard() {
       setWeightKg(draft.weightKg || "");
       setFullName(draft.fullName || "");
       setPhone(draft.phone || "");
-      setPhase("options");
-      setStage(draft.stage === "hero" ? "quiz" : draft.stage);
+      const nextStage = draft.stage === "hero" ? "quiz" : draft.stage;
+      setStage(nextStage);
+      if (nextStage === "quiz") {
+        const key = QUESTIONS[draft.qIndex || 0]?.key;
+        setPhase(key && !draft.answers?.[key] ? "typing" : "options");
+      } else {
+        setPhase("options");
+      }
     }
     persistReady.current = true;
     setReady(true);
@@ -192,8 +204,14 @@ export default function LeadFunnelWizard() {
       setWeightKg(draft.weightKg || "");
       setFullName(draft.fullName || "");
       setPhone(draft.phone || "");
-      setPhase("options");
-      setStage(draft.stage === "hero" ? "quiz" : draft.stage);
+      const nextStage = draft.stage === "hero" ? "quiz" : draft.stage;
+      setStage(nextStage);
+      if (nextStage === "quiz") {
+        const key = QUESTIONS[draft.qIndex || 0]?.key;
+        setPhase(key && !draft.answers?.[key] ? "typing" : "options");
+      } else {
+        setPhase("options");
+      }
     } else {
       clearFunnelDraft();
       setAnswers({});
@@ -395,7 +413,7 @@ export default function LeadFunnelWizard() {
       {showProgress && (
         <FunnelProgressBar
           value={progressValue}
-          label={`پردازش پردازنده هوشمند: ${Math.round(progressValue)}٪`}
+          label="پردازش پردازنده هوشمند"
         />
       )}
 
@@ -524,15 +542,32 @@ export default function LeadFunnelWizard() {
             exit={{ opacity: 0 }}
           >
             <div className="mb-8 text-center">
-              <LogoAnchor id="metrics" size={64} className="mx-auto mb-4 rounded-full" />
-              <h1 className="text-2xl font-extrabold leading-relaxed text-white md:text-3xl">
-                {METRICS_COPY.title}
+              <LogoAnchor
+                id="metrics"
+                size={64}
+                thinking={!headlineDone}
+                className="mx-auto mb-4 rounded-full"
+              />
+              <h1 className="min-h-[3.5rem] text-2xl font-extrabold leading-relaxed text-white md:text-3xl">
+                <Typewriter
+                  key="tw-metrics"
+                  text={METRICS_COPY.title}
+                  onDone={() => setTypedStage("metrics")}
+                />
               </h1>
-              <p className="mt-3 text-sm leading-8 text-white/55 md:text-base">
-                {METRICS_COPY.guide}
-              </p>
+              {headlineDone ? (
+                <motion.p
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-3 text-sm leading-8 text-white/55 md:text-base"
+                >
+                  {METRICS_COPY.guide}
+                </motion.p>
+              ) : null}
             </div>
 
+            {headlineDone ? (
+              <>
             <FunnelGlass className="p-6">
               <form id="funnel-metrics-form" onSubmit={submitMetrics} className="space-y-5">
                 <div className="grid gap-4 sm:grid-cols-3">
@@ -590,11 +625,15 @@ export default function LeadFunnelWizard() {
               </form>
             </FunnelGlass>
             <FunnelStickyBar>
-              <FunnelCta type="submit" form="funnel-metrics-form">
+              <DelayedFunnelCta typingDone={headlineDone} type="submit" form="funnel-metrics-form">
                 <Settings2 className="size-5" />
                 {METRICS_COPY.cta}
-              </FunnelCta>
+              </DelayedFunnelCta>
             </FunnelStickyBar>
+              </>
+            ) : (
+              <div className="h-24" aria-hidden />
+            )}
           </motion.div>
         )}
 
@@ -621,11 +660,32 @@ export default function LeadFunnelWizard() {
             className="space-y-5 [overflow-anchor:none]"
           >
             <div className="text-center">
-              <LogoAnchor id="result" size={64} className="mx-auto mb-3 rounded-full" />
-              <h2 className="text-xl font-extrabold text-white md:text-2xl">{analysis.title}</h2>
-              <p className="mt-2 text-sm text-white/50">{analysis.subtitle}</p>
+              <LogoAnchor
+                id="result"
+                size={64}
+                thinking={!headlineDone}
+                className="mx-auto mb-3 rounded-full"
+              />
+              <h2 className="min-h-[3rem] text-xl font-extrabold text-white md:text-2xl">
+                <Typewriter
+                  key="tw-result"
+                  text={analysis.title}
+                  onDone={() => setTypedStage("result")}
+                />
+              </h2>
+              {headlineDone ? (
+                <motion.p
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-2 text-sm text-white/50"
+                >
+                  {analysis.subtitle}
+                </motion.p>
+              ) : null}
             </div>
 
+            {headlineDone ? (
+              <>
             <FunnelGlass className="overflow-hidden">
               <div className="flex justify-end border-b border-white/10 px-4 py-4 sm:px-5">
                 <span className="inline-flex rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs text-primary">
@@ -647,10 +707,14 @@ export default function LeadFunnelWizard() {
             <PaymentConversionBlocks storageKey="result" />
 
             <FunnelStickyBar>
-              <FunnelCta onClick={() => setStage("lead")}>
+              <DelayedFunnelCta typingDone={headlineDone} onClick={() => setStage("lead")}>
                 {RESULT_COPY.cta}
-              </FunnelCta>
+              </DelayedFunnelCta>
             </FunnelStickyBar>
+              </>
+            ) : (
+              <div className="h-24" aria-hidden />
+            )}
           </motion.div>
         )}
 
@@ -662,29 +726,51 @@ export default function LeadFunnelWizard() {
             className="mx-auto max-w-md space-y-6"
           >
             <div className="text-center">
-              <LogoAnchor id="lead" size={64} className="mx-auto mb-3 rounded-full" />
-              <h2 className="text-xl font-extrabold text-white md:text-2xl">{LEAD_COPY.title}</h2>
-              <p className="mt-3 text-sm leading-8 text-white/55">
-                {otpSent ? LEAD_COPY.otpSubtitle : LEAD_COPY.subtitle}
-              </p>
+              <LogoAnchor
+                id="lead"
+                size={64}
+                thinking={!headlineDone}
+                className="mx-auto mb-3 rounded-full"
+              />
+              <h2 className="min-h-[3rem] text-xl font-extrabold text-white md:text-2xl">
+                <Typewriter
+                  key="tw-lead"
+                  text={LEAD_COPY.title}
+                  onDone={() => setTypedStage("lead")}
+                />
+              </h2>
+              {headlineDone ? (
+                <motion.p
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-3 text-sm leading-8 text-white/55"
+                >
+                  {otpSent ? LEAD_COPY.otpSubtitle : LEAD_COPY.subtitle}
+                </motion.p>
+              ) : null}
             </div>
 
+            {headlineDone ? (
+              <>
             <FunnelGlass className="p-6" glow="green">
               <form id="funnel-lead-form" onSubmit={handleSubmit} className="space-y-4">
                 {!otpSent ? (
-                  <>
+                  <div className="space-y-4 rounded-2xl border border-white/10 bg-black/25 p-4">
+                    <div className="mx-auto flex size-14 items-center justify-center rounded-full border border-primary/30 bg-primary/10">
+                      <UserRound className="size-7 text-primary" aria-hidden />
+                    </div>
                     <label className="block space-y-2 text-start">
-                      <span className="text-xs text-white/50">نام و نام خانوادگی</span>
+                      <span className="text-sm font-medium text-white/65">نام و نام خانوادگی</span>
                       <input
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
-                        placeholder="نام و نام خانوادگی"
+                        placeholder="مثلاً محمد رضایی"
                         required
-                        className="h-12 w-full rounded-xl border border-white/15 bg-black/40 px-4 text-sm text-white outline-none transition placeholder:text-white/25 focus:border-primary/50"
+                        className="h-14 w-full rounded-xl border border-white/15 bg-black/40 px-4 text-base font-bold text-white outline-none transition placeholder:text-white/25 focus:border-primary/50"
                       />
                     </label>
                     <label className="block space-y-2 text-start">
-                      <span className="text-xs text-white/50">شماره موبایل</span>
+                      <span className="text-sm font-medium text-white/65">شماره موبایل</span>
                       <input
                         type="tel"
                         inputMode="numeric"
@@ -693,20 +779,33 @@ export default function LeadFunnelWizard() {
                         onChange={(e) => setPhone(normalizeIranPhone(e.target.value))}
                         placeholder="09123456789"
                         required
-                        className="h-12 w-full rounded-xl border border-white/15 bg-black/40 px-4 text-start text-sm text-white outline-none transition placeholder:text-white/25 focus:border-primary/50"
+                        className="h-14 w-full rounded-xl border border-white/15 bg-black/40 px-4 text-start text-lg font-bold tracking-wide text-white outline-none transition placeholder:text-white/25 focus:border-primary/50"
                       />
                     </label>
-                  </>
+                  </div>
                 ) : (
                   <>
-                    <div className="rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-start">
-                      <p className="text-xs text-white/45">کد به این شماره ارسال شد</p>
-                      <p className="mt-1 font-medium text-white" dir="ltr">
-                        {phone}
+                    <div className="rounded-2xl border border-primary/25 bg-gradient-to-b from-primary/10 to-black/30 p-4 text-center shadow-[0_0_28px_-12px_oklch(0.58_0.11_187_/_0.4)]">
+                      <div className="mx-auto mb-3 flex size-14 items-center justify-center rounded-full border border-primary/35 bg-primary/15">
+                        <UserRound className="size-7 text-primary" aria-hidden />
+                      </div>
+                      <p className="text-lg font-extrabold leading-8 text-white md:text-xl">
+                        {fullName.trim() || "کاربر فیتینو"}
+                      </p>
+                      <p
+                        className="mt-1.5 text-base font-bold tracking-wide text-primary md:text-lg"
+                        dir="ltr"
+                      >
+                        {toPersianDigits(phone)}
                       </p>
                       <button
                         type="button"
-                        className="mt-2 text-[11px] text-primary underline-offset-2 hover:underline"
+                        className={cn(
+                          "mt-4 inline-flex min-h-10 w-full items-center justify-center rounded-xl px-4 text-sm font-bold transition",
+                          "border border-white/20 bg-white/5 text-white/80",
+                          "hover:border-white/35 hover:bg-white/10 hover:text-white",
+                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
+                        )}
                         onClick={() => {
                           setOtpSent(false);
                           setOtpCode("");
@@ -715,33 +814,46 @@ export default function LeadFunnelWizard() {
                         {LEAD_COPY.changePhone}
                       </button>
                     </div>
-                    <label className="block space-y-2 text-start">
-                      <span className="text-xs text-white/50">کد تایید ۶ رقمی</span>
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        autoComplete="one-time-code"
-                        dir="ltr"
-                        maxLength={6}
+
+                    <div className="space-y-3 pt-1">
+                      <p className="text-center text-xs font-medium text-white/50">
+                        کد تایید ۶ رقمی
+                      </p>
+                      <OtpSixSlots
                         value={otpCode}
-                        onChange={(e) => setOtpCode(normalizeNumericInput(e.target.value).slice(0, 6))}
-                        placeholder="------"
-                        required
-                        className="h-12 w-full rounded-xl border border-white/15 bg-black/40 px-4 text-center text-lg tracking-[0.35em] text-white outline-none transition placeholder:text-white/25 focus:border-primary/50"
+                        onChange={setOtpCode}
+                        disabled={submitting}
                       />
-                    </label>
-                    <div className="flex items-center justify-between text-[11px] text-white/45">
+                    </div>
+
+                    <div className="flex justify-center pt-1">
                       <button
                         type="button"
                         disabled={otpCooldown > 0 || sendingOtp}
                         onClick={resendOtp}
-                        className="text-primary disabled:text-white/30"
+                        className={cn(
+                          "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-5 text-sm font-bold transition",
+                          "border border-emerald-400/40 bg-emerald-500/15 text-emerald-300",
+                          "hover:bg-emerald-500/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/50",
+                          "disabled:cursor-not-allowed disabled:opacity-40"
+                        )}
                       >
-                        {sendingOtp
-                          ? "در حال ارسال..."
-                          : otpCooldown > 0
-                            ? `ارسال مجدد (${toPersianDigits(otpCooldown)})`
-                            : LEAD_COPY.resendOtp}
+                        {sendingOtp ? (
+                          <>
+                            <Loader2 className="size-4 animate-spin" />
+                            در حال ارسال...
+                          </>
+                        ) : otpCooldown > 0 ? (
+                          <>
+                            <span aria-hidden>🔁</span>
+                            ارسال مجدد ({toPersianDigits(otpCooldown)})
+                          </>
+                        ) : (
+                          <>
+                            <span aria-hidden>🔁</span>
+                            {LEAD_COPY.resendOtp}
+                          </>
+                        )}
                       </button>
                     </div>
                   </>
@@ -750,7 +862,8 @@ export default function LeadFunnelWizard() {
             </FunnelGlass>
 
             <FunnelStickyBar>
-              <FunnelCta
+              <DelayedFunnelCta
+                typingDone={headlineDone}
                 type="submit"
                 form="funnel-lead-form"
                 disabled={submitting || sendingOtp}
@@ -766,8 +879,12 @@ export default function LeadFunnelWizard() {
                     {otpSent ? LEAD_COPY.otpCta : LEAD_COPY.sendOtp}
                   </>
                 )}
-              </FunnelCta>
+              </DelayedFunnelCta>
             </FunnelStickyBar>
+              </>
+            ) : (
+              <div className="h-24" aria-hidden />
+            )}
           </motion.div>
         )}
       </AnimatePresence>

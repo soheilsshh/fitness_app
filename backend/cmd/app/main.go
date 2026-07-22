@@ -178,6 +178,7 @@ func NewServer(db *gorm.DB) *Server {
 	router.GET("/public/funnel/checkout/:token", funnelController.GetCheckout)
 	router.POST("/public/funnel/checkout/:token/plan", funnelController.SelectPlan)
 	router.POST("/public/funnel/checkout/:token/pay", funnelController.PayDemo)
+	router.POST("/public/funnel/checkout/:token/free", funnelController.StartFreeAccess)
 	router.POST("/public/funnel/checkout/:token/session", funnelController.IssueSession)
 	router.GET("/payments/zarinpal/callback", paymentController.ZarinpalCallback)
 	router.GET("/payments/result", paymentController.PaymentsResultPage)

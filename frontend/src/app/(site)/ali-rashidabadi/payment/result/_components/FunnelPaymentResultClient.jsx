@@ -30,15 +30,33 @@ export default function FunnelPaymentResultClient() {
     }
   }, [status, token, code, router]);
 
+  // Unlock retry CTA if user returns via browser back / bfcache.
+  useEffect(() => {
+    const unlock = () => setRetrying(false);
+    unlock();
+    const onPageShow = () => unlock();
+    const onVisible = () => {
+      if (document.visibilityState === "visible") unlock();
+    };
+    window.addEventListener("pageshow", onPageShow);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.removeEventListener("pageshow", onPageShow);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [token]);
+
   const handleRetry = async () => {
     if (!token || retrying) return;
     setRetrying(true);
+    const safety = setTimeout(() => setRetrying(false), 12000);
     try {
       const res = await api.post(`/public/funnel/checkout/${token}/pay`);
       const paymentUrl = res.data?.paymentUrl;
       if (!paymentUrl) throw new Error("آدرس درگاه دریافت نشد");
-      window.location.href = paymentUrl;
+      window.location.assign(paymentUrl);
     } catch (err) {
+      clearTimeout(safety);
       const msg =
         err?.response?.data?.error || err?.message || "اتصال مجدد به درگاه ناموفق بود.";
       toastError("خطا", msg);

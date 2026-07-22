@@ -156,20 +156,7 @@ func (h *FunnelController) PayDemo(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-func (h *FunnelController) IssueSession(c *gin.Context) {
-	token := c.Param("token")
-	result, err := h.funnelService.IssueSession(c.Request.Context(), token)
-	if err != nil {
-		switch {
-		case errors.Is(err, service.ErrFunnelLeadNotFound):
-			c.JSON(http.StatusNotFound, gin.H{"error": "سفارش یافت نشد"})
-		case errors.Is(err, service.ErrFunnelInvalidStatus):
-			c.JSON(http.StatusBadRequest, gin.H{"error": "پرداخت هنوز تایید نشده است"})
-		default:
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		}
-		return
-	}
+func writeFunnelAuthSession(c *gin.Context, result *service.AuthResult) {
 	user := result.User
 	c.JSON(http.StatusOK, gin.H{
 		"access_token":  result.AccessToken,
@@ -184,6 +171,42 @@ func (h *FunnelController) IssueSession(c *gin.Context) {
 			"isProfileComplete": models.IsStudentProfileComplete(user, nil),
 		},
 	})
+}
+
+func (h *FunnelController) StartFreeAccess(c *gin.Context) {
+	token := c.Param("token")
+	result, err := h.funnelService.StartFreeAccess(c.Request.Context(), token)
+	if err != nil {
+		switch {
+		case errors.Is(err, service.ErrFunnelLeadNotFound):
+			c.JSON(http.StatusNotFound, gin.H{"error": "سفارش یافت نشد"})
+		case errors.Is(err, service.ErrFunnelInvalidStatus):
+			c.JSON(http.StatusBadRequest, gin.H{"error": "امکان شروع رایگان برای این سفارش نیست"})
+		case errors.Is(err, service.ErrCheckoutNotStudent):
+			c.JSON(http.StatusConflict, gin.H{"error": "این شماره مربوط به حساب دانشجو نیست"})
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
+		return
+	}
+	writeFunnelAuthSession(c, result)
+}
+
+func (h *FunnelController) IssueSession(c *gin.Context) {
+	token := c.Param("token")
+	result, err := h.funnelService.IssueSession(c.Request.Context(), token)
+	if err != nil {
+		switch {
+		case errors.Is(err, service.ErrFunnelLeadNotFound):
+			c.JSON(http.StatusNotFound, gin.H{"error": "سفارش یافت نشد"})
+		case errors.Is(err, service.ErrFunnelInvalidStatus):
+			c.JSON(http.StatusBadRequest, gin.H{"error": "پرداخت هنوز تایید نشده است"})
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
+		return
+	}
+	writeFunnelAuthSession(c, result)
 }
 
 type AdminFunnelController struct {
