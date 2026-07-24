@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useReducedMotion } from "framer-motion";
+import { Activity, Dumbbell, Smartphone, UtensilsCrossed } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const STICKER_FALLBACK = {
-  bot: "🤖",
-  user: "💪",
-  utensils: "🥗",
-  smartphone: "📱",
+const FEATURE_ICONS = {
+  bot: Activity,
+  user: Dumbbell,
+  utensils: UtensilsCrossed,
+  smartphone: Smartphone,
 };
 
 /**
@@ -49,8 +50,7 @@ export default function FeatureCarousel3D({ features = [], intervalMs = 3800 }) 
             const rotateY = offset * -22;
             const scale = isCenter ? 1 : 0.82;
             const opacity = abs > 1.5 ? 0 : isCenter ? 1 : 0.38;
-            const sticker =
-              feat.sticker || STICKER_FALLBACK[feat.icon] || "✨";
+            const Icon = FEATURE_ICONS[feat.icon] || Activity;
 
             return (
               <button
@@ -61,12 +61,12 @@ export default function FeatureCarousel3D({ features = [], intervalMs = 3800 }) 
                 tabIndex={isCenter ? 0 : -1}
                 onClick={() => setActive(i)}
                 className={cn(
-                  "absolute w-[78%] max-w-[250px] rounded-3xl border p-4 text-start backdrop-blur-xl",
+                  "absolute w-[78%] max-w-[250px] rounded-3xl border p-4 text-right antialiased",
                   "transition-[transform,opacity,box-shadow,border-color] duration-350 ease-[cubic-bezier(0.16,1,0.3,1)]",
                   "motion-reduce:transition-none",
                   isCenter
-                    ? "border-primary/55 bg-white/[0.09] shadow-[0_0_48px_-10px_oklch(0.58_0.11_187_/_0.55)]"
-                    : "border-white/10 bg-white/[0.03] shadow-none"
+                    ? "border-primary/55 bg-[#1a2220] shadow-[0_0_48px_-10px_oklch(0.58_0.11_187_/_0.55)]"
+                    : "border-white/10 bg-[#121616] shadow-none"
                 )}
                 style={{
                   transform: `translate3d(${x}px, 0, ${z}px) rotateY(${rotateY}deg) scale(${scale})`,
@@ -74,16 +74,25 @@ export default function FeatureCarousel3D({ features = [], intervalMs = 3800 }) 
                   zIndex: isCenter ? 30 : 10 - abs,
                   pointerEvents: abs > 1 ? "none" : "auto",
                   transformStyle: "preserve-3d",
+                  backfaceVisibility: "hidden",
                 }}
+                dir="rtl"
               >
                 <div
-                  className="mb-3 flex size-12 items-center justify-center rounded-2xl border border-primary/30 bg-primary/10 text-[1.65rem] leading-none shadow-[0_0_20px_-6px_oklch(0.58_0.11_187_/_0.45)]"
+                  className={cn(
+                    "mx-auto mb-3 flex size-11 items-center justify-center rounded-2xl border",
+                    isCenter
+                      ? "border-primary/40 bg-primary/15 text-primary shadow-[0_0_20px_-6px_oklch(0.58_0.11_187_/_0.45)]"
+                      : "border-white/15 bg-white/5 text-white/70"
+                  )}
                   aria-hidden
                 >
-                  {sticker}
+                  <Icon className="size-5" strokeWidth={1.75} />
                 </div>
-                <h3 className="text-sm font-bold leading-6 text-white">{feat.title}</h3>
-                <p className="mt-1.5 line-clamp-4 text-[11px] leading-5 text-white/55">
+                <h3 className="text-[13px] font-bold leading-6 tracking-tight text-white">
+                  {feat.title}
+                </h3>
+                <p className="mt-1.5 line-clamp-4 text-[13px] font-semibold leading-[1.7] text-[#f3f5f4]">
                   {feat.body}
                 </p>
               </button>

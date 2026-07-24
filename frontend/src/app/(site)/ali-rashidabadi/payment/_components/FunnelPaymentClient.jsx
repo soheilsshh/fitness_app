@@ -399,18 +399,18 @@ export default function FunnelPaymentClient() {
                         </motion.div>
                       </div>
 
-                      <div className="rounded-2xl border border-white/10 bg-black/25 px-3.5 py-3 text-center">
+                      <div className="rounded-2xl border border-white/10 bg-[#1a2220] px-3.5 py-3 text-center">
                         <p className="text-sm font-extrabold text-white">{current.name}</p>
-                        <p className="mt-1.5 text-[11px] leading-5 text-white/50">
+                        <p className="mt-1.5 text-[12px] font-medium leading-5 text-[#c8cecb]">
                           سن {toPersianDigits(current.age)} · قد{" "}
                           {toPersianDigits(current.heightCm)}
                           {weightLabel ? ` · وزن ${weightLabel}` : ""} · تیپ{" "}
                           {current.bodyType}
                         </p>
                         {current.quote ? (
-                          <blockquote className="mt-3 flex gap-2 text-start text-[11px] leading-6 text-white/65">
+                          <blockquote className="mt-3 flex gap-2 text-start text-[13px] font-semibold leading-[1.7] text-[#f3f5f4]">
                             <Quote
-                              className="mt-0.5 size-3.5 shrink-0 text-primary/80"
+                              className="mt-0.5 size-3.5 shrink-0 text-primary"
                               aria-hidden
                             />
                             <span>{current.quote}</span>

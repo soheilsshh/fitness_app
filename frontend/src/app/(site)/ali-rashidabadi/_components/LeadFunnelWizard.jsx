@@ -687,7 +687,7 @@ export default function LeadFunnelWizard() {
             {headlineDone ? (
               <>
             <FunnelGlass className="overflow-hidden">
-              <div className="flex justify-end border-b border-white/10 px-4 py-4 sm:px-5">
+              <div className="flex justify-center border-b border-white/10 px-4 py-4 sm:px-5">
                 <span className="inline-flex rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs text-primary">
                   {analysis.meta.badge}
                 </span>
