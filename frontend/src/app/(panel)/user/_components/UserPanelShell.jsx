@@ -22,6 +22,7 @@ export default function UserPanelShell({ children, gate: Gate }) {
   const pathname = usePathname();
   const isOnboarding = pathname?.startsWith("/user/onboarding");
   const isAiChat = pathname?.startsWith("/user/ai");
+  const isProfile = pathname?.startsWith("/user/profile");
   const pageContent = Gate ? <Gate>{children}</Gate> : children;
 
   return (
@@ -39,7 +40,12 @@ export default function UserPanelShell({ children, gate: Gate }) {
         profileHref="/user/profile"
       />
 
-      <SidebarInset className="fitino-panel min-w-0 bg-background">
+      <SidebarInset
+        className={cn(
+          "fitino-panel min-w-0 bg-background",
+          isProfile && "profile-theme"
+        )}
+      >
         <UserPanelHeader />
         <UserSubNav />
 

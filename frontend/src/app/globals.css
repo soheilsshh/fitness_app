@@ -1252,6 +1252,158 @@ select:focus-visible,
   transform: scale(0.97);
 }
 
+/* =========================================================
+   User profile (/user/profile) — scoped light/dark palette
+   Does NOT change global :root / .dark or other panel pages.
+   Toggle stays app-wide (next-themes); tokens only under .profile-theme.
+   Both --token and --color-* set so Tailwind v4 utilities resolve here.
+   ========================================================= */
+.profile-theme {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #0d9488;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #ccfbf1;
+  --accent-foreground: #0f172a;
+  --border: color-mix(in srgb, #0f172a 10%, transparent);
+  --input: color-mix(in srgb, #0f172a 12%, transparent);
+  --ring: #0d9488;
+
+  --color-background: #f8fafc;
+  --color-foreground: #0f172a;
+  --color-card: #ffffff;
+  --color-card-foreground: #0f172a;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #0f172a;
+  --color-primary: #0d9488;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #f1f5f9;
+  --color-secondary-foreground: #0f172a;
+  --color-muted: #f1f5f9;
+  --color-muted-foreground: #64748b;
+  --color-accent: #ccfbf1;
+  --color-accent-foreground: #0f172a;
+  --color-border: color-mix(in srgb, #0f172a 10%, transparent);
+  --color-input: color-mix(in srgb, #0f172a 12%, transparent);
+  --color-ring: #0d9488;
+
+  color: var(--foreground);
+  background-color: var(--background);
+  transition:
+    background-color 200ms ease,
+    color 200ms ease;
+}
+
+.dark .profile-theme {
+  --background: #0f172a;
+  --foreground: #f8fafc;
+  --card: #1e293b;
+  --card-foreground: #f8fafc;
+  --popover: #1e293b;
+  --popover-foreground: #f8fafc;
+  --primary: #00e5ff;
+  --primary-foreground: #0f172a;
+  --secondary: #334155;
+  --secondary-foreground: #f8fafc;
+  --muted: #334155;
+  --muted-foreground: #94a3b8;
+  --accent: #164e63;
+  --accent-foreground: #f8fafc;
+  --border: color-mix(in srgb, #f8fafc 12%, transparent);
+  --input: color-mix(in srgb, #f8fafc 15%, transparent);
+  --ring: #00e5ff;
+
+  --color-background: #0f172a;
+  --color-foreground: #f8fafc;
+  --color-card: #1e293b;
+  --color-card-foreground: #f8fafc;
+  --color-popover: #1e293b;
+  --color-popover-foreground: #f8fafc;
+  --color-primary: #00e5ff;
+  --color-primary-foreground: #0f172a;
+  --color-secondary: #334155;
+  --color-secondary-foreground: #f8fafc;
+  --color-muted: #334155;
+  --color-muted-foreground: #94a3b8;
+  --color-accent: #164e63;
+  --color-accent-foreground: #f8fafc;
+  --color-border: color-mix(in srgb, #f8fafc 12%, transparent);
+  --color-input: color-mix(in srgb, #f8fafc 15%, transparent);
+  --color-ring: #00e5ff;
+
+  color: var(--foreground);
+  background-color: var(--background);
+}
+
+/* Kill fitino-panel aqua wash / gradient on profile cards */
+.fitino-panel .profile-theme [data-slot="card"],
+.profile-theme [data-slot="card"] {
+  background: var(--card) !important;
+  background-image: none !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+  border-color: var(--border) !important;
+}
+
+.dark .fitino-panel .profile-theme [data-slot="card"],
+.dark .profile-theme [data-slot="card"] {
+  background: var(--card) !important;
+  background-image: none !important;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset !important;
+}
+
+/* Profile buttons: scoped primary, not global aqua gradient */
+.fitino-panel .profile-theme [data-slot="button"][data-variant="default"],
+.profile-theme [data-slot="button"][data-variant="default"] {
+  background-image: none !important;
+  background-color: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+  box-shadow: 0 8px 18px -10px color-mix(in srgb, var(--primary) 55%, transparent) !important;
+}
+
+.fitino-panel .profile-theme [data-slot="button"][data-variant="default"]:hover,
+.profile-theme [data-slot="button"][data-variant="default"]:hover {
+  filter: brightness(1.06);
+  box-shadow: 0 12px 22px -10px color-mix(in srgb, var(--primary) 60%, transparent) !important;
+}
+
+.fitino-panel .profile-theme [data-slot="button"][data-variant="outline"],
+.profile-theme [data-slot="button"][data-variant="outline"] {
+  border-color: var(--border) !important;
+  background: var(--card) !important;
+  background-image: none !important;
+  color: var(--foreground) !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+  backdrop-filter: none !important;
+}
+
+.dark .fitino-panel .profile-theme [data-slot="button"][data-variant="outline"],
+.dark .profile-theme [data-slot="button"][data-variant="outline"] {
+  border-color: var(--border) !important;
+  background: color-mix(in srgb, var(--card) 85%, transparent) !important;
+  box-shadow: none !important;
+}
+
+.fitino-panel .profile-theme [data-slot="button"][data-variant="outline"]:hover,
+.profile-theme [data-slot="button"][data-variant="outline"]:hover {
+  border-color: color-mix(in srgb, var(--primary) 40%, transparent) !important;
+  background: color-mix(in srgb, var(--primary) 8%, transparent) !important;
+  color: var(--foreground) !important;
+}
+
+.dark .fitino-panel .profile-theme [data-slot="button"][data-variant="outline"]:hover,
+.dark .profile-theme [data-slot="button"][data-variant="outline"]:hover {
+  border-color: color-mix(in srgb, var(--primary) 45%, transparent) !important;
+  background: color-mix(in srgb, var(--primary) 12%, transparent) !important;
+}
+
 /* Respect the user's reduced-motion preference.
    Neutralises decorative loops (float/shimmer/bounce/pulse) and shortens
    transitions so framer-motion and CSS effects don't trigger motion sickness. */

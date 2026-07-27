@@ -159,7 +159,10 @@ function mapMeToProfile(data) {
 
 function ProfileSkeleton() {
   return (
-    <div className="flex flex-col gap-4 md:gap-6" dir="rtl">
+    <div
+      className="profile-theme flex min-h-full flex-col gap-4 bg-background text-foreground md:gap-6"
+      dir="rtl"
+    >
       <Skeleton className="h-8 w-32" />
       <Skeleton className="h-28 w-full rounded-xl" />
       <Skeleton className="h-96 w-full rounded-xl" />
@@ -415,7 +418,10 @@ export default function ProfileClient() {
   if (loading) return <ProfileSkeleton />;
 
   return (
-    <div className="flex flex-col gap-4 md:gap-6" dir="rtl">
+    <div
+      className="profile-theme flex min-h-full flex-col gap-4 bg-background text-foreground md:gap-6"
+      dir="rtl"
+    >
       <PageHeader
         title="تکمیل پروفایل"
         description="اطلاعات تکمیلی اختیاری‌اند؛ هر زمان آماده‌اید پر کنید تا برنامه دقیق‌تر شود."
@@ -779,7 +785,7 @@ export default function ProfileClient() {
                     راهنمای گرفتن عکس
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-md" dir="rtl">
+                <DialogContent className="profile-theme max-w-md" dir="rtl">
                   <DialogHeader>
                     <DialogTitle>راهنمای گرفتن عکس بدن</DialogTitle>
                     <DialogDescription>

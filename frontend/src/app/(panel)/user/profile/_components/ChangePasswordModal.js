@@ -63,7 +63,7 @@ export default function ChangePasswordModal({ open, onClose, onSuccess, onError 
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose?.()}>
-      <DialogContent className="sm:max-w-md" dir="rtl">
+      <DialogContent className="profile-theme sm:max-w-md" dir="rtl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-start">
             <Lock className="size-4 text-primary" />

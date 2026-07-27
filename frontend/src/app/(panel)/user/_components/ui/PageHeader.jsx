@@ -18,7 +18,7 @@ export default function PageHeader({
       )}
     >
       <div className="min-w-0 flex-1 text-start">
-        <div className="mb-2 h-1 w-10 rounded-full bg-[linear-gradient(90deg,#26fce3,#187272)]" />
+        <div className="mb-2 h-1 w-10 rounded-full bg-primary" />
         <h2 className="font-iranianSansBlack text-xl tracking-tight text-foreground sm:text-[1.35rem]">
           {title}
         </h2>

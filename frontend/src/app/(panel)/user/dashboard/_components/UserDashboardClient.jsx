@@ -16,6 +16,7 @@ import {
   Dumbbell,
   Flame,
   LineChart,
+  Plus,
   Scale,
   Target,
   Timer,
@@ -36,6 +37,17 @@ import {
 } from "@/components/ui/chart";
 import { cn } from "@/lib/utils";
 import { FUNNEL_PATH, GET_PROGRAM_LABEL } from "@/lib/funnel/offer";
+import { getBmiCategory } from "@/lib/tools/bmiCalculator";
+
+const BMI_BADGE_CLASS = {
+  underweight:
+    "border-sky-500/30 bg-sky-500/10 text-sky-800 dark:text-sky-200",
+  normal:
+    "border-emerald-500/30 bg-emerald-500/10 text-emerald-800 dark:text-emerald-200",
+  overweight:
+    "border-amber-500/30 bg-amber-500/10 text-amber-800 dark:text-amber-200",
+  obese: "border-rose-500/30 bg-rose-500/10 text-rose-800 dark:text-rose-200",
+};
 
 /* ---------------- helpers ---------------- */
 
@@ -381,62 +393,101 @@ function GoalCard({ loading, profile, tracking }) {
 
   let bmi = null;
   if (current && height && height > 0) {
-    bmi = current / Math.pow(height / 100, 2);
+    bmi = Math.round((current / Math.pow(height / 100, 2)) * 10) / 10;
   }
+  const bmiCategory = bmi != null ? getBmiCategory(bmi) : null;
 
-  let pct = null;
-  if (history.length >= 2 && target != null) {
-    const start = history[0].weight;
-    const total = Math.abs(start - target);
-    const done = Math.abs(start - current);
-    if (total > 0) pct = Math.min(100, Math.round((done / total) * 100));
+  let pct = 0;
+  if (current != null && target != null) {
+    if (Math.abs(current - target) < 0.1) {
+      pct = 100;
+    } else if (history.length >= 1) {
+      const start = history[0].weight;
+      const total = Math.abs(start - target);
+      const done = Math.abs(start - current);
+      if (total > 0) pct = Math.min(100, Math.round((done / total) * 100));
+    }
   }
 
   const diff = current != null && target != null ? current - target : null;
+  const reached = diff != null && Math.abs(diff) < 0.1;
+  const remainingKg =
+    diff != null ? Math.abs(Math.round(diff * 10) / 10) : null;
+  const goalKind = diff != null && diff > 0 ? "کاهش وزن" : "افزایش حجم";
 
   return (
-    <SectionPanel icon={Scale} iconClass="text-emerald-500" title="هدف وزن">
+    <SectionPanel
+      icon={Scale}
+      iconClass="text-primary"
+      title="هدف وزنی و ترکیب بدنی"
+    >
       {loading ? (
         <Skeleton className="h-28 w-full" />
       ) : current == null || target == null ? (
         <EmptyState icon={Scale} text="وزن فعلی یا هدف ثبت نشده است." />
       ) : (
         <div className="flex flex-col gap-4">
-          <div className="flex items-end justify-between">
+          <div className="flex items-end justify-between gap-3">
             <div>
               <p className="text-xs text-muted-foreground">وزن فعلی</p>
-              <p className="text-2xl font-bold tabular-nums">{formatFa(current)} کیلوگرم</p>
+              <p className="text-2xl font-bold tabular-nums">
+                {formatFa(current)} کیلوگرم
+              </p>
             </div>
             <div className="text-start">
-              <p className="text-xs text-muted-foreground">هدف</p>
-              <p className="text-2xl font-bold tabular-nums text-emerald-600">
+              <p className="text-xs text-muted-foreground">وزن هدف</p>
+              <p className="text-2xl font-bold tabular-nums text-primary">
                 {formatFa(target)} کیلوگرم
               </p>
             </div>
           </div>
 
-          {pct != null ? (
-            <div className="space-y-1.5">
-              <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-                <div
-                  className="h-full rounded-full bg-emerald-500 transition-all"
-                  style={{ width: `${pct}%` }}
-                />
-              </div>
-              <p className="text-xs text-muted-foreground">{formatFa(pct)}٪ مسیر تا هدف طی شده</p>
+          <div className="space-y-1.5">
+            <div
+              className="h-2 w-full overflow-hidden rounded-full bg-muted"
+              role="progressbar"
+              aria-valuenow={pct}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label="پیشرفت تا وزن هدف"
+            >
+              <div
+                className="h-full rounded-full bg-primary transition-all duration-200"
+                style={{ width: `${pct}%` }}
+              />
             </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              {Math.abs(diff) < 0.1
-                ? "به هدف رسیده‌اید! 🎉"
-                : `${formatFa(Math.abs(Math.round(diff * 10) / 10))} کیلوگرم تا هدف ${diff > 0 ? "کاهش" : "افزایش"}`}
+            <p className="text-xs text-muted-foreground">
+              {reached
+                ? "به وزن هدف رسیده‌اید."
+                : `${formatFa(remainingKg)} کیلوگرم تا رسیدن به وزن هدف (${goalKind})`}
+              {pct > 0 ? (
+                <span className="text-primary">
+                  {" "}
+                  · {formatFa(pct)}٪ مسیر
+                </span>
+              ) : null}
             </p>
-          )}
+          </div>
 
           {bmi != null ? (
-            <div className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2 text-sm">
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-muted/50 px-3 py-2 text-sm">
               <span className="text-muted-foreground">شاخص توده بدنی (BMI)</span>
-              <span className="font-semibold tabular-nums">{formatFa(Math.round(bmi * 10) / 10)}</span>
+              <span className="flex items-center gap-2">
+                <span className="font-semibold tabular-nums">
+                  {formatFa(bmi)}
+                </span>
+                {bmiCategory ? (
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "h-5 px-1.5 text-[10px]",
+                      BMI_BADGE_CLASS[bmiCategory.id]
+                    )}
+                  >
+                    محدوده {bmiCategory.label}
+                  </Badge>
+                ) : null}
+              </span>
             </div>
           ) : null}
         </div>
@@ -451,13 +502,25 @@ function CheckinTasksCard({ loading, tracking }) {
   const allPhotos =
     Object.keys(photos).length > 0 && Object.values(photos).every(Boolean);
   const weightDone = !!tracking?.weightSubmitted;
+  const canLog = !loading && !!tracking;
 
-  const action = (
+  const action = canLog ? (
     <Button variant="ghost" size="sm" asChild>
       <Link href="/user/tracking">
-        ثبت
-        <ChevronLeft className="size-4" />
+        ثبت گزارش
+        <Plus className="size-3.5" data-icon="inline-end" />
       </Link>
+    </Button>
+  ) : (
+    <Button
+      type="button"
+      variant="ghost"
+      size="sm"
+      disabled
+      className="pointer-events-none opacity-40"
+    >
+      ثبت گزارش
+      <Plus className="size-3.5" data-icon="inline-end" />
     </Button>
   );
 
@@ -465,7 +528,7 @@ function CheckinTasksCard({ loading, tracking }) {
     <SectionPanel
       icon={ClipboardList}
       iconClass="text-amber-500"
-      title="کارهای پایش این دوره"
+      title="پایش و چک‌این روزانه"
       action={action}
     >
       {loading ? (
@@ -473,9 +536,9 @@ function CheckinTasksCard({ loading, tracking }) {
       ) : !tracking ? (
         <EmptyState
           icon={ClipboardList}
-          text="اشتراک فعالی برای پایش یافت نشد."
+          text="برای ثبت گزارش‌های روزانه و تحلیل هوشمند، ابتدا دوره پایش خود را فعال کنید."
           actionHref={FUNNEL_PATH}
-          actionLabel={GET_PROGRAM_LABEL}
+          actionLabel="فعال‌سازی پایش و آنالیز"
         />
       ) : (
         <div className="flex flex-col gap-3">
@@ -519,15 +582,19 @@ function TodayPlanCard({ loading, program }) {
   const trainingDays = [...new Set(items.map((it) => it.day_number))].sort((a, b) => a - b);
 
   return (
-    <SectionPanel icon={Dumbbell} iconClass="text-primary" title="تمرین امروز">
+    <SectionPanel
+      icon={Dumbbell}
+      iconClass="text-primary"
+      title="برنامه تمرینی امروز"
+    >
       {loading ? (
         <Skeleton className="h-32 w-full" />
       ) : !program ? (
         <EmptyState
           icon={Dumbbell}
-          text="برنامه تمرینی فعالی ندارید."
+          text="هنوز برنامه تمرینی فعالی برای شما ثبت نشده است."
           actionHref={FUNNEL_PATH}
-          actionLabel={GET_PROGRAM_LABEL}
+          actionLabel="دریافت برنامه تمرینی اختصاصی"
         />
       ) : todays.length === 0 ? (
         <div className="flex flex-col gap-3">
@@ -563,13 +630,18 @@ function PersonalRecordsCard({ loading, items }) {
   const action = (
     <Button variant="ghost" size="sm" asChild>
       <Link href="/user/workout-history">
-        ثبت تمرین
-        <ChevronLeft className="size-4" />
+        ثبت رکورد جدید
+        <Plus className="size-3.5" data-icon="inline-end" />
       </Link>
     </Button>
   );
   return (
-    <SectionPanel icon={Trophy} iconClass="text-amber-500" title="رکوردهای شخصی" action={action}>
+    <SectionPanel
+      icon={Trophy}
+      iconClass="text-amber-500"
+      title="رکوردهای شخصی (PR)"
+      action={action}
+    >
       {loading ? (
         <div className="space-y-3">
           {Array.from({ length: 3 }).map((_, i) => (
@@ -577,7 +649,10 @@ function PersonalRecordsCard({ loading, items }) {
           ))}
         </div>
       ) : items.length === 0 ? (
-        <EmptyState icon={Trophy} text="هنوز رکوردی ثبت نشده. وزنه‌های تمرین را ثبت کن." />
+        <EmptyState
+          icon={Trophy}
+          text="هنوز رکوردی ثبت نکرده‌اید. بالاترین وزنه‌هایی که جابه‌جا می‌کنید را اینجا ثبت کنید."
+        />
       ) : (
         <ul className="flex flex-col gap-4">
           {items.map((r) => (
