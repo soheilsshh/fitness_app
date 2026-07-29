@@ -582,27 +582,29 @@ export default function ProfileClient() {
 
       {/* Stepper */}
       <nav aria-label="مراحل تکمیل پروفایل" className="w-full">
-        <ol className="grid grid-cols-2 gap-2 md:grid-cols-4">
+        <ol className="grid auto-rows-fr grid-cols-2 items-stretch gap-2 md:grid-cols-4">
           {PROFILE_TABS.map((tab, index) => {
             const section = stats[tab.id];
             const active = activeTab === tab.id;
             return (
-              <li key={tab.id} className="relative min-w-0">
+              <li key={tab.id} className="relative flex min-h-0 min-w-0">
                 <button
                   type="button"
                   onClick={() => setActiveTab(tab.id)}
                   aria-current={active ? "step" : undefined}
                   className={cn(
-                    "flex h-full w-full flex-col gap-2 rounded-2xl border px-3 py-3 text-start transition-colors",
+                    "flex h-full min-h-[4.75rem] w-full flex-col justify-between gap-2 rounded-2xl border px-2.5 py-2.5 text-start transition-colors sm:min-h-[5.25rem] sm:px-3 sm:py-3 md:min-h-[5.5rem]",
                     active
                       ? "border-primary/45 bg-primary/10 shadow-[0_0_0_1px_color-mix(in_srgb,var(--primary)_20%,transparent)]"
                       : "border-border/70 bg-card/70 hover:border-primary/30 hover:bg-muted/30"
                   )}
                 >
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="flex min-w-0 items-center gap-1.5 text-xs font-iranianSansDemiBold text-foreground sm:text-sm">
-                      <span aria-hidden>{tab.emoji}</span>
-                      <span className="leading-snug">{tab.label}</span>
+                  <div className="flex items-start justify-between gap-1.5">
+                    <span className="flex min-w-0 items-start gap-1 text-[11px] font-iranianSansDemiBold leading-snug text-foreground sm:gap-1.5 sm:text-xs md:text-[13px]">
+                      <span className="shrink-0" aria-hidden>
+                        {tab.emoji}
+                      </span>
+                      <span className="line-clamp-2 min-h-[2.4em]">{tab.label}</span>
                     </span>
                     {section.done ? (
                       <span className="inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white">
@@ -614,7 +616,7 @@ export default function ProfileClient() {
                       </span>
                     )}
                   </div>
-                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                  <div className="mt-auto h-1.5 w-full shrink-0 overflow-hidden rounded-full bg-muted">
                     <div
                       className={cn(
                         "h-full rounded-full transition-all",

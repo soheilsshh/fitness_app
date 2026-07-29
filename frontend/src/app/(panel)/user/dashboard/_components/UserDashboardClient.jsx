@@ -22,6 +22,7 @@ import {
   Trophy,
 } from "lucide-react";
 import { api } from "@/lib/axios/client";
+import { usePanelUser } from "@/app/(panel)/_shared/hooks/usePanelUser";
 import PageHeader from "@/app/(panel)/user/_components/ui/PageHeader";
 import TrackingAlerts from "@/components/tracking/TrackingAlerts";
 import WeightChart from "@/components/tracking/WeightChart";
@@ -134,6 +135,7 @@ const chartConfig = {
 /* ---------------- page ---------------- */
 
 export default function UserDashboardClient() {
+  const panelUser = usePanelUser({ fetchProfile: true });
   const [summary, setSummary] = useState(null);
   const [records, setRecords] = useState([]);
   const [tracking, setTracking] = useState(null);
@@ -173,12 +175,19 @@ export default function UserDashboardClient() {
     };
   }, []);
 
-  const firstName = profile?.firstName || "ورزشکار";
+  const PLACEHOLDER_NAMES = new Set(["", "ورزشکار", "کاربر", "کاربر جدید"]);
+  const fromProfile = profile?.firstName?.trim() || "";
+  const fromPanel = panelUser?.name?.trim()?.split(/\s+/)[0] || "";
+  const firstName = !PLACEHOLDER_NAMES.has(fromProfile)
+    ? fromProfile
+    : !PLACEHOLDER_NAMES.has(fromPanel)
+      ? fromPanel
+      : "ورزشکار";
 
   return (
     <div className="flex flex-col gap-4 md:gap-6" dir="rtl">
       <PageHeader
-        title={`سلام ${firstName}`}
+        title={`سلام ${firstName} 👋`}
         description={`امروز ${jalaliLong()}`}
         meta={
           <Button
