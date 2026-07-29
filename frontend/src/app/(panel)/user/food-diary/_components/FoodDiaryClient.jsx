@@ -7,6 +7,7 @@ import {
   ChevronRight,
   Flame,
   PenLine,
+  Plus,
   Trash2,
   UtensilsCrossed,
 } from "lucide-react";
@@ -39,6 +40,7 @@ import {
   formatDateISO,
   isToday,
   mealToFoodLogPayload,
+  MEAL_TYPE_OPTIONS,
   startOfDay,
 } from "@/lib/nutrition/foodLog";
 import { toast } from "sonner";
@@ -77,28 +79,48 @@ function DailyProgressCard({ totals, targets, loading }) {
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
           <Flame className="size-4 text-orange-600 dark:text-orange-400" />
-          خلاصه مصرف روز
+          خلاصه دریافت روزانه
         </CardTitle>
         <CardDescription>
           {caloriesTarget || proteinTargetG
             ? "مقایسه با اهداف برنامه غذایی مربی"
-            : "اهداف رژیم هنوز توسط مربی تنظیم نشده است"}
+            : "اهداف رژیم هنوز توسط مربی تنظیم نشده است (حالت آزاد)"}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <StatTile label="کالری" value={totals.calories} unit="kcal" accent="text-rose-600" />
-          <StatTile label="پروتئین" value={totals.protein} unit="g" accent="text-sky-600" />
-          <StatTile label="کربوهیدرات" value={totals.carbs} unit="g" accent="text-orange-600" />
-          <StatTile label="چربی" value={totals.fat} unit="g" accent="text-amber-600" />
+          <StatTile
+            label="کالری دریافتی"
+            value={totals.calories}
+            unit="کیلوکالری"
+            accent="text-foreground"
+          />
+          <StatTile
+            label="پروتئین"
+            value={totals.protein}
+            unit="گرم"
+            accent="text-primary"
+          />
+          <StatTile
+            label="کربوهیدرات"
+            value={totals.carbs}
+            unit="گرم"
+            accent="text-orange-600 dark:text-orange-400"
+          />
+          <StatTile
+            label="چربی"
+            value={totals.fat}
+            unit="گرم"
+            accent="text-amber-600 dark:text-amber-400"
+          />
         </div>
 
         {caloriesTarget > 0 ? (
           <ProgressRow
-            label="کالری"
+            label="کالری دریافتی"
             current={totals.calories}
             target={caloriesTarget}
-            unit="kcal"
+            unit="کیلوکالری"
             percent={caloriesPct}
           />
         ) : null}
@@ -108,7 +130,7 @@ function DailyProgressCard({ totals, targets, loading }) {
             label="پروتئین"
             current={totals.protein}
             target={proteinTargetG}
-            unit="g"
+            unit="گرم"
             percent={proteinPct}
             targetLabel={proteinTargetLabel}
           />
@@ -176,25 +198,25 @@ function LoggedItemRow({ item, onDelete, deleting }) {
           <MacroBadge
             label="کالری"
             value={item.calories}
-            unit="kcal"
-            className="border-rose-500/20 bg-rose-500/5"
+            unit="کیلوکالری"
+            className="border-border/60 bg-muted/40"
           />
           <MacroBadge
-            label="P"
+            label="پروتئین"
             value={item.protein}
-            unit="g"
-            className="border-sky-500/20 bg-sky-500/5"
+            unit="گرم"
+            className="border-primary/25 bg-primary/5"
           />
           <MacroBadge
-            label="C"
+            label="کربوهیدرات"
             value={item.carbs}
-            unit="g"
+            unit="گرم"
             className="border-orange-500/20 bg-orange-500/5"
           />
           <MacroBadge
-            label="F"
+            label="چربی"
             value={item.fat}
-            unit="g"
+            unit="گرم"
             className="border-amber-500/20 bg-amber-500/5"
           />
         </div>
@@ -230,10 +252,27 @@ export default function FoodDiaryClient() {
   const [deletingId, setDeletingId] = useState(null);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
+  const [mealType, setMealType] = useState("breakfast");
 
   const dateISO = useMemo(() => formatDateISO(selectedDate), [selectedDate]);
   const dayLabel = useMemo(() => formatDateFaLong(selectedDate), [selectedDate]);
   const today = isToday(selectedDate);
+
+  const groupedItems = useMemo(() => {
+    const groups = MEAL_TYPE_OPTIONS.map((opt) => ({
+      ...opt,
+      items: items.filter((item) => item.mealType === opt.value),
+    }));
+    const uncategorized = items.filter(
+      (item) =>
+        !item.mealType ||
+        !MEAL_TYPE_OPTIONS.some((opt) => opt.value === item.mealType)
+    );
+    if (uncategorized.length) {
+      groups.push({ value: "other", label: "سایر", items: uncategorized });
+    }
+    return groups.filter((g) => g.items.length > 0);
+  }, [items]);
 
   const loadLogs = useCallback(async () => {
     setLoading(true);
@@ -306,7 +345,10 @@ export default function FoodDiaryClient() {
   const handleAddMeal = async (meal) => {
     setSubmitting(true);
     try {
-      await api.post(USER_FOOD_LOGS_PATH, mealToFoodLogPayload(meal, dateISO));
+      await api.post(
+        USER_FOOD_LOGS_PATH,
+        mealToFoodLogPayload(meal, dateISO, mealType)
+      );
       toast.success("غذا با موفقیت ثبت شد");
       await loadLogs();
     } catch (err) {
@@ -339,8 +381,8 @@ export default function FoodDiaryClient() {
   return (
     <div className="flex flex-col gap-4 md:gap-6" dir="rtl">
       <PageHeader
-        title="کالری‌شمار من"
-        description="ثبت و پیگیری غذاهای مصرفی روزانه"
+        title="کالری‌شمار روزانه"
+        description="ثبت و پایش دقیق ارزش غذایی وعده‌ها"
         meta={
           today ? (
             <Badge
@@ -389,6 +431,25 @@ export default function FoodDiaryClient() {
         loading={loading || targetsLoading}
       />
 
+      <div className="space-y-2">
+        <p className="text-xs font-iranianSansMedium text-muted-foreground">
+          وعده برای ثبت جدید
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {MEAL_TYPE_OPTIONS.map((opt) => (
+            <Button
+              key={opt.value}
+              type="button"
+              size="sm"
+              variant={mealType === opt.value ? "default" : "outline"}
+              onClick={() => setMealType(opt.value)}
+            >
+              {opt.label}
+            </Button>
+          ))}
+        </div>
+      </div>
+
       <div className="flex flex-col gap-2 sm:flex-row">
         <Button
           type="button"
@@ -397,7 +458,7 @@ export default function FoodDiaryClient() {
           disabled={submitting}
         >
           <Apple data-icon="inline-start" />
-          انتخاب از کاتالوگ
+          انتخاب از بانک غذاها
         </Button>
         <Button
           type="button"
@@ -407,20 +468,20 @@ export default function FoodDiaryClient() {
           disabled={submitting}
         >
           <PenLine data-icon="inline-start" />
-          ثبت غذای سفارشی
+          ثبت دستی غذا
         </Button>
       </div>
 
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">غذاهای ثبت‌شده</CardTitle>
+          <CardTitle className="text-base">فهرست وعده‌های امروز</CardTitle>
           <CardDescription>
             {items.length
-              ? `${items.length.toLocaleString("fa-IR")} مورد برای این روز`
-              : "هنوز چیزی ثبت نشده است"}
+              ? `${items.length.toLocaleString("fa-IR")} مورد · تفکیک‌شده بر اساس وعده`
+              : "هنوز وعده‌ای ثبت نشده است"}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-2">
+        <CardContent className="space-y-4">
           {loading ? (
             <div className="space-y-2">
               {Array.from({ length: 4 }).map((_, i) => (
@@ -430,21 +491,44 @@ export default function FoodDiaryClient() {
           ) : items.length === 0 ? (
             <div className="rounded-xl border border-dashed bg-muted/20 px-4 py-10 text-center">
               <UtensilsCrossed className="mx-auto size-8 text-muted-foreground/60" />
-              <p className="mt-3 text-sm text-muted-foreground">
-                برای این روز هنوز غذایی ثبت نکرده‌اید.
+              <p className="mt-3 text-sm font-iranianSansDemiBold text-foreground">
+                امروز هنوز غذایی ثبت نکرده‌اید!
               </p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                از دکمه‌های بالا برای افزودن از کاتالوگ یا ثبت دستی استفاده کنید.
+              <p className="mx-auto mt-2 max-w-md text-xs leading-relaxed text-muted-foreground">
+                برای ثبت دقیق دریافت کالری و درک بهتر از سوخت‌رسانی به بدنتان،
+                اولین وعده امروز را از بانک غذاها اضافه کنید.
               </p>
+              <Button
+                type="button"
+                size="sm"
+                className="mt-4"
+                onClick={() => setPickerOpen(true)}
+                disabled={submitting}
+              >
+                <Plus data-icon="inline-start" />
+                ثبت اولین وعده غذایی
+              </Button>
             </div>
           ) : (
-            items.map((item) => (
-              <LoggedItemRow
-                key={item.id}
-                item={item}
-                onDelete={handleDelete}
-                deleting={deletingId === item.id}
-              />
+            groupedItems.map((group) => (
+              <div key={group.value} className="space-y-2">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm font-iranianSansDemiBold text-foreground">
+                    {group.label}
+                  </p>
+                  <span className="text-xs text-muted-foreground tabular-nums">
+                    {group.items.length.toLocaleString("fa-IR")} مورد
+                  </span>
+                </div>
+                {group.items.map((item) => (
+                  <LoggedItemRow
+                    key={item.id}
+                    item={item}
+                    onDelete={handleDelete}
+                    deleting={deletingId === item.id}
+                  />
+                ))}
+              </div>
             ))
           )}
         </CardContent>

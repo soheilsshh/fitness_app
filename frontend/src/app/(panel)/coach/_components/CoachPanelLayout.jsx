@@ -44,7 +44,9 @@ function filterNavForApproval(items, isRestricted) {
 }
 
 function CoachPanelShell({ children }) {
+  const pathname = usePathname();
   const { isRestricted, loading } = useCoachProfile();
+  const isProfile = pathname?.startsWith(PROFILE_HREF);
 
   const navItems = useMemo(
     () => filterNavForApproval(coachNav, loading || isRestricted),
@@ -65,6 +67,11 @@ function CoachPanelShell({ children }) {
       header={coachHeader}
       profileHref={PROFILE_HREF}
       gate={CoachApprovalGate}
+      contentClassName={
+        isProfile
+          ? "coach-profile-theme flex flex-1 flex-col bg-background text-foreground"
+          : undefined
+      }
     >
       {children}
     </PanelLayout>

@@ -133,7 +133,7 @@ export default function FitinoAIAssistant() {
         aria-label="باز کردن دستیار فیتینو"
         className={cn(
           "pointer-events-auto absolute flex size-12 touch-none select-none items-center justify-center rounded-full",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#26fce3] focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
           "cursor-grab active:cursor-grabbing",
           pressed && "scale-95",
           "transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]"
@@ -144,25 +144,25 @@ export default function FitinoAIAssistant() {
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
       >
-        {/* Rotating chrome ring */}
+        {/* Soft ring */}
         <span
           aria-hidden
           className={cn(
             "absolute inset-0 z-[1] rounded-full p-[1.5px]",
-            "bg-[conic-gradient(from_0deg,#26fce3,#187272,#6ceade,#26fce3)]",
+            "bg-[conic-gradient(from_0deg,#14b8a6,#0d9488,#22c55e,#14b8a6)]",
             !reduceMotion && "fitino-ai-fab-spin"
           )}
         >
           <span className="block size-full rounded-full bg-background/20" />
         </span>
 
-        {/* Core jewel */}
+        {/* Core — accent green FAB from style guide */}
         <span
           className={cn(
             "relative z-[2] flex size-10 items-center justify-center rounded-full text-white",
-            "bg-[linear-gradient(155deg,#8ffff0_0%,#2a9c96_42%,#145e5a_100%)]",
-            "shadow-[0_10px_22px_-10px_rgba(24,114,114,0.7),0_1px_0_rgba(255,255,255,0.4)_inset,0_-1px_0_rgba(0,0,0,0.18)_inset]",
-            "ring-1 ring-white/35",
+            "bg-[linear-gradient(155deg,#4ade80_0%,#22c55e_48%,#16a34a_100%)]",
+            "shadow-[0_10px_22px_-10px_rgba(34,197,94,0.55),0_1px_0_rgba(255,255,255,0.35)_inset]",
+            "ring-1 ring-white/30",
             !reduceMotion && "fitino-ai-fab-breathe"
           )}
         >
@@ -178,7 +178,7 @@ export default function FitinoAIAssistant() {
           />
           <span
             aria-hidden
-            className="absolute -end-px -top-px size-2 rounded-full bg-[#26fce3] shadow-[0_0_8px_rgba(38,252,227,0.9)] ring-2 ring-white/70 dark:ring-[#101818]"
+            className="absolute -end-px -top-px size-2 rounded-full bg-[#22c55e] shadow-[0_0_8px_rgba(34,197,94,0.7)] ring-2 ring-white/70 dark:ring-[#0b1120]"
           />
         </span>
       </button>

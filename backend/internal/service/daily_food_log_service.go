@@ -26,6 +26,7 @@ type CreateFoodLogRequest struct {
 	FoodID     *uint   `json:"foodId,omitempty"`
 	FoodName   string  `json:"foodName"`
 	Quantity   string  `json:"quantity"`
+	MealType   string  `json:"mealType,omitempty"`
 	Multiplier float64 `json:"multiplier,omitempty"`
 	Calories   float64 `json:"calories,omitempty"`
 	Protein    float64 `json:"protein,omitempty"`
@@ -39,6 +40,7 @@ type DailyFoodLogDTO struct {
 	FoodID    *uint   `json:"foodId,omitempty"`
 	FoodName  string  `json:"foodName"`
 	Quantity  string  `json:"quantity"`
+	MealType  string  `json:"mealType,omitempty"`
 	Calories  float64 `json:"calories"`
 	Protein   float64 `json:"protein"`
 	Carbs     float64 `json:"carbs"`
@@ -91,8 +93,9 @@ func (s *dailyFoodLogService) CreateLog(ctx context.Context, userID uint, req *C
 	}
 
 	log := &models.DailyFoodLog{
-		UserID:  userID,
-		LogDate: logDate,
+		UserID:   userID,
+		LogDate:  logDate,
+		MealType: normalizeMealType(req.MealType),
 	}
 
 	if req.FoodID != nil && *req.FoodID > 0 {
@@ -210,6 +213,7 @@ func dailyFoodLogToDTO(log models.DailyFoodLog) DailyFoodLogDTO {
 		LogDate:   formatFoodLogDate(log.LogDate),
 		FoodName:  log.FoodName,
 		Quantity:  log.Quantity,
+		MealType:  log.MealType,
 		Calories:  log.Calories,
 		Protein:   log.Protein,
 		Carbs:     log.Carbs,
@@ -221,4 +225,13 @@ func dailyFoodLogToDTO(log models.DailyFoodLog) DailyFoodLogDTO {
 		dto.FoodID = &id
 	}
 	return dto
+}
+
+func normalizeMealType(raw string) string {
+	switch strings.ToLower(strings.TrimSpace(raw)) {
+	case "breakfast", "lunch", "dinner", "snack":
+		return strings.ToLower(strings.TrimSpace(raw))
+	default:
+		return ""
+	}
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Dumbbell, Zap } from "lucide-react";
+import { Zap } from "lucide-react";
 import { api } from "@/lib/axios/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -128,11 +128,7 @@ export default function MyProgramsListClient() {
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <PanelEmptyState
-          icon={Dumbbell}
-          title="هنوز برنامه‌ای ندارید"
-          description="با تهیه یکی از پلن‌های فعال مربی، برنامه‌تان اینجا نمایش داده می‌شود."
-        >
+        <PanelEmptyState className="px-4 py-8 sm:px-6">
           <ProgramOffer />
         </PanelEmptyState>
       ) : (

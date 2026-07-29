@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo } from "react";
+import Link from "next/link";
+import { Plus } from "lucide-react";
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 import {
   Card,
@@ -14,6 +16,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const chartConfig = {
@@ -34,9 +37,14 @@ function formatFaNumber(value) {
 export default function WeightChart({
   data = [],
   loading = false,
-  title = "نمودار تغییرات وزن",
-  description = "بر اساس ثبت‌های پایش دو هفته‌ای",
+  title = "نمودار روند تغییرات وزن",
+  description = "پایش هوشمند وزن و تحلیل پیشرفت ۳۰ روزه",
   compact = false,
+  actionHref,
+  actionLabel,
+  emptyText = "هنوز داده‌ای برای رسم نمودار وجود ندارد. با ثبت وزن امروز، اولین نقطه پیشرفت خود را ثبت کنید!",
+  emptyActionHref,
+  emptyActionLabel,
 }) {
   const chartData = useMemo(
     () =>
@@ -48,12 +56,25 @@ export default function WeightChart({
     [data]
   );
 
+  const headerAction =
+    actionHref && actionLabel ? (
+      <Button variant="ghost" size="sm" asChild>
+        <Link href={actionHref}>
+          {actionLabel}
+          <Plus className="size-3.5" data-icon="inline-end" />
+        </Link>
+      </Button>
+    ) : null;
+
   if (loading) {
     return (
       <Card dir="rtl">
-        <CardHeader>
-          <Skeleton className="h-5 w-40" />
-          <Skeleton className="h-4 w-56" />
+        <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0">
+          <div className="space-y-1.5">
+            <Skeleton className="h-5 w-40" />
+            <Skeleton className="h-4 w-56" />
+          </div>
+          {headerAction}
         </CardHeader>
         <CardContent>
           <Skeleton className={compact ? "h-48 w-full rounded-xl" : "h-64 w-full rounded-xl"} />
@@ -65,14 +86,22 @@ export default function WeightChart({
   if (!chartData.length) {
     return (
       <Card dir="rtl">
-        <CardHeader>
-          <CardTitle className="text-base">{title}</CardTitle>
-          <CardDescription>{description}</CardDescription>
+        <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0">
+          <div className="space-y-1.5 text-start">
+            <CardTitle className="text-base">{title}</CardTitle>
+            <CardDescription>{description}</CardDescription>
+          </div>
+          {headerAction}
         </CardHeader>
         <CardContent>
-          <p className="py-8 text-center text-sm text-muted-foreground">
-            هنوز وزنی ثبت نشده است.
-          </p>
+          <div className="flex flex-col items-center justify-center gap-2.5 py-8 text-center">
+            <p className="max-w-md text-sm text-muted-foreground">{emptyText}</p>
+            {emptyActionHref && emptyActionLabel ? (
+              <Button asChild size="sm" className="mt-1">
+                <Link href={emptyActionHref}>{emptyActionLabel}</Link>
+              </Button>
+            ) : null}
+          </div>
         </CardContent>
       </Card>
     );
@@ -80,9 +109,12 @@ export default function WeightChart({
 
   return (
     <Card dir="rtl">
-      <CardHeader>
-        <CardTitle className="text-base">{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
+      <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0">
+        <div className="space-y-1.5 text-start">
+          <CardTitle className="text-base">{title}</CardTitle>
+          <CardDescription>{description}</CardDescription>
+        </div>
+        {headerAction}
       </CardHeader>
       <CardContent className="px-2 sm:px-4">
         <ChartContainer config={chartConfig} className={compact ? "h-48 w-full" : "h-64 w-full"}>

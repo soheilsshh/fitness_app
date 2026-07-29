@@ -194,17 +194,18 @@ func ensureAliFunnelPlans(db *gorm.DB, coachUserID uint) error {
 	// Card UI shows first 2 lines — both plans must surface support;
 	// only the support channel differs (panel/ticket vs direct coach).
 	vipFeatures := strings.Join([]string{
-		"برنامه تمرین و تغذیه اختصاصی",
-		"پشتیبانی از طریق پنل و تیکت",
-		"پایش هوش مصنوعی پیشرفت",
-		"دسترسی کامل به اپ و پنل کاربری",
+		"برنامه تمرین و تغذیه اختصاصی (بیومکانیک + سفره ایرانی)",
+		"پایش پیشرفت با هوش‌مصنوعی",
+		"گزارش جامع آنالیز بدنی و پیش‌بینی ۱۲ هفته‌ای",
+		"پشتیبانی و رفع اشکال از طریق تیکت پنل",
+		"دسترسی کامل به اپلیکیشن و امکانات داشبورد",
 	}, "\n")
 	cipFeatures := strings.Join([]string{
-		"همه امکانات پلن VIP",
-		"پشتیبانی اختصاصی مربی علی رشیدآبادی",
-		"پایش هوش مصنوعی پیشرفته",
-		"جلسات مشاوره حضوری",
-		"جلسات ویدیویی اختصاصی",
+		"شامل تمامی امکانات و دسترسی‌های کامل پلن VIP",
+		"پشتیبانی مستقیم و اختصاصی توسط شخص مربی علی رشیدآبادی",
+		"جلسات مشاوره و آنالیز اختصاصی (تصویری / حضوری)",
+		"آنالیز ویدیویی فرم اجرای حرکات شما توسط مربی",
+		"اولویت پردازش در کالیبراسیون و آپدیت برنامه‌ها",
 	}, "\n")
 
 	plans := []struct {
@@ -218,7 +219,7 @@ func ensureAliFunnelPlans(db *gorm.DB, coachUserID uint) error {
 	}{
 		{
 			name:        aliVIPPlanName,
-			subtitle:    "سه ماهه — تمرین + تغذیه + پایش هوشمند",
+			subtitle:    "دوره ۳ ماهه — تمرین + تغذیه + پایش ۲۴ ساعته AI",
 			courseName:  "دوره VIP علی رشیدآبادی",
 			description: "پلن VIP سه‌ماهه فانل ۱ علی رشیدآبادی.",
 			features:    vipFeatures,
@@ -227,7 +228,7 @@ func ensureAliFunnelPlans(db *gorm.DB, coachUserID uint) error {
 		},
 		{
 			name:        aliCIPPlanName,
-			subtitle:    "سه ماهه — پشتیبانی اختصاصی + مشاوره حضوری و ویدیو",
+			subtitle:    "دوره ۳ ماهه — پشتیبانی ۱ به ۱ + مشاوره اختصاصی",
 			courseName:  "دوره CIP علی رشیدآبادی",
 			description: "پلن CIP سه‌ماهه با پشتیبانی اختصاصی علی، پایش هوش مصنوعی، جلسات حضوری و ویدیویی.",
 			features:    cipFeatures,

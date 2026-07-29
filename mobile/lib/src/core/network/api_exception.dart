@@ -44,8 +44,9 @@ String translateApiError(String raw) {
 
 const Map<String, String> _messages = {
   'invalid credentials': 'ایمیل/شماره یا گذرواژه نادرست است.',
-  'email already in use': 'این ایمیل قبلاً ثبت شده است.',
-  'phone already in use': 'این شماره قبلاً ثبت شده است.',
+  'email already in use': 'این شماره/اکانت قبلاً ثبت‌نام شده است.',
+  'phone already in use': 'این شماره/اکانت قبلاً ثبت‌نام شده است.',
+
   'invalid or expired otp code': 'کد تأیید نادرست یا منقضی شده است.',
   'unauthorized': 'دسترسی غیرمجاز.',
 };

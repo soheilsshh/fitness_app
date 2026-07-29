@@ -42,7 +42,7 @@ export default function UserSubNav() {
               className={cn(
                 "fitino-subnav-chip inline-flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 text-xs touch-manipulation",
                 "transition-[transform,box-shadow,background,color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#26fce3]/65",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 "active:scale-[0.96] motion-reduce:active:scale-100",
                 active
                   ? "font-iranianSansDemiBold"

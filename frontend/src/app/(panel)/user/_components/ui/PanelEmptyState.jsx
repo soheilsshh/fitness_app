@@ -36,11 +36,20 @@ export default function PanelEmptyState({
         </p>
       ) : null}
       {description ? (
-        <p className="relative mx-auto mt-1.5 max-w-sm text-sm font-iranianSansMedium leading-relaxed text-muted-foreground">
+        <p className="relative mx-auto mt-1.5 max-w-lg text-sm font-iranianSansMedium leading-relaxed text-muted-foreground">
           {description}
         </p>
       ) : null}
-      {children ? <div className="relative mt-6 text-start">{children}</div> : null}
+      {children ? (
+        <div
+          className={cn(
+            "relative text-start",
+            title || description || Icon ? "mt-6" : "mt-0"
+          )}
+        >
+          {children}
+        </div>
+      ) : null}
       {actionHref && actionLabel ? (
         <div className="relative mt-5">
           <Button asChild size="lg">

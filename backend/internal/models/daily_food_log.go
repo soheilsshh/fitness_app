@@ -14,6 +14,8 @@ type DailyFoodLog struct {
 	FoodID   *uint     `gorm:"index"`
 	FoodName string    `gorm:"size:255;not null"`
 	Quantity string    `gorm:"size:100"`
+	// MealType: breakfast | lunch | dinner | snack (empty = legacy / uncategorized)
+	MealType string `gorm:"size:32;index"`
 	Calories float64
 	Protein  float64
 	Carbs    float64

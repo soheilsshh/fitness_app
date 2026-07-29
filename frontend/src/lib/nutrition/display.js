@@ -46,5 +46,12 @@ export function targetProgressPercent(current, target) {
 export function formatMacro(value, unit = "") {
   const n = roundMacro(value);
   const formatted = n.toLocaleString("fa-IR", { maximumFractionDigits: 1 });
-  return unit ? `${formatted} ${unit}` : formatted;
+  if (!unit) return formatted;
+  const unitFa =
+    unit === "kcal" || unit === "کالری" || unit === "کیلوکالری"
+      ? "کیلوکالری"
+      : unit === "g" || unit === "گرم"
+        ? "گرم"
+        : unit;
+  return `${formatted} ${unitFa}`;
 }

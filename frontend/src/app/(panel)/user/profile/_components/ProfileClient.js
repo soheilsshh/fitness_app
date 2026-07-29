@@ -2,18 +2,13 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  Activity,
   BookOpen,
   Camera,
-  CheckCircle2,
-  Circle,
-  Edit3,
-  Image as ImageIcon,
+  Check,
   Lock,
+  RefreshCw,
   Save,
   Shield,
-  Target,
-  User,
 } from "lucide-react";
 import JalaliDateField from "@/components/forms/JalaliDateField";
 import { Logo } from "@/components/Logo";
@@ -21,7 +16,6 @@ import PageHeader from "@/app/(panel)/user/_components/ui/PageHeader";
 import { api } from "@/lib/axios/client";
 import { apiAssetUrl } from "@/lib/api/assets";
 import { gregorianISOToJalali, jalaliToGregorianISO } from "@/lib/date/jalali";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -40,38 +34,36 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { emitProfileUpdated } from "@/app/(panel)/user/_components/profileEvents";
 import { getApiErrorMessage } from "@/lib/api/translateError";
 import { cn } from "@/lib/utils";
 import ChangePasswordModal from "./ChangePasswordModal";
 
 const EMPTY_JALALI = { year: "", month: "", day: "" };
+const MEDICAL_NONE = "ندارم";
 
 const GOAL_OPTIONS = [
-  { value: "weight_loss", label: "کاهش وزن" },
   { value: "muscle_gain", label: "افزایش حجم عضلانی" },
+  { value: "weight_loss", label: "کاهش وزن و چربی‌سوزی" },
   { value: "fitness", label: "آمادگی عمومی" },
   { value: "endurance", label: "استقامت" },
-  { value: "flexibility", label: "انعطاف‌پذیری" },
   { value: "rehabilitation", label: "بازگشت به تمرین" },
 ];
 
 const BODY_CONDITIONS = [
   { value: "slim", label: "لاغر" },
   { value: "average", label: "متوسط" },
+  { value: "muscular", label: "عضلانی" },
   { value: "overweight", label: "اضافه وزن" },
   { value: "athletic", label: "ورزشکار" },
-  { value: "muscular", label: "عضلانی" },
 ];
 
 const PHOTO_SLOTS = [
   { type: "front", label: "جلو" },
-  { type: "right", label: "راست" },
   { type: "back", label: "عقب" },
+  { type: "right", label: "راست" },
   { type: "left", label: "چپ" },
 ];
 
@@ -92,6 +84,13 @@ const PHOTO_GUIDE = [
     title: "پس‌زمینه",
     body: "دیوار ساده و خلوت بهترین نتیجه را به مربی می‌دهد.",
   },
+];
+
+const PROFILE_TABS = [
+  { id: "personal", emoji: "👤", label: "اطلاعات شخصی" },
+  { id: "body", emoji: "📏", label: "اهداف و اندازه‌ها" },
+  { id: "medical", emoji: "🏥", label: "سوابق پزشکی" },
+  { id: "photos", emoji: "📸", label: "عکس‌های بدن" },
 ];
 
 function emptyProfile() {
@@ -119,6 +118,11 @@ function emptyProfile() {
     programsCount: 0,
     ordersCount: 0,
   };
+}
+
+function isMedicalNone(value) {
+  const v = String(value || "").trim();
+  return !v || v === MEDICAL_NONE;
 }
 
 function mapMeToProfile(data) {
@@ -157,6 +161,58 @@ function mapMeToProfile(data) {
   };
 }
 
+function sectionStats(draft) {
+  const personalChecks = [
+    Boolean(String(draft.firstName || "").trim()),
+    Boolean(String(draft.lastName || "").trim()),
+    Boolean(draft.gender),
+    Boolean(
+      draft.birthDateJalali?.year &&
+        draft.birthDateJalali?.month &&
+        draft.birthDateJalali?.day
+    ),
+  ];
+  const bodyChecks = [
+    Number(draft.heightCm) > 0,
+    Number(draft.weightKg) > 0,
+    Number(draft.targetWeightKg) > 0,
+    Boolean(draft.bodyCondition),
+    Boolean(draft.primaryGoal || (draft.goals || []).length),
+  ];
+  const medicalChecks = [
+    Boolean(String(draft.medicalHistory || "").trim()),
+    Boolean(String(draft.injuries || "").trim()),
+    Boolean(String(draft.physicalLimitations || "").trim()),
+  ];
+  const photoChecks = PHOTO_SLOTS.map((s) => Boolean(draft.photos?.[s.type]?.url));
+
+  const pct = (checks) =>
+    checks.length
+      ? Math.round((checks.filter(Boolean).length / checks.length) * 100)
+      : 0;
+
+  return {
+    personal: {
+      percent: pct(personalChecks),
+      done: Boolean(
+        String(draft.firstName || "").trim() && String(draft.lastName || "").trim()
+      ),
+    },
+    body: {
+      percent: pct(bodyChecks),
+      done: bodyChecks.every(Boolean),
+    },
+    medical: {
+      percent: pct(medicalChecks),
+      done: medicalChecks.every(Boolean),
+    },
+    photos: {
+      percent: pct(photoChecks),
+      done: photoChecks.every(Boolean),
+    },
+  };
+}
+
 function ProfileSkeleton() {
   return (
     <div
@@ -164,7 +220,7 @@ function ProfileSkeleton() {
       dir="rtl"
     >
       <Skeleton className="h-8 w-32" />
-      <Skeleton className="h-28 w-full rounded-xl" />
+      <Skeleton className="h-24 w-full rounded-xl" />
       <Skeleton className="h-96 w-full rounded-xl" />
     </div>
   );
@@ -181,7 +237,7 @@ function AlertBanner({ type, text, onClose }) {
       )}
     >
       <div className="flex items-center justify-between gap-3">
-        <span className="break-words">{text}</span>
+        <span className="wrap-break-word">{text}</span>
         <Button type="button" variant="outline" size="xs" onClick={onClose}>
           بستن
         </Button>
@@ -190,12 +246,30 @@ function AlertBanner({ type, text, onClose }) {
   );
 }
 
+function PillOption({ selected, onClick, children, className }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "rounded-full border px-3 py-2 text-xs font-iranianSansMedium transition-colors sm:text-sm",
+        selected
+          ? "border-primary bg-primary/15 text-primary"
+          : "border-border/70 bg-background/60 text-muted-foreground hover:border-primary/35 hover:text-foreground",
+        className
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
 export default function ProfileClient() {
   const [profile, setProfile] = useState(emptyProfile);
   const [draft, setDraft] = useState(emptyProfile);
   const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState("personal");
+  const [savingSection, setSavingSection] = useState("");
   const [uploadingType, setUploadingType] = useState("");
   const [toast, setToast] = useState(null);
   const [pwdOpen, setPwdOpen] = useState(false);
@@ -225,31 +299,44 @@ export default function ProfileClient() {
     };
   }, []);
 
-  const progress = profile.profileProgress;
-  const progressItems = useMemo(
-    () => [
-      { key: "essentials", done: progress?.essentials, label: "نام و هدف" },
-      { key: "body", done: progress?.body, label: "بدن و اندازه‌ها" },
-      { key: "medical", done: progress?.medical, label: "سوابق پزشکی" },
-      { key: "photos", done: progress?.photos, label: "عکس‌های بدن" },
-    ],
-    [progress]
-  );
+  const stats = useMemo(() => sectionStats(draft), [draft]);
 
   const setDraftField = (key, value) =>
     setDraft((prev) => ({ ...prev, [key]: value }));
 
-  const onStartEdit = () => {
-    setDraft(profile);
-    setEditing(true);
+  const applySaved = (mapped, { keepPhotos = true, isProfileComplete } = {}) => {
+    const next = { ...mapped };
+    if (keepPhotos) {
+      next.photos = { ...profile.photos, ...mapped.photos };
+    }
+    setProfile(next);
+    setDraft(next);
+    if (typeof isProfileComplete === "boolean") {
+      window.localStorage.setItem(
+        "profile_complete",
+        isProfileComplete ? "1" : "0"
+      );
+    }
+    emitProfileUpdated({
+      avatarUrl: next.avatarUrl,
+      percent: next.profileProgress?.percent,
+      name: `${next.firstName} ${next.lastName}`.trim(),
+    });
   };
 
-  const onCancelEdit = () => {
-    setDraft(profile);
-    setEditing(false);
+  const validateNumber = (raw, min, max, label) => {
+    if (raw === "" || raw == null) return { ok: true, value: undefined };
+    const num = Number(raw);
+    if (!Number.isFinite(num) || num < min || num > max) {
+      return {
+        ok: false,
+        error: `${label} نامعتبر است (بین ${min} تا ${max}).`,
+      };
+    }
+    return { ok: true, value: num };
   };
 
-  const onSave = async () => {
+  const savePersonal = async () => {
     const f = String(draft.firstName || "").trim();
     const l = String(draft.lastName || "").trim();
     if (!f || !l) {
@@ -258,7 +345,6 @@ export default function ProfileClient() {
     }
 
     const payload = { firstName: f, lastName: l };
-
     const { year, month, day } = draft.birthDateJalali || EMPTY_JALALI;
     if (year && month && day) {
       const iso = jalaliToGregorianISO(year, month, day);
@@ -268,7 +354,6 @@ export default function ProfileClient() {
       }
       payload.birthDate = iso;
     }
-
     if (draft.nationalId?.trim()) {
       if (!/^\d{10}$/.test(draft.nationalId.trim())) {
         setToast({ type: "error", text: "کد ملی باید ۱۰ رقم باشد." });
@@ -278,27 +363,40 @@ export default function ProfileClient() {
     }
     if (draft.gender) payload.gender = draft.gender;
 
-    const optionalNumbers = [
+    setSavingSection("personal");
+    try {
+      const res = await api.patch("/me", payload);
+      applySaved(mapMeToProfile(res.data || {}), {
+        isProfileComplete: res.data?.isProfileComplete,
+      });
+      setToast({ type: "success", text: "اطلاعات شخصی ذخیره شد." });
+    } catch (e) {
+      setToast({
+        type: "error",
+        text: getApiErrorMessage(e, "ذخیره ناموفق بود."),
+      });
+    } finally {
+      setSavingSection("");
+    }
+  };
+
+  const saveBody = async () => {
+    const payload = {};
+    const fields = [
       ["heightCm", draft.heightCm, 80, 250, "قد"],
       ["weightKg", draft.weightKg, 20, 300, "وزن"],
       ["targetWeightKg", draft.targetWeightKg, 20, 300, "وزن هدف"],
       ["bodyFatPercent", draft.bodyFatPercent, 1, 60, "درصد چربی"],
     ];
-    for (const [key, raw, min, max, label] of optionalNumbers) {
-      if (raw === "" || raw == null) continue;
-      const num = Number(raw);
-      if (!Number.isFinite(num) || num < min || num > max) {
-        setToast({
-          type: "error",
-          text: `${label} نامعتبر است (بین ${min} تا ${max}).`,
-        });
+    for (const [key, raw, min, max, label] of fields) {
+      const result = validateNumber(raw, min, max, label);
+      if (!result.ok) {
+        setToast({ type: "error", text: result.error });
         return;
       }
-      payload[key] = num;
+      if (result.value !== undefined) payload[key] = result.value;
     }
-
     if (draft.bodyCondition) payload.bodyCondition = draft.bodyCondition;
-
     if (draft.primaryGoal || (draft.goals || []).length) {
       const tag = draft.primaryGoal || draft.goals[0];
       const label =
@@ -307,35 +405,70 @@ export default function ProfileClient() {
       payload.primaryGoal = label;
     }
 
-    if (draft.medicalHistory?.trim()) {
-      payload.medicalHistory = draft.medicalHistory.trim();
-    }
-    if (draft.injuries?.trim()) payload.injuries = draft.injuries.trim();
-    if (draft.physicalLimitations?.trim()) {
-      payload.physicalLimitations = draft.physicalLimitations.trim();
-    }
-
-    setSaving(true);
+    setSavingSection("body");
     try {
       const res = await api.patch("/me", payload);
-      const mapped = mapMeToProfile(res.data || {});
-      // Keep typed photos from current state (PATCH may return all photos).
-      mapped.photos = { ...profile.photos, ...mapped.photos };
-      setProfile(mapped);
-      setDraft(mapped);
-      setEditing(false);
-      window.localStorage.setItem(
-        "profile_complete",
-        res.data?.isProfileComplete ? "1" : "0"
-      );
-      setToast({ type: "success", text: "اطلاعات پروفایل ذخیره شد." });
+      applySaved(mapMeToProfile(res.data || {}), {
+        isProfileComplete: res.data?.isProfileComplete,
+      });
+      setToast({ type: "success", text: "اهداف و اندازه‌ها ذخیره شد." });
     } catch (e) {
       setToast({
         type: "error",
         text: getApiErrorMessage(e, "ذخیره ناموفق بود."),
       });
     } finally {
-      setSaving(false);
+      setSavingSection("");
+    }
+  };
+
+  const saveMedical = async () => {
+    const payload = {
+      medicalHistory: String(draft.medicalHistory || "").trim() || MEDICAL_NONE,
+      injuries: String(draft.injuries || "").trim() || MEDICAL_NONE,
+      physicalLimitations:
+        String(draft.physicalLimitations || "").trim() || MEDICAL_NONE,
+    };
+
+    setSavingSection("medical");
+    try {
+      const res = await api.patch("/me", payload);
+      applySaved(mapMeToProfile(res.data || {}), {
+        isProfileComplete: res.data?.isProfileComplete,
+      });
+      setToast({ type: "success", text: "سوابق پزشکی ذخیره شد." });
+    } catch (e) {
+      setToast({
+        type: "error",
+        text: getApiErrorMessage(e, "ذخیره ناموفق بود."),
+      });
+    } finally {
+      setSavingSection("");
+    }
+  };
+
+  const savePhotosSection = async () => {
+    setSavingSection("photos");
+    try {
+      const me = await api.get("/me");
+      const mapped = mapMeToProfile(me.data || {});
+      applySaved(mapped, {
+        keepPhotos: false,
+        isProfileComplete: me.data?.isProfileComplete,
+      });
+      setToast({
+        type: "success",
+        text: stats.photos.done
+          ? "آلبوم بدن به‌روز است."
+          : "عکس‌ها با آپلود ذخیره می‌شوند؛ در صورت نیاز نماهای باقی‌مانده را اضافه کنید.",
+      });
+    } catch (e) {
+      setToast({
+        type: "error",
+        text: getApiErrorMessage(e, "بروزرسانی وضعیت عکس‌ها ناموفق بود."),
+      });
+    } finally {
+      setSavingSection("");
     }
   };
 
@@ -358,6 +491,7 @@ export default function ProfileClient() {
       const url = res.data?.avatarUrl || res.data?.url || "";
       const absolute = url ? apiAssetUrl(url) : "";
       setProfile((prev) => ({ ...prev, avatarUrl: absolute }));
+      setDraft((prev) => ({ ...prev, avatarUrl: absolute }));
       emitProfileUpdated({
         avatarUrl: absolute,
         percent: profile.profileProgress?.percent,
@@ -387,21 +521,14 @@ export default function ProfileClient() {
       const res = await api.post("/me/body-photos", body, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      setProfile((prev) => ({
-        ...prev,
-        photos: { ...prev.photos, [type]: res.data },
-      }));
-      setDraft((prev) => ({
-        ...prev,
-        photos: { ...prev.photos, [type]: res.data },
-      }));
-      // Refresh progress ticks
       const me = await api.get("/me");
       const mapped = mapMeToProfile(me.data || {});
-      setProfile((prev) => ({
+      const withPhoto = {
         ...mapped,
-        photos: { ...prev.photos, [type]: res.data },
-      }));
+        photos: { ...mapped.photos, [type]: res.data },
+      };
+      setProfile(withPhoto);
+      setDraft(withPhoto);
       setToast({ type: "success", text: "عکس ذخیره شد." });
     } catch (e) {
       setToast({
@@ -413,9 +540,22 @@ export default function ProfileClient() {
     }
   };
 
-  const view = editing ? draft : profile;
+  const setMedicalMode = (field, mode) => {
+    if (mode === "no") {
+      setDraftField(field, MEDICAL_NONE);
+      return;
+    }
+    setDraft((prev) => ({
+      ...prev,
+      [field]: isMedicalNone(prev[field]) ? "" : prev[field],
+    }));
+  };
 
   if (loading) return <ProfileSkeleton />;
+
+  const overallPercent = Math.round(
+    Object.values(stats).reduce((sum, s) => sum + s.percent, 0) / 4
+  );
 
   return (
     <div
@@ -424,32 +564,11 @@ export default function ProfileClient() {
     >
       <PageHeader
         title="تکمیل پروفایل"
-        description="اطلاعات تکمیلی اختیاری‌اند؛ هر زمان آماده‌اید پر کنید تا برنامه دقیق‌تر شود."
+        description="هر بخش را جداگانه تکمیل و ذخیره کنید؛ بدون اسکرول طولانی بین تب‌ها جابه‌جا شوید."
         meta={
-          <div className="flex flex-wrap gap-2">
-            {!editing ? (
-              <Button type="button" variant="outline" size="sm" onClick={onStartEdit}>
-                <Edit3 data-icon="inline-start" />
-                ویرایش
-              </Button>
-            ) : (
-              <>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={onCancelEdit}
-                  disabled={saving}
-                >
-                  انصراف
-                </Button>
-                <Button type="button" size="sm" onClick={onSave} disabled={saving}>
-                  <Save data-icon="inline-start" />
-                  {saving ? "در حال ذخیره..." : "ذخیره"}
-                </Button>
-              </>
-            )}
-          </div>
+          <span className="rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-xs font-iranianSansMedium tabular-nums text-primary">
+            پیشرفت کلی {(overallPercent || 0).toLocaleString("fa-IR")}٪
+          </span>
         }
       />
 
@@ -461,328 +580,356 @@ export default function ProfileClient() {
         />
       ) : null}
 
-      {progress ? (
-        <Card className="border-primary/20 bg-primary/[0.03]">
-          <CardContent className="space-y-3 pt-5">
-            <div className="flex items-center justify-between gap-3 text-sm">
-              <span className="font-medium">پیشرفت تکمیل</span>
-              <span className="tabular-nums text-muted-foreground">
-                {(progress.percent ?? 0).toLocaleString("fa-IR")}٪
-              </span>
-            </div>
-            <Progress value={progress.percent ?? 0} />
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-              {progressItems.map((item) => (
-                <div
-                  key={item.key}
+      {/* Stepper */}
+      <nav aria-label="مراحل تکمیل پروفایل" className="w-full">
+        <ol className="grid grid-cols-2 gap-2 md:grid-cols-4">
+          {PROFILE_TABS.map((tab, index) => {
+            const section = stats[tab.id];
+            const active = activeTab === tab.id;
+            return (
+              <li key={tab.id} className="relative min-w-0">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab(tab.id)}
+                  aria-current={active ? "step" : undefined}
                   className={cn(
-                    "flex items-center gap-2 rounded-xl border px-2.5 py-2 text-xs",
-                    item.done
-                      ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-800 dark:text-emerald-200"
-                      : "border-border bg-muted/30 text-muted-foreground"
+                    "flex h-full w-full flex-col gap-2 rounded-2xl border px-3 py-3 text-start transition-colors",
+                    active
+                      ? "border-primary/45 bg-primary/10 shadow-[0_0_0_1px_color-mix(in_srgb,var(--primary)_20%,transparent)]"
+                      : "border-border/70 bg-card/70 hover:border-primary/30 hover:bg-muted/30"
                   )}
                 >
-                  {item.done ? (
-                    <CheckCircle2 className="size-3.5 shrink-0" />
-                  ) : (
-                    <Circle className="size-3.5 shrink-0" />
-                  )}
-                  <span className="truncate">{item.label}</span>
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="flex min-w-0 items-center gap-1.5 text-xs font-iranianSansDemiBold text-foreground sm:text-sm">
+                      <span aria-hidden>{tab.emoji}</span>
+                      <span className="leading-snug">{tab.label}</span>
+                    </span>
+                    {section.done ? (
+                      <span className="inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white">
+                        <Check className="size-3" strokeWidth={3} />
+                      </span>
+                    ) : (
+                      <span className="inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-muted text-[10px] tabular-nums text-muted-foreground">
+                        {(index + 1).toLocaleString("fa-IR")}
+                      </span>
+                    )}
+                  </div>
+                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                    <div
+                      className={cn(
+                        "h-full rounded-full transition-all",
+                        section.done ? "bg-emerald-500" : "bg-primary"
+                      )}
+                      style={{ width: `${section.percent}%` }}
+                      aria-hidden
+                    />
+                    <span className="sr-only">
+                      {section.percent.toLocaleString("fa-IR")} درصد تکمیل
+                    </span>
+                  </div>
+                </button>
+              </li>
+            );
+          })}
+        </ol>
+      </nav>
+
+      {/* Tab panels */}
+      {activeTab === "personal" ? (
+        <Card className="min-w-0 overflow-visible">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">اطلاعات شخصی و حساب کاربری</CardTitle>
+            <CardDescription>
+              مشخصات پایه و خلاصه حساب در یک نمای فشرده دو ستونه.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="min-w-0 space-y-5">
+            <div className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2">
+              {/* RTL: first cell = right = account summary */}
+              <aside className="min-w-0 space-y-4 rounded-2xl border border-border/70 bg-muted/20 p-4">
+                <input
+                  ref={avatarInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  className="sr-only"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) uploadAvatar(file);
+                    e.target.value = "";
+                  }}
+                />
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => avatarInputRef.current?.click()}
+                    disabled={uploadingAvatar}
+                    className="relative size-16 shrink-0 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
+                    aria-label="تغییر عکس پروفایل"
+                  >
+                    <span className="flex size-full items-center justify-center overflow-hidden rounded-full bg-muted ring-2 ring-border">
+                      {draft.avatarUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={draft.avatarUrl}
+                          alt="عکس پروفایل"
+                          className="size-full object-cover"
+                        />
+                      ) : (
+                        <Logo className="h-8 w-8 object-contain opacity-90" />
+                      )}
+                    </span>
+                    <span className="absolute -bottom-0.5 -start-0.5 inline-flex size-6 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md ring-2 ring-background">
+                      <Camera className="size-3" />
+                    </span>
+                  </button>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-iranianSansDemiBold">عکس پروفایل</p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="mt-2 gap-1.5"
+                      disabled={uploadingAvatar}
+                      onClick={() => avatarInputRef.current?.click()}
+                    >
+                      <Camera className="size-3.5" />
+                      {uploadingAvatar ? "در حال آپلود..." : "تغییر عکس"}
+                    </Button>
+                  </div>
                 </div>
-              ))}
+
+                <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                  <span className="rounded-lg border border-border/70 bg-background/70 px-2.5 py-1.5">
+                    برنامه‌های فعال:{" "}
+                    <span className="font-iranianSansDemiBold tabular-nums text-foreground">
+                      {Number(profile.programsCount || 0).toLocaleString("fa-IR")}
+                    </span>
+                  </span>
+                  <span className="rounded-lg border border-border/70 bg-background/70 px-2.5 py-1.5">
+                    سفارش‌ها:{" "}
+                    <span className="font-iranianSansDemiBold tabular-nums text-foreground">
+                      {Number(profile.ordersCount || 0).toLocaleString("fa-IR")}
+                    </span>
+                  </span>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full gap-1.5"
+                  onClick={() => setPwdOpen(true)}
+                >
+                  <Lock className="size-4" />
+                  تغییر رمز عبور
+                </Button>
+              </aside>
+
+              {/* RTL: second cell = left = personal form */}
+              <div className="min-w-0 space-y-4 rounded-2xl border border-border/70 bg-card/40 p-4">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <FormField
+                    label="نام"
+                    value={draft.firstName}
+                    onChange={(v) => setDraftField("firstName", v)}
+                  />
+                  <FormField
+                    label="نام خانوادگی"
+                    value={draft.lastName}
+                    onChange={(v) => setDraftField("lastName", v)}
+                  />
+                </div>
+                <FormField
+                  label="شماره تماس"
+                  value={profile.phone}
+                  disabled
+                  hint="غیرقابل تغییر"
+                />
+                <JalaliDateField
+                  label="تاریخ تولد"
+                  year={draft.birthDateJalali?.year || ""}
+                  month={draft.birthDateJalali?.month || ""}
+                  day={draft.birthDateJalali?.day || ""}
+                  onChange={(parts) => {
+                    const iso = jalaliToGregorianISO(
+                      parts.year,
+                      parts.month,
+                      parts.day
+                    );
+                    setDraft((prev) => ({
+                      ...prev,
+                      birthDateJalali: parts,
+                      birthDate: iso || prev.birthDate,
+                    }));
+                  }}
+                />
+                <FormField
+                  label="کد ملی — اختیاری"
+                  value={draft.nationalId}
+                  onChange={(v) =>
+                    setDraftField("nationalId", v.replace(/\D/g, "").slice(0, 10))
+                  }
+                  inputMode="numeric"
+                />
+                <div className="space-y-2">
+                  <Label>جنسیت</Label>
+                  <div className="flex flex-wrap gap-2">
+                    <PillOption
+                      selected={draft.gender === "male"}
+                      onClick={() => setDraftField("gender", "male")}
+                      className="min-w-24"
+                    >
+                      مرد
+                    </PillOption>
+                    <PillOption
+                      selected={draft.gender === "female"}
+                      onClick={() => setDraftField("gender", "female")}
+                      className="min-w-24"
+                    >
+                      زن
+                    </PillOption>
+                  </div>
+                </div>
+              </div>
             </div>
+
+            <SectionSaveBar
+              saving={savingSection === "personal"}
+              onSave={savePersonal}
+            />
           </CardContent>
         </Card>
       ) : null}
 
-      <div className="grid gap-4 lg:grid-cols-[0.85fr_1.15fr]">
-        <Card className="bg-gradient-to-t from-primary/5 to-card dark:bg-card">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Activity className="size-4 text-primary" />
-              خلاصه حساب
-            </CardTitle>
+      {activeTab === "body" ? (
+        <Card className="min-w-0">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">شاخص‌ها و هدف‌گذاری بدنی</CardTitle>
+            <CardDescription>
+              این داده‌ها مبنای اصلی محاسبه کالری و تنظیم برنامه‌های شما هستند.
+            </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex flex-col items-center gap-3 rounded-2xl border border-border/60 bg-background/50 px-4 py-5">
-              <input
-                ref={avatarInputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp,image/gif"
-                className="sr-only"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) uploadAvatar(file);
-                  e.target.value = "";
-                }}
-              />
-              <button
-                type="button"
-                onClick={() => avatarInputRef.current?.click()}
-                disabled={uploadingAvatar}
-                className="relative size-24 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
-                aria-label="آپلود عکس پروفایل"
-              >
-                <span className="flex size-full items-center justify-center overflow-hidden rounded-full bg-muted ring-2 ring-border">
-                  {profile.avatarUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={profile.avatarUrl}
-                      alt="عکس پروفایل"
-                      className="size-full object-cover"
-                    />
-                  ) : (
-                    <Logo className="h-12 w-12 object-contain opacity-90" />
-                  )}
-                </span>
-                <span className="absolute -bottom-0.5 -start-0.5 inline-flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md ring-2 ring-background">
-                  <Camera className="size-4" />
-                </span>
-              </button>
-              <div className="text-center">
-                <p className="text-sm font-iranianSansDemiBold">عکس پروفایل</p>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  {uploadingAvatar
-                    ? "در حال آپلود..."
-                    : "برای تغییر، روی عکس بزنید (تا ۵ مگابایت)"}
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <StatBox label="برنامه‌های فعال" value={profile.programsCount} />
-              <StatBox label="سفارش‌ها" value={profile.ordersCount} />
-            </div>
-            <Card size="sm">
-              <CardContent className="flex items-center justify-between gap-4 pt-4">
-                <div>
-                  <p className="text-xs text-muted-foreground">قد</p>
-                  <p className="mt-1 text-lg font-semibold tabular-nums">
-                    {profile.heightCm || "—"}{" "}
-                    <span className="text-sm font-normal text-muted-foreground">cm</span>
-                  </p>
-                </div>
-                <div className="text-start">
-                  <p className="text-xs text-muted-foreground">وزن</p>
-                  <p className="mt-1 text-lg font-semibold tabular-nums">
-                    {profile.weightKg || "—"}{" "}
-                    <span className="text-sm font-normal text-muted-foreground">kg</span>
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              onClick={() => setPwdOpen(true)}
-            >
-              <Lock data-icon="inline-start" />
-              تغییر رمز عبور
-            </Button>
-          </CardContent>
-        </Card>
-
-        <div className="space-y-4">
-          <SectionCard
-            id="personal"
-            icon={User}
-            title="اطلاعات شخصی"
-            description="برای شناسایی شما نزد مربی کافی است؛ جزئیات بیشتر اختیاری است."
-          >
-            <div className="grid gap-4 sm:grid-cols-2">
-              <FormField
-                label="نام"
-                value={view.firstName}
-                onChange={(v) => setDraftField("firstName", v)}
-                disabled={!editing}
-              />
-              <FormField
-                label="نام خانوادگی"
-                value={view.lastName}
-                onChange={(v) => setDraftField("lastName", v)}
-                disabled={!editing}
-              />
-            </div>
-            <FormField label="شماره تماس" value={profile.phone} disabled />
-            <JalaliDateField
-              label="تاریخ تولد (شمسی) — اختیاری"
-              year={view.birthDateJalali?.year || ""}
-              month={view.birthDateJalali?.month || ""}
-              day={view.birthDateJalali?.day || ""}
-              disabled={!editing}
-              onChange={(parts) => {
-                if (!editing) return;
-                const iso = jalaliToGregorianISO(parts.year, parts.month, parts.day);
-                setDraft((prev) => ({
-                  ...prev,
-                  birthDateJalali: parts,
-                  birthDate: iso || prev.birthDate,
-                }));
-              }}
-            />
-            <div className="grid gap-4 sm:grid-cols-2">
-              <FormField
-                label="کد ملی — اختیاری"
-                value={view.nationalId}
-                onChange={(v) =>
-                  setDraftField("nationalId", v.replace(/\D/g, "").slice(0, 10))
-                }
-                disabled={!editing}
-                inputMode="numeric"
-              />
-              <div className="space-y-2">
-                <Label>جنسیت — اختیاری</Label>
-                <ToggleGroup
-                  type="single"
-                  value={view.gender}
-                  onValueChange={(v) => editing && v && setDraftField("gender", v)}
-                  variant="outline"
-                  className="grid w-full grid-cols-2"
-                  disabled={!editing}
-                >
-                  <ToggleGroupItem value="male" disabled={!editing}>
-                    مرد
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="female" disabled={!editing}>
-                    زن
-                  </ToggleGroupItem>
-                </ToggleGroup>
-              </div>
-            </div>
-          </SectionCard>
-
-          <SectionCard
-            id="body"
-            icon={Target}
-            title="اهداف و اندازه‌های بدن"
-            description="برای طراحی دقیق‌تر برنامه — وقتی آماده‌اید تکمیل کنید."
-          >
-            <div className="grid gap-4 sm:grid-cols-2">
+          <CardContent className="space-y-5">
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
               <NumberField
-                label="قد (cm)"
-                value={view.heightCm}
+                label="قد"
+                suffix="cm"
+                value={draft.heightCm}
                 onChange={(v) => setDraftField("heightCm", v)}
-                disabled={!editing}
               />
               <NumberField
-                label="وزن فعلی (kg)"
-                value={view.weightKg}
+                label="وزن فعلی"
+                suffix="kg"
+                value={draft.weightKg}
                 onChange={(v) => setDraftField("weightKg", v)}
-                disabled={!editing}
               />
               <NumberField
-                label="وزن هدف (kg)"
-                value={view.targetWeightKg}
+                label="وزن هدف"
+                suffix="kg"
+                value={draft.targetWeightKg}
                 onChange={(v) => setDraftField("targetWeightKg", v)}
-                disabled={!editing}
               />
               <NumberField
                 label="درصد چربی — اختیاری"
-                value={view.bodyFatPercent}
+                suffix="٪"
+                value={draft.bodyFatPercent}
                 onChange={(v) => setDraftField("bodyFatPercent", v)}
-                disabled={!editing}
               />
             </div>
+
             <div className="space-y-2">
-              <Label>وضعیت بدنی</Label>
-              <ToggleGroup
-                type="single"
-                value={view.bodyCondition}
-                onValueChange={(v) =>
-                  editing && v && setDraftField("bodyCondition", v)
-                }
-                variant="outline"
-                className="grid w-full grid-cols-2 gap-2 sm:grid-cols-3"
-                disabled={!editing}
-              >
+              <Label>وضعیت فعلی بدن</Label>
+              <div className="flex flex-wrap gap-2">
                 {BODY_CONDITIONS.map((c) => (
-                  <ToggleGroupItem
+                  <PillOption
                     key={c.value}
-                    value={c.value}
-                    disabled={!editing}
-                    className="text-xs"
+                    selected={draft.bodyCondition === c.value}
+                    onClick={() => setDraftField("bodyCondition", c.value)}
                   >
                     {c.label}
-                  </ToggleGroupItem>
+                  </PillOption>
                 ))}
-              </ToggleGroup>
+              </div>
             </div>
+
             <div className="space-y-2">
-              <Label>هدف اصلی</Label>
-              <ToggleGroup
-                type="single"
-                value={view.primaryGoal}
-                onValueChange={(v) => {
-                  if (!editing || !v) return;
-                  setDraft((prev) => ({
-                    ...prev,
-                    primaryGoal: v,
-                    goals: [v],
-                  }));
-                }}
-                variant="outline"
-                className="grid w-full grid-cols-2 gap-2"
-                disabled={!editing}
-              >
+              <Label>هدف اصلی شما در فیتینو</Label>
+              <div className="flex flex-wrap gap-2">
                 {GOAL_OPTIONS.map((g) => (
-                  <ToggleGroupItem
+                  <PillOption
                     key={g.value}
-                    value={g.value}
-                    disabled={!editing}
-                    className="text-xs"
+                    selected={draft.primaryGoal === g.value}
+                    onClick={() =>
+                      setDraft((prev) => ({
+                        ...prev,
+                        primaryGoal: g.value,
+                        goals: [g.value],
+                      }))
+                    }
                   >
                     {g.label}
-                  </ToggleGroupItem>
+                  </PillOption>
                 ))}
-              </ToggleGroup>
+              </div>
             </div>
-          </SectionCard>
 
-          <SectionCard
-            id="medical"
-            icon={Shield}
-            title="سوابق پزشکی"
-            description="این اطلاعات فقط برای طراحی ایمن برنامه تمرین استفاده می‌شود."
-          >
-            <TextAreaField
-              label="سوابق پزشکی"
-              value={view.medicalHistory}
+            <SectionSaveBar
+              saving={savingSection === "body"}
+              onSave={saveBody}
+            />
+          </CardContent>
+        </Card>
+      ) : null}
+
+      {activeTab === "medical" ? (
+        <Card className="min-w-0">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">سوابق پزشکی و ایمنی تمرین</CardTitle>
+            <CardDescription>
+              جهت طراحی ایمن‌ترین برنامه تمرینی و جلوگیری از آسیب‌دیدگی.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <MedicalSmartField
+              question="آیا سابقه بیماری خاصی دارید؟"
+              value={draft.medicalHistory}
+              onModeChange={(mode) => setMedicalMode("medicalHistory", mode)}
               onChange={(v) => setDraftField("medicalHistory", v)}
-              disabled={!editing}
-              placeholder="در صورت نداشتن: ندارم"
             />
-            <TextAreaField
-              label="آسیب‌دیدگی‌ها"
-              value={view.injuries}
+            <MedicalSmartField
+              question="آیا آسیب‌دیدگی یا درد مفاصل دارید؟"
+              value={draft.injuries}
+              onModeChange={(mode) => setMedicalMode("injuries", mode)}
               onChange={(v) => setDraftField("injuries", v)}
-              disabled={!editing}
-              placeholder="در صورت نداشتن: ندارم"
             />
-            <TextAreaField
-              label="محدودیت‌های بدنی"
-              value={view.physicalLimitations}
+            <MedicalSmartField
+              question="آیا محدودیت حرکتی خاصی دارید؟"
+              value={draft.physicalLimitations}
+              onModeChange={(mode) => setMedicalMode("physicalLimitations", mode)}
               onChange={(v) => setDraftField("physicalLimitations", v)}
-              disabled={!editing}
-              placeholder="در صورت نداشتن: ندارم"
             />
-          </SectionCard>
+            <SectionSaveBar
+              saving={savingSection === "medical"}
+              onSave={saveMedical}
+            />
+          </CardContent>
+        </Card>
+      ) : null}
 
-          <SectionCard
-            id="photos"
-            icon={ImageIcon}
-            title="عکس‌های بدن"
-            description="اختیاری — هر زمان خواستید آپلود کنید."
-          >
-            <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border/70 bg-muted/30 px-3 py-3">
-              <p className="text-xs text-muted-foreground sm:text-sm">
-                نکات نور، لباس و زاویه مناسب
-              </p>
+      {activeTab === "photos" ? (
+        <Card className="min-w-0">
+          <CardHeader className="pb-3">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <CardTitle className="text-base">تصاویر آنالیز بدنی</CardTitle>
+                <CardDescription className="mt-1.5">
+                  چهار نمای اصلی بدن برای ارزیابی آناتومیک مربی.
+                </CardDescription>
+              </div>
               <Dialog>
                 <DialogTrigger asChild>
                   <Button type="button" variant="outline" size="sm" className="gap-1.5">
                     <BookOpen className="size-3.5" />
-                    راهنمای گرفتن عکس
+                    راهنمای ثبت عکس صحیح
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="profile-theme max-w-md" dir="rtl">
@@ -806,34 +953,37 @@ export default function ProfileClient() {
                 </DialogContent>
               </Dialog>
             </div>
-
-            <div className="flex gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-3 py-2.5 text-xs text-emerald-900 dark:text-emerald-100 sm:text-sm">
+          </CardHeader>
+          <CardContent className="space-y-5">
+            <div className="flex gap-2 rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-3 py-3 text-xs text-emerald-900 dark:text-emerald-100 sm:text-sm">
               <Shield className="mt-0.5 size-4 shrink-0 text-emerald-600" />
               <p>
-                این تصاویر فقط توسط مربی شما قابل مشاهده است و در هیچ جای دیگری نمایش
-                داده نخواهد شد.
+                حریم خصوصی شما محفوظ است: این تصاویر کاملاً محرمانه بوده و تنها توسط
+                مربی علی برای ارزیابی آناتومیک قابل مشاهده است.
               </p>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {PHOTO_SLOTS.map((slot) => {
-                const photo = profile.photos?.[slot.type];
+                const photo = draft.photos?.[slot.type];
                 const isUploading = uploadingType === slot.type;
                 return (
                   <div
                     key={slot.type}
                     className="rounded-2xl border border-border/60 bg-card/70 p-3"
                   >
-                    <div className="mb-2 text-sm font-medium">نمای {slot.label}</div>
+                    <div className="mb-2 text-sm font-iranianSansDemiBold">
+                      نمای {slot.label}
+                    </div>
                     {photo?.url ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={apiAssetUrl(photo.url)}
                         alt={slot.label}
-                        className="mb-3 h-36 w-full rounded-xl object-cover"
+                        className="mb-3 h-40 w-full rounded-xl object-cover"
                       />
                     ) : (
-                      <div className="mb-3 flex h-36 items-center justify-center rounded-xl border border-dashed text-xs text-muted-foreground">
+                      <div className="mb-3 flex h-40 items-center justify-center rounded-xl border border-dashed text-xs text-muted-foreground">
                         هنوز آپلود نشده
                       </div>
                     )}
@@ -853,10 +1003,11 @@ export default function ProfileClient() {
                         type="button"
                         variant="outline"
                         size="sm"
-                        className="pointer-events-none w-full"
+                        className="pointer-events-none w-full gap-1.5"
                         disabled={!!uploadingType}
                         tabIndex={-1}
                       >
+                        <RefreshCw className="size-3.5" />
                         {isUploading
                           ? "در حال آپلود..."
                           : photo
@@ -868,9 +1019,14 @@ export default function ProfileClient() {
                 );
               })}
             </div>
-          </SectionCard>
-        </div>
-      </div>
+
+            <SectionSaveBar
+              saving={savingSection === "photos"}
+              onSave={savePhotosSection}
+            />
+          </CardContent>
+        </Card>
+      ) : null}
 
       <ChangePasswordModal
         open={pwdOpen}
@@ -882,74 +1038,105 @@ export default function ProfileClient() {
   );
 }
 
-function SectionCard({ id, icon: Icon, title, description, children }) {
+function SectionSaveBar({ saving, onSave }) {
   return (
-    <Card id={id} className="scroll-mt-24">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base">
-          <Icon className="size-4 text-primary" />
-          {title}
-        </CardTitle>
-        {description ? <CardDescription>{description}</CardDescription> : null}
-      </CardHeader>
-      <CardContent className="space-y-4">{children}</CardContent>
-    </Card>
+    <div className="border-t border-border/60 pt-4">
+      <Button
+        type="button"
+        className="w-full sm:w-auto"
+        onClick={onSave}
+        disabled={saving}
+      >
+        <Save data-icon="inline-start" />
+        {saving ? "در حال ذخیره..." : "ذخیره تغییرات این بخش"}
+      </Button>
+    </div>
   );
 }
 
-function StatBox({ label, value }) {
+function MedicalSmartField({ question, value, onModeChange, onChange }) {
+  const hasDetail = !isMedicalNone(value);
+  const mode = hasDetail ? "yes" : "no";
+
   return (
-    <Card size="sm">
-      <CardContent className="pt-4">
-        <p className="text-xs text-muted-foreground">{label}</p>
-        <p className="mt-2 text-2xl font-semibold tabular-nums">
-          {Number(value || 0).toLocaleString("fa-IR")}
-        </p>
-      </CardContent>
-    </Card>
+    <div className="rounded-2xl border border-border/60 bg-muted/15 p-4 text-start">
+      <p className="text-sm font-iranianSansDemiBold text-foreground">{question}</p>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <PillOption
+          selected={mode === "no"}
+          onClick={() => onModeChange("no")}
+          className="min-w-32"
+        >
+          خیر، ندارم
+        </PillOption>
+        <PillOption
+          selected={mode === "yes"}
+          onClick={() => onModeChange("yes")}
+          className="min-w-32"
+        >
+          بله، توضیح دهید...
+        </PillOption>
+      </div>
+      <div
+        className={cn(
+          "grid transition-all duration-300 ease-out",
+          hasDetail ? "mt-3 grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+        )}
+      >
+        <div className="overflow-hidden">
+          <Textarea
+            value={hasDetail ? value : ""}
+            rows={3}
+            placeholder="توضیح کوتاه بنویسید..."
+            onChange={(e) => onChange(e.target.value)}
+            className="resize-none"
+          />
+        </div>
+      </div>
+    </div>
   );
 }
 
-function FormField({ label, value, onChange, disabled, inputMode }) {
+function FormField({ label, value, onChange, disabled, inputMode, hint }) {
   return (
-    <div className="space-y-2">
-      <Label>{label}</Label>
+    <div className="min-w-0 space-y-2">
+      <div className="flex items-center justify-between gap-2">
+        <Label>{label}</Label>
+        {hint ? (
+          <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+            <Lock className="size-3" />
+            {hint}
+          </span>
+        ) : null}
+      </div>
       <Input
         value={value || ""}
         inputMode={inputMode}
         onChange={(e) => onChange?.(e.target.value)}
         disabled={disabled}
+        className="h-10"
       />
     </div>
   );
 }
 
-function NumberField({ label, value, onChange, disabled }) {
+function NumberField({ label, value, onChange, suffix }) {
   return (
-    <div className="space-y-2">
+    <div className="min-w-0 space-y-2">
       <Label>{label}</Label>
-      <Input
-        type="number"
-        value={value ?? ""}
-        onChange={(e) => onChange?.(e.target.value)}
-        disabled={disabled}
-        className="tabular-nums"
-      />
-    </div>
-  );
-}
-
-function TextAreaField({ label, value, onChange, disabled, placeholder }) {
-  return (
-    <div className="space-y-2">
-      <Label>{label}</Label>
-      <Textarea
-        value={value ?? ""}
-        rows={3}
-        placeholder={placeholder}
-        onChange={(e) => onChange?.(e.target.value)}
-        disabled={disabled}
-      />
+      <div className="relative">
+        <Input
+          type="number"
+          value={value ?? ""}
+          onChange={(e) => onChange?.(e.target.value)}
+          className="h-10 pe-10 tabular-nums"
+        />
+        {suffix ? (
+          <span className="pointer-events-none absolute inset-y-0 inset-e-3 flex items-center text-xs text-muted-foreground">
+            {suffix}
+          </span>
+        ) : null}
+      </div>
     </div>
   );
 }

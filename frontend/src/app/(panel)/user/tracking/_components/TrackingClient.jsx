@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Camera, CreditCard, Scale, Upload } from "lucide-react";
+import { Scale, Upload } from "lucide-react";
 import { api } from "@/lib/axios/client";
 import PageHeader from "@/app/(panel)/user/_components/ui/PageHeader";
 import PanelEmptyState from "@/app/(panel)/user/_components/ui/PanelEmptyState";
@@ -16,6 +16,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+
+const TRACKING_UNLOCK_PREVIEWS = [
+  { emoji: "📈", label: "نمودار هوشمند تغییرات وزن و سایز" },
+  { emoji: "📸", label: "آلبوم مقایسه تصویر بدنی (قبل و بعد)" },
+  { emoji: "🛡", label: "سیستم هشدار خودکارِ استپ وزنی" },
+];
 
 const PHOTO_SLOTS = [
   { type: "front", label: "جلو" },
@@ -103,18 +109,48 @@ export default function TrackingClient({ showWeightChart = true }) {
     return (
       <div className="flex flex-col gap-4 md:gap-6" dir="rtl">
         <PageHeader
-          title="پایش پیشرفت"
-          description="وزن و عکس‌های بدن را در بازه‌های منظم ثبت کنید."
+          title="پایش هوشمند پیشرفت"
+          description="ثبت منظم تغییرات بدنی جهت کالیبراسیون برنامه و پیشگیری از استپ وزنی"
         />
-        <PanelEmptyState
-          icon={CreditCard}
-          title="برای پایش به برنامه فعال نیاز دارید"
-          description="پلن‌های فعال مربی را ببینید و با تهیه برنامه وارد ارزیابی و پرداخت شوید."
-        >
-          <ProgramOffer
-            title="پلن‌های برنامه"
-            description="یکی را انتخاب کنید؛ بعد از ارزیابی در فانل، به صفحه پرداخت می‌روید."
-          />
+        <PanelEmptyState className="px-4 py-8 sm:px-6">
+          <div className="space-y-5 text-center">
+            <span
+              className="fitino-empty-icon mx-auto flex size-14 items-center justify-center rounded-2xl text-2xl"
+              aria-hidden
+            >
+              📊
+            </span>
+            <div className="space-y-1.5">
+              <p className="font-iranianSansDemiBold text-base text-foreground sm:text-lg">
+                سیستم پایش ۲۴ ساعته نیازمند دوره فعال است
+              </p>
+              <p className="mx-auto max-w-lg text-sm font-iranianSansMedium leading-relaxed text-muted-foreground">
+                با فعال‌سازی یکی از پلن‌های زیر، موتور هوشمند فیتینو فعال شده و روند
+                تغییرات بدنی شما به‌صورت هفتگی آنالیز می‌شود.
+              </p>
+            </div>
+            <div className="space-y-3">
+              <p className="text-xs font-iranianSansDemiBold text-primary/90 sm:text-sm">
+                🌟 امکاناتی که با فعال‌سازی این بخش آزاد می‌شوند
+              </p>
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                {TRACKING_UNLOCK_PREVIEWS.map(({ emoji, label }) => (
+                  <span
+                    key={label}
+                    className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-primary/25 bg-primary/10 px-3 py-1.5 text-[11px] font-iranianSansMedium text-primary"
+                  >
+                    <span className="shrink-0" aria-hidden>
+                      {emoji}
+                    </span>
+                    <span className="truncate">{label}</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="text-start">
+              <ProgramOffer showIntro={false} />
+            </div>
+          </div>
         </PanelEmptyState>
       </div>
     );
@@ -127,8 +163,8 @@ export default function TrackingClient({ showWeightChart = true }) {
   return (
     <div className="flex flex-col gap-4 md:gap-6" dir="rtl">
       <PageHeader
-        title="پایش پیشرفت"
-        description={`هر ${tracking.frequencyDays?.toLocaleString("fa-IR") || "۱۴"} روز یک‌بار وزن و عکس‌های جلو، پشت و بغل را ثبت کنید.`}
+        title="پایش هوشمند پیشرفت"
+        description={`ثبت منظم تغییرات بدنی جهت کالیبراسیون برنامه و پیشگیری از استپ وزنی · هر ${tracking.frequencyDays?.toLocaleString("fa-IR") || "۱۴"} روز یک‌بار وزن و عکس‌های جلو، پشت و بغل را ثبت کنید.`}
         meta={
           tracking.nextDueDate ? (
             <Badge variant="outline" className="fitino-meta-badge px-3.5 py-2">

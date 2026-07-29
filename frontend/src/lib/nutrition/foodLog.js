@@ -48,12 +48,24 @@ export function isToday(date) {
 }
 
 export function formatDateFaLong(date) {
-  return new Intl.DateTimeFormat("fa-IR", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  }).format(date);
+  try {
+    const parts = new Intl.DateTimeFormat("fa-IR", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    }).formatToParts(date);
+    const get = (type) => parts.find((p) => p.type === type)?.value || "";
+    // مثال: چهارشنبه، ۳۱ تیر ۱۴۰۵
+    return `${get("weekday")}، ${get("day")} ${get("month")} ${get("year")}`.trim();
+  } catch {
+    return new Intl.DateTimeFormat("fa-IR", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    }).format(date);
+  }
 }
 
 export function formatDateFaShort(date) {
@@ -64,7 +76,7 @@ export function formatDateFaShort(date) {
 }
 
 /** Map a coach/meal picker item to POST /user/food-logs body. */
-export function mealToFoodLogPayload(meal, logDate) {
+export function mealToFoodLogPayload(meal, logDate, mealType = "") {
   const payload = {
     logDate,
     foodName: meal.title,
@@ -74,11 +86,24 @@ export function mealToFoodLogPayload(meal, logDate) {
     carbs: meal.carbs || 0,
     fat: meal.fat || 0,
   };
+  if (mealType) payload.mealType = mealType;
+  if (meal.mealType) payload.mealType = meal.mealType;
   if (meal.foodId) {
     payload.foodId = meal.foodId;
     payload.multiplier = meal.multiplier || 1;
   }
   return payload;
+}
+
+export const MEAL_TYPE_OPTIONS = [
+  { value: "breakfast", label: "صبحانه" },
+  { value: "lunch", label: "نهار" },
+  { value: "dinner", label: "شام" },
+  { value: "snack", label: "میان‌وعده" },
+];
+
+export function mealTypeLabel(value) {
+  return MEAL_TYPE_OPTIONS.find((o) => o.value === value)?.label || "سایر";
 }
 
 export function extractNutritionTargets(program, dayKey) {

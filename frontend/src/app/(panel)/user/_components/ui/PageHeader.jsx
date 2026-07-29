@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 
 /**
- * Luxury Fitino page title block for student panel surfaces.
+ * Student panel page title — H1 24/32 + muted body, matches style guide.
  */
 export default function PageHeader({
   title,
@@ -18,12 +18,11 @@ export default function PageHeader({
       )}
     >
       <div className="min-w-0 flex-1 text-start">
-        <div className="mb-2 h-1 w-10 rounded-full bg-primary" />
-        <h2 className="font-iranianSansBlack text-xl tracking-tight text-foreground sm:text-[1.35rem]">
+        <h2 className="text-2xl font-iranianSansBlack leading-8 tracking-tight text-foreground">
           {title}
         </h2>
         {description ? (
-          <p className="mt-1.5 max-w-2xl text-sm font-iranianSansMedium leading-relaxed text-muted-foreground">
+          <p className="mt-1.5 max-w-2xl text-sm font-iranianSansMedium leading-[22px] text-muted-foreground">
             {description}
           </p>
         ) : null}

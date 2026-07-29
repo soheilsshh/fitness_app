@@ -130,12 +130,17 @@ func (s *authService) Register(ctx context.Context, name, email, phone, password
 	if otpCode == "" {
 		return nil, ErrInvalidOTP
 	}
+	syntheticEmail := false
 	if email == "" {
 		email = phone + "@phone.local"
+		syntheticEmail = true
 	}
 
 	// uniqueness checks before consuming OTP
 	if _, err := s.userRepo.FindByEmail(ctx, email); err == nil {
+		if syntheticEmail {
+			return nil, ErrPhoneAlreadyExists
+		}
 		return nil, ErrEmailAlreadyExists
 	} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
@@ -181,11 +186,16 @@ func (s *authService) RegisterCoach(ctx context.Context, name, email, phone, pas
 	if name == "" || phone == "" || password == "" {
 		return nil, errors.New("name, phone and password are required")
 	}
+	syntheticEmail := false
 	if email == "" {
 		email = phone + "@phone.local"
+		syntheticEmail = true
 	}
 
 	if _, err := s.userRepo.FindByEmail(ctx, email); err == nil {
+		if syntheticEmail {
+			return nil, ErrPhoneAlreadyExists
+		}
 		return nil, ErrEmailAlreadyExists
 	} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err

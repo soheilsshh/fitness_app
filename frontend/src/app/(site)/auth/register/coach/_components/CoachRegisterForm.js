@@ -20,6 +20,7 @@ import {
   toastError,
   toastSuccess,
 } from "../../../_components/helpers";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -88,33 +89,42 @@ export default function CoachRegisterForm() {
 
   return (
     <Card className="rounded-2xl border-0 bg-card/90 shadow-lg shadow-black/5 ring-1 ring-border/60 backdrop-blur-sm">
-      <CardHeader className="space-y-1.5">
-        <CardTitle className="font-iranianSansBlack text-xl sm:text-2xl">
-          ثبت‌نام مربی
-        </CardTitle>
-        <CardDescription className="text-pretty text-sm leading-relaxed">
-          حساب مربی بسازید و پروفایل عمومی خود را تکمیل کنید.
-        </CardDescription>
+      <CardHeader className="space-y-3">
+        <Badge
+          variant="secondary"
+          className="h-auto max-w-full whitespace-normal rounded-full px-3 py-1 text-xs font-iranianSansMedium leading-relaxed"
+        >
+          ✨ ویژه مربیان و متخصصین ورزشی
+        </Badge>
+        <div className="space-y-1.5">
+          <CardTitle className="font-iranianSansBlack text-xl sm:text-2xl">
+            ثبت‌نام مربیان فیتینو
+          </CardTitle>
+          <CardDescription className="text-pretty text-sm leading-relaxed">
+            ایجاد پنل مدیریت هوشمند شاگردان و ساخت لندینگ اختصاصی
+          </CardDescription>
+        </div>
       </CardHeader>
 
       <CardContent>
         <form onSubmit={onSubmit}>
           <FieldGroup className="gap-5">
             <Field>
-              <FieldLabel htmlFor={`${formId}-name`}>نام کامل</FieldLabel>
+              <FieldLabel htmlFor={`${formId}-name`}>نام و نام خانوادگی</FieldLabel>
               <div className="relative">
                 <User className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   id={`${formId}-name`}
                   value={form.name}
                   onChange={setField("name")}
+                  placeholder="مهدی حسینی"
                   className={inputClass}
                   autoComplete="name"
                   disabled={loading}
                 />
               </div>
               <FieldDescription>
-                نام نمایشی و آدرس لندینگ پس از بررسی توسط ادمین تنظیم می‌شود.
+                💡 بر اساس این نام، لندینگ اختصاصی شما جهت ارائه برنامه‌ها ساخته می‌شود.
               </FieldDescription>
             </Field>
 
@@ -131,7 +141,7 @@ export default function CoachRegisterForm() {
                       phone: normalizeIranPhone(e.target.value),
                     }))
                   }
-                  placeholder="09xxxxxxxxx"
+                  placeholder="09123456789"
                   className={cn(inputClass, "tracking-wide")}
                   inputMode="numeric"
                   autoComplete="tel"
@@ -139,6 +149,9 @@ export default function CoachRegisterForm() {
                   disabled={loading}
                 />
               </div>
+              <FieldDescription>
+                کد تایید فعال‌سازی به این شماره پیامک خواهد شد.
+              </FieldDescription>
             </Field>
 
             <Field>
@@ -166,30 +179,39 @@ export default function CoachRegisterForm() {
                   {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                 </Button>
               </div>
-              <FieldDescription>حداقل ۶ کاراکتر</FieldDescription>
+              <FieldDescription>حداقل ۶ کاراکتر (ترکیب حرف و عدد)</FieldDescription>
             </Field>
 
-            <Button
-              type="submit"
-              size="lg"
-              className="h-12 w-full cursor-pointer gap-2 rounded-xl text-base font-iranianSansDemiBold transition-transform duration-200 active:scale-[0.98] motion-reduce:active:scale-100"
-              disabled={loading}
-            >
-              {loading ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <ArrowLeft className="size-4" />
-              )}
-              {loading ? "در حال ثبت‌نام..." : "ثبت‌نام به‌عنوان مربی"}
-            </Button>
+            <div className="space-y-2.5">
+              <Button
+                type="submit"
+                size="lg"
+                className="h-12 w-full cursor-pointer gap-2 rounded-xl text-base font-iranianSansDemiBold transition-transform duration-200 active:scale-[0.98] motion-reduce:active:scale-100"
+                disabled={loading}
+              >
+                {loading ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <ArrowLeft className="size-4" />
+                )}
+                {loading ? "در حال ثبت‌نام..." : "ایجاد حساب مربی‌گری و ورود 🚀"}
+              </Button>
+              <p className="text-center text-xs leading-relaxed text-muted-foreground">
+                با کلیک روی ثبت‌نام،{" "}
+                <span className="font-iranianSansMedium text-foreground underline underline-offset-2">
+                  قوانین و شرایط مربی‌گری فیتینو
+                </span>{" "}
+                را می‌پذیرید.
+              </p>
+            </div>
           </FieldGroup>
         </form>
       </CardContent>
 
       <CardFooter className="flex-col gap-3 border-t border-border/50 pt-4">
-        <p className="text-center text-sm text-muted-foreground">دانشجو هستید؟</p>
+        <p className="text-center text-sm text-muted-foreground">ورزشکار هستید؟</p>
         <Button variant="outline" className="h-11 w-full cursor-pointer" asChild>
-          <Link href="/auth">ورود / ثبت‌نام دانشجو</Link>
+          <Link href="/auth">ورود / ثبت‌نام ورزشکاران 🏋️‍♂️</Link>
         </Button>
       </CardFooter>
     </Card>

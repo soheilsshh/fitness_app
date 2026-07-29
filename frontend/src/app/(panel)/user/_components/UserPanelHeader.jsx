@@ -13,6 +13,14 @@ import { apiAssetUrl } from "@/lib/api/assets";
 import { getAuthSession } from "@/lib/auth/session";
 import { cn } from "@/lib/utils";
 
+const headerIconBtn = cn(
+  "inline-flex size-10 shrink-0 items-center justify-center rounded-full",
+  "border border-border bg-card text-[color:var(--up-icon,#64748b)] shadow-none",
+  "transition-[transform,background-color,border-color] duration-200",
+  "hover:bg-muted/80 hover:text-foreground active:scale-[0.97]",
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+);
+
 function ProfileProgressAvatar({
   percent = 0,
   photoUrl,
@@ -54,7 +62,7 @@ function ProfileProgressAvatar({
           fill="none"
           stroke="currentColor"
           strokeWidth={stroke}
-          className="text-muted/70"
+          className="text-muted"
         />
         {!complete ? (
           <circle
@@ -77,7 +85,7 @@ function ProfileProgressAvatar({
             fill="none"
             stroke="currentColor"
             strokeWidth={stroke}
-            className="text-emerald-500"
+            className="text-[color:var(--up-success,#22c55e)]"
           />
         )}
       </svg>
@@ -102,7 +110,7 @@ function ProfileProgressAvatar({
 
       {complete ? (
         <span
-          className="absolute -bottom-0.5 -start-0.5 inline-flex size-4 items-center justify-center rounded-full bg-emerald-500 text-white shadow-sm ring-2 ring-background"
+          className="absolute -bottom-0.5 -start-0.5 inline-flex size-4 items-center justify-center rounded-full bg-[color:var(--up-success,#22c55e)] text-white shadow-sm ring-2 ring-background"
           aria-hidden
         >
           <Check className="size-2.5 stroke-[3]" />
@@ -181,7 +189,7 @@ export default function UserPanelHeader() {
       className="fitino-subnav-shell sticky top-0 z-40 flex h-[var(--header-height)] shrink-0 items-center"
     >
       <div className="flex w-full items-center gap-2.5 px-3 sm:gap-3 sm:px-4 lg:px-6">
-        {/* Right (RTL start): avatar + welcome — no section labels */}
+        {/* Right (RTL start): avatar + welcome */}
         <div className="flex min-w-0 flex-1 items-center gap-2.5">
           <SidebarTrigger className="-ms-0.5 hidden md:inline-flex" />
           <Separator
@@ -203,35 +211,30 @@ export default function UserPanelHeader() {
           </div>
         </div>
 
-        {/* Left: learning + FAQ + theme */}
+        {/* Left: academy + FAQ + theme */}
         <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
           <Link
             href="/user/academy"
-            className={cn(
-              "fitino-meta-badge inline-flex size-10 shrink-0 items-center justify-center rounded-full !p-0",
-              "!h-10 !min-h-10 !w-10",
-              "transition-[transform,box-shadow] duration-200 hover:brightness-[1.03] active:scale-[0.97]",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#26fce3]/65"
-            )}
+            className={headerIconBtn}
             aria-label="آموزش"
             title="آموزش"
           >
-            <GraduationCap className="size-4 shrink-0 opacity-90" />
+            <GraduationCap className="size-4 shrink-0" />
           </Link>
           <Link
             href="/user/faq"
-            className={cn(
-              "fitino-meta-badge inline-flex size-10 shrink-0 items-center justify-center rounded-full !p-0",
-              "!h-10 !min-h-10 !w-10",
-              "transition-[transform,box-shadow] duration-200 hover:brightness-[1.03] active:scale-[0.97]",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#26fce3]/65"
-            )}
+            className={headerIconBtn}
             aria-label="سوالات متداول"
             title="سوالات متداول"
           >
-            <HelpCircle className="size-4 shrink-0 opacity-90" />
+            <HelpCircle className="size-4 shrink-0" />
           </Link>
-          <ThemeToggle buttonClassName="size-10 h-10 w-10 rounded-full" />
+          <ThemeToggle
+            buttonClassName={cn(
+              headerIconBtn,
+              "h-10 w-10 border-border bg-card shadow-none"
+            )}
+          />
         </div>
       </div>
     </header>

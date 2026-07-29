@@ -270,7 +270,10 @@ function AchievementFormFields({ form, onChange, uploadingImage, onImageUpload, 
   );
 }
 
-export default function CoachAchievementsEditor({ readOnly = false }) {
+export default function CoachAchievementsEditor({
+  readOnly = false,
+  onGrade3Change,
+}) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -289,6 +292,10 @@ export default function CoachAchievementsEditor({ readOnly = false }) {
     () => items.some((item) => isGrade3Certificate(item)),
     [items],
   );
+
+  useEffect(() => {
+    onGrade3Change?.(hasGrade3);
+  }, [hasGrade3, onGrade3Change]);
 
   const openGrade3Dialog = () => {
     setUploadingImage(false);
@@ -442,21 +449,21 @@ export default function CoachAchievementsEditor({ readOnly = false }) {
     <Card>
       <CardHeader className="gap-3 border-b sm:flex-row sm:items-center sm:justify-between">
         <div className="text-start">
-          <CardTitle className="text-base">افتخارات و مدارک</CardTitle>
+          <CardTitle className="text-base">مدارک، گواهی‌نامه‌ها و افتخارات</CardTitle>
           <CardDescription className="mt-1">
-            گواهینامه‌ها، مدال‌ها و مدارک خود را برای نمایش در لندینگ عمومی اضافه کنید.
+            مدارک آپلودشده در صفحه عمومی شما جهت جلب اعتماد شاگردان نمایش داده می‌شوند.
           </CardDescription>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {!hasGrade3 && !readOnly ? (
-            <Button type="button" size="sm" variant="secondary" onClick={openGrade3Dialog}>
+            <Button type="button" size="sm" variant="outline" onClick={openGrade3Dialog}>
               <GraduationCap data-icon="inline-start" />
-              افزودن مدرک درجه سه
+              افزودن مدرک مربی‌گری الزامی
             </Button>
           ) : null}
           <Button type="button" size="sm" onClick={openCreateDialog} disabled={readOnly}>
             <Plus data-icon="inline-start" />
-            افزودن مورد جدید
+            افزودن حکم/افتخار جدید
           </Button>
         </div>
       </CardHeader>
@@ -464,10 +471,9 @@ export default function CoachAchievementsEditor({ readOnly = false }) {
       <CardContent className="space-y-4 pt-6">
         {!hasGrade3 ? (
           <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-100">
-            <p className="font-medium">مدرک مربی‌گری درجه سه الزامی است</p>
+            <p className="font-medium">مدرک مربی‌گری درجه ۳ (الزامی)</p>
             <p className="mt-1 text-amber-800/90 dark:text-amber-100/80">
-              برای ارسال درخواست تأیید، باید این مدرک را با تصویر اسکن‌شده ثبت کنید.
-              بدون آن درخواست بررسی ارسال نمی‌شود.
+              ارائه تصویر واضح یا اسکن مدرک مربی‌گری درجه ۳ برای تایید نهایی حساب الزامی است.
             </p>
           </div>
         ) : (
@@ -483,19 +489,26 @@ export default function CoachAchievementsEditor({ readOnly = false }) {
             ))}
           </div>
         ) : sortedItems.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-xl border border-dashed bg-muted/20 px-6 py-10 text-center">
-            <div className="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <Medal className="size-6" />
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/70 bg-muted/20 px-6 py-12 text-center">
+            <div className="flex size-14 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <Medal className="size-7" />
             </div>
-            <p className="mt-4 text-sm font-medium">هنوز موردی ثبت نشده است</p>
-            <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-              گواهینامه‌ها، افتخارات، مدال‌ها و مدارک خود را اضافه کنید تا در صفحه
-              عمومی شما نمایش داده شوند.
+            <p className="mt-4 text-base font-medium">هنوز مدرک یا افتخاری ثبت نکرده‌اید!</p>
+            <p className="mt-1 max-w-md text-sm text-muted-foreground">
+              با افزودن مدارک رسمی، اعتبار لندینگ شما برای جذب شاگرد ۲ برابر می‌شود.
             </p>
-            <Button type="button" size="sm" className="mt-4" onClick={openCreateDialog} disabled={readOnly}>
-              <Plus data-icon="inline-start" />
-              اولین مورد را اضافه کنید
-            </Button>
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+              {!readOnly ? (
+                <Button type="button" size="sm" variant="outline" onClick={openGrade3Dialog}>
+                  <GraduationCap data-icon="inline-start" />
+                  افزودن مدرک مربی‌گری الزامی
+                </Button>
+              ) : null}
+              <Button type="button" size="sm" onClick={openCreateDialog} disabled={readOnly}>
+                <Plus data-icon="inline-start" />
+                اولین مورد را اضافه کنید
+              </Button>
+            </div>
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -598,7 +611,7 @@ export default function CoachAchievementsEditor({ readOnly = false }) {
           if (!open) resetDialog();
         }}
       >
-        <DialogContent className="sm:max-w-lg" dir="rtl">
+        <DialogContent className="coach-profile-theme sm:max-w-lg" dir="rtl">
           <DialogHeader>
             <DialogTitle>
               {editingId ? "ویرایش افتخار / مدرک" : "افزودن افتخار / مدرک"}

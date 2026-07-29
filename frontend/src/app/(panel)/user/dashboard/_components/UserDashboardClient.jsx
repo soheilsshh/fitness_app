@@ -15,7 +15,6 @@ import {
   CreditCard,
   Dumbbell,
   Flame,
-  LineChart,
   Plus,
   Scale,
   Target,
@@ -36,7 +35,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { cn } from "@/lib/utils";
-import { FUNNEL_PATH, GET_PROGRAM_LABEL } from "@/lib/funnel/offer";
+import { FUNNEL_PATH } from "@/lib/funnel/offer";
 import { getBmiCategory } from "@/lib/tools/bmiCalculator";
 
 const BMI_BADGE_CLASS = {
@@ -61,12 +60,15 @@ function formatFa(value) {
 
 function jalaliLong(date = new Date()) {
   try {
-    return new Intl.DateTimeFormat("fa-IR", {
+    const parts = new Intl.DateTimeFormat("fa-IR", {
       weekday: "long",
       day: "numeric",
       month: "long",
       year: "numeric",
-    }).format(date);
+    }).formatToParts(date);
+    const get = (type) => parts.find((p) => p.type === type)?.value || "";
+    // ترتیب: نام روز هفته → روز → ماه → سال
+    return `${get("weekday")} ${get("day")} ${get("month")} ${get("year")}`.trim();
   } catch {
     return "";
   }
@@ -179,10 +181,14 @@ export default function UserDashboardClient() {
         title={`سلام ${firstName}`}
         description={`امروز ${jalaliLong()}`}
         meta={
-          <Button variant="outline" size="sm" asChild>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-10 rounded-2xl border-border px-4"
+            asChild
+          >
             <Link href="/user/tracking">
-              <LineChart className="size-4" />
-              پایش کامل
+              نمایش کامل
               <ArrowLeft className="size-4" />
             </Link>
           </Button>
@@ -200,7 +206,7 @@ export default function UserDashboardClient() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           icon={Dumbbell}
-          accent="text-primary"
+          tone="green"
           label="جلسات این هفته"
           loading={loading}
           value={formatFa(summary?.sessionsThisWeek ?? 0)}
@@ -212,7 +218,7 @@ export default function UserDashboardClient() {
         />
         <StatCard
           icon={Target}
-          accent="text-emerald-500"
+          tone="teal"
           label="پایبندی به برنامه"
           loading={loading}
           value={`${formatFa(summary?.adherence ?? 0)}٪`}
@@ -224,15 +230,19 @@ export default function UserDashboardClient() {
         />
         <StatCard
           icon={Timer}
-          accent="text-sky-500"
+          tone="blue"
           label="میانگین مدت جلسه"
           loading={loading}
           value={`${formatFa(summary?.avgDurationMin ?? 0)} دقیقه`}
-          sub="میانگین کل تمرین‌ها"
+          sub={
+            summary?.totalSessions
+              ? `مابین ${formatFa(summary.totalSessions)} تمرین‌ها`
+              : "میانگین کل تمرین‌ها"
+          }
         />
         <StatCard
           icon={Flame}
-          accent="text-orange-500"
+          tone="orange"
           label="کل جلسات تکمیل‌شده"
           loading={loading}
           value={formatFa(summary?.totalSessions ?? 0)}
@@ -266,22 +276,256 @@ export default function UserDashboardClient() {
         data={tracking?.weightHistory || []}
         loading={loading}
         compact
-        description="روند تغییرات وزن در پایش‌ها"
+        title="نمودار روند تغییرات وزن"
+        description="پایش هوشمند وزن و تحلیل پیشرفت ۳۰ روزه"
+        actionHref="/user/tracking"
+        actionLabel="ثبت وزن امروز"
+        emptyText="هنوز داده‌ای برای رسم نمودار وجود ندارد. با ثبت وزن امروز، اولین نقطه پیشرفت خود را ثبت کنید!"
+        emptyActionHref="/user/tracking"
+        emptyActionLabel="ثبت وزن جدید"
       />
     </div>
   );
 }
 
-/* ---------------- building blocks ---------------- */
+/* ---------------- KPI stat cards (design mock) ---------------- */
+
+const STAT_TONES = {
+  green: {
+    accent: "#22c55e",
+    icon: "text-emerald-500",
+    value: "text-foreground",
+    chip: "bg-emerald-500/10 ring-1 ring-emerald-500/25 shadow-[0_0_20px_-4px_rgba(34,197,94,0.55)]",
+    wave: "lines",
+  },
+  teal: {
+    accent: "#14b8a6",
+    icon: "text-teal-400",
+    value: "text-teal-400",
+    chip: "bg-teal-500/10 ring-1 ring-teal-500/25 shadow-[0_0_20px_-4px_rgba(20,184,166,0.55)]",
+    wave: "chart",
+  },
+  blue: {
+    accent: "#3b82f6",
+    icon: "text-blue-500",
+    value: "text-blue-500",
+    chip: "bg-blue-500/10 ring-1 ring-blue-500/25 shadow-[0_0_20px_-4px_rgba(59,130,246,0.55)]",
+    wave: "dots",
+  },
+  orange: {
+    accent: "#f97316",
+    icon: "text-orange-500",
+    value: "text-foreground",
+    chip: "bg-orange-500/10 ring-1 ring-orange-500/25 shadow-[0_0_20px_-4px_rgba(249,115,22,0.55)]",
+    wave: "fluid",
+  },
+};
+
+function WaveBg({ accent, variant }) {
+  const uid = `w-${variant}-${accent.replace(/[^a-z0-9]/gi, "")}`;
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none absolute inset-x-0 bottom-0 h-[70%] w-full"
+      style={{
+        maskImage:
+          "linear-gradient(to top, #000 0%, #000 28%, rgba(0,0,0,0.55) 55%, rgba(0,0,0,0.15) 78%, transparent 100%)",
+        WebkitMaskImage:
+          "linear-gradient(to top, #000 0%, #000 28%, rgba(0,0,0,0.55) 55%, rgba(0,0,0,0.15) 78%, transparent 100%)",
+      }}
+    >
+      {variant === "lines" ? <WaveLines accent={accent} uid={uid} /> : null}
+      {variant === "chart" ? <WaveChart accent={accent} uid={uid} /> : null}
+      {variant === "dots" ? <WaveDots accent={accent} uid={uid} /> : null}
+      {variant === "fluid" ? <WaveFluid accent={accent} uid={uid} /> : null}
+    </div>
+  );
+}
+
+/** Thin overlapping stroke waves — sessions card */
+function WaveLines({ accent, uid }) {
+  return (
+    <svg className="absolute inset-0 size-full" viewBox="0 0 360 140" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id={`${uid}-g`} x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor={accent} stopOpacity="0.15" />
+          <stop offset="45%" stopColor={accent} stopOpacity="0.85" />
+          <stop offset="100%" stopColor={accent} stopOpacity="0.2" />
+        </linearGradient>
+      </defs>
+      {[
+        "M-10 95 C40 70 80 115 130 88 C180 62 210 40 260 58 C300 72 330 68 370 50",
+        "M-10 108 C50 85 90 125 145 98 C195 72 230 55 280 70 C320 82 345 78 370 65",
+        "M-10 78 C35 55 75 95 120 72 C170 48 205 28 255 42 C295 54 330 48 370 35",
+        "M-10 118 C55 100 100 130 155 112 C210 94 250 80 300 92 C335 100 350 98 370 90",
+      ].map((d, i) => (
+        <path
+          key={i}
+          d={d}
+          fill="none"
+          stroke={`url(#${uid}-g)`}
+          strokeWidth={i === 0 ? 2.2 : 1.4}
+          strokeLinecap="round"
+          opacity={1 - i * 0.15}
+        />
+      ))}
+    </svg>
+  );
+}
+
+/** Continuous chart-like wave — adherence card */
+function WaveChart({ accent, uid }) {
+  return (
+    <svg className="absolute inset-0 size-full" viewBox="0 0 360 140" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id={`${uid}-fill`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={accent} stopOpacity="0.35" />
+          <stop offset="100%" stopColor={accent} stopOpacity="0" />
+        </linearGradient>
+        <filter id={`${uid}-glow`} x="-20%" y="-40%" width="140%" height="180%">
+          <feGaussianBlur stdDeviation="3.5" result="b" />
+          <feMerge>
+            <feMergeNode in="b" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+      <path
+        d="M-10 100 C50 88 70 55 110 48 C155 40 175 78 220 70 C265 62 290 28 340 35 L370 40 L370 140 L-10 140 Z"
+        fill={`url(#${uid}-fill)`}
+      />
+      <path
+        d="M-10 100 C50 88 70 55 110 48 C155 40 175 78 220 70 C265 62 290 28 340 35"
+        fill="none"
+        stroke={accent}
+        strokeWidth="2.6"
+        strokeLinecap="round"
+        filter={`url(#${uid}-glow)`}
+        opacity="0.95"
+      />
+    </svg>
+  );
+}
+
+/** Dotted / frequency wave — duration card */
+function WaveDots({ accent, uid }) {
+  const dots = [];
+  for (let x = 8; x <= 350; x += 10) {
+    const t = x / 350;
+    const y =
+      78 +
+      Math.sin(t * Math.PI * 2.4) * 22 +
+      Math.sin(t * Math.PI * 5.1) * 8;
+    const r = 1.1 + (Math.sin(t * 12) + 1) * 0.7;
+    dots.push({ x, y, r, o: 0.25 + t * 0.55 });
+  }
+  return (
+    <svg className="absolute inset-0 size-full" viewBox="0 0 360 140" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id={`${uid}-line`} x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor={accent} stopOpacity="0.2" />
+          <stop offset="50%" stopColor={accent} stopOpacity="0.9" />
+          <stop offset="100%" stopColor={accent} stopOpacity="0.25" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M-10 95 C40 70 90 110 140 85 C190 60 230 45 280 62 C320 75 345 70 370 55"
+        fill="none"
+        stroke={`url(#${uid}-line)`}
+        strokeWidth="1.2"
+        strokeDasharray="2 5"
+        opacity="0.7"
+      />
+      {dots.map((d, i) => (
+        <circle
+          key={i}
+          cx={d.x}
+          cy={d.y}
+          r={d.r}
+          fill={accent}
+          opacity={d.o}
+        />
+      ))}
+      {/* second denser band lower */}
+      {dots.map((d, i) =>
+        i % 2 === 0 ? (
+          <circle
+            key={`b-${i}`}
+            cx={d.x + 4}
+            cy={d.y + 16}
+            r={d.r * 0.75}
+            fill={accent}
+            opacity={d.o * 0.55}
+          />
+        ) : null
+      )}
+    </svg>
+  );
+}
+
+/** Thick fluid waves + particles — total sessions card */
+function WaveFluid({ accent, uid }) {
+  return (
+    <svg className="absolute inset-0 size-full" viewBox="0 0 360 140" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id={`${uid}-a`} x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0%" stopColor={accent} stopOpacity="0.55" />
+          <stop offset="70%" stopColor={accent} stopOpacity="0.22" />
+          <stop offset="100%" stopColor={accent} stopOpacity="0" />
+        </linearGradient>
+        <linearGradient id={`${uid}-b`} x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0%" stopColor={accent} stopOpacity="0.4" />
+          <stop offset="100%" stopColor={accent} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M-10 85 C45 55 85 105 140 78 C195 52 230 30 285 48 C320 60 345 55 370 42 L370 140 L-10 140 Z"
+        fill={`url(#${uid}-a)`}
+      />
+      <path
+        d="M-10 105 C55 82 100 120 160 95 C215 72 255 58 305 72 C335 80 350 78 370 70 L370 140 L-10 140 Z"
+        fill={`url(#${uid}-b)`}
+      />
+      <path
+        d="M-10 92 C40 68 80 100 125 82 C175 62 210 48 260 60 C300 70 330 66 370 52"
+        fill="none"
+        stroke={accent}
+        strokeWidth="2"
+        strokeLinecap="round"
+        opacity="0.75"
+      />
+      {[
+        [48, 98],
+        [92, 72],
+        [150, 88],
+        [198, 58],
+        [248, 78],
+        [300, 64],
+        [330, 90],
+        [70, 110],
+        [220, 100],
+      ].map(([cx, cy], i) => (
+        <circle
+          key={i}
+          cx={cx}
+          cy={cy}
+          r={i % 3 === 0 ? 2.2 : 1.3}
+          fill={accent}
+          opacity={0.35 + (i % 4) * 0.12}
+        />
+      ))}
+    </svg>
+  );
+}
 
 function SectionPanel({ icon: Icon, iconClass, title, action, children }) {
   return (
     <Card>
-      <CardContent className="flex flex-col gap-4 p-5">
+      <CardContent className="flex flex-col gap-4 p-6">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="flex items-center gap-2 font-iranianSansDemiBold text-base text-foreground sm:text-lg">
-            <span className="flex size-9 items-center justify-center rounded-xl bg-[linear-gradient(160deg,rgba(108,234,222,0.35),rgba(24,114,114,0.12))] shadow-[0_1px_0_rgba(255,255,255,0.45)_inset]">
-              <Icon className={cn("size-4", iconClass || "text-[#187272] dark:text-[#6ceade]")} />
+          <h2 className="flex items-center gap-2 text-base font-iranianSansDemiBold leading-6 text-foreground sm:text-lg">
+            <span className="flex size-9 items-center justify-center rounded-xl bg-primary/12">
+              <Icon className={cn("size-4", iconClass || "text-primary")} />
             </span>
             {title}
           </h2>
@@ -293,30 +537,44 @@ function SectionPanel({ icon: Icon, iconClass, title, action, children }) {
   );
 }
 
-function StatCard({ icon: Icon, accent, label, value, sub, loading }) {
+function StatCard({ icon: Icon, tone = "teal", label, value, sub, loading }) {
+  const t = STAT_TONES[tone] || STAT_TONES.teal;
   return (
-    <Card>
-      <CardContent className="flex flex-col gap-2 p-5">
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-sm font-iranianSansMedium text-muted-foreground">
-            {label}
-          </span>
-          <span className="flex size-8 items-center justify-center rounded-xl bg-[linear-gradient(160deg,rgba(108,234,222,0.3),rgba(24,114,114,0.1))]">
-            <Icon className={cn("size-4", accent)} />
+    <Card className="relative overflow-hidden">
+      <WaveBg accent={t.accent} variant={t.wave} />
+      <CardContent className="relative z-[1] flex flex-col gap-2.5 p-6">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1 text-start">
+            <p className="text-sm font-iranianSansMedium leading-[22px] text-muted-foreground">
+              {label}
+            </p>
+            {loading ? (
+              <Skeleton className="mt-2 h-8 w-28" />
+            ) : (
+              <p
+                className={cn(
+                  "mt-1.5 text-2xl font-iranianSansBlack leading-8 tabular-nums tracking-tight",
+                  t.value
+                )}
+              >
+                {value}
+              </p>
+            )}
+            {sub ? (
+              <p className="mt-1 text-xs font-iranianSansMedium leading-[18px] text-muted-foreground">
+                {sub}
+              </p>
+            ) : null}
+          </div>
+          <span
+            className={cn(
+              "flex size-11 shrink-0 items-center justify-center rounded-full",
+              t.chip
+            )}
+          >
+            <Icon className={cn("size-5", t.icon)} strokeWidth={2.15} />
           </span>
         </div>
-        {loading ? (
-          <Skeleton className="h-7 w-20" />
-        ) : (
-          <span className="font-iranianSansBlack text-2xl tabular-nums tracking-tight text-foreground">
-            {value}
-          </span>
-        )}
-        {sub ? (
-          <span className="text-xs font-iranianSansMedium text-muted-foreground">
-            {sub}
-          </span>
-        ) : null}
       </CardContent>
     </Card>
   );
@@ -326,7 +584,7 @@ function EmptyState({ icon: Icon, text, actionHref, actionLabel }) {
   return (
     <div className="flex flex-col items-center justify-center gap-2.5 py-8 text-center">
       <span className="fitino-empty-icon flex size-12 items-center justify-center rounded-2xl">
-        <Icon className="size-5 text-[#187272] opacity-80 dark:text-[#6ceade]" />
+        <Icon className="size-5 text-primary opacity-80" />
       </span>
       <p className="text-sm font-iranianSansMedium text-muted-foreground">{text}</p>
       {actionHref && actionLabel ? (
@@ -683,8 +941,22 @@ function PersonalRecordsCard({ loading, items }) {
 }
 
 function RecentSessionsCard({ loading, items }) {
+  const action = (
+    <Button variant="ghost" size="sm" asChild>
+      <Link href="/user/workout-history">
+        ثبت تمرین
+        <Plus className="size-3.5" data-icon="inline-end" />
+      </Link>
+    </Button>
+  );
+
   return (
-    <SectionPanel icon={Activity} iconClass="text-sky-500" title="جلسات اخیر">
+    <SectionPanel
+      icon={Activity}
+      iconClass="text-sky-500"
+      title="تاریخچه و جلسات اخیر"
+      action={action}
+    >
       {loading ? (
         <div className="space-y-2">
           {Array.from({ length: 3 }).map((_, i) => (
@@ -692,7 +964,12 @@ function RecentSessionsCard({ loading, items }) {
           ))}
         </div>
       ) : items.length === 0 ? (
-        <EmptyState icon={Activity} text="هنوز جلسه‌ای ثبت نکرده‌اید." />
+        <EmptyState
+          icon={Dumbbell}
+          text="هیچ جلسه‌ای ثبت نشده است. اولین تمرین خود را ثبت کنید تا روند پیشرفت‌تان محاسبه شود."
+          actionHref="/user/workout-history"
+          actionLabel="شروع و ثبت اولین تمرین"
+        />
       ) : (
         <ul className="flex flex-col gap-3">
           {items.map((s) => (
@@ -752,8 +1029,8 @@ function ProfileBoostCard({ profile, loading }) {
   ];
 
   return (
-    <Card className="overflow-hidden border-[#187272]/20 dark:border-[#26fce3]/20">
-      <CardContent className="space-y-4 pt-5">
+    <Card className="overflow-hidden border-primary/20">
+      <CardContent className="space-y-4 p-6 pt-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="text-start">
             <p className="text-sm font-iranianSansDemiBold text-foreground">
@@ -774,7 +1051,7 @@ function ProfileBoostCard({ profile, loading }) {
 
         <div className="h-2.5 w-full overflow-hidden rounded-full bg-muted/80">
           <div
-            className="h-full rounded-full bg-[linear-gradient(90deg,#26fce3,#2a9c96,#187272)] transition-all"
+            className="h-full rounded-full bg-[linear-gradient(90deg,#14b8a6,#0d9488)] transition-all"
             style={{ width: `${Math.min(100, Math.max(0, progress.percent))}%` }}
           />
         </div>
@@ -824,15 +1101,19 @@ function SubscriptionCard({ loading, sub }) {
   }
 
   return (
-    <SectionPanel icon={CreditCard} iconClass="text-emerald-500" title="اشتراک من">
+    <SectionPanel
+      icon={CreditCard}
+      iconClass="text-emerald-500"
+      title="وضعیت اشتراک و دوره"
+    >
       {loading ? (
         <Skeleton className="h-28 w-full" />
       ) : !sub ? (
         <EmptyState
           icon={CreditCard}
-          text="اشتراک فعالی ندارید."
+          text="در حال حاضر اشتراک فعالی ندارید. برای دسترسی به برنامه و پایش هوشمند، دوره خود را فعال کنید."
           actionHref={FUNNEL_PATH}
-          actionLabel={GET_PROGRAM_LABEL}
+          actionLabel="فعال‌سازی و ارتقای اشتراک"
         />
       ) : (
         <div className="flex flex-col gap-4">

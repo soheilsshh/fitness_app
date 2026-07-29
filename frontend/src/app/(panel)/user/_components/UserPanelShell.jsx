@@ -16,17 +16,18 @@ import UserSubNav from "./UserSubNav";
  * Student panel chrome:
  * - Mobile: bottom navigation only (no hamburger / no sheet sidebar)
  * - Desktop: grouped sidebar with five categories + subsections
+ * - Scoped `.user-panel-theme` light/dark tokens (style guide)
  */
 export default function UserPanelShell({ children, gate: Gate }) {
   const user = usePanelUser({ fetchProfile: true });
   const pathname = usePathname();
   const isOnboarding = pathname?.startsWith("/user/onboarding");
   const isAiChat = pathname?.startsWith("/user/ai");
-  const isProfile = pathname?.startsWith("/user/profile");
   const pageContent = Gate ? <Gate>{children}</Gate> : children;
 
   return (
     <SidebarProvider
+      className="user-panel-theme"
       style={{
         "--sidebar-width": "calc(var(--spacing) * 72)",
         "--header-height": "calc(var(--spacing) * 14)",
@@ -40,12 +41,7 @@ export default function UserPanelShell({ children, gate: Gate }) {
         profileHref="/user/profile"
       />
 
-      <SidebarInset
-        className={cn(
-          "fitino-panel min-w-0 bg-background",
-          isProfile && "profile-theme"
-        )}
-      >
+      <SidebarInset className="fitino-panel min-w-0 bg-background">
         <UserPanelHeader />
         <UserSubNav />
 

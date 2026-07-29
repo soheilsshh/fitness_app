@@ -74,11 +74,11 @@ export default function WorkoutHistoryClient() {
     <div className="flex flex-col gap-4 md:gap-6" dir="rtl">
       <PageHeader
         title="تاریخچه تمرینات"
-        description="سوابق تمرینات انجام‌شده شما"
+        description="گزارش کامل سوابق و روند اجرای تمرینات شما"
         meta={
           <MetaBadge
             icon={History}
-            label="تعداد:"
+            label="تعداد جلسات:"
             value={total.toLocaleString("fa-IR")}
           />
         }
@@ -95,10 +95,10 @@ export default function WorkoutHistoryClient() {
       ) : items.length === 0 ? (
         <PanelEmptyState
           icon={Dumbbell}
-          title="هنوز تمرینی ثبت نشده"
-          description="پس از اتمام هر جلسه تمرین، از صفحه برنامه‌های من آن را ثبت کنید."
+          title="هنوز هیچ تمرینی ثبت نکرده‌اید!"
+          description="سفر تحول بدنی شما با استارت اولین تمرین آغاز می‌شود. پس از اتمام هر جلسه، گزارش و وزنه‌های جابه‌جا شده را از بخش برنامه‌های من ثبت کنید تا روند پیشرفت‌تان رسم شود."
           actionHref="/user/my-programs"
-          actionLabel="رفتن به برنامه‌های من"
+          actionLabel="مشاهده برنامه‌ها و ثبت اولین تمرین 🏋️"
         />
       ) : (
         <Card>

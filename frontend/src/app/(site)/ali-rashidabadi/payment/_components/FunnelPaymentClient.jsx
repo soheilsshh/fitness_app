@@ -9,9 +9,11 @@ import {
   Check,
   Crown,
   Loader2,
+  Lock,
   Quote,
   ShieldCheck,
   Sparkles,
+  Zap,
 } from "lucide-react";
 import { api } from "@/lib/axios/client";
 import { toastError, toPersianDigits } from "@/app/(site)/auth/_components/helpers";
@@ -489,42 +491,35 @@ export default function FunnelPaymentClient() {
                 هنوز پلنی برای این مربی در سیستم ثبت نشده است.
               </FunnelGlass>
             ) : (
-              <div className="grid grid-cols-2 gap-2.5">
+              <div className="space-y-3">
                 {plans.map((plan) => {
                   const planKey = String(plan.key || plan.id);
                   const active = planKey === String(selectedKey);
                   const isVip =
                     plan.popular ||
                     String(plan.title || "").includes("VIP");
+                  const meta = isVip
+                    ? PAYMENT_COPY.planMeta.vip
+                    : PAYMENT_COPY.planMeta.cip;
                   const Icon = isVip ? Crown : Sparkles;
                   const badge = isVip
                     ? PAYMENT_COPY.vipBadge
                     : PAYMENT_COPY.cipBadge;
-                  const featureLines = isVip
-                    ? [
-                        "برنامه تمرین و تغذیه اختصاصی",
-                        "پشتیبانی از طریق پنل و تیکت",
-                      ]
-                    : [
-                        "همه امکانات پلن VIP",
-                        "پشتیبانی اختصاصی مربی علی رشیدآبادی",
-                      ];
+                  const featureLines = meta.features;
+                  const subtitle = plan.subtitle || meta.subtitle;
                   return (
-                    <button
+                    <div
                       key={planKey}
-                      type="button"
-                      disabled={selecting || paying}
-                      onClick={() => handleSelectPlan(plan)}
                       className={cn(
-                        "relative rounded-2xl border p-3.5 text-start transition duration-200",
+                        "relative overflow-hidden rounded-2xl border p-4 text-start transition duration-200",
                         active
                           ? "border-primary/60 bg-gradient-to-b from-primary/20 to-primary/5 shadow-[0_0_32px_-10px_oklch(0.58_0.11_187_/_0.55)]"
-                          : "border-white/12 bg-white/[0.03] hover:border-white/20"
+                          : "border-white/12 bg-white/[0.03]"
                       )}
                     >
                       <span
                         className={cn(
-                          "mb-1.5 inline-block rounded-md border px-1.5 py-0.5 text-[9px] font-bold",
+                          "mb-2 inline-block rounded-md border px-2 py-0.5 text-[10px] font-bold",
                           isVip
                             ? "border-primary/35 bg-primary/15 text-primary"
                             : "border-amber-400/35 bg-amber-500/10 text-amber-200"
@@ -532,25 +527,53 @@ export default function FunnelPaymentClient() {
                       >
                         {badge}
                       </span>
-                      <div className="flex items-center gap-1.5">
-                        <span className="flex size-7 shrink-0 items-center justify-center rounded-lg border border-primary/30 bg-primary/10">
-                          <Icon className="size-3.5 text-primary" />
+                      <div className="flex items-center gap-2">
+                        <span className="flex size-9 shrink-0 items-center justify-center rounded-xl border border-primary/30 bg-primary/10">
+                          <Icon className="size-4 text-primary" />
                         </span>
-                        <p className="truncate text-sm font-bold text-white">{plan.title}</p>
-                        {active ? <Check className="ms-auto size-4 shrink-0 text-primary" /> : null}
+                        <div className="min-w-0 flex-1">
+                          <p className="text-base font-extrabold text-white">
+                            {plan.title}
+                          </p>
+                          <p className="mt-0.5 text-[11px] leading-5 text-white/50">
+                            {subtitle}
+                          </p>
+                        </div>
+                        {active ? (
+                          <Check className="size-5 shrink-0 text-primary" />
+                        ) : null}
                       </div>
-                      <p className="mt-2.5 text-lg font-extrabold tracking-tight text-white">
+                      <p className="mt-3 text-2xl font-extrabold tracking-tight text-white">
                         {formatToman(plan.amount)}
                       </p>
-                      <ul className="mt-2 space-y-1">
+                      <p className="mt-1 text-[11px] text-primary/85">
+                        ({meta.dailyNote})
+                      </p>
+                      <ul className="mt-3 space-y-1.5">
                         {featureLines.map((f) => (
-                          <li key={f} className="flex items-start gap-1 text-[10px] leading-4 text-white/50">
-                            <Check className="mt-0.5 size-3 shrink-0 text-primary" />
-                            <span className="line-clamp-2">{f}</span>
+                          <li
+                            key={f}
+                            className="flex items-start gap-1.5 text-[11px] leading-5 text-white/65"
+                          >
+                            <Check className="mt-0.5 size-3.5 shrink-0 text-primary" />
+                            <span>{f}</span>
                           </li>
                         ))}
                       </ul>
-                    </button>
+                      <button
+                        type="button"
+                        disabled={selecting || paying}
+                        onClick={() => handleSelectPlan(plan)}
+                        className={cn(
+                          "mt-4 w-full rounded-xl px-3 py-2.5 text-sm font-bold transition",
+                          isVip
+                            ? "bg-primary text-primary-foreground hover:brightness-110"
+                            : "border border-amber-400/40 bg-amber-500/15 text-amber-100 hover:bg-amber-500/25"
+                        )}
+                      >
+                        {meta.cta}
+                      </button>
+                    </div>
                   );
                 })}
               </div>
@@ -601,14 +624,31 @@ export default function FunnelPaymentClient() {
 
             <PaymentConversionBlocks storageKey={token || "checkout"} />
 
-            <p className="flex items-center justify-center gap-1.5 text-center text-[11px] leading-5 text-white/45">
-              <ShieldCheck className="size-3.5 text-primary/80" aria-hidden />
-              {PAYMENT_COPY.securePay}
-            </p>
-
-            <div className="flex flex-col items-center gap-2 pb-2 pt-1">
-              <Enamad className="h-16 w-16" />
-              <p className="text-[10px] text-white/35">نماد اعتماد الکترونیکی</p>
+            <div className="space-y-3 rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-3">
+              <p className="text-center text-[11px] leading-5 text-white/55">
+                {PAYMENT_COPY.securePay}
+              </p>
+              <ul className="flex flex-wrap items-center justify-center gap-2">
+                {(PAYMENT_COPY.trustItems || []).map((item) => {
+                  const label = typeof item === "string" ? item : item.label;
+                  const iconKey = typeof item === "string" ? "shield" : item.icon;
+                  const IconMap = { lock: Lock, zap: Zap, shield: ShieldCheck };
+                  const TrustIcon = IconMap[iconKey] || ShieldCheck;
+                  return (
+                    <li
+                      key={item.id || label}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.06] px-3 py-1.5 text-[10px] text-white/70"
+                    >
+                      <TrustIcon className="size-3 text-primary/90" aria-hidden />
+                      <span>{label}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+              <div className="flex flex-col items-center gap-1.5 pt-1">
+                <Enamad className="h-16 w-16" />
+                <p className="text-[10px] text-white/35">نماد اعتماد الکترونیکی (اینماد)</p>
+              </div>
             </div>
 
             <FunnelStickyBar>

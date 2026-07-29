@@ -1,8 +1,8 @@
 import CoachRegisterForm from "./_components/CoachRegisterForm";
 
 export const metadata = {
-  title: "ثبت‌نام مربی | فیتینو",
-  description: "حساب مربی بسازید و پروفایل عمومی خود را تکمیل کنید",
+  title: "ثبت‌نام مربیان فیتینو",
+  description: "ایجاد پنل مدیریت هوشمند شاگردان و ساخت لندینگ اختصاصی",
 };
 
 export default function CoachRegisterPage() {
