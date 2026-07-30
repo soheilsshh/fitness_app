@@ -1039,10 +1039,10 @@ select:focus-visible,
 @keyframes fitino-ai-fab-spark {
   0%,
   100% {
-    transform: rotate(-6deg) scale(1);
+    transform: scale(1);
   }
   50% {
-    transform: rotate(6deg) scale(1.08);
+    transform: scale(1.06);
   }
 }
 
@@ -1051,7 +1051,7 @@ select:focus-visible,
 }
 
 .fitino-ai-fab-spin {
-  animation: fitino-ai-fab-spin 4.5s linear infinite;
+  animation: fitino-ai-fab-spin 2.2s linear infinite;
 }
 
 .fitino-ai-fab-spark {

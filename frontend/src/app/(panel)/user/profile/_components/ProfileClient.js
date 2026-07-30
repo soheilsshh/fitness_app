@@ -125,6 +125,11 @@ function isMedicalNone(value) {
   return !v || v === MEDICAL_NONE;
 }
 
+function hasMedicalDetail(value) {
+  const v = String(value || "").trim();
+  return Boolean(v) && v !== MEDICAL_NONE;
+}
+
 function mapMeToProfile(data) {
   const photoMap = {};
   for (const p of data.photos || []) {
@@ -545,9 +550,10 @@ export default function ProfileClient() {
       setDraftField(field, MEDICAL_NONE);
       return;
     }
+    // Keep existing detail text; otherwise clear "ندارم" so textarea can accept input.
     setDraft((prev) => ({
       ...prev,
-      [field]: isMedicalNone(prev[field]) ? "" : prev[field],
+      [field]: hasMedicalDetail(prev[field]) ? prev[field] : "",
     }));
   };
 
@@ -1057,8 +1063,16 @@ function SectionSaveBar({ saving, onSave }) {
 }
 
 function MedicalSmartField({ question, value, onModeChange, onChange }) {
-  const hasDetail = !isMedicalNone(value);
-  const mode = hasDetail ? "yes" : "no";
+  // Local open state: empty string after "yes" must still show the textarea
+  // (isMedicalNone treats "" as "no", which previously made the button look broken).
+  const [expanded, setExpanded] = useState(() => hasMedicalDetail(value));
+
+  useEffect(() => {
+    if (hasMedicalDetail(value)) setExpanded(true);
+    if (String(value || "").trim() === MEDICAL_NONE) setExpanded(false);
+  }, [value]);
+
+  const mode = expanded ? "yes" : "no";
 
   return (
     <div className="rounded-2xl border border-border/60 bg-muted/15 p-4 text-start">
@@ -1066,35 +1080,37 @@ function MedicalSmartField({ question, value, onModeChange, onChange }) {
       <div className="mt-3 flex flex-wrap gap-2">
         <PillOption
           selected={mode === "no"}
-          onClick={() => onModeChange("no")}
+          onClick={() => {
+            setExpanded(false);
+            onModeChange("no");
+          }}
           className="min-w-32"
         >
           خیر، ندارم
         </PillOption>
         <PillOption
           selected={mode === "yes"}
-          onClick={() => onModeChange("yes")}
+          onClick={() => {
+            setExpanded(true);
+            onModeChange("yes");
+          }}
           className="min-w-32"
         >
           بله، توضیح دهید...
         </PillOption>
       </div>
-      <div
-        className={cn(
-          "grid transition-all duration-300 ease-out",
-          hasDetail ? "mt-3 grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
-        )}
-      >
-        <div className="overflow-hidden">
+      {expanded ? (
+        <div className="mt-3 animate-in fade-in-0 slide-in-from-top-1 duration-200">
           <Textarea
-            value={hasDetail ? value : ""}
+            value={hasMedicalDetail(value) ? value : ""}
             rows={3}
-            placeholder="توضیح کوتاه بنویسید..."
+            autoFocus
+            placeholder="توضیح کوتاه مشکل یا محدودیت را بنویسید..."
             onChange={(e) => onChange(e.target.value)}
             className="resize-none"
           />
         </div>
-      </div>
+      ) : null}
     </div>
   );
 }
