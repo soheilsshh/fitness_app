@@ -15,8 +15,12 @@
 --   mysql -u fitino -p fitness_db < backend/scripts/seed_peyman_yazdani.sql
 -- =============================================================================
 
+-- Collation: keep it simple + quoted (copy-paste safe).
 SET NAMES utf8mb4;
-SET @pass := '$2a$10$4GOYG1WoU9XJNHIdbwOtQeEmLqWfOtBDJyZbACRr5TSn1dsOHa7km'; -- 12345678
+SET collation_connection = 'utf8mb4_unicode_ci';
+
+-- bcrypt of 12345678 via UNHEX — no `$` chars (safe for shell / paste)
+SET @pass := UNHEX('2432612431302434474f594731576f5539584a4e48496462774f745165456d4c7157664f7442444a795a62414352723554536e3164734f4861376b6d');
 SET @now  := NOW();
 SET @slug := 'daryaft-barname-tamrini-taghzieh';
 SET @avatar := '/images/coaches/peyman-yazdani.jpg';
