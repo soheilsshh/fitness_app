@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"strings"
 
 	"github.com/yourusername/fitness-management/internal/models"
 	"github.com/yourusername/fitness-management/internal/repository"
@@ -69,9 +70,15 @@ func nutritionItemToMealDTO(it models.NutritionItem) MeMealDTO {
 		detail += fmt.Sprintf(" — %d کالری", it.Calories)
 	}
 
+	slot := strings.TrimSpace(it.MealSlot)
+	if slot == "" {
+		slot = mealSlotFromLegacyNumber(it.MealNumber)
+	}
+
 	meal := MeMealDTO{
 		Title:      it.Food,
 		Detail:     detail,
+		MealSlot:   slot,
 		Multiplier: multiplier,
 		Calories:   float64(it.Calories),
 		Protein:    it.Protein,
@@ -82,6 +89,47 @@ func nutritionItemToMealDTO(it models.NutritionItem) MeMealDTO {
 		meal.FoodID = *it.FoodID
 	}
 	return meal
+}
+
+func mealSlotFromLegacyNumber(n int) string {
+	switch n {
+	case 1:
+		return MealSlotBreakfast
+	case 2:
+		return MealSlotLunch
+	case 3:
+		return MealSlotDinner
+	case 4:
+		return MealSlotSnack1
+	case 5:
+		return MealSlotSnack2
+	case 6:
+		return MealSlotSnack3
+	default:
+		if n > 6 {
+			return MealSlotSnack3
+		}
+		return ""
+	}
+}
+
+func mealSlotToNumber(slot string) int {
+	switch slot {
+	case MealSlotBreakfast:
+		return 1
+	case MealSlotLunch:
+		return 2
+	case MealSlotDinner:
+		return 3
+	case MealSlotSnack1:
+		return 4
+	case MealSlotSnack2:
+		return 5
+	case MealSlotSnack3:
+		return 6
+	default:
+		return 0
+	}
 }
 
 func enrichNutritionPlan(ctx context.Context, foodRepo repository.FoodRepository, planByDay map[string]MeDayPlanDTO) map[string]MeDayPlanDTO {

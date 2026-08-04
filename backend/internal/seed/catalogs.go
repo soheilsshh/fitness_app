@@ -64,7 +64,10 @@ func seedExercisesIfNeeded(ctx context.Context, db *gorm.DB, opts CatalogSeedOpt
 			return err
 		}
 		if count > 0 {
-			log.Printf("[catalog-seed] exercises: skip (%d rows already present; set seed.catalogs_force=true to re-import)", count)
+			log.Printf("[catalog-seed] exercises: skip import (%d rows already present; set seed.catalogs_force=true to re-import)", count)
+			if err := FillMissingExerciseMedia(ctx, db); err != nil {
+				log.Printf("[catalog-seed] exercise media fill error: %v", err)
+			}
 			return nil
 		}
 	}
@@ -80,7 +83,10 @@ func seedExercisesIfNeeded(ctx context.Context, db *gorm.DB, opts CatalogSeedOpt
 		}
 		return err
 	}
-	return ImportExercisesJSON(ctx, db, path)
+	if err := ImportExercisesJSON(ctx, db, path); err != nil {
+		return err
+	}
+	return FillMissingExerciseMedia(ctx, db)
 }
 
 func seedFoodsIfNeeded(ctx context.Context, db *gorm.DB, opts CatalogSeedOptions) error {

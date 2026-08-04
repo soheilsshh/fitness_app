@@ -25,6 +25,10 @@ import {
   sumDayMacros,
   targetProgressPercent,
 } from "@/lib/nutrition/display";
+import {
+  groupMealsBySlot,
+  mealSlotLabel,
+} from "@/lib/nutrition/mealSlots";
 
 const MEAL_ICON_RULES = [
   { test: /ماهی|میگو|سالمون|تون|ماهیچه/i, Icon: Fish },
@@ -245,6 +249,7 @@ export default function NutritionDayView({ nutrition, dayKey }) {
   const meals = nutrition.meals || [];
   const totals = sumDayMacros(meals);
   const hasAnyMacroMeals = meals.some(mealHasMacros);
+  const { groups, other } = groupMealsBySlot(meals);
 
   return (
     <div className="space-y-4">
@@ -253,20 +258,46 @@ export default function NutritionDayView({ nutrition, dayKey }) {
       ) : null}
 
       {meals.length > 0 ? (
-        <div className="rounded-lg border px-1 sm:px-3">
-          <p className="px-3 pt-3 text-xs font-medium text-muted-foreground sm:px-0">
-            آیتم‌های برنامه ({meals.length.toLocaleString("fa-IR")})
-          </p>
-          <Accordion type="multiple" className="w-full">
-            {meals.map((meal, index) => (
-              <MealAccordionItem
-                key={`${dayKey}-${meal.foodId || meal.title}-${index}`}
-                meal={meal}
-                index={index}
-                dayKey={dayKey}
-              />
-            ))}
-          </Accordion>
+        <div className="space-y-4">
+          {groups.map((group) =>
+            group.meals.length === 0 ? null : (
+              <div key={group.value} className="rounded-lg border px-1 sm:px-3">
+                <p className="px-3 pt-3 text-sm font-semibold sm:px-0">
+                  {group.label}
+                  <span className="ms-2 text-xs font-normal text-muted-foreground">
+                    ({group.meals.length.toLocaleString("fa-IR")} آیتم)
+                  </span>
+                </p>
+                <Accordion type="multiple" className="w-full">
+                  {group.meals.map((meal, index) => (
+                    <MealAccordionItem
+                      key={`${dayKey}-${group.value}-${meal.foodId || meal.title}-${index}`}
+                      meal={meal}
+                      index={index}
+                      dayKey={dayKey}
+                    />
+                  ))}
+                </Accordion>
+              </div>
+            ),
+          )}
+          {other.length > 0 ? (
+            <div className="rounded-lg border px-1 sm:px-3">
+              <p className="px-3 pt-3 text-sm font-semibold sm:px-0">
+                {mealSlotLabel("")}
+              </p>
+              <Accordion type="multiple" className="w-full">
+                {other.map((meal, index) => (
+                  <MealAccordionItem
+                    key={`${dayKey}-other-${meal.foodId || meal.title}-${index}`}
+                    meal={meal}
+                    index={index}
+                    dayKey={dayKey}
+                  />
+                ))}
+              </Accordion>
+            </div>
+          ) : null}
         </div>
       ) : (
         <p className="rounded-lg border border-dashed p-4 text-center text-sm text-muted-foreground">

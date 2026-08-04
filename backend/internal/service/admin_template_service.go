@@ -321,6 +321,7 @@ func (s *adminTemplateService) mapItems(in []AdminTemplateItemDTO) []models.Temp
 }
 
 func workoutTemplateToDetail(ctx context.Context, exerciseRepo repository.ExerciseRepository, t *models.WorkoutTemplate) *AdminWorkoutTemplateDetail {
+	warmMediaDonorCache(ctx, exerciseRepo)
 	ids := make([]uint, 0)
 	for _, it := range t.Items {
 		if it.ExerciseID != nil && *it.ExerciseID > 0 {
@@ -353,8 +354,18 @@ func workoutTemplateToDetail(ctx context.Context, exerciseRepo repository.Exerci
 		}
 		if it.ExerciseID != nil {
 			if ex := byID[*it.ExerciseID]; ex != nil {
-				dto.ImageURL = exerciseMediaURL(ex.ImagePath)
-				dto.GifURL = exerciseMediaURL(ex.GifPath)
+				gifPath := ex.GifPath
+				imagePath := ex.ImagePath
+				if strings.TrimSpace(gifPath) == "" {
+					if donor := lookupMediaDonor(ex.Name); donor != nil {
+						gifPath = donor.GifPath
+						if strings.TrimSpace(imagePath) == "" {
+							imagePath = donor.ImagePath
+						}
+					}
+				}
+				dto.ImageURL = exerciseMediaURL(imagePath)
+				dto.GifURL = exerciseMediaURL(gifPath)
 				if dto.ImageURL == "" {
 					dto.ImageURL = dto.GifURL
 				}

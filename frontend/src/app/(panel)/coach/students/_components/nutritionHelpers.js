@@ -1,3 +1,5 @@
+import { sortMealsBySlot } from "@/lib/nutrition/mealSlots";
+
 export function mealUid() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
@@ -122,6 +124,7 @@ export function normalizeMealFromApi(meal) {
     uid: mealUid(),
     title: meal.title || "",
     detail: meal.detail || "",
+    mealSlot: meal.mealSlot || meal.meal_slot || "",
     foodId: hasFood ? foodId : undefined,
     multiplier,
     unit: meal.unit || "",
@@ -150,6 +153,7 @@ export function mealToApiPayload(meal) {
   const payload = {
     title: meal.title,
     detail: meal.detail || "",
+    mealSlot: meal.mealSlot || undefined,
     multiplier: mealMultiplier(meal.multiplier),
     calories: roundMacro(meal.calories),
     protein: roundMacro(meal.protein),
@@ -189,6 +193,6 @@ export function nutritionToApiPayload(nutrition) {
   return {
     caloriesTarget: Number(nutrition?.caloriesTarget) || 0,
     proteinTarget: nutrition?.proteinTarget || "",
-    meals: (nutrition?.meals || []).map(mealToApiPayload),
+    meals: sortMealsBySlot(nutrition?.meals || []).map(mealToApiPayload),
   };
 }

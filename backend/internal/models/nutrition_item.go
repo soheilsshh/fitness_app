@@ -8,6 +8,7 @@ type NutritionItem struct {
 	DayNumber          int     `gorm:"not null"`
 	MealNumber         int     `gorm:"not null"`
 	OrderIndex         int     `gorm:"not null"`
+	MealSlot           string  `gorm:"size:20;index"` // breakfast|lunch|dinner|snack1|snack2|snack3
 	FoodID             *uint   `gorm:"index"`
 	Food               string  `gorm:"size:255;not null"`
 	Quantity           string  `gorm:"size:100"`

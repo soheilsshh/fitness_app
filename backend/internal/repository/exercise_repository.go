@@ -27,6 +27,7 @@ type ExerciseRepository interface {
 	ListCategories(ctx context.Context, filter ExerciseListFilter) ([]string, error)
 	FindByIDs(ctx context.Context, ids []uint) ([]models.Exercise, error)
 	FindByNames(ctx context.Context, names []string) ([]models.Exercise, error)
+	ListWithGif(ctx context.Context) ([]models.Exercise, error)
 	UpsertByExternalID(ctx context.Context, e *models.Exercise) error
 }
 
@@ -117,6 +118,14 @@ func (r *exerciseRepository) FindByNames(ctx context.Context, names []string) ([
 	}
 	var list []models.Exercise
 	err := r.db.WithContext(ctx).Where("name IN ? AND is_active = ?", names, true).Find(&list).Error
+	return list, err
+}
+
+func (r *exerciseRepository) ListWithGif(ctx context.Context) ([]models.Exercise, error) {
+	var list []models.Exercise
+	err := r.db.WithContext(ctx).
+		Where("is_active = ? AND gif_path IS NOT NULL AND gif_path <> ''", true).
+		Find(&list).Error
 	return list, err
 }
 

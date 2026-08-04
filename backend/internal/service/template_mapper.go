@@ -95,41 +95,57 @@ func nutritionTemplateToPlanByDay(template *models.NutritionTemplate) map[string
 		return planByDay
 	}
 
+	snackCount := 0
+	meals := make([]MeMealDTO, 0)
+	for _, meal := range template.Meals {
+		slot := NormalizeMealSlot(meal.MealName, &snackCount)
+		for _, item := range meal.Items {
+			title := strings.TrimSpace(item.FoodName)
+			if menuName := strings.TrimSpace(item.MenuName); menuName != "" {
+				title = fmt.Sprintf("%s — %s", menuName, title)
+			}
+
+			mealDTO := MeMealDTO{
+				Title:      title,
+				Detail:     formatTemplateFoodQuantity(item.Value, item.Unit),
+				MealSlot:   slot,
+				Multiplier: mealMultiplier(item.Value),
+				Unit:       strings.TrimSpace(item.Unit),
+				Amount:     item.Value,
+			}
+			if item.FoodID != nil && *item.FoodID > 0 {
+				mealDTO.FoodID = *item.FoodID
+			}
+			meals = append(meals, mealDTO)
+		}
+	}
+	sortMealsBySlot(meals)
+
 	for _, dayKey := range allDayKeys {
+		copied := make([]MeMealDTO, len(meals))
+		copy(copied, meals)
 		day := MeDayPlanDTO{
 			Nutrition: &MeNutritionDTO{
 				CaloriesTarget: template.Calorie,
-				Meals:          []MeMealDTO{},
+				Meals:          copied,
 			},
 		}
-
-		for _, meal := range template.Meals {
-			for _, item := range meal.Items {
-				title := strings.TrimSpace(item.FoodName)
-				if menuName := strings.TrimSpace(item.MenuName); menuName != "" {
-					title = fmt.Sprintf("%s — %s", menuName, title)
-				}
-
-				mealDTO := MeMealDTO{
-					Title:      title,
-					Detail:     formatTemplateFoodQuantity(item.Value, item.Unit),
-					Multiplier: mealMultiplier(item.Value),
-					Unit:       strings.TrimSpace(item.Unit),
-					Amount:     item.Value,
-				}
-				if item.FoodID != nil && *item.FoodID > 0 {
-					mealDTO.FoodID = *item.FoodID
-				}
-				day.Nutrition.Meals = append(day.Nutrition.Meals, mealDTO)
-			}
-		}
-
-		if len(day.Nutrition.Meals) > 0 {
+		if len(copied) > 0 {
 			planByDay[dayKey] = day
 		}
 	}
 
 	return planByDay
+}
+
+func sortMealsBySlot(meals []MeMealDTO) {
+	for i := 0; i < len(meals); i++ {
+		for j := i + 1; j < len(meals); j++ {
+			if mealSlotRank(meals[j].MealSlot) < mealSlotRank(meals[i].MealSlot) {
+				meals[i], meals[j] = meals[j], meals[i]
+			}
+		}
+	}
 }
 
 func formatTemplateFoodQuantity(value float64, unit string) string {

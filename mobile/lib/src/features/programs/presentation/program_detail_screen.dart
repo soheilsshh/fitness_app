@@ -197,14 +197,7 @@ class _ProgramDetailScreenState extends ConsumerState<ProgramDetailScreen> {
                           Text('پروتئین: ${plan.nutrition!.proteinTarget}',
                               style: const TextStyle(color: AppColors.muted)),
                         const SizedBox(height: 12),
-                        ...plan.nutrition!.meals.map(
-                          (m) => ListTile(
-                            contentPadding: EdgeInsets.zero,
-                            title: Text(m.title),
-                            subtitle: Text(m.detail),
-                            trailing: Text('${m.calories.toInt()} کال'),
-                          ),
-                        ),
+                        ..._groupedNutritionTiles(plan.nutrition!.meals),
                       ],
                     ),
                   ),
@@ -237,5 +230,74 @@ class _ProgramDetailScreenState extends ConsumerState<ProgramDetailScreen> {
       'fri': 'جمعه',
     };
     return map[key] ?? key;
+  }
+
+  String _mealSlotLabel(String slot) {
+    const map = {
+      'breakfast': 'صبحانه',
+      'lunch': 'ناهار',
+      'dinner': 'شام',
+      'snack1': 'میان‌وعده ۱',
+      'snack2': 'میان‌وعده ۲',
+      'snack3': 'میان‌وعده ۳',
+    };
+    return map[slot] ?? 'سایر';
+  }
+
+  List<Widget> _groupedNutritionTiles(List<NutritionMeal> meals) {
+    const order = [
+      'breakfast',
+      'lunch',
+      'dinner',
+      'snack1',
+      'snack2',
+      'snack3',
+    ];
+    final widgets = <Widget>[];
+    for (final slot in order) {
+      final items = meals.where((m) => m.mealSlot == slot).toList();
+      if (items.isEmpty) continue;
+      widgets.add(
+        Padding(
+          padding: const EdgeInsets.only(top: 8, bottom: 4),
+          child: Text(
+            _mealSlotLabel(slot),
+            style: const TextStyle(fontWeight: FontWeight.w700),
+          ),
+        ),
+      );
+      for (final m in items) {
+        widgets.add(
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(m.title),
+            subtitle: Text(m.detail),
+            trailing: Text('${m.calories.toInt()} کال'),
+          ),
+        );
+      }
+    }
+    final other = meals
+        .where((m) => m.mealSlot.isEmpty || !order.contains(m.mealSlot))
+        .toList();
+    if (other.isNotEmpty) {
+      widgets.add(
+        const Padding(
+          padding: EdgeInsets.only(top: 8, bottom: 4),
+          child: Text('سایر', style: TextStyle(fontWeight: FontWeight.w700)),
+        ),
+      );
+      for (final m in other) {
+        widgets.add(
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(m.title),
+            subtitle: Text(m.detail),
+            trailing: Text('${m.calories.toInt()} کال'),
+          ),
+        );
+      }
+    }
+    return widgets;
   }
 }
