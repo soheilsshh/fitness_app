@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { FiPlus, FiSearch } from "react-icons/fi";
-import { ClipboardList } from "lucide-react";
+import { FiSearch } from "react-icons/fi";
+import { ClipboardList, Eye } from "lucide-react";
 import { api } from "@/lib/axios/client";
-import RowActions from "@/app/(panel)/_shared/RowActions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -23,13 +22,12 @@ function faNum(value) {
   return new Intl.NumberFormat("fa-IR").format(value ?? 0);
 }
 
-export default function TemplatesClient() {
+export default function CoachTemplatesClient() {
   const [items, setItems] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
-  const [refreshKey, setRefreshKey] = useState(0);
   const pageSize = 20;
 
   useEffect(() => {
@@ -37,7 +35,7 @@ export default function TemplatesClient() {
     async function load() {
       setLoading(true);
       try {
-        const res = await api.get("/admin/workout-templates", {
+        const res = await api.get("/coach/workout-templates", {
           params: { page, pageSize, query: query || undefined },
         });
         if (cancelled) return;
@@ -56,30 +54,17 @@ export default function TemplatesClient() {
     return () => {
       cancelled = true;
     };
-  }, [page, query, refreshKey]);
-
-  async function handleDelete(id) {
-    if (!window.confirm("این تمپلیت حذف شود؟")) return;
-    await api.delete(`/admin/workout-templates/${id}`);
-    setRefreshKey((k) => k + 1);
-  }
+  }, [page, query]);
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   return (
     <div className="space-y-6" dir="rtl">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">تمپلیت‌های تمرین</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            مدیریت برنامه‌های تمرینی آماده — افزودن، ویرایش حرکات و انیمیشن‌ها
-          </p>
-        </div>
-        <Link href="/admin/templates/new">
-          <Button>
-            <FiPlus className="ms-1" /> تمپلیت جدید
-          </Button>
-        </Link>
+      <div>
+        <h1 className="text-2xl font-bold">تمپلیت‌های آماده تمرین</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          مشاهده برنامه‌های تمرینی آماده برای تخصیص به دانشجویان
+        </p>
       </div>
 
       <Card>
@@ -118,13 +103,16 @@ export default function TemplatesClient() {
                   <TableHead>هدف</TableHead>
                   <TableHead>روز</TableHead>
                   <TableHead>حرکات</TableHead>
-                  <TableHead className="w-28">عملیات</TableHead>
+                  <TableHead className="w-24">مشاهده</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {items.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center text-muted-foreground">
+                    <TableCell
+                      colSpan={7}
+                      className="text-center text-muted-foreground"
+                    >
                       تمپلیتی پیدا نشد.
                     </TableCell>
                   </TableRow>
@@ -138,11 +126,14 @@ export default function TemplatesClient() {
                       <TableCell>{faNum(t.dayCount)}</TableCell>
                       <TableCell>{faNum(t.itemCount)}</TableCell>
                       <TableCell>
-                        <RowActions
-                          viewHref={`/admin/templates/detail?id=${encodeURIComponent(t.id)}`}
-                          editHref={`/admin/templates/detail?id=${encodeURIComponent(t.id)}`}
-                          onDelete={() => handleDelete(t.id)}
-                        />
+                        <Button asChild variant="outline" size="sm">
+                          <Link
+                            href={`/coach/templates/detail?id=${encodeURIComponent(t.id)}`}
+                          >
+                            <Eye className="size-4" />
+                            جزئیات
+                          </Link>
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))

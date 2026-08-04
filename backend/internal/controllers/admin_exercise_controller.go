@@ -69,6 +69,15 @@ func (h *AdminExerciseController) ListExercises(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+func (h *AdminExerciseController) ListCategories(c *gin.Context) {
+	cats, err := h.exerciseService.ListCategories(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"categories": cats})
+}
+
 // GetExerciseByID godoc
 // @Summary Get exercise by ID (admin)
 // @Tags admin-exercises

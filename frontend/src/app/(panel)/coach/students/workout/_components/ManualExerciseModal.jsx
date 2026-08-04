@@ -22,7 +22,14 @@ function isVideoFile(file) {
   return file?.type?.startsWith("video/");
 }
 
-export default function ManualExerciseModal({ open, onClose, onAdd, dayLabel }) {
+export default function ManualExerciseModal({
+  open,
+  onClose,
+  onAdd,
+  dayLabel,
+  apiBase = "coach",
+}) {
+  const exercisesBase = `/${apiBase}/exercises`;
   const categoriesListId = useId();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -41,7 +48,7 @@ export default function ManualExerciseModal({ open, onClose, onAdd, dayLabel }) 
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
-    api.get("/coach/exercises/categories")
+    api.get(`${exercisesBase}/categories`)
       .then((res) => {
         if (!cancelled) setCategories(res.data?.categories || []);
       })
@@ -51,7 +58,7 @@ export default function ManualExerciseModal({ open, onClose, onAdd, dayLabel }) 
     return () => {
       cancelled = true;
     };
-  }, [open]);
+  }, [open, exercisesBase]);
 
   useEffect(() => {
     if (!open) {
@@ -130,18 +137,30 @@ export default function ManualExerciseModal({ open, onClose, onAdd, dayLabel }) 
     setSubmitting(true);
     setError("");
     try {
-      const fd = new FormData();
-      fd.append("name", trimmedName);
-      if (description.trim()) fd.append("description", description.trim());
-      if (category.trim()) fd.append("category", category.trim());
-      if (bodyPart.trim()) fd.append("bodyPart", bodyPart.trim());
-      if (equipment.trim()) fd.append("equipment", equipment.trim());
-      if (mediaFile) fd.append("media", mediaFile);
+      let created;
+      if (apiBase === "admin") {
+        const res = await api.post(exercisesBase, {
+          name: trimmedName,
+          description: description.trim() || undefined,
+          category: category.trim() || undefined,
+          bodyPart: bodyPart.trim() || undefined,
+          equipment: equipment.trim() || undefined,
+        });
+        created = res.data || {};
+      } else {
+        const fd = new FormData();
+        fd.append("name", trimmedName);
+        if (description.trim()) fd.append("description", description.trim());
+        if (category.trim()) fd.append("category", category.trim());
+        if (bodyPart.trim()) fd.append("bodyPart", bodyPart.trim());
+        if (equipment.trim()) fd.append("equipment", equipment.trim());
+        if (mediaFile) fd.append("media", mediaFile);
 
-      const res = await api.post("/coach/exercises", fd, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      const created = res.data || {};
+        const res = await api.post(exercisesBase, fd, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        created = res.data || {};
+      }
 
       onAdd?.(
         newExerciseEntry({

@@ -87,9 +87,13 @@ function buildSavePlanByDay(
   return payload;
 }
 
-export default function NutritionEditorClient({ studentId: studentIdProp } = {}) {
+export default function NutritionEditorClient({
+  studentId: studentIdProp,
+  apiBase = "coach",
+} = {}) {
   const searchParams = useSearchParams();
   const studentId = studentIdProp ?? searchParams.get("id");
+  const studentsBase = `/${apiBase}/students`;
   const caloriesFromQuery = searchParams.get("calories");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -106,7 +110,7 @@ export default function NutritionEditorClient({ studentId: studentIdProp } = {})
   const loadPrograms = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await api.get(`/coach/students/${studentId}/programs`);
+      const res = await api.get(`${studentsBase}/${studentId}/programs`);
       const data = res.data || {};
       setProgramId(data.nutritionProgramId || null);
       if (data.planByDay) {
@@ -129,7 +133,7 @@ export default function NutritionEditorClient({ studentId: studentIdProp } = {})
     } finally {
       setLoading(false);
     }
-  }, [studentId, caloriesFromQuery]);
+  }, [studentId, caloriesFromQuery, studentsBase]);
 
   useEffect(() => {
     let cancelled = false;
@@ -224,12 +228,12 @@ export default function NutritionEditorClient({ studentId: studentIdProp } = {})
       };
       if (programId) {
         await api.patch(
-          `/coach/students/${studentId}/nutrition-programs/${programId}`,
+          `${studentsBase}/${studentId}/nutrition-programs/${programId}`,
           payload,
         );
       } else {
         const res = await api.post(
-          `/coach/students/${studentId}/nutrition-programs`,
+          `${studentsBase}/${studentId}/nutrition-programs`,
           payload,
         );
         setProgramId(res.data?.nutritionProgramId || null);
@@ -256,13 +260,13 @@ export default function NutritionEditorClient({ studentId: studentIdProp } = {})
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="sm" asChild>
-            <Link href={`/coach/students/detail?id=${encodeURIComponent(studentId)}`}>
+            <Link href={`${studentsBase}/detail?id=${encodeURIComponent(studentId)}`}>
               <ChevronLeft data-icon="inline-start" />
               پروفایل دانشجو
             </Link>
           </Button>
           <Button variant="outline" size="sm" asChild>
-            <Link href={`/coach/students/workout?id=${encodeURIComponent(studentId)}`}>
+            <Link href={`${studentsBase}/workout?id=${encodeURIComponent(studentId)}`}>
               برنامه تمرین
             </Link>
           </Button>
@@ -401,6 +405,7 @@ export default function NutritionEditorClient({ studentId: studentIdProp } = {})
         onClose={() => setPickerOpen(false)}
         onAdd={addMeal}
         dayLabel={DAY_LABELS[selectedDay]}
+        foodsPath={apiBase === "admin" ? "/admin/foods" : undefined}
       />
       <ManualFoodModal
         open={manualOpen}
@@ -413,6 +418,7 @@ export default function NutritionEditorClient({ studentId: studentIdProp } = {})
         onClose={() => setTemplatePickerOpen(false)}
         mode="nutrition"
         studentId={studentId}
+        apiBase={apiBase}
         onApplied={async () => {
           await loadPrograms();
         }}

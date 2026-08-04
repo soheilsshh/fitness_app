@@ -2,33 +2,27 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
+import { toastError, toastSuccess } from "@/app/(site)/auth/_components/helpers";
 import { api } from "@/lib/axios/client";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-
-function formatNumber(v) {
-  try {
-    return new Intl.NumberFormat("fa-IR").format(Number(v) || 0);
-  } catch {
-    return String(v ?? 0);
-  }
-}
+import PlanForm from "../../_components/PlanForm";
 
 export default function PlanDetailsClient() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
   const [plan, setPlan] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -48,6 +42,30 @@ export default function PlanDetailsClient() {
       cancelled = true;
     };
   }, [id]);
+
+  const onSubmit = async (values) => {
+    setSaving(true);
+    try {
+      const res = await api.patch(`/admin/plans/${id}`, values);
+      setPlan(res.data);
+      await toastSuccess("موفق", "پلن ذخیره شد.");
+    } catch (e) {
+      toastError("خطا", e?.response?.data?.error || "ذخیره ناموفق بود.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const onDelete = async () => {
+    if (!window.confirm("این پلن حذف شود؟")) return;
+    try {
+      await api.delete(`/admin/plans/${id}`);
+      await toastSuccess("موفق", "پلن حذف شد.");
+      router.push("/admin/plans");
+    } catch (e) {
+      toastError("خطا", e?.response?.data?.error || "حذف ناموفق بود.");
+    }
+  };
 
   if (loading) {
     return (
@@ -73,10 +91,6 @@ export default function PlanDetailsClient() {
     );
   }
 
-  const price = Number(plan.price || 0);
-  const discountPrice = Number(plan.discountPrice || 0);
-  const finalPrice = discountPrice > 0 ? discountPrice : price;
-
   return (
     <div dir="rtl" className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -87,62 +101,24 @@ export default function PlanDetailsClient() {
               بازگشت
             </Link>
           </Button>
-          <h1 className="text-lg font-extrabold">جزئیات پلن (فقط مشاهده)</h1>
+          <h1 className="text-lg font-extrabold">ویرایش پلن</h1>
         </div>
+        <Button type="button" variant="destructive" size="sm" onClick={onDelete}>
+          حذف پلن
+        </Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardDescription>تیتر</CardDescription>
-          <CardTitle className="truncate text-xl">{plan.title || "—"}</CardTitle>
-          <CardDescription>{plan.subtitle || "—"}</CardDescription>
-          <div className="mt-2 flex flex-wrap gap-2">
-            <Badge variant="outline" className="h-auto rounded-full px-3 py-1 text-[11px]">
-              نام دوره: <span className="mr-1 font-bold">{plan.courseName || "—"}</span>
-            </Badge>
-            {plan.isPopular ? (
-              <Badge className="h-auto rounded-full bg-amber-500/10 px-3 py-1 font-bold text-amber-700 dark:text-amber-300">
-                محبوب
-              </Badge>
-            ) : null}
-          </div>
+          <CardTitle>فرم ویرایش</CardTitle>
         </CardHeader>
         <CardContent>
-          <Card className="bg-muted/20">
-            <CardContent className="pt-4 text-[11px] text-muted-foreground">
-              <div>
-                شناسه پلن: <span className="font-bold text-foreground">{plan.id}</span>
-              </div>
-              <div className="mt-2">
-                مربی:{" "}
-                <span className="font-bold text-foreground">
-                  {plan.coachName || (plan.coachId ? `#${plan.coachId}` : "—")}
-                </span>
-              </div>
-              <div className="mt-2">
-                قیمت: <span className="font-bold text-foreground">{formatNumber(finalPrice)} تومان</span>
-              </div>
-              {plan.updatedAt ? (
-                <div className="mt-2">
-                  آخرین بروزرسانی:
-                  <div className="mt-1 text-foreground">
-                    {new Date(plan.updatedAt).toLocaleString("fa-IR")}
-                  </div>
-                </div>
-              ) : null}
-            </CardContent>
-          </Card>
-
-          {plan.featuresText ? (
-            <Card className="mt-6 bg-muted/20">
-              <CardHeader>
-                <CardTitle className="text-sm">ویژگی‌ها</CardTitle>
-              </CardHeader>
-              <CardContent className="whitespace-pre-wrap text-sm text-muted-foreground">
-                {plan.featuresText}
-              </CardContent>
-            </Card>
-          ) : null}
+          <PlanForm
+            mode="edit"
+            initialValue={plan}
+            onSubmit={onSubmit}
+            submitText={saving ? "در حال ذخیره..." : "ذخیره تغییرات"}
+          />
         </CardContent>
       </Card>
     </div>

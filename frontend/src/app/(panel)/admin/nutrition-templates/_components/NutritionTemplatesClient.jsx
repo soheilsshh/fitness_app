@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { FiPlus, FiSearch } from "react-icons/fi";
-import { ClipboardList } from "lucide-react";
+import { Apple } from "lucide-react";
 import { api } from "@/lib/axios/client";
 import RowActions from "@/app/(panel)/_shared/RowActions";
 import { Button } from "@/components/ui/button";
@@ -23,7 +23,7 @@ function faNum(value) {
   return new Intl.NumberFormat("fa-IR").format(value ?? 0);
 }
 
-export default function TemplatesClient() {
+export default function NutritionTemplatesClient() {
   const [items, setItems] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -37,7 +37,7 @@ export default function TemplatesClient() {
     async function load() {
       setLoading(true);
       try {
-        const res = await api.get("/admin/workout-templates", {
+        const res = await api.get("/admin/nutrition-templates", {
           params: { page, pageSize, query: query || undefined },
         });
         if (cancelled) return;
@@ -59,8 +59,8 @@ export default function TemplatesClient() {
   }, [page, query, refreshKey]);
 
   async function handleDelete(id) {
-    if (!window.confirm("این تمپلیت حذف شود؟")) return;
-    await api.delete(`/admin/workout-templates/${id}`);
+    if (!window.confirm("این تمپلیت تغذیه حذف شود؟")) return;
+    await api.delete(`/admin/nutrition-templates/${id}`);
     setRefreshKey((k) => k + 1);
   }
 
@@ -70,12 +70,12 @@ export default function TemplatesClient() {
     <div className="space-y-6" dir="rtl">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">تمپلیت‌های تمرین</h1>
+          <h1 className="text-2xl font-bold">تمپلیت‌های تغذیه</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            مدیریت برنامه‌های تمرینی آماده — افزودن، ویرایش حرکات و انیمیشن‌ها
+            مدیریت برنامه‌های غذایی آماده — وعده‌ها، منوها و کالری
           </p>
         </div>
-        <Link href="/admin/templates/new">
+        <Link href="/admin/nutrition-templates/new">
           <Button>
             <FiPlus className="ms-1" /> تمپلیت جدید
           </Button>
@@ -85,14 +85,14 @@ export default function TemplatesClient() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-3 space-y-0">
           <CardTitle className="flex items-center gap-2 text-base">
-            <ClipboardList className="size-4 text-primary" />
+            <Apple className="size-4 text-primary" />
             لیست تمپلیت‌ها ({faNum(total)})
           </CardTitle>
           <div className="relative w-full max-w-xs">
             <FiSearch className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
               className="pe-9"
-              placeholder="جستجو عنوان، هدف، سطح…"
+              placeholder="جستجو عنوان، هدف، جنسیت…"
               value={query}
               onChange={(e) => {
                 setPage(1);
@@ -114,17 +114,16 @@ export default function TemplatesClient() {
                 <TableRow>
                   <TableHead>عنوان</TableHead>
                   <TableHead>جنسیت</TableHead>
-                  <TableHead>سطح</TableHead>
                   <TableHead>هدف</TableHead>
-                  <TableHead>روز</TableHead>
-                  <TableHead>حرکات</TableHead>
+                  <TableHead>کالری</TableHead>
+                  <TableHead>وعده</TableHead>
                   <TableHead className="w-28">عملیات</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {items.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center text-muted-foreground">
+                    <TableCell colSpan={6} className="text-center text-muted-foreground">
                       تمپلیتی پیدا نشد.
                     </TableCell>
                   </TableRow>
@@ -133,14 +132,13 @@ export default function TemplatesClient() {
                     <TableRow key={t.id}>
                       <TableCell className="font-medium">{t.title}</TableCell>
                       <TableCell>{t.gender || "—"}</TableCell>
-                      <TableCell>{t.level || "—"}</TableCell>
                       <TableCell>{t.target || "—"}</TableCell>
-                      <TableCell>{faNum(t.dayCount)}</TableCell>
-                      <TableCell>{faNum(t.itemCount)}</TableCell>
+                      <TableCell>{faNum(t.calorie)}</TableCell>
+                      <TableCell>{faNum(t.mealCount)}</TableCell>
                       <TableCell>
                         <RowActions
-                          viewHref={`/admin/templates/detail?id=${encodeURIComponent(t.id)}`}
-                          editHref={`/admin/templates/detail?id=${encodeURIComponent(t.id)}`}
+                          viewHref={`/admin/nutrition-templates/detail?id=${encodeURIComponent(t.id)}`}
+                          editHref={`/admin/nutrition-templates/detail?id=${encodeURIComponent(t.id)}`}
                           onDelete={() => handleDelete(t.id)}
                         />
                       </TableCell>

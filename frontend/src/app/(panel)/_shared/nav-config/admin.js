@@ -1,5 +1,6 @@
 import {
   ActivityIcon,
+  AppleIcon,
   AwardIcon,
   BookOpenIcon,
   ClipboardListIcon,
@@ -68,8 +69,13 @@ export const adminNav = [
   },
   {
     href: "/admin/templates",
-    label: "تمپلیت برنامه",
+    label: "تمپلیت تمرین",
     icon: LayoutTemplateIcon,
+  },
+  {
+    href: "/admin/nutrition-templates",
+    label: "تمپلیت تغذیه",
+    icon: AppleIcon,
   },
   {
     href: "/admin/site",

@@ -25,6 +25,8 @@ const COACH_PANEL_SEGMENTS = new Set([
   "tickets",
   "tools",
   "tracking",
+  "templates",
+  "nutrition-templates",
 ]);
 
 const PROFILE_HREF = "/coach/profile";

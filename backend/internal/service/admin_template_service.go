@@ -12,6 +12,7 @@ import (
 )
 
 var ErrWorkoutTemplateNotFound = errors.New("workout template not found")
+var ErrNutritionTemplateNotFound = errors.New("nutrition template not found")
 
 type AdminTemplateSetDTO struct {
 	SetNumber int    `json:"setNumber"`
@@ -69,12 +70,75 @@ type AdminWorkoutTemplateUpsertRequest struct {
 	Items    []AdminTemplateItemDTO `json:"items"`
 }
 
+type AdminNutritionMealItemDTO struct {
+	MenuName    string  `json:"menuName,omitempty"`
+	OrderIndex  int     `json:"orderIndex"`
+	FoodID      *uint   `json:"foodId,omitempty"`
+	FoodName    string  `json:"foodName"`
+	FoodImage   string  `json:"foodImage,omitempty"`
+	Unit        string  `json:"unit,omitempty"`
+	Value       float64 `json:"value"`
+	Description string  `json:"description,omitempty"`
+}
+
+type AdminNutritionMealDTO struct {
+	MealOrder   int                         `json:"mealOrder"`
+	MealName    string                      `json:"mealName"`
+	MealCalorie int                         `json:"mealCalorie"`
+	StartTime   string                      `json:"startTime,omitempty"`
+	EndTime     string                      `json:"endTime,omitempty"`
+	Items       []AdminNutritionMealItemDTO `json:"items"`
+}
+
+type AdminNutritionTemplateSummary struct {
+	ID         uint   `json:"id"`
+	Title      string `json:"title"`
+	Type       string `json:"type"`
+	Gender     string `json:"gender"`
+	Target     string `json:"target"`
+	Limitation string `json:"limitation"`
+	Calorie    int    `json:"calorie"`
+	IsPro      bool   `json:"isPro"`
+	MealCount  int    `json:"mealCount"`
+}
+
+type AdminNutritionTemplateDetail struct {
+	AdminNutritionTemplateSummary
+	Description string                   `json:"description"`
+	Meals       []AdminNutritionMealDTO  `json:"meals"`
+}
+
+type AdminNutritionTemplateListResponse struct {
+	Items    []AdminNutritionTemplateSummary `json:"items"`
+	Page     int                             `json:"page"`
+	PageSize int                             `json:"pageSize"`
+	Total    int64                           `json:"total"`
+}
+
+type AdminNutritionTemplateUpsertRequest struct {
+	Title       string                  `json:"title"`
+	Type        string                  `json:"type"`
+	Gender      string                  `json:"gender"`
+	Target      string                  `json:"target"`
+	Limitation  string                  `json:"limitation"`
+	Calorie     int                     `json:"calorie"`
+	Description string                  `json:"description"`
+	IsPro       bool                    `json:"isPro"`
+	Meals       []AdminNutritionMealDTO `json:"meals"`
+}
+
 type AdminTemplateService interface {
 	ListWorkoutTemplates(ctx context.Context, page, pageSize int, query string) (*AdminWorkoutTemplateListResponse, error)
 	GetWorkoutTemplate(ctx context.Context, id uint) (*AdminWorkoutTemplateDetail, error)
 	CreateWorkoutTemplate(ctx context.Context, req *AdminWorkoutTemplateUpsertRequest) (*AdminWorkoutTemplateDetail, error)
 	UpdateWorkoutTemplate(ctx context.Context, id uint, req *AdminWorkoutTemplateUpsertRequest) (*AdminWorkoutTemplateDetail, error)
 	DeleteWorkoutTemplate(ctx context.Context, id uint) error
+
+	ListNutritionTemplates(ctx context.Context, page, pageSize int, query string) (*AdminNutritionTemplateListResponse, error)
+	GetNutritionTemplate(ctx context.Context, id uint) (*AdminNutritionTemplateDetail, error)
+	CreateNutritionTemplate(ctx context.Context, req *AdminNutritionTemplateUpsertRequest) (*AdminNutritionTemplateDetail, error)
+	UpdateNutritionTemplate(ctx context.Context, id uint, req *AdminNutritionTemplateUpsertRequest) (*AdminNutritionTemplateDetail, error)
+	DeleteNutritionTemplate(ctx context.Context, id uint) error
 }
 
 type adminTemplateService struct {
@@ -124,7 +188,7 @@ func (s *adminTemplateService) GetWorkoutTemplate(ctx context.Context, id uint) 
 		}
 		return nil, err
 	}
-	return s.toDetail(ctx, t), nil
+	return workoutTemplateToDetail(ctx, s.exerciseRepo, t), nil
 }
 
 func (s *adminTemplateService) CreateWorkoutTemplate(ctx context.Context, req *AdminWorkoutTemplateUpsertRequest) (*AdminWorkoutTemplateDetail, error) {
@@ -256,7 +320,7 @@ func (s *adminTemplateService) mapItems(in []AdminTemplateItemDTO) []models.Temp
 	return out
 }
 
-func (s *adminTemplateService) toDetail(ctx context.Context, t *models.WorkoutTemplate) *AdminWorkoutTemplateDetail {
+func workoutTemplateToDetail(ctx context.Context, exerciseRepo repository.ExerciseRepository, t *models.WorkoutTemplate) *AdminWorkoutTemplateDetail {
 	ids := make([]uint, 0)
 	for _, it := range t.Items {
 		if it.ExerciseID != nil && *it.ExerciseID > 0 {
@@ -264,7 +328,7 @@ func (s *adminTemplateService) toDetail(ctx context.Context, t *models.WorkoutTe
 		}
 	}
 	byID := map[uint]*models.Exercise{}
-	if list, err := s.exerciseRepo.FindByIDs(ctx, ids); err == nil {
+	if list, err := exerciseRepo.FindByIDs(ctx, ids); err == nil {
 		for i := range list {
 			byID[list[i].ID] = &list[i]
 		}
@@ -316,4 +380,194 @@ func maxDayFromItems(items []AdminTemplateItemDTO) int {
 		}
 	}
 	return max
+}
+
+func (s *adminTemplateService) ListNutritionTemplates(ctx context.Context, page, pageSize int, query string) (*AdminNutritionTemplateListResponse, error) {
+	list, total, err := s.templateRepo.ListNutritionTemplatesPaged(ctx, page, pageSize, query)
+	if err != nil {
+		return nil, err
+	}
+	items := make([]AdminNutritionTemplateSummary, 0, len(list))
+	for _, t := range list {
+		var c int64
+		_ = s.db.WithContext(ctx).Model(&models.TemplateMeal{}).
+			Where("nutrition_template_id = ?", t.ID).Count(&c)
+		items = append(items, AdminNutritionTemplateSummary{
+			ID: t.ID, Title: t.Title, Type: t.Type, Gender: t.Gender,
+			Target: t.Target, Limitation: t.Limitation, Calorie: t.Calorie,
+			IsPro: t.IsPro, MealCount: int(c),
+		})
+	}
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 20
+	}
+	return &AdminNutritionTemplateListResponse{Items: items, Page: page, PageSize: pageSize, Total: total}, nil
+}
+
+func (s *adminTemplateService) GetNutritionTemplate(ctx context.Context, id uint) (*AdminNutritionTemplateDetail, error) {
+	t, err := s.templateRepo.FindNutritionTemplateByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrNutritionTemplateNotFound
+		}
+		return nil, err
+	}
+	return nutritionTemplateToDetail(t), nil
+}
+
+func (s *adminTemplateService) CreateNutritionTemplate(ctx context.Context, req *AdminNutritionTemplateUpsertRequest) (*AdminNutritionTemplateDetail, error) {
+	title := strings.TrimSpace(req.Title)
+	if title == "" {
+		return nil, errors.New("title is required")
+	}
+	sourceID, err := s.templateRepo.NextManualNutritionSourceID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	t := &models.NutritionTemplate{
+		SourceID:    sourceID,
+		Title:       title,
+		Type:        strings.TrimSpace(req.Type),
+		Gender:      strings.TrimSpace(req.Gender),
+		Target:      strings.TrimSpace(req.Target),
+		Limitation:  strings.TrimSpace(req.Limitation),
+		Calorie:     req.Calorie,
+		Description: strings.TrimSpace(req.Description),
+		IsPro:       req.IsPro,
+		Version:     1,
+		Meals:       mapNutritionMeals(req.Meals),
+	}
+	if err := s.templateRepo.CreateNutritionTemplate(ctx, t); err != nil {
+		return nil, err
+	}
+	return s.GetNutritionTemplate(ctx, t.ID)
+}
+
+func (s *adminTemplateService) UpdateNutritionTemplate(ctx context.Context, id uint, req *AdminNutritionTemplateUpsertRequest) (*AdminNutritionTemplateDetail, error) {
+	t, err := s.templateRepo.FindNutritionTemplateByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrNutritionTemplateNotFound
+		}
+		return nil, err
+	}
+	title := strings.TrimSpace(req.Title)
+	if title == "" {
+		return nil, errors.New("title is required")
+	}
+	t.Title = title
+	t.Type = strings.TrimSpace(req.Type)
+	t.Gender = strings.TrimSpace(req.Gender)
+	t.Target = strings.TrimSpace(req.Target)
+	t.Limitation = strings.TrimSpace(req.Limitation)
+	t.Calorie = req.Calorie
+	t.Description = strings.TrimSpace(req.Description)
+	t.IsPro = req.IsPro
+	if err := s.templateRepo.UpdateNutritionTemplateMeta(ctx, t); err != nil {
+		return nil, err
+	}
+	if req.Meals != nil {
+		if err := s.templateRepo.ReplaceNutritionTemplateMeals(ctx, id, mapNutritionMeals(req.Meals)); err != nil {
+			return nil, err
+		}
+	}
+	return s.GetNutritionTemplate(ctx, id)
+}
+
+func (s *adminTemplateService) DeleteNutritionTemplate(ctx context.Context, id uint) error {
+	_, err := s.templateRepo.FindNutritionTemplateByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrNutritionTemplateNotFound
+		}
+		return err
+	}
+	return s.templateRepo.DeleteNutritionTemplate(ctx, id)
+}
+
+func mapNutritionMeals(in []AdminNutritionMealDTO) []models.TemplateMeal {
+	out := make([]models.TemplateMeal, 0, len(in))
+	for i, m := range in {
+		name := strings.TrimSpace(m.MealName)
+		if name == "" {
+			continue
+		}
+		order := m.MealOrder
+		if order <= 0 {
+			order = i + 1
+		}
+		meal := models.TemplateMeal{
+			MealOrder:   order,
+			MealName:    name,
+			MealCalorie: m.MealCalorie,
+			StartTime:   strings.TrimSpace(m.StartTime),
+			EndTime:     strings.TrimSpace(m.EndTime),
+		}
+		items := make([]models.TemplateMealItem, 0, len(m.Items))
+		for j, it := range m.Items {
+			foodName := strings.TrimSpace(it.FoodName)
+			if foodName == "" {
+				continue
+			}
+			itemOrder := it.OrderIndex
+			if itemOrder <= 0 {
+				itemOrder = j + 1
+			}
+			item := models.TemplateMealItem{
+				MenuName:    strings.TrimSpace(it.MenuName),
+				OrderIndex:  itemOrder,
+				FoodName:    foodName,
+				FoodImage:   strings.TrimSpace(it.FoodImage),
+				Unit:        strings.TrimSpace(it.Unit),
+				Value:       it.Value,
+				Description: strings.TrimSpace(it.Description),
+			}
+			if it.FoodID != nil && *it.FoodID > 0 {
+				id := *it.FoodID
+				item.FoodID = &id
+			}
+			items = append(items, item)
+		}
+		meal.Items = items
+		out = append(out, meal)
+	}
+	return out
+}
+
+func nutritionTemplateToDetail(t *models.NutritionTemplate) *AdminNutritionTemplateDetail {
+	meals := make([]AdminNutritionMealDTO, 0, len(t.Meals))
+	for _, m := range t.Meals {
+		dto := AdminNutritionMealDTO{
+			MealOrder:   m.MealOrder,
+			MealName:    m.MealName,
+			MealCalorie: m.MealCalorie,
+			StartTime:   m.StartTime,
+			EndTime:     m.EndTime,
+		}
+		for _, it := range m.Items {
+			dto.Items = append(dto.Items, AdminNutritionMealItemDTO{
+				MenuName:    it.MenuName,
+				OrderIndex:  it.OrderIndex,
+				FoodID:      it.FoodID,
+				FoodName:    it.FoodName,
+				FoodImage:   it.FoodImage,
+				Unit:        it.Unit,
+				Value:       it.Value,
+				Description: it.Description,
+			})
+		}
+		meals = append(meals, dto)
+	}
+	return &AdminNutritionTemplateDetail{
+		AdminNutritionTemplateSummary: AdminNutritionTemplateSummary{
+			ID: t.ID, Title: t.Title, Type: t.Type, Gender: t.Gender,
+			Target: t.Target, Limitation: t.Limitation, Calorie: t.Calorie,
+			IsPro: t.IsPro, MealCount: len(meals),
+		},
+		Description: t.Description,
+		Meals:       meals,
+	}
 }
