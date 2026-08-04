@@ -142,13 +142,17 @@ export default function ManualExerciseModal({ open, onClose, onAdd, dayLabel }) 
         headers: { "Content-Type": "multipart/form-data" },
       });
       const created = res.data || {};
-      const imageUrl = created.gifUrl || created.imageUrl || "";
 
       onAdd?.(
         newExerciseEntry({
           exerciseId: created.id,
           name: created.name || trimmedName,
-          imageUrl,
+          imageUrl: created.imageUrl || "",
+          gifUrl: created.gifUrl || "",
+          category: created.category || category.trim(),
+          bodyPart: created.bodyPart || bodyPart.trim(),
+          equipment: created.equipment || equipment.trim(),
+          description: created.description || description.trim(),
           sets,
           reps,
         })

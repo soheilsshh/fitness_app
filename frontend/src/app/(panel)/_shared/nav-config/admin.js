@@ -6,6 +6,7 @@ import {
   FilterIcon,
   GlobeIcon,
   LayoutDashboardIcon,
+  LayoutTemplateIcon,
   MessageCircleIcon,
   SmartphoneIcon,
   UserCheckIcon,
@@ -64,6 +65,11 @@ export const adminNav = [
     href: "/admin/exercises",
     label: "تمرین‌ها",
     icon: ActivityIcon,
+  },
+  {
+    href: "/admin/templates",
+    label: "تمپلیت برنامه",
+    icon: LayoutTemplateIcon,
   },
   {
     href: "/admin/site",

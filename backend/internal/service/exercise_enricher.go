@@ -9,6 +9,17 @@ import (
 	"github.com/yourusername/fitness-management/internal/repository"
 )
 
+func exerciseMediaURL(path string) string {
+	path = strings.TrimSpace(path)
+	if path == "" {
+		return ""
+	}
+	if strings.HasPrefix(path, "http://") || strings.HasPrefix(path, "https://") || strings.HasPrefix(path, "/") {
+		return path
+	}
+	return "/exercises-media/" + strings.TrimPrefix(path, "./")
+}
+
 func decodeInstructionStepsJSON(data string) []string {
 	if strings.TrimSpace(data) == "" {
 		return []string{}
@@ -21,6 +32,12 @@ func decodeInstructionStepsJSON(data string) []string {
 }
 
 func exerciseModelToWorkoutDTO(e *models.Exercise, sets int, reps string) MeWorkoutExerciseDTO {
+	imageURL := exerciseMediaURL(e.ImagePath)
+	gifURL := exerciseMediaURL(e.GifPath)
+	// Prefer animation for clients that only render imageUrl (mobile ListTile).
+	if gifURL != "" {
+		imageURL = gifURL
+	}
 	dto := MeWorkoutExerciseDTO{
 		ExerciseID:       e.ID,
 		Name:             e.Name,
@@ -32,8 +49,8 @@ func exerciseModelToWorkoutDTO(e *models.Exercise, sets int, reps string) MeWork
 		Target:           e.Target,
 		Description:      e.Description,
 		InstructionSteps: decodeInstructionStepsJSON(e.InstructionSteps),
-		ImageURL:         exerciseMediaURL(e.ImagePath),
-		GifURL:           exerciseMediaURL(e.GifPath),
+		ImageURL:         imageURL,
+		GifURL:           gifURL,
 	}
 	return dto
 }

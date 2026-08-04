@@ -108,6 +108,13 @@ export default function ExercisePickerModal({ open, onClose, onAdd, dayLabel }) 
         exerciseId: selected.id,
         name: selected.name,
         imageUrl: selected.imageUrl || "",
+        gifUrl: selected.gifUrl || "",
+        category: selected.category || "",
+        bodyPart: selected.bodyPart || "",
+        equipment: selected.equipment || "",
+        target: selected.target || "",
+        description: selected.description || "",
+        instructionSteps: selected.instructionSteps || [],
         sets,
         reps,
       })

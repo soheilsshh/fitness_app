@@ -109,17 +109,6 @@ func NewAdminExerciseService(repo repository.ExerciseRepository) AdminExerciseSe
 	return &adminExerciseService{repo: repo}
 }
 
-func exerciseMediaURL(path string) string {
-	path = strings.TrimSpace(path)
-	if path == "" {
-		return ""
-	}
-	if strings.HasPrefix(path, "http://") || strings.HasPrefix(path, "https://") || strings.HasPrefix(path, "/") {
-		return path
-	}
-	return "/exercises-media/" + strings.TrimPrefix(path, "./")
-}
-
 func decodeStringSlice(data string) []string {
 	if strings.TrimSpace(data) == "" {
 		return []string{}
