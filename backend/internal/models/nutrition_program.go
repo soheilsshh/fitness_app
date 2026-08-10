@@ -13,6 +13,10 @@ type NutritionProgram struct {
 	Version        int       `gorm:"not null;default:1"`
 	Title          string    `gorm:"size:255"`
 	Notes          string    `gorm:"type:text"`
+	// CaloriesTarget / ProteinTarget are day-level diet goals from the coach or template.
+	// Meal rows alone cannot store these, so they live on the program.
+	CaloriesTarget int    `gorm:"not null;default:0"`
+	ProteinTarget  string `gorm:"size:100"`
 	DurationWeeks  int       `gorm:"not null;default:4"`
 	IsActive       bool      `gorm:"not null;default:true"`
 	LastUpdatedAt  time.Time `gorm:"autoUpdateTime"`

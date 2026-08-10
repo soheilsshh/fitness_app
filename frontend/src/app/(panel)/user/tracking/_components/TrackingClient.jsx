@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Scale, Upload } from "lucide-react";
+import { Camera, Scale, Upload } from "lucide-react";
 import { api } from "@/lib/axios/client";
 import PageHeader from "@/app/(panel)/user/_components/ui/PageHeader";
 import PanelEmptyState from "@/app/(panel)/user/_components/ui/PanelEmptyState";

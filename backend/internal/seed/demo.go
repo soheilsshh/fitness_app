@@ -30,6 +30,8 @@ var DemoAccounts = []struct {
 	{Role: "student", Name: "امیر حسینی", Email: "student.amir@fitness.dev", Phone: "09125555555", Note: "شاگرد دمو با اشتراک (مربی سارا)"},
 	{Role: "student", Name: "ندا جعفری", Email: "student.neda@fitness.dev", Phone: "09126666666", Note: "شاگرد بدون اشتراک (تست تهیه برنامه)"},
 	{Role: "student", Name: "سارا شاگرد علی", Email: "student.ali@fitness.dev", Phone: "09127777777", Note: "شاگرد با اشتراک VIP علی رشیدآبادی"},
+	{Role: "student", Name: "کاربر استاندارد", Email: "student.standard@fitino.dev", Phone: "09121001001", Note: "اشتراک پلن VIP (استاندارد/پیشنهاد اصلی)"},
+	{Role: "student", Name: "کاربر VIP پرمیوم", Email: "student.vip@fitino.dev", Phone: "09121001002", Note: "اشتراک پلن CIP (پرمیوم)"},
 }
 
 // EnsureDemoData creates mock coaches/students/plans/subscriptions for video demos.
@@ -122,11 +124,99 @@ func EnsureDemoData(ctx context.Context, db *gorm.DB) error {
 				return err
 			}
 		}
+
+		// Explicit standard (VIP plan) + premium (CIP plan) customer accounts for QA.
+		if err := ensureAliTierCustomers(db, aliRashid.ID, pass); err != nil {
+			return err
+		}
 	}
 
 	_ = planWorkout
 	log.Println("demo accounts ready (password: 12345678) — see seed.DemoAccounts / seed -demo")
 	return nil
+}
+
+func ensureAliTierCustomers(db *gorm.DB, coachID uint, passHash string) error {
+	var vip, cip models.ServicePlan
+	if err := db.Where("coach_id = ? AND name = ?", coachID, aliVIPPlanName).First(&vip).Error; err != nil {
+		return err
+	}
+	if err := db.Where("coach_id = ? AND name = ?", coachID, aliCIPPlanName).First(&cip).Error; err != nil {
+		return err
+	}
+
+	standard, err := ensureDemoUserFreshPassword(
+		db,
+		"کاربر استاندارد",
+		"student.standard@fitino.dev",
+		"09121001001",
+		passHash,
+		models.RoleStudent,
+		"",
+		&coachID,
+	)
+	if err != nil {
+		return err
+	}
+	if err := ensureDemoSubscription(db, standard.ID, vip.ID, coachID, 90); err != nil {
+		return err
+	}
+
+	vipUser, err := ensureDemoUserFreshPassword(
+		db,
+		"کاربر VIP پرمیوم",
+		"student.vip@fitino.dev",
+		"09121001002",
+		passHash,
+		models.RoleStudent,
+		"",
+		&coachID,
+	)
+	if err != nil {
+		return err
+	}
+	if err := ensureDemoSubscription(db, vipUser.ID, cip.ID, coachID, 90); err != nil {
+		return err
+	}
+
+	log.Println("tier customers ready: 09121001001=VIP(standard) · 09121001002=CIP(premium) · pass=12345678")
+	return nil
+}
+
+// ensureDemoUserFreshPassword is like ensureDemoUser but always resets password hash
+// so QA accounts stay loginable after seed re-runs.
+func ensureDemoUserFreshPassword(
+	db *gorm.DB,
+	name, email, phone, passHash, role, coachStatus string,
+	assignedCoachID *uint,
+) (*models.User, error) {
+	user, err := ensureDemoUser(db, name, email, phone, passHash, role, coachStatus, assignedCoachID)
+	if err != nil {
+		return nil, err
+	}
+	changed := false
+	if user.Password != passHash {
+		user.Password = passHash
+		changed = true
+	}
+	if user.Phone != phone {
+		user.Phone = phone
+		changed = true
+	}
+	if user.Name != name {
+		user.Name = name
+		changed = true
+	}
+	if assignedCoachID != nil && (user.AssignedCoachID == nil || *user.AssignedCoachID != *assignedCoachID) {
+		user.AssignedCoachID = assignedCoachID
+		changed = true
+	}
+	if changed {
+		if err := db.Save(user).Error; err != nil {
+			return nil, err
+		}
+	}
+	return user, nil
 }
 
 // LogDemoCredentials prints a concise login sheet for demos/videos.

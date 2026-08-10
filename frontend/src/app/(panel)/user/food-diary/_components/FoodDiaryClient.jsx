@@ -84,7 +84,7 @@ function DailyProgressCard({ totals, targets, loading }) {
         <CardDescription>
           {caloriesTarget || proteinTargetG
             ? "مقایسه با اهداف برنامه غذایی مربی"
-            : "اهداف رژیم هنوز توسط مربی تنظیم نشده است (حالت آزاد)"}
+            : "هدف کالری/پروتئین روزانه ثبت نشده (حالت آزاد). وعده‌های برنامه را در «برنامه‌های من» ببینید."}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">

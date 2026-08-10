@@ -806,15 +806,20 @@ func (s *meService) GetMyProgramByID(ctx context.Context, userID uint, programID
 
 	var workoutItems []models.ProgramItem
 	var nutritionItems []models.NutritionItem
+	var nutritionCaloriesTarget int
+	var nutritionProteinTarget string
 	if wp, err := s.programRepo.FindActiveWorkoutBySubscriptionID(ctx, sub.ID); err == nil && wp != nil {
 		workoutItems, _ = s.programRepo.FindWorkoutItemsByProgramID(ctx, wp.ID)
 	}
 	if np, err := s.programRepo.FindActiveNutritionBySubscriptionID(ctx, sub.ID); err == nil && np != nil {
 		nutritionItems, _ = s.programRepo.FindNutritionItemsByProgramID(ctx, np.ID)
+		nutritionCaloriesTarget = np.CaloriesTarget
+		nutritionProteinTarget = np.ProteinTarget
 	}
 	planByDay, schedule := buildFullPlanByDay(workoutItems, nutritionItems)
 	planByDay = enrichWorkoutPlan(ctx, s.exerciseRepo, planByDay)
 	planByDay = enrichNutritionPlan(ctx, s.foodRepo, planByDay)
+	planByDay = applyNutritionProgramTargets(planByDay, nutritionCaloriesTarget, nutritionProteinTarget)
 	if schedule == nil {
 		schedule = &MeScheduleDTO{Weekly: []string{}, RestDays: []string{}}
 	}

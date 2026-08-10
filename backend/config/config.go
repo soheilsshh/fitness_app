@@ -236,6 +236,8 @@ func setDefaults() {
 func bindEnvKeys() {
 	_ = viper.BindEnv("app.env", "APP_ENV")
 	_ = viper.BindEnv("server.port", "PORT")
+	_ = viper.BindEnv("cors.allow_localhost", "CORS_ALLOW_LOCALHOST")
+	_ = viper.BindEnv("cors.allow_credentials", "CORS_ALLOW_CREDENTIALS")
 	_ = viper.BindEnv("database.host", "DB_HOST")
 	_ = viper.BindEnv("database.port", "DB_PORT")
 	_ = viper.BindEnv("database.user", "DB_USER")
@@ -342,6 +344,8 @@ func normalize(c *Config) {
 	// Prod: leave yaml/env as-is, but warn loudly if sandbox is still on.
 	if isDevEnv(c.App.Env) {
 		c.Payments.Zarinpal.Sandbox = true
+		// Next.js on localhost:3000 must pass CORS preflight against :8088.
+		c.CORS.AllowLocalhost = true
 	} else if c.Payments.Zarinpal.Sandbox {
 		log.Println("WARNING: payments.zarinpal.sandbox=true while APP_ENV=production — live charges will not run")
 	}

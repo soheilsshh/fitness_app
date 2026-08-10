@@ -145,13 +145,18 @@ func (s *coachProgramService) GetStudentPrograms(ctx context.Context, coachID, s
 		resp.WorkoutProgramID = wp.ID
 		workoutItems, _ = s.programRepo.FindWorkoutItemsByProgramID(ctx, wp.ID)
 	}
+	var nutritionCaloriesTarget int
+	var nutritionProteinTarget string
 	if np, err := s.programRepo.FindActiveNutritionBySubscriptionID(ctx, sub.ID); err == nil && np != nil {
 		resp.NutritionProgramID = np.ID
 		nutritionItems, _ = s.programRepo.FindNutritionItemsByProgramID(ctx, np.ID)
+		nutritionCaloriesTarget = np.CaloriesTarget
+		nutritionProteinTarget = np.ProteinTarget
 	}
 
 	planByDay, schedule := buildFullPlanByDay(workoutItems, nutritionItems)
 	planByDay, schedule = s.finalizePlan(ctx, planByDay, schedule)
+	planByDay = applyNutritionProgramTargets(planByDay, nutritionCaloriesTarget, nutritionProteinTarget)
 	resp.PlanByDay = planByDay
 	resp.Schedule = schedule
 	return resp, nil
@@ -315,6 +320,9 @@ func (s *coachProgramService) AssignNutritionProgram(ctx context.Context, coachI
 }
 
 func (s *coachProgramService) createNutritionProgram(ctx context.Context, coachID, subscriptionID uint, title string, durationWeeks int, notes string, planByDay map[string]MeDayPlanDTO) (*CoachStudentProgramsResponse, error) {
+	planByDay = enrichNutritionPlan(ctx, s.foodRepo, planByDay)
+	caloriesTarget, proteinTarget := extractNutritionTargetsFromPlan(planByDay)
+
 	var createdID uint
 	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		if err := tx.Model(&models.NutritionProgram{}).
@@ -340,6 +348,8 @@ func (s *coachProgramService) createNutritionProgram(ctx context.Context, coachI
 			Version:        version,
 			Title:          title,
 			Notes:          notes,
+			CaloriesTarget: caloriesTarget,
+			ProteinTarget:  proteinTarget,
 			DurationWeeks:  durationWeeks,
 			IsActive:       true,
 		}
@@ -366,6 +376,7 @@ func (s *coachProgramService) createNutritionProgram(ctx context.Context, coachI
 	loadedItems, _ := s.programRepo.FindNutritionItemsByProgramID(ctx, createdID)
 	resultPlan := nutritionItemsToPlanByDay(loadedItems)
 	resultPlan, _ = s.finalizePlan(ctx, resultPlan, nil)
+	resultPlan = applyNutritionProgramTargets(resultPlan, caloriesTarget, proteinTarget)
 	return &CoachStudentProgramsResponse{
 		NutritionProgramID: createdID,
 		PlanByDay:          resultPlan,
@@ -398,13 +409,17 @@ func (s *coachProgramService) UpdateNutritionProgram(ctx context.Context, coachI
 	if req.Notes != "" {
 		program.Notes = req.Notes
 	}
+	planByDayInput := enrichNutritionPlan(ctx, s.foodRepo, req.PlanByDay)
+	caloriesTarget, proteinTarget := extractNutritionTargetsFromPlan(planByDayInput)
+	program.CaloriesTarget = caloriesTarget
+	program.ProteinTarget = proteinTarget
 	program.LastUpdatedAt = time.Now()
 
 	if err := s.programRepo.UpdateNutritionProgram(ctx, program); err != nil {
 		return nil, err
 	}
 
-	items := planByDayToNutritionItems(req.PlanByDay)
+	items := planByDayToNutritionItems(planByDayInput)
 	for i := range items {
 		items[i].NutritionProgramID = program.ID
 	}
@@ -415,6 +430,7 @@ func (s *coachProgramService) UpdateNutritionProgram(ctx context.Context, coachI
 	loaded, _ := s.programRepo.FindNutritionItemsByProgramID(ctx, program.ID)
 	planByDay := nutritionItemsToPlanByDay(loaded)
 	planByDay, _ = s.finalizePlan(ctx, planByDay, nil)
+	planByDay = applyNutritionProgramTargets(planByDay, caloriesTarget, proteinTarget)
 	return &CoachStudentProgramsResponse{
 		NutritionProgramID: program.ID,
 		PlanByDay:          planByDay,

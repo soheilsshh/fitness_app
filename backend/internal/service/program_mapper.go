@@ -267,6 +267,46 @@ func nutritionItemsToPlanByDay(items []models.NutritionItem) map[string]MeDayPla
 	return planByDay
 }
 
+// extractNutritionTargetsFromPlan picks the strongest day-level calorie/protein goals from planByDay.
+func extractNutritionTargetsFromPlan(planByDay map[string]MeDayPlanDTO) (calories int, protein string) {
+	for _, key := range allDayKeys {
+		day, ok := planByDay[key]
+		if !ok || day.Nutrition == nil {
+			continue
+		}
+		if day.Nutrition.CaloriesTarget > calories {
+			calories = day.Nutrition.CaloriesTarget
+		}
+		if protein == "" {
+			if p := strings.TrimSpace(day.Nutrition.ProteinTarget); p != "" {
+				protein = p
+			}
+		}
+	}
+	return calories, protein
+}
+
+// applyNutritionProgramTargets restores day-level goals that are not stored on meal rows.
+func applyNutritionProgramTargets(planByDay map[string]MeDayPlanDTO, calories int, protein string) map[string]MeDayPlanDTO {
+	protein = strings.TrimSpace(protein)
+	if calories <= 0 && protein == "" {
+		return planByDay
+	}
+	for key, day := range planByDay {
+		if day.Nutrition == nil {
+			continue
+		}
+		if calories > 0 && day.Nutrition.CaloriesTarget == 0 {
+			day.Nutrition.CaloriesTarget = calories
+		}
+		if protein != "" && strings.TrimSpace(day.Nutrition.ProteinTarget) == "" {
+			day.Nutrition.ProteinTarget = protein
+		}
+		planByDay[key] = day
+	}
+	return planByDay
+}
+
 func planByDayToWorkoutItems(planByDay map[string]MeDayPlanDTO) []models.ProgramItem {
 	items := make([]models.ProgramItem, 0)
 	for _, key := range allDayKeys {
