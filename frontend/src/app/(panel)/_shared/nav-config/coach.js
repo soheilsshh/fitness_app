@@ -1,7 +1,9 @@
 import {
+  AppleIcon,
   CalculatorIcon,
   ClipboardListIcon,
   LayoutDashboardIcon,
+  LayoutTemplateIcon,
   LineChartIcon,
   MessageSquareIcon,
   ScaleIcon,
@@ -42,6 +44,16 @@ export const coachNav = [
     icon: ClipboardListIcon,
   },
   {
+    href: "/coach/templates",
+    label: "تمپلیت تمرین",
+    icon: LayoutTemplateIcon,
+  },
+  {
+    href: "/coach/nutrition-templates",
+    label: "تمپلیت تغذیه",
+    icon: AppleIcon,
+  },
+  {
     href: "/coach/profile",
     label: "پروفایل من",
     icon: UserIcon,
@@ -63,5 +75,5 @@ export const coachToolsNav = [
 
 export const coachHeader = {
   title: "پنل مربی",
-  subtitle: "مدیریت دانشجویان و برنامه‌ها",
+  subtitle: "مدیریت دانشجویان، برنامه‌ها و تمپلیت‌های آماده",
 };

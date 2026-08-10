@@ -73,10 +73,12 @@ export default function WorkoutEditorClient({
   studentId: studentIdProp,
   embedded = false,
   onSaved,
+  apiBase = "coach",
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const studentId = studentIdProp ?? searchParams.get("id");
+  const studentsBase = `/${apiBase}/students`;
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [programId, setProgramId] = useState(null);
@@ -96,7 +98,7 @@ export default function WorkoutEditorClient({
   const loadPrograms = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await api.get(`/coach/students/${studentId}/programs`);
+      const res = await api.get(`${studentsBase}/${studentId}/programs`);
       const data = res.data || {};
       setProgramId(data.workoutProgramId || null);
       if (data.workoutProgramId && data.schedule?.restDays) {
@@ -112,7 +114,7 @@ export default function WorkoutEditorClient({
     } finally {
       setLoading(false);
     }
-  }, [studentId]);
+  }, [studentId, studentsBase]);
 
   useEffect(() => {
     loadPrograms();
@@ -285,9 +287,9 @@ export default function WorkoutEditorClient({
         planByDay,
       };
       if (programId) {
-        await api.patch(`/coach/students/${studentId}/workout-programs/${programId}`, payload);
+        await api.patch(`${studentsBase}/${studentId}/workout-programs/${programId}`, payload);
       } else {
-        const res = await api.post(`/coach/students/${studentId}/workout-programs`, payload);
+        const res = await api.post(`${studentsBase}/${studentId}/workout-programs`, payload);
         setProgramId(res.data?.workoutProgramId || null);
       }
       await toastSuccess("موفق", "برنامه تمرین با موفقیت برای دانشجو ارسال شد.");
@@ -317,7 +319,7 @@ export default function WorkoutEditorClient({
         <div className="space-y-1 text-start">
           {!embedded ? (
             <Button variant="outline" size="sm" asChild className="mb-2">
-              <Link href={`/coach/students/detail?id=${encodeURIComponent(studentId)}`}>
+              <Link href={`${studentsBase}/detail?id=${encodeURIComponent(studentId)}`}>
                 <ChevronLeft data-icon="inline-start" />
                 بازگشت
               </Link>
@@ -552,6 +554,7 @@ export default function WorkoutEditorClient({
         onClose={() => setPickerOpen(false)}
         dayLabel={DAY_LABELS[selectedDay]}
         onAdd={(entry) => addExercise(entry)}
+        apiBase={apiBase}
       />
 
       <ManualExerciseModal
@@ -559,12 +562,14 @@ export default function WorkoutEditorClient({
         onClose={() => setManualOpen(false)}
         dayLabel={DAY_LABELS[selectedDay]}
         onAdd={(entry) => addExercise(entry)}
+        apiBase={apiBase}
       />
       <TemplatePickerModal
         open={templatePickerOpen}
         onClose={() => setTemplatePickerOpen(false)}
         mode="workout"
         studentId={studentId}
+        apiBase={apiBase}
         onApplied={async () => {
           await loadPrograms();
           onSaved?.();

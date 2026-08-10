@@ -141,6 +141,13 @@ export function exerciseEntryFromApi(ex) {
     reps: summarizeSetReps(setsDetails) || reps,
     setsDetails,
     imageUrl: ex.imageUrl || "",
+    gifUrl: ex.gifUrl || "",
+    category: ex.category || "",
+    bodyPart: ex.bodyPart || "",
+    equipment: ex.equipment || "",
+    target: ex.target || "",
+    description: ex.description || "",
+    instructionSteps: Array.isArray(ex.instructionSteps) ? ex.instructionSteps : [],
     supersetId: normalizeSupersetId(ex.supersetId ?? ex.superset_id),
     workoutSystemType: normalizeWorkoutSystemType(
       ex.workoutSystemType ?? ex.workout_system_type
@@ -215,6 +222,15 @@ export function dayExercisesToPlanByDay(dayExercises) {
               isAmrap: Boolean(s.isAmrap),
             })),
             imageUrl: e.imageUrl || "",
+            gifUrl: e.gifUrl || "",
+            category: e.category || "",
+            bodyPart: e.bodyPart || "",
+            equipment: e.equipment || "",
+            target: e.target || "",
+            description: e.description || "",
+            instructionSteps: Array.isArray(e.instructionSteps)
+              ? e.instructionSteps
+              : [],
             supersetId: normalizeSupersetId(e.supersetId ?? e.superset_id),
             workoutSystemType: normalizeWorkoutSystemType(
               e.workoutSystemType ?? e.workout_system_type
@@ -254,12 +270,32 @@ export function planByDayToDayExercises(planByDay) {
   return map;
 }
 
-export function newExerciseEntry({ exerciseId, name, imageUrl = "", sets = "3", reps = "12" }) {
+export function newExerciseEntry({
+  exerciseId,
+  name,
+  imageUrl = "",
+  gifUrl = "",
+  category = "",
+  bodyPart = "",
+  equipment = "",
+  target = "",
+  description = "",
+  instructionSteps = [],
+  sets = "3",
+  reps = "12",
+}) {
   const setsDetails = createSetsDetails(sets, reps);
   return {
     exerciseId,
     name,
     imageUrl,
+    gifUrl,
+    category,
+    bodyPart,
+    equipment,
+    target,
+    description,
+    instructionSteps: Array.isArray(instructionSteps) ? instructionSteps : [],
     sets: String(setsDetails.length || sets),
     reps: summarizeSetReps(setsDetails) || String(reps || "").trim(),
     setsDetails,

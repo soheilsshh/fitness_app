@@ -105,7 +105,8 @@ func (h *CoachProgramController) ListWorkoutTemplates(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
-	resp, err := h.programService.ListWorkoutTemplates(c.Request.Context())
+	page, pageSize := parseOptionalPage(c)
+	resp, err := h.programService.ListWorkoutTemplates(c.Request.Context(), page, pageSize, c.Query("query"))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -118,12 +119,67 @@ func (h *CoachProgramController) ListNutritionTemplates(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
-	resp, err := h.programService.ListNutritionTemplates(c.Request.Context())
+	page, pageSize := parseOptionalPage(c)
+	resp, err := h.programService.ListNutritionTemplates(c.Request.Context(), page, pageSize, c.Query("query"))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, resp)
+}
+
+func (h *CoachProgramController) GetWorkoutTemplate(c *gin.Context) {
+	if _, err := middleware.GetUserID(c); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil || id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		return
+	}
+	item, err := h.programService.GetWorkoutTemplate(c.Request.Context(), uint(id))
+	if err != nil {
+		h.handleProgramError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, item)
+}
+
+func (h *CoachProgramController) GetNutritionTemplate(c *gin.Context) {
+	if _, err := middleware.GetUserID(c); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil || id == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		return
+	}
+	item, err := h.programService.GetNutritionTemplate(c.Request.Context(), uint(id))
+	if err != nil {
+		h.handleProgramError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, item)
+}
+
+func parseOptionalPage(c *gin.Context) (page, pageSize int) {
+	if p := c.Query("page"); p != "" {
+		if v, err := strconv.Atoi(p); err == nil && v > 0 {
+			page = v
+		}
+	}
+	if ps := c.Query("pageSize"); ps != "" {
+		if v, err := strconv.Atoi(ps); err == nil && v > 0 && v <= 100 {
+			pageSize = v
+		}
+	} else if l := c.Query("limit"); l != "" {
+		if v, err := strconv.Atoi(l); err == nil && v > 0 && v <= 100 {
+			pageSize = v
+		}
+	}
+	return page, pageSize
 }
 
 func (h *CoachProgramController) AssignWorkoutFromTemplate(c *gin.Context) {

@@ -39,6 +39,11 @@ import {
   roundMacro,
   sumDayMacros,
 } from "../../_components/nutritionHelpers";
+import {
+  groupMealsBySlot,
+  MEAL_SLOTS,
+  sortMealsBySlot,
+} from "@/lib/nutrition/mealSlots";
 import FoodPickerModal from "./FoodPickerModal";
 import ManualFoodModal from "./ManualFoodModal";
 import TemplatePickerModal from "../../_components/TemplatePickerModal";
@@ -87,9 +92,13 @@ function buildSavePlanByDay(
   return payload;
 }
 
-export default function NutritionEditorClient({ studentId: studentIdProp } = {}) {
+export default function NutritionEditorClient({
+  studentId: studentIdProp,
+  apiBase = "coach",
+} = {}) {
   const searchParams = useSearchParams();
   const studentId = studentIdProp ?? searchParams.get("id");
+  const studentsBase = `/${apiBase}/students`;
   const caloriesFromQuery = searchParams.get("calories");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -102,11 +111,12 @@ export default function NutritionEditorClient({ studentId: studentIdProp } = {})
   const [pickerOpen, setPickerOpen] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
   const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
+  const [activeSlot, setActiveSlot] = useState("breakfast");
 
   const loadPrograms = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await api.get(`/coach/students/${studentId}/programs`);
+      const res = await api.get(`${studentsBase}/${studentId}/programs`);
       const data = res.data || {};
       setProgramId(data.nutritionProgramId || null);
       if (data.planByDay) {
@@ -129,7 +139,7 @@ export default function NutritionEditorClient({ studentId: studentIdProp } = {})
     } finally {
       setLoading(false);
     }
-  }, [studentId, caloriesFromQuery]);
+  }, [studentId, caloriesFromQuery, studentsBase]);
 
   useEffect(() => {
     let cancelled = false;
@@ -150,6 +160,7 @@ export default function NutritionEditorClient({ studentId: studentIdProp } = {})
   }, [selectedDay, planByDay]);
 
   const meals = planByDay[selectedDay]?.nutrition?.meals || [];
+  const { groups: mealGroups } = useMemo(() => groupMealsBySlot(meals), [meals]);
 
   const dayTotals = useMemo(() => sumDayMacros(meals), [meals]);
 
@@ -170,7 +181,10 @@ export default function NutritionEditorClient({ studentId: studentIdProp } = {})
   const addMeal = (meal) => {
     updateDayNutrition((n) => ({
       ...n,
-      meals: [...(n.meals || []), meal],
+      meals: sortMealsBySlot([
+        ...(n.meals || []),
+        { ...meal, mealSlot: meal.mealSlot || activeSlot },
+      ]),
     }));
   };
 
@@ -224,12 +238,12 @@ export default function NutritionEditorClient({ studentId: studentIdProp } = {})
       };
       if (programId) {
         await api.patch(
-          `/coach/students/${studentId}/nutrition-programs/${programId}`,
+          `${studentsBase}/${studentId}/nutrition-programs/${programId}`,
           payload,
         );
       } else {
         const res = await api.post(
-          `/coach/students/${studentId}/nutrition-programs`,
+          `${studentsBase}/${studentId}/nutrition-programs`,
           payload,
         );
         setProgramId(res.data?.nutritionProgramId || null);
@@ -256,13 +270,13 @@ export default function NutritionEditorClient({ studentId: studentIdProp } = {})
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="sm" asChild>
-            <Link href={`/coach/students/detail?id=${encodeURIComponent(studentId)}`}>
+            <Link href={`${studentsBase}/detail?id=${encodeURIComponent(studentId)}`}>
               <ChevronLeft data-icon="inline-start" />
               پروفایل دانشجو
             </Link>
           </Button>
           <Button variant="outline" size="sm" asChild>
-            <Link href={`/coach/students/workout?id=${encodeURIComponent(studentId)}`}>
+            <Link href={`${studentsBase}/workout?id=${encodeURIComponent(studentId)}`}>
               برنامه تمرین
             </Link>
           </Button>
@@ -371,26 +385,63 @@ export default function NutritionEditorClient({ studentId: studentIdProp } = {})
             </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>وعده فعال برای افزودن غذا</Label>
+            <ToggleGroup
+              type="single"
+              value={activeSlot}
+              onValueChange={(v) => {
+                if (v) setActiveSlot(v);
+              }}
+              className="flex flex-wrap justify-start gap-1"
+            >
+              {MEAL_SLOTS.map((slot) => (
+                <ToggleGroupItem
+                  key={slot.value}
+                  value={slot.value}
+                  className="px-3 text-xs"
+                >
+                  {slot.label}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
+          </div>
+
           {meals.length === 0 ? (
             <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
-              هنوز غذایی برای این روز اضافه نشده است.
+              هنوز غذایی برای این روز اضافه نشده است. اول وعده را انتخاب کنید
+              (صبحانه، ناهار، شام یا میان‌وعده) بعد غذا اضافه کنید.
             </p>
           ) : (
-            <div className="space-y-3">
-              {meals.map((meal) => (
-                <MealCard
-                  key={meal.uid}
-                  meal={meal}
-                  onRemove={() => removeMeal(meal.uid)}
-                  onServingChange={(value) =>
-                    updateMealServing(meal.uid, value)
-                  }
-                  onManualMacroChange={(field, value) =>
-                    updateManualMacro(meal.uid, field, value)
-                  }
-                />
-              ))}
+            <div className="space-y-4">
+              {mealGroups.map((group) =>
+                group.meals.length === 0 ? null : (
+                  <div key={group.value} className="space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <h3 className="text-sm font-semibold">{group.label}</h3>
+                      <Badge variant="outline" className="text-[10px]">
+                        {group.meals.length.toLocaleString("fa-IR")} آیتم
+                      </Badge>
+                    </div>
+                    <div className="space-y-3">
+                      {group.meals.map((meal) => (
+                        <MealCard
+                          key={meal.uid}
+                          meal={meal}
+                          onRemove={() => removeMeal(meal.uid)}
+                          onServingChange={(value) =>
+                            updateMealServing(meal.uid, value)
+                          }
+                          onManualMacroChange={(field, value) =>
+                            updateManualMacro(meal.uid, field, value)
+                          }
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ),
+              )}
             </div>
           )}
         </CardContent>
@@ -401,6 +452,7 @@ export default function NutritionEditorClient({ studentId: studentIdProp } = {})
         onClose={() => setPickerOpen(false)}
         onAdd={addMeal}
         dayLabel={DAY_LABELS[selectedDay]}
+        foodsPath={apiBase === "admin" ? "/admin/foods" : undefined}
       />
       <ManualFoodModal
         open={manualOpen}
@@ -413,6 +465,7 @@ export default function NutritionEditorClient({ studentId: studentIdProp } = {})
         onClose={() => setTemplatePickerOpen(false)}
         mode="nutrition"
         studentId={studentId}
+        apiBase={apiBase}
         onApplied={async () => {
           await loadPrograms();
         }}

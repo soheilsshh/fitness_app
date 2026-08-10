@@ -201,6 +201,7 @@ type MeNutritionDTO struct {
 type MeMealDTO struct {
 	Title      string   `json:"title"`
 	Detail     string   `json:"detail"`
+	MealSlot   string   `json:"mealSlot,omitempty"` // breakfast|lunch|dinner|snack1|snack2|snack3
 	FoodID     uint     `json:"foodId,omitempty"`
 	Multiplier float64  `json:"multiplier,omitempty"`
 	Unit       string   `json:"unit,omitempty"`

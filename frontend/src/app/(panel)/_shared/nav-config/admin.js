@@ -1,11 +1,13 @@
 import {
   ActivityIcon,
+  AppleIcon,
   AwardIcon,
   BookOpenIcon,
   ClipboardListIcon,
   FilterIcon,
   GlobeIcon,
   LayoutDashboardIcon,
+  LayoutTemplateIcon,
   MessageCircleIcon,
   SmartphoneIcon,
   UserCheckIcon,
@@ -64,6 +66,16 @@ export const adminNav = [
     href: "/admin/exercises",
     label: "تمرین‌ها",
     icon: ActivityIcon,
+  },
+  {
+    href: "/admin/templates",
+    label: "تمپلیت تمرین",
+    icon: LayoutTemplateIcon,
+  },
+  {
+    href: "/admin/nutrition-templates",
+    label: "تمپلیت تغذیه",
+    icon: AppleIcon,
   },
   {
     href: "/admin/site",

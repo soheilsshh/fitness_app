@@ -1,12 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ClipboardList, Search } from "lucide-react";
+import Link from "next/link";
+import { ClipboardList, Plus, Search } from "lucide-react";
+import { toastError, toastSuccess } from "@/app/(site)/auth/_components/helpers";
 import { api } from "@/lib/axios/client";
 import PlansTable from "./PlansTable";
 import FilterChip from "./FilterChip";
 import PanelPagination from "@/app/(panel)/_shared/Pagination";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -18,6 +21,7 @@ export default function PlansClient() {
   const [query, setQuery] = useState("");
   const [tag, setTag] = useState("all");
   const [page, setPage] = useState(1);
+  const [refreshKey, setRefreshKey] = useState(0);
   const pageSize = 8;
 
   useEffect(() => {
@@ -44,7 +48,18 @@ export default function PlansClient() {
     return () => {
       cancelled = true;
     };
-  }, [page, pageSize, query, tag]);
+  }, [page, pageSize, query, tag, refreshKey]);
+
+  async function handleDelete(id) {
+    if (!window.confirm("این پلن حذف شود؟")) return;
+    try {
+      await api.delete(`/admin/plans/${id}`);
+      await toastSuccess("موفق", "پلن حذف شد.");
+      setRefreshKey((k) => k + 1);
+    } catch (e) {
+      toastError("خطا", e?.response?.data?.error || "حذف ناموفق بود.");
+    }
+  }
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
@@ -54,16 +69,24 @@ export default function PlansClient() {
         <div className="text-start">
           <h2 className="text-lg font-semibold tracking-tight">پلن‌های پلتفرم</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            مشاهده همه پلن‌های مربی‌ها (فقط خواندنی)
+            مدیریت همه پلن‌های مربی‌ها — ساخت، ویرایش و حذف
           </p>
         </div>
-        <Badge variant="outline" className="gap-1.5 px-3 py-1.5 text-sm">
-          <ClipboardList className="size-3.5 text-primary" />
-          تعداد:
-          <span className="font-semibold tabular-nums text-foreground">
-            {total.toLocaleString("fa-IR")}
-          </span>
-        </Badge>
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="gap-1.5 px-3 py-1.5 text-sm">
+            <ClipboardList className="size-3.5 text-primary" />
+            تعداد:
+            <span className="font-semibold tabular-nums text-foreground">
+              {total.toLocaleString("fa-IR")}
+            </span>
+          </Badge>
+          <Button asChild size="sm">
+            <Link href="/admin/plans/new">
+              <Plus className="size-4" />
+              پلن جدید
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <Card>
@@ -91,9 +114,9 @@ export default function PlansClient() {
               همه
             </FilterChip>
             <FilterChip
-              active={tag === "discounted"}
+              active={tag === "discount"}
               onClick={() => {
-                setTag("discounted");
+                setTag("discount");
                 setPage(1);
               }}
             >
@@ -125,7 +148,11 @@ export default function PlansClient() {
               پلنی یافت نشد.
             </p>
           ) : (
-            <PlansTable items={items} basePath="/admin/plans" />
+            <PlansTable
+              items={items}
+              basePath="/admin/plans"
+              onDelete={handleDelete}
+            />
           )}
         </CardContent>
       </Card>

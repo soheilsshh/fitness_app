@@ -168,21 +168,6 @@ Map<String, dynamic> _$NutritionPlanToJson(_NutritionPlan instance) =>
     <String, dynamic>{
       'caloriesTarget': instance.caloriesTarget,
       'proteinTarget': instance.proteinTarget,
-      'meals': instance.meals,
+      'meals': instance.meals.map((e) => e.toJson()).toList(),
     };
 
-_NutritionMeal _$NutritionMealFromJson(Map<String, dynamic> json) =>
-    _NutritionMeal(
-      title: json['title'] as String? ?? '',
-      detail: json['detail'] as String? ?? '',
-      calories: (json['calories'] as num?)?.toDouble() ?? 0,
-      protein: (json['protein'] as num?)?.toDouble() ?? 0,
-    );
-
-Map<String, dynamic> _$NutritionMealToJson(_NutritionMeal instance) =>
-    <String, dynamic>{
-      'title': instance.title,
-      'detail': instance.detail,
-      'calories': instance.calories,
-      'protein': instance.protein,
-    };

@@ -57,8 +57,10 @@ type NutritionTemplateSummary struct {
 }
 
 type TemplateListResponse struct {
-	Items []any `json:"items"`
-	Total int   `json:"total"`
+	Items    []any `json:"items"`
+	Total    int   `json:"total"`
+	Page     int   `json:"page,omitempty"`
+	PageSize int   `json:"pageSize,omitempty"`
 }
 
 type CoachProgramService interface {
@@ -67,8 +69,10 @@ type CoachProgramService interface {
 	UpdateWorkoutProgram(ctx context.Context, coachID, studentID, programID uint, req *ProgramAssignRequest) (*CoachStudentProgramsResponse, error)
 	AssignNutritionProgram(ctx context.Context, coachID, studentID uint, req *ProgramAssignRequest) (*CoachStudentProgramsResponse, error)
 	UpdateNutritionProgram(ctx context.Context, coachID, studentID, programID uint, req *ProgramAssignRequest) (*CoachStudentProgramsResponse, error)
-	ListWorkoutTemplates(ctx context.Context) (*TemplateListResponse, error)
-	ListNutritionTemplates(ctx context.Context) (*TemplateListResponse, error)
+	ListWorkoutTemplates(ctx context.Context, page, pageSize int, query string) (*TemplateListResponse, error)
+	ListNutritionTemplates(ctx context.Context, page, pageSize int, query string) (*TemplateListResponse, error)
+	GetWorkoutTemplate(ctx context.Context, id uint) (*AdminWorkoutTemplateDetail, error)
+	GetNutritionTemplate(ctx context.Context, id uint) (*AdminNutritionTemplateDetail, error)
 	AssignWorkoutFromTemplate(ctx context.Context, coachID, studentID, templateID uint) (*CoachStudentProgramsResponse, error)
 	AssignNutritionFromTemplate(ctx context.Context, coachID, studentID, templateID uint) (*CoachStudentProgramsResponse, error)
 }
@@ -437,46 +441,106 @@ func (s *coachProgramService) UpdateNutritionProgram(ctx context.Context, coachI
 	}, nil
 }
 
-func (s *coachProgramService) ListWorkoutTemplates(ctx context.Context) (*TemplateListResponse, error) {
-	templates, err := s.templateRepo.ListWorkoutTemplates(ctx)
+func (s *coachProgramService) ListWorkoutTemplates(ctx context.Context, page, pageSize int, query string) (*TemplateListResponse, error) {
+	// Legacy picker: no pagination → full list
+	if page <= 0 && pageSize <= 0 && strings.TrimSpace(query) == "" {
+		templates, err := s.templateRepo.ListWorkoutTemplates(ctx)
+		if err != nil {
+			return nil, err
+		}
+		items := make([]any, 0, len(templates))
+		for _, t := range templates {
+			items = append(items, WorkoutTemplateSummary{
+				ID: t.ID, Title: t.Title, Type: t.Type, Gender: t.Gender,
+				Location: t.Location, DayCount: t.DayCount, Target: t.Target,
+				Level: t.Level, Injury: t.Injury,
+			})
+		}
+		return &TemplateListResponse{Items: items, Total: len(items)}, nil
+	}
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 20
+	}
+	templates, total, err := s.templateRepo.ListWorkoutTemplatesPaged(ctx, page, pageSize, query)
 	if err != nil {
 		return nil, err
 	}
 	items := make([]any, 0, len(templates))
 	for _, t := range templates {
-		items = append(items, WorkoutTemplateSummary{
-			ID:       t.ID,
-			Title:    t.Title,
-			Type:     t.Type,
-			Gender:   t.Gender,
-			Location: t.Location,
-			DayCount: t.DayCount,
-			Target:   t.Target,
-			Level:    t.Level,
-			Injury:   t.Injury,
+		var c int64
+		_ = s.db.WithContext(ctx).Model(&models.TemplateProgramItem{}).
+			Where("workout_template_id = ?", t.ID).Count(&c)
+		items = append(items, AdminWorkoutTemplateSummary{
+			ID: t.ID, Title: t.Title, Type: t.Type, Gender: t.Gender,
+			Location: t.Location, DayCount: t.DayCount, Target: t.Target,
+			Level: t.Level, Injury: t.Injury, ItemCount: int(c),
 		})
 	}
-	return &TemplateListResponse{Items: items, Total: len(items)}, nil
+	return &TemplateListResponse{Items: items, Total: int(total), Page: page, PageSize: pageSize}, nil
 }
 
-func (s *coachProgramService) ListNutritionTemplates(ctx context.Context) (*TemplateListResponse, error) {
-	templates, err := s.templateRepo.ListNutritionTemplates(ctx)
+func (s *coachProgramService) ListNutritionTemplates(ctx context.Context, page, pageSize int, query string) (*TemplateListResponse, error) {
+	if page <= 0 && pageSize <= 0 && strings.TrimSpace(query) == "" {
+		templates, err := s.templateRepo.ListNutritionTemplates(ctx)
+		if err != nil {
+			return nil, err
+		}
+		items := make([]any, 0, len(templates))
+		for _, t := range templates {
+			items = append(items, NutritionTemplateSummary{
+				ID: t.ID, Title: t.Title, Type: t.Type, Gender: t.Gender,
+				Target: t.Target, Limitation: t.Limitation, Calorie: t.Calorie,
+			})
+		}
+		return &TemplateListResponse{Items: items, Total: len(items)}, nil
+	}
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 20
+	}
+	templates, total, err := s.templateRepo.ListNutritionTemplatesPaged(ctx, page, pageSize, query)
 	if err != nil {
 		return nil, err
 	}
 	items := make([]any, 0, len(templates))
 	for _, t := range templates {
-		items = append(items, NutritionTemplateSummary{
-			ID:         t.ID,
-			Title:      t.Title,
-			Type:       t.Type,
-			Gender:     t.Gender,
-			Target:     t.Target,
-			Limitation: t.Limitation,
-			Calorie:    t.Calorie,
+		var c int64
+		_ = s.db.WithContext(ctx).Model(&models.TemplateMeal{}).
+			Where("nutrition_template_id = ?", t.ID).Count(&c)
+		items = append(items, AdminNutritionTemplateSummary{
+			ID: t.ID, Title: t.Title, Type: t.Type, Gender: t.Gender,
+			Target: t.Target, Limitation: t.Limitation, Calorie: t.Calorie,
+			IsPro: t.IsPro, MealCount: int(c),
 		})
 	}
-	return &TemplateListResponse{Items: items, Total: len(items)}, nil
+	return &TemplateListResponse{Items: items, Total: int(total), Page: page, PageSize: pageSize}, nil
+}
+
+func (s *coachProgramService) GetWorkoutTemplate(ctx context.Context, id uint) (*AdminWorkoutTemplateDetail, error) {
+	t, err := s.templateRepo.FindWorkoutTemplateByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrCoachTemplateNotFound
+		}
+		return nil, err
+	}
+	return workoutTemplateToDetail(ctx, s.exerciseRepo, t), nil
+}
+
+func (s *coachProgramService) GetNutritionTemplate(ctx context.Context, id uint) (*AdminNutritionTemplateDetail, error) {
+	t, err := s.templateRepo.FindNutritionTemplateByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrCoachTemplateNotFound
+		}
+		return nil, err
+	}
+	return nutritionTemplateToDetail(t), nil
 }
 
 func (s *coachProgramService) AssignWorkoutFromTemplate(ctx context.Context, coachID, studentID, templateID uint) (*CoachStudentProgramsResponse, error) {

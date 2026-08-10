@@ -1,6 +1,6 @@
 module github.com/yourusername/fitness-management
 
-go 1.26.3
+go 1.26.5
 
 require (
 	github.com/gin-contrib/cors v1.7.6

@@ -264,6 +264,13 @@ func nutritionItemsToPlanByDay(items []models.NutritionItem) map[string]MeDayPla
 		planByDay[key] = day
 	}
 
+	for key, day := range planByDay {
+		if day.Nutrition != nil {
+			sortMealsBySlot(day.Nutrition.Meals)
+			planByDay[key] = day
+		}
+	}
+
 	return planByDay
 }
 
@@ -367,17 +374,30 @@ func planByDayToNutritionItems(planByDay map[string]MeDayPlanDTO) []models.Nutri
 		if dayNum == 0 {
 			continue
 		}
-		for i, meal := range day.Nutrition.Meals {
+		meals := append([]MeMealDTO(nil), day.Nutrition.Meals...)
+		sortMealsBySlot(meals)
+		for i, meal := range meals {
 			title := strings.TrimSpace(meal.Title)
 			if title == "" {
 				continue
 			}
 
+			slot := strings.TrimSpace(meal.MealSlot)
+			if !IsValidMealSlot(slot) {
+				snack := 0
+				slot = NormalizeMealSlot("", &snack)
+			}
+
 			multiplier := mealMultiplier(meal.Multiplier)
+			mealNum := mealSlotToNumber(slot)
+			if mealNum <= 0 {
+				mealNum = i + 1
+			}
 			item := models.NutritionItem{
 				DayNumber:  dayNum,
-				MealNumber: i + 1,
+				MealNumber: mealNum,
 				OrderIndex: i + 1,
+				MealSlot:   slot,
 				Food:       title,
 				Quantity:   strings.TrimSpace(meal.Detail),
 				Multiplier: multiplier,

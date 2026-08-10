@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Apple, Dumbbell, Loader2 } from "lucide-react";
+import { api } from "@/lib/axios/client";
 import { toastError, toastSuccess } from "@/app/(site)/auth/_components/helpers";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -33,6 +34,15 @@ import {
   listNutritionTemplates,
   listWorkoutTemplates,
 } from "@/lib/api/coach";
+
+function templateListPath(apiBase, isWorkout) {
+  if (apiBase === "admin") {
+    return isWorkout
+      ? "/admin/assignable-workout-templates"
+      : "/admin/assignable-nutrition-templates";
+  }
+  return isWorkout ? "/coach/workout-templates" : "/coach/nutrition-templates";
+}
 
 const WORKOUT_FILTER_OPTIONS = {
   gender: [
@@ -98,6 +108,7 @@ export default function TemplatePickerModal({
   mode,
   studentId,
   onApplied,
+  apiBase = "coach",
 }) {
   const isWorkout = mode === "workout";
   const [loading, setLoading] = useState(false);
@@ -121,9 +132,19 @@ export default function TemplatePickerModal({
     async function loadTemplates() {
       setLoading(true);
       try {
-        const payload = isWorkout
-          ? await listWorkoutTemplates()
-          : await listNutritionTemplates();
+        let payload;
+        if (apiBase === "admin") {
+          const res = await api.get(templateListPath(apiBase, isWorkout));
+          payload =
+            res.data?.items ||
+            res.data?.templates ||
+            res.data?.data?.items ||
+            [];
+        } else {
+          payload = isWorkout
+            ? await listWorkoutTemplates()
+            : await listNutritionTemplates();
+        }
         if (cancelled) return;
         setItems(payload.map(normalizeTemplate));
       } catch (error) {
@@ -143,7 +164,7 @@ export default function TemplatePickerModal({
     return () => {
       cancelled = true;
     };
-  }, [open, studentId, isWorkout]);
+  }, [open, studentId, isWorkout, apiBase]);
 
   const handleClose = () => {
     setApplyingId(null);
@@ -194,7 +215,12 @@ export default function TemplatePickerModal({
     if (!studentId || applyingId) return;
     setApplyingId(templateId);
     try {
-      if (isWorkout) {
+      if (apiBase === "admin") {
+        const kind = isWorkout ? "workout-programs" : "nutrition-programs";
+        await api.post(
+          `/admin/students/${studentId}/${kind}/templates/${templateId}`,
+        );
+      } else if (isWorkout) {
         await assignWorkoutTemplateToStudent(studentId, templateId);
       } else {
         await assignNutritionTemplateToStudent(studentId, templateId);

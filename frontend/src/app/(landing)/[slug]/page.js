@@ -1,21 +1,18 @@
 import { notFound } from "next/navigation";
 import { isReservedPublicSlug } from "@/lib/routes/reserved-slugs";
-import { lazyPage } from "@/lib/lazy-page";
 import { API_BASE_URL } from "@/lib/api/baseUrl";
-
-const CoachLandingClient = lazyPage(() => import("./_components/CoachLandingClient"));
+import CoachLandingClient from "./_components/CoachLandingClient";
 
 const API_BASE = API_BASE_URL.replace(/\/$/, "");
 
 /**
  * Enumerate every published coach slug at build time so `output: export`
- * emits a real `dist/<slug>/index.html` per coach. This is what makes the
- * standard nginx `try_files $uri $uri/ =404` correct — no placeholder shell
- * and no rewrite/fallback rules needed.
+ * emits a real `dist/<slug>/index.html` per coach.
  *
- * Trade-off: a coach who registers after a build only appears on the next
- * build/deploy. If instant availability is required, drop `output: export`
- * and serve via a Node server instead.
+ * Do NOT wrap CoachLandingClient in lazyPage — that bails out to CSR and the
+ * first paint is only the site Navbar (looks like the homepage).
+ *
+ * New coaches require a rebuild/deploy after they are published in the API.
  */
 export async function generateStaticParams() {
   const pageSize = 100;
@@ -23,13 +20,15 @@ export async function generateStaticParams() {
 
   try {
     let page = 1;
-    // Cap pages to avoid an unbounded loop if the API misreports `total`.
     for (let guard = 0; guard < 100; guard += 1) {
       const res = await fetch(
         `${API_BASE}/coaches?page=${page}&pageSize=${pageSize}`,
         { headers: { Accept: "application/json" } }
       );
-      if (!res.ok) break;
+      if (!res.ok) {
+        console.warn(`[coach-slugs] GET /coaches failed: HTTP ${res.status}`);
+        break;
+      }
 
       const data = await res.json();
       const items = Array.isArray(data?.items) ? data.items : [];
@@ -43,18 +42,17 @@ export async function generateStaticParams() {
       page += 1;
     }
   } catch (error) {
-    // Non-fatal: if the coach API is unreachable at build time, keep the build
-    // green instead of aborting the whole deploy. The route still exists via
-    // the fallback below; re-run the build once the API is reachable to emit
-    // every coach page.
     console.warn(
       `[coach-slugs] could not fetch ${API_BASE}/coaches (${error?.message || error}); building fallback shell only.`
     );
   }
 
-  // Always emit at least one param so `output: export` produces the route.
-  if (slugs.size === 0) return [{ slug: "placeholder" }];
+  if (slugs.size === 0) {
+    console.warn("[coach-slugs] no published coaches — emitting placeholder only");
+    return [{ slug: "placeholder" }];
+  }
 
+  console.log(`[coach-slugs] emitting ${slugs.size} landing page(s): ${[...slugs].join(", ")}`);
   return [...slugs].map((slug) => ({ slug }));
 }
 

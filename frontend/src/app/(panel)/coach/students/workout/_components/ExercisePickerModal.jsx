@@ -28,7 +28,14 @@ function mediaUrl(path) {
   return `${API_BASE}${path}`;
 }
 
-export default function ExercisePickerModal({ open, onClose, onAdd, dayLabel }) {
+export default function ExercisePickerModal({
+  open,
+  onClose,
+  onAdd,
+  dayLabel,
+  apiBase = "coach",
+}) {
+  const exercisesBase = `/${apiBase}/exercises`;
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
   const [categories, setCategories] = useState([]);
@@ -42,7 +49,7 @@ export default function ExercisePickerModal({ open, onClose, onAdd, dayLabel }) 
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
-    api.get("/coach/exercises/categories")
+    api.get(`${exercisesBase}/categories`)
       .then((res) => {
         if (!cancelled) setCategories(res.data?.categories || []);
       })
@@ -52,7 +59,7 @@ export default function ExercisePickerModal({ open, onClose, onAdd, dayLabel }) 
     return () => {
       cancelled = true;
     };
-  }, [open]);
+  }, [open, exercisesBase]);
 
   useEffect(() => {
     if (!open) {
@@ -70,7 +77,7 @@ export default function ExercisePickerModal({ open, onClose, onAdd, dayLabel }) 
       setLoading(true);
       setError("");
       try {
-        const res = await api.get("/coach/exercises", {
+        const res = await api.get(exercisesBase, {
           params: {
             query: query.trim() || undefined,
             category: category || undefined,
@@ -93,7 +100,7 @@ export default function ExercisePickerModal({ open, onClose, onAdd, dayLabel }) 
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [open, query, category]);
+  }, [open, query, category, exercisesBase]);
 
   const resetSelection = () => {
     setSelected(null);
@@ -108,6 +115,13 @@ export default function ExercisePickerModal({ open, onClose, onAdd, dayLabel }) 
         exerciseId: selected.id,
         name: selected.name,
         imageUrl: selected.imageUrl || "",
+        gifUrl: selected.gifUrl || "",
+        category: selected.category || "",
+        bodyPart: selected.bodyPart || "",
+        equipment: selected.equipment || "",
+        target: selected.target || "",
+        description: selected.description || "",
+        instructionSteps: selected.instructionSteps || [],
         sets,
         reps,
       })

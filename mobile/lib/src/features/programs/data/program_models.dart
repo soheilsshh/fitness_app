@@ -117,15 +117,35 @@ abstract class NutritionPlan with _$NutritionPlan {
       _$NutritionPlanFromJson(json);
 }
 
-@freezed
-abstract class NutritionMeal with _$NutritionMeal {
-  const factory NutritionMeal({
-    @Default('') String title,
-    @Default('') String detail,
-    @Default(0) double calories,
-    @Default(0) double protein,
-  }) = _NutritionMeal;
+/// Plain model (not freezed) so mealSlot can ship without regenerating builders.
+class NutritionMeal {
+  const NutritionMeal({
+    this.title = '',
+    this.detail = '',
+    this.mealSlot = '',
+    this.calories = 0,
+    this.protein = 0,
+  });
 
-  factory NutritionMeal.fromJson(Map<String, dynamic> json) =>
-      _$NutritionMealFromJson(json);
+  final String title;
+  final String detail;
+  final String mealSlot;
+  final double calories;
+  final double protein;
+
+  factory NutritionMeal.fromJson(Map<String, dynamic> json) => NutritionMeal(
+        title: json['title'] as String? ?? '',
+        detail: json['detail'] as String? ?? '',
+        mealSlot: json['mealSlot'] as String? ?? '',
+        calories: (json['calories'] as num?)?.toDouble() ?? 0,
+        protein: (json['protein'] as num?)?.toDouble() ?? 0,
+      );
+
+  Map<String, dynamic> toJson() => {
+        'title': title,
+        'detail': detail,
+        'mealSlot': mealSlot,
+        'calories': calories,
+        'protein': protein,
+      };
 }

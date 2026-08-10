@@ -55,6 +55,40 @@ function assertExportReady(exportRoot) {
       throw new Error(`Export incomplete: ${path.basename(exportRoot)}/${rel} is missing.`);
     }
   }
+
+  // Coach public landings live at dist/<slug>/index.html (from generateStaticParams).
+  const reserved = new Set([
+    "404",
+    "_next",
+    "_not-found",
+    "admin",
+    "ali-rashidabadi",
+    "auth",
+    "coach",
+    "coaches",
+    "dashboard",
+    "images",
+    "landing",
+    "leadfunnel",
+    "login",
+    "payment",
+    "signup",
+    "user",
+    "placeholder",
+  ]);
+  const coachDirs = fs
+    .readdirSync(exportRoot, { withFileTypes: true })
+    .filter((d) => d.isDirectory() && !d.name.startsWith(".") && !d.name.startsWith("_"))
+    .map((d) => d.name)
+    .filter((name) => !reserved.has(name) && fs.existsSync(path.join(exportRoot, name, "index.html")));
+
+  if (coachDirs.length === 0) {
+    console.warn(
+      "[export-dist] WARNING: no coach landing folders in export (API unreachable at build?). New /{slug}/ URLs will fall through to the homepage if nginx uses index.html fallback."
+    );
+  } else {
+    console.log(`[export-dist] coach landings: ${coachDirs.join(", ")}`);
+  }
 }
 
 function copyOutToDist(exportRoot) {

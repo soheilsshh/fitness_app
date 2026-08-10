@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { formatMacro, mealHasMacros, sumDayMacros } from "@/lib/nutrition/display";
+import { groupMealsBySlot } from "@/lib/nutrition/mealSlots";
 import { DAY_KEYS, DAY_LABELS } from "../../_components/programDays";
 
 function MacroChip({ label, value, unit, className }) {
@@ -34,6 +35,7 @@ export default function NutritionProgramPreview({
   const hasProgram = Boolean(programs?.nutritionProgramId);
   const nutrition = programs?.planByDay?.[selectedDay]?.nutrition;
   const meals = nutrition?.meals || [];
+  const { groups: mealGroups } = groupMealsBySlot(meals);
   const totals = sumDayMacros(meals);
   const visibleDays = DAY_KEYS.filter(
     (key) => (programs?.planByDay?.[key]?.nutrition?.meals?.length || 0) > 0
@@ -128,42 +130,54 @@ export default function NutritionProgramPreview({
                 برای این روز آیتم غذایی ثبت نشده.
               </p>
             ) : (
-              <div className="space-y-2">
-                {meals.map((meal, index) => (
-                  <div
-                    key={`${meal.foodId || meal.title}-${index}`}
-                    className="flex items-start gap-3 rounded-lg border bg-card px-3 py-2.5"
-                  >
-                    <Apple className="mt-0.5 size-4 shrink-0 text-primary" />
-                    <div className="min-w-0 flex-1 text-start">
-                      <p className="text-sm font-medium">{meal.title}</p>
-                      {meal.detail ? (
-                        <p className="mt-0.5 text-xs text-muted-foreground">{meal.detail}</p>
-                      ) : null}
-                      {mealHasMacros(meal) ? (
-                        <div className="mt-2 flex flex-wrap gap-1.5">
-                          <MacroChip
-                            label="کالری"
-                            value={meal.calories}
-                            unit="kcal"
-                            className="border-rose-500/20 bg-rose-500/5"
-                          />
-                          <MacroChip
-                            label="P"
-                            value={meal.protein}
-                            unit="g"
-                            className="border-sky-500/20 bg-sky-500/5"
-                          />
+              <div className="space-y-4">
+                {mealGroups.map((group) =>
+                  group.meals.length === 0 ? null : (
+                    <div key={group.value} className="space-y-2">
+                      <p className="text-sm font-semibold">{group.label}</p>
+                      {group.meals.map((meal, index) => (
+                        <div
+                          key={`${group.value}-${meal.foodId || meal.title}-${index}`}
+                          className="flex items-start gap-3 rounded-lg border bg-card px-3 py-2.5"
+                        >
+                          <Apple className="mt-0.5 size-4 shrink-0 text-primary" />
+                          <div className="min-w-0 flex-1 text-start">
+                            <p className="text-sm font-medium">{meal.title}</p>
+                            {meal.detail ? (
+                              <p className="mt-0.5 text-xs text-muted-foreground">
+                                {meal.detail}
+                              </p>
+                            ) : null}
+                            {mealHasMacros(meal) ? (
+                              <div className="mt-2 flex flex-wrap gap-1.5">
+                                <MacroChip
+                                  label="کالری"
+                                  value={meal.calories}
+                                  unit="kcal"
+                                  className="border-rose-500/20 bg-rose-500/5"
+                                />
+                                <MacroChip
+                                  label="P"
+                                  value={meal.protein}
+                                  unit="g"
+                                  className="border-sky-500/20 bg-sky-500/5"
+                                />
+                              </div>
+                            ) : null}
+                          </div>
+                          {meal.foodId ? (
+                            <Badge
+                              variant="secondary"
+                              className="shrink-0 text-[10px]"
+                            >
+                              کاتالوگ
+                            </Badge>
+                          ) : null}
                         </div>
-                      ) : null}
+                      ))}
                     </div>
-                    {meal.foodId ? (
-                      <Badge variant="secondary" className="shrink-0 text-[10px]">
-                        کاتالوگ
-                      </Badge>
-                    ) : null}
-                  </div>
-                ))}
+                  ),
+                )}
               </div>
             )}
           </>
