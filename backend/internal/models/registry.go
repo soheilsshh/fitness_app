@@ -39,5 +39,6 @@ func AllModels() []any {
 		&TemplateMealItem{},
 		&MobileDevice{},
 		&MobileStoreRelease{},
+		&AIRequestLog{},
 	}
 }

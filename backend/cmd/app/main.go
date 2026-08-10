@@ -80,6 +80,7 @@ func NewServer(db *gorm.DB) *Server {
 	mobileDeviceRepo := repository.NewMobileDeviceRepository(db)
 	mobileReleaseRepo := repository.NewMobileReleaseRepository(db)
 	funnelLeadRepo := repository.NewFunnelLeadRepository(db)
+	aiRequestLogRepo := repository.NewAIRequestLogRepository(db)
 
 	// Initialize services
 	authService := service.NewAuthService(userRepo, coachProfileRepo, refreshTokenRepo, otpRepo)
@@ -91,6 +92,7 @@ func NewServer(db *gorm.DB) *Server {
 	studentService := service.NewStudentService(userRepo, subscriptionRepo, servicePlanRepo, programRepo)
 	meService := service.NewMeService(db, userRepo, orderRepo, subscriptionRepo, servicePlanRepo, programRepo, exerciseRepo, foodRepo)
 	aiChatService := service.NewAIChatService(meService)
+	aiGenerateService := service.NewAIGenerateService(meService, aiRequestLogRepo)
 	adminUserService := service.NewAdminUserService(db, subscriptionRepo, txRepo)
 	adminDashboardService := service.NewAdminDashboardService(db, subscriptionRepo, txRepo, coachProfileRepo)
 	adminStudentService := service.NewAdminStudentService(db, userRepo, subscriptionRepo, servicePlanRepo, coachProfileRepo)
@@ -109,6 +111,7 @@ func NewServer(db *gorm.DB) *Server {
 	meController := controllers.NewMeController(meService)
 	meTicketController := controllers.NewMeTicketController(ticketService)
 	aiChatController := controllers.NewAIChatController(aiChatService)
+	aiGenerateController := controllers.NewAIGenerateController(aiGenerateService)
 	adminUserController := controllers.NewAdminUserController(adminUserService)
 	adminDashboardController := controllers.NewAdminDashboardController(adminDashboardService)
 	adminStudentController := controllers.NewAdminStudentController(adminStudentService)
@@ -283,6 +286,8 @@ func NewServer(db *gorm.DB) *Server {
 		studentGroup.POST("/me/tickets", meTicketController.CreateTicket)
 		studentGroup.GET("/me/tickets/:id", meTicketController.GetTicket)
 		studentGroup.POST("/me/ai/chat", aiChatController.Chat)
+		studentGroup.POST("/me/nutrition/generate", aiGenerateController.GenerateNutrition)
+		studentGroup.POST("/me/workout/generate", aiGenerateController.GenerateWorkout)
 		studentGroup.POST("/me/mobile/heartbeat", mobileAppController.MeHeartbeat)
 		studentGroup.GET("/subscriptions/current", studentController.GetCurrentSubscription)
 		studentGroup.GET("/subscriptions", studentController.ListSubscriptions)

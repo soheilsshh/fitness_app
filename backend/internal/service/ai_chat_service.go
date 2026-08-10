@@ -14,6 +14,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/yourusername/fitness-management/config"
+	"github.com/yourusername/fitness-management/internal/service/ai"
 )
 
 var (
@@ -52,6 +53,7 @@ type AIChatRequest struct {
 	Message  string          `json:"message" binding:"required"`
 	History  []AIChatMessage `json:"history"`
 	PagePath string          `json:"pagePath"`
+	Persona  string          `json:"persona"` // general | nutrition | workout
 }
 
 type AIChatResponse struct {
@@ -83,6 +85,10 @@ func (s *AIChatService) Chat(ctx context.Context, userID uint, req *AIChatReques
 	if message == "" || utf8.RuneCountInString(message) > aiMaxMessageRunes {
 		return nil, ErrAIInvalidInput
 	}
+	if !ai.IsValidPersona(req.Persona) {
+		return nil, ErrAIInvalidInput
+	}
+	persona := ai.ParsePersona(req.Persona)
 
 	if !s.allow(userID) {
 		return nil, ErrAIRateLimited
@@ -109,7 +115,7 @@ func (s *AIChatService) Chat(ctx context.Context, userID uint, req *AIChatReques
 		return nil, err
 	}
 
-	system := buildFitinoSystemPrompt(profile, strings.TrimSpace(req.PagePath))
+	system := buildFitinoSystemPrompt(profile, strings.TrimSpace(req.PagePath), persona)
 	messages := []map[string]string{
 		{"role": "system", "content": system},
 	}
@@ -188,7 +194,7 @@ func sanitizeHistory(history []AIChatMessage) []AIChatMessage {
 	return out
 }
 
-func buildFitinoSystemPrompt(profile *MeProfileDTO, pagePath string) string {
+func buildFitinoSystemPrompt(profile *MeProfileDTO, pagePath string, persona ai.Persona) string {
 	var b strings.Builder
 	b.WriteString(`تو «دستیار فیتینو» هستی — راهنمای فارسی‌زبان داخل اپلیکیشن فیتینو (Fitino / fitinoo.ir).
 برند: فیتینو، پلتفرم کوچینگ آنلاین تناسب اندام در ایران با مربی‌های تأییدشده، پنل کاربر/مربی/ادمین، و هویت بصری آبی‌سبز (#187272 تا #26fce3).
@@ -210,6 +216,8 @@ func buildFitinoSystemPrompt(profile *MeProfileDTO, pagePath string) string {
 6) پاسخ‌ها کوتاه، واضح، دوستانه و به فارسی باشه. در صورت نیاز مسیر منو را بگو (مثلاً حساب من ← ارتباط با مربی).
 
 `)
+	b.WriteString(persona.ChatOverlayPrompt())
+	b.WriteString("\n")
 
 	if pagePath != "" {
 		b.WriteString("صفحه فعلی کاربر در اپ: ")
