@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
@@ -14,12 +15,14 @@ import (
 
 	"github.com/yourusername/fitness-management/internal/models"
 	"github.com/yourusername/fitness-management/internal/repository"
+	"github.com/yourusername/fitness-management/internal/service/ai"
 )
 
 var (
 	ErrTrackingNoSubscription = errors.New("no active subscription found")
 	ErrInvalidTrackingPhoto   = errors.New("invalid tracking photo type")
 	ErrInvalidWeight          = errors.New("weight must be between 20 and 300 kg")
+	ErrTrackingPhotoNotFound  = errors.New("tracking photo not found")
 )
 
 type TrackingAlert struct {
@@ -29,11 +32,32 @@ type TrackingAlert struct {
 }
 
 type TrackingPhotoDTO struct {
-	ID          uint   `json:"id"`
-	URL         string `json:"url"`
-	Type        string `json:"type"`
-	UploadedAt  string `json:"uploadedAt"`
-	CheckInDate string `json:"checkInDate,omitempty"`
+	ID                 uint   `json:"id"`
+	URL                string `json:"url"`
+	Type               string `json:"type"`
+	UploadedAt         string `json:"uploadedAt"`
+	CheckInDate        string `json:"checkInDate,omitempty"`
+	AIAnalysisText     string `json:"aiAnalysisText,omitempty"`
+	AIAnalysisStatus   string `json:"aiAnalysisStatus,omitempty"`
+	CoachReviewStatus  string `json:"coachReviewStatus,omitempty"`
+	CoachFeedback      string `json:"coachFeedback,omitempty"`
+}
+
+func trackingPhotoToDTO(p models.UserPhoto) TrackingPhotoDTO {
+	dto := TrackingPhotoDTO{
+		ID:                p.ID,
+		URL:               p.FilePath,
+		Type:              p.Type,
+		UploadedAt:        p.UploadedAt.Format(time.RFC3339),
+		AIAnalysisText:    p.AIAnalysisText,
+		AIAnalysisStatus:  p.AIAnalysisStatus,
+		CoachReviewStatus: p.CoachReviewStatus,
+		CoachFeedback:     p.CoachFeedback,
+	}
+	if p.CheckInDate != nil {
+		dto.CheckInDate = p.CheckInDate.Format(time.RFC3339)
+	}
+	return dto
 }
 
 type PhotoTypeHistory struct {
@@ -88,6 +112,8 @@ type TrackingService interface {
 	GetMyTracking(ctx context.Context, userID uint) (*TrackingStatusDTO, error)
 	SubmitWeight(ctx context.Context, userID uint, weight float64) (*TrackingStatusDTO, error)
 	UploadTrackingPhoto(ctx context.Context, userID uint, file io.Reader, filename, photoType string) (*TrackingPhotoDTO, error)
+	AnalyzePhoto(ctx context.Context, userID, photoID uint) (*TrackingPhotoDTO, error)
+	CoachReviewPhoto(ctx context.Context, coachID, photoID uint, status, feedback string) (*TrackingPhotoDTO, error)
 	ListCoachTrackingStudents(ctx context.Context, coachID uint, page, pageSize int, query string) (*CoachTrackingListResponse, error)
 	GetCoachStudentTracking(ctx context.Context, coachID, studentID uint) (*CoachStudentTrackingDTO, error)
 }
@@ -200,13 +226,104 @@ func (s *trackingService) UploadTrackingPhoto(ctx context.Context, userID uint, 
 
 	s.maybeAdvanceCheckInPeriod(ctx, sub)
 
-	return &TrackingPhotoDTO{
-		ID:          photo.ID,
-		URL:         photo.FilePath,
-		Type:        photo.Type,
-		UploadedAt:  photo.UploadedAt.Format(time.RFC3339),
-		CheckInDate: checkInDate.Format(time.RFC3339),
-	}, nil
+	dto := trackingPhotoToDTO(photo)
+	return &dto, nil
+}
+
+// canonicalPhotoDisclaimer is always appended to an AI photo analysis
+// regardless of what the model returned — see AnalyzePhoto below.
+const canonicalPhotoDisclaimer = "⚠️ این تحلیل صرفاً یک مشاهده بصری ساده از هوش مصنوعی است، جایگزین نظر پزشک یا مربی متخصص نیست و ادعای تشخیصی ندارد."
+
+// AnalyzePhoto runs the AI vision observation on an already-uploaded tracking
+// photo (roadmap BE-5.2). Best-effort: on failure the photo's status is
+// marked "failed" and the error is returned for the caller to surface.
+func (s *trackingService) AnalyzePhoto(ctx context.Context, userID, photoID uint) (*TrackingPhotoDTO, error) {
+	var photo models.UserPhoto
+	if err := s.db.WithContext(ctx).Where("id = ? AND user_id = ?", photoID, userID).First(&photo).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrTrackingPhotoNotFound
+		}
+		return nil, err
+	}
+
+	baseDir := meGetUploadDir()
+	relPath := strings.TrimPrefix(photo.FilePath, "/uploads/")
+	fullPath := filepath.Join(baseDir, filepath.FromSlash(relPath))
+	data, err := os.ReadFile(fullPath)
+	if err != nil {
+		photo.AIAnalysisStatus = "failed"
+		s.db.WithContext(ctx).Save(&photo)
+		return nil, fmt.Errorf("reading photo file: %w", err)
+	}
+
+	mimeType := "image/jpeg"
+	switch strings.ToLower(filepath.Ext(fullPath)) {
+	case ".png":
+		mimeType = "image/png"
+	case ".webp":
+		mimeType = "image/webp"
+	}
+
+	userContext := "این عکس پیشرفت بدنی یک کاربر باشگاه است، نوع نما: " + photo.Type + ". یک مشاهده کوتاه، محترمانه و غیرتشخیصی بنویس."
+	analysis, _, genErr := ai.AnalyzeBodyPhoto(ctx, base64.StdEncoding.EncodeToString(data), mimeType, userContext)
+	if genErr == nil {
+		genErr = ai.ValidateBodyPhotoAnalysis(analysis)
+	}
+	if genErr != nil {
+		photo.AIAnalysisStatus = "failed"
+		s.db.WithContext(ctx).Save(&photo)
+		return nil, genErr
+	}
+
+	text := strings.TrimSpace(analysis.ObservationText)
+	if analysis.PostureNotes != "" {
+		text += "\n\n" + strings.TrimSpace(analysis.PostureNotes)
+	}
+	text += "\n\n" + canonicalPhotoDisclaimer
+
+	photo.AIAnalysisText = text
+	photo.AIAnalysisStatus = "done"
+	photo.CoachReviewStatus = "pending"
+	if err := s.db.WithContext(ctx).Save(&photo).Error; err != nil {
+		return nil, err
+	}
+
+	dto := trackingPhotoToDTO(photo)
+	return &dto, nil
+}
+
+// CoachReviewPhoto lets the assigned coach approve/reject an AI photo
+// analysis and attach their own feedback (roadmap Coach-5.5).
+func (s *trackingService) CoachReviewPhoto(ctx context.Context, coachID, photoID uint, status, feedback string) (*TrackingPhotoDTO, error) {
+	status = strings.ToLower(strings.TrimSpace(status))
+	if status != "approved" && status != "rejected" {
+		return nil, fmt.Errorf("%w: invalid review status", ErrInvalidTrackingPhoto)
+	}
+
+	var photo models.UserPhoto
+	if err := s.db.WithContext(ctx).First(&photo, photoID).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrTrackingPhotoNotFound
+		}
+		return nil, err
+	}
+
+	ok, err := s.coachStudentSvc.CanAccessStudent(ctx, coachID, photo.UserID)
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		return nil, ErrCoachStudentForbidden
+	}
+
+	photo.CoachReviewStatus = status
+	photo.CoachFeedback = strings.TrimSpace(feedback)
+	if err := s.db.WithContext(ctx).Save(&photo).Error; err != nil {
+		return nil, err
+	}
+
+	dto := trackingPhotoToDTO(photo)
+	return &dto, nil
 }
 
 func (s *trackingService) ListCoachTrackingStudents(ctx context.Context, coachID uint, page, pageSize int, query string) (*CoachTrackingListResponse, error) {
@@ -490,16 +607,7 @@ func (s *trackingService) loadPhotoHistories(ctx context.Context, userID uint) [
 
 		dtos := make([]TrackingPhotoDTO, 0, len(photos))
 		for _, p := range photos {
-			dto := TrackingPhotoDTO{
-				ID:         p.ID,
-				URL:        p.FilePath,
-				Type:       p.Type,
-				UploadedAt: p.UploadedAt.Format(time.RFC3339),
-			}
-			if p.CheckInDate != nil {
-				dto.CheckInDate = p.CheckInDate.Format(time.RFC3339)
-			}
-			dtos = append(dtos, dto)
+			dtos = append(dtos, trackingPhotoToDTO(p))
 		}
 
 		label := trackingPhotoLabels[t]

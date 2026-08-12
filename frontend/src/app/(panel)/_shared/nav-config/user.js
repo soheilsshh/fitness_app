@@ -1,13 +1,21 @@
 import {
   Apple,
+  Award,
+  Bell,
+  CalendarClock,
   ClipboardListIcon,
   Contact,
   Dumbbell,
   HistoryIcon,
   Home,
   LineChartIcon,
+  PencilLineIcon,
+  ShieldCheck,
   ShoppingBagIcon,
+  SparklesIcon,
   UserIcon,
+  Users,
+  WandSparklesIcon,
 } from "lucide-react";
 
 export const userBrand = {
@@ -57,6 +65,26 @@ export const userNavGroups = [
     ],
   },
   {
+    id: "ai",
+    label: "دستیار هوشمند",
+    href: "/user/ai-programs/new",
+    icon: SparklesIcon,
+    items: [
+      {
+        href: "/user/ai-programs/new",
+        label: "ساخت برنامه با AI",
+        icon: WandSparklesIcon,
+        description: "ساخت برنامه تمرینی یا تغذیه‌ای جدید با هوش مصنوعی",
+      },
+      {
+        href: "/user/ai-programs/edit",
+        label: "ویرایش برنامه با AI",
+        icon: PencilLineIcon,
+        description: "درخواست ویرایش هوشمند برای برنامه‌ای که دارید",
+      },
+    ],
+  },
+  {
     id: "nutrition",
     label: "تغذیه",
     href: "/user/food-diary",
@@ -85,6 +113,38 @@ export const userNavGroups = [
     ],
   },
   {
+    id: "community",
+    label: "اجتماع",
+    href: "/user/community",
+    icon: Users,
+    items: [
+      {
+        href: "/user/community",
+        label: "فید و رویدادها",
+        icon: Users,
+        description: "پست‌ها، لایک، کامنت و رویدادهای فیتینو",
+      },
+      {
+        href: "/user/sessions",
+        label: "جلسات با مربی",
+        icon: CalendarClock,
+        description: "تقویم جلسات برنامه‌ریزی‌شده",
+      },
+      {
+        href: "/user/guarantee",
+        label: "وضعیت تضمین من",
+        icon: ShieldCheck,
+        description: "درصد پایبندی و درخواست‌های تضمین",
+      },
+      {
+        href: "/user/achievements",
+        label: "دستاوردها و امتیاز",
+        icon: Award,
+        description: "مدال‌ها و امتیاز کسب‌شده",
+      },
+    ],
+  },
+  {
     id: "account",
     label: "حساب من",
     href: "/user/profile",
@@ -101,6 +161,12 @@ export const userNavGroups = [
         label: "سفارش‌ها",
         icon: ShoppingBagIcon,
         description: "خریدها و وضعیت سفارش",
+      },
+      {
+        href: "/user/notifications",
+        label: "اعلان‌ها",
+        icon: Bell,
+        description: "روشن/خاموش کردن یادآوری‌ها",
       },
       {
         href: "/user/contact",

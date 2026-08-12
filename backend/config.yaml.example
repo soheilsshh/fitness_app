@@ -74,7 +74,8 @@ payments:
     mobile_deep_link_scheme: "fitinoo"
 
 openai:
-  # GapGPT or OpenAI-compatible Chat Completions
-  api_key: "YOUR_OPENAI_OR_GAPGPT_API_KEY"
-  model: "gemini-3.1-flash-lite"
+  # GapGPT is an OpenAI-API-compatible gateway; base_url routes requests there.
+  api_key: "sk-ug8moA2SUPmrkcCzt7d6Rfz9d0xORZ2jTfagNOcI7hdnGVxE"
   base_url: "https://api.gapgpt.app/v1"
+  model: "gemini-2.5-flash"
+

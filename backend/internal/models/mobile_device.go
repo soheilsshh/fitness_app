@@ -13,6 +13,9 @@ type MobileDevice struct {
 	BuildNumber string     `gorm:"size:32" json:"buildNumber"`
 	OSVersion   string     `gorm:"size:64" json:"osVersion"`
 	Model       string     `gorm:"size:128" json:"model"`
+	// PushToken is the FCM registration token for this device (roadmap BE-8.2).
+	PushToken       string     `gorm:"size:512" json:"pushToken,omitempty"`
+	PushTokenUpdatedAt *time.Time `json:"pushTokenUpdatedAt,omitempty"`
 	FirstSeenAt time.Time  `json:"firstSeenAt"`
 	LastSeenAt  time.Time  `gorm:"index" json:"lastSeenAt"`
 	CreatedAt   time.Time  `json:"createdAt"`

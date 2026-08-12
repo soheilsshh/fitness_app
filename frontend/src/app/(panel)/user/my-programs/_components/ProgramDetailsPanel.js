@@ -1,7 +1,19 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Calendar, CheckCircle2, Coffee, Dumbbell, Info } from "lucide-react";
+import { useRouter } from "next/navigation";
+import {
+  Calendar,
+  CheckCircle2,
+  Clock,
+  Coffee,
+  Dumbbell,
+  Flame,
+  Info,
+  ListChecks,
+  Share2,
+  Sparkles,
+} from "lucide-react";
 import { api } from "@/lib/axios/client";
 import WorkoutExerciseCards from "@/components/workout/WorkoutExerciseCards";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +32,109 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { formatDateFa, shortRemaining } from "./helpers";
 import NutritionDayView from "./NutritionDayView";
+import { SHARE_DRAFT_KEY } from "../../community/_components/CommunityClient";
+import { checkStreakMilestone } from "@/lib/streak/checkMilestone";
+import StreakMilestonePopup from "@/components/streak/StreakMilestonePopup";
+
+// Rough resistance-training estimate (~7 kcal/min) — a motivational figure for
+// the share card, not a medical/nutrition-grade calculation.
+const KCAL_PER_MINUTE_ESTIMATE = 7;
+
+function buildShareCard({ dayLabel, durationMin, sets, newPrExercises }) {
+  const exerciseCount = new Set((sets || []).map((s) => s.exerciseName)).size;
+  const bestSet = (sets || []).reduce((best, s) => {
+    const score = (s.weightKg || 0) * (s.reps || 1);
+    const bestScore = best ? (best.weightKg || 0) * (best.reps || 1) : -1;
+    return score > bestScore ? s : best;
+  }, null);
+  return {
+    dayLabel,
+    durationMin: durationMin || 0,
+    calories: Math.round((durationMin || 0) * KCAL_PER_MINUTE_ESTIMATE),
+    exerciseCount,
+    bestSet,
+    newPrExercises: newPrExercises || [],
+  };
+}
+
+function ShareableProgressCard({ card, onShare }) {
+  return (
+    <div className="mt-5 overflow-hidden rounded-xl border border-emerald-500/20 bg-gradient-to-b from-emerald-500/5 to-card">
+      <div className="flex items-center justify-between gap-2 border-b border-emerald-500/10 px-4 py-3">
+        <p className="text-xs font-iranianSansDemiBold text-muted-foreground">
+          {card.dayLabel}
+        </p>
+        <Badge className="border-emerald-500/30 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">
+          تکمیل شد
+        </Badge>
+      </div>
+      <div className="space-y-4 p-4">
+        <p className="text-center text-base font-iranianSansDemiBold text-foreground">
+          تمرین {card.dayLabel} انجام شد 💪
+        </p>
+        <div
+          className={cn(
+            "grid gap-2",
+            card.durationMin > 0 ? "grid-cols-3" : "grid-cols-1"
+          )}
+        >
+          {card.durationMin > 0 ? (
+            <>
+              <div className="rounded-lg border bg-card px-2 py-2.5 text-center">
+                <Clock className="mx-auto size-4 text-muted-foreground" />
+                <p className="mt-1 text-sm font-iranianSansDemiBold tabular-nums">
+                  {card.durationMin.toLocaleString("fa-IR")}
+                </p>
+                <p className="text-[10px] text-muted-foreground">دقیقه</p>
+              </div>
+              <div className="rounded-lg border bg-card px-2 py-2.5 text-center">
+                <Flame className="mx-auto size-4 text-orange-500" />
+                <p className="mt-1 text-sm font-iranianSansDemiBold tabular-nums">
+                  {card.calories.toLocaleString("fa-IR")}
+                </p>
+                <p className="text-[10px] text-muted-foreground">kcal (تخمینی)</p>
+              </div>
+            </>
+          ) : null}
+          <div className="rounded-lg border bg-card px-2 py-2.5 text-center">
+            <ListChecks className="mx-auto size-4 text-muted-foreground" />
+            <p className="mt-1 text-sm font-iranianSansDemiBold tabular-nums">
+              {card.exerciseCount.toLocaleString("fa-IR")}
+            </p>
+            <p className="text-[10px] text-muted-foreground">حرکت</p>
+          </div>
+        </div>
+        {card.bestSet ? (
+          <div className="rounded-lg border bg-card px-3 py-2.5 text-center">
+            <p className="text-[11px] text-muted-foreground">بهترین حرکت</p>
+            <p className="mt-0.5 text-sm font-iranianSansDemiBold tabular-nums">
+              {card.bestSet.exerciseName} {card.bestSet.weightKg}kg ×{" "}
+              {card.bestSet.reps}
+            </p>
+          </div>
+        ) : null}
+        {card.newPrExercises.length ? (
+          <div className="flex flex-wrap items-center justify-center gap-1.5">
+            {card.newPrExercises.map((name) => (
+              <Badge
+                key={name}
+                variant="outline"
+                className="gap-1 border-amber-500/30 bg-amber-500/10 text-[10px] text-amber-700 dark:text-amber-300"
+              >
+                <Sparkles className="size-3" />
+                رکورد جدید: {name}
+              </Badge>
+            ))}
+          </div>
+        ) : null}
+        <Button type="button" className="w-full" onClick={onShare}>
+          <Share2 className="size-4" data-icon="inline-start" />
+          اشتراک در جامعه
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 const DAYS = [
   { key: "sat", label: "شنبه" },
@@ -127,6 +242,7 @@ function statusBadgeProps(timeline) {
 }
 
 export default function ProgramDetailsPanel({ program, timeline }) {
+  const router = useRouter();
   const restSet = useMemo(
     () => new Set(program?.schedule?.restDays || []),
     [program?.id, program?.schedule?.restDays]
@@ -148,6 +264,9 @@ export default function ProgramDetailsPanel({ program, timeline }) {
   const [loggingWorkout, setLoggingWorkout] = useState(false);
   // weights maps an exercise name to the weight (kg) the user lifted today.
   const [weights, setWeights] = useState({});
+  const [shareCard, setShareCard] = useState(null);
+  const [milestoneOpen, setMilestoneOpen] = useState(false);
+  const [milestoneStreak, setMilestoneStreak] = useState(0);
 
   useEffect(() => {
     setActiveTab(defaultTab);
@@ -163,6 +282,7 @@ export default function ProgramDetailsPanel({ program, timeline }) {
   // Reset entered weights whenever the selected day changes.
   useEffect(() => {
     setWeights({});
+    setShareCard(null);
   }, [selectedDay]);
 
   async function handleLogWorkout() {
@@ -171,19 +291,62 @@ export default function ProgramDetailsPanel({ program, timeline }) {
     setLoggingWorkout(true);
     try {
       const sets = buildSetsPayload(dayWorkout.exercises, weights);
-      await api.post("/me/workout-sessions", {
+      const res = await api.post("/me/workout-sessions", {
         subscriptionId: program.id,
         dayKey: selectedDay,
         durationMin: dayWorkout.durationMin || 0,
         ...(sets.length ? { sets } : {}),
       });
       toast.success("تمرین با موفقیت در تاریخچه ثبت شد");
+      setShareCard(
+        buildShareCard({
+          dayLabel: DAYS.find((d) => d.key === selectedDay)?.label || "امروز",
+          durationMin: dayWorkout.durationMin,
+          sets,
+          newPrExercises: res.data?.newPrExercises,
+        })
+      );
       setWeights({});
+      const { shouldCelebrate, streak } = await checkStreakMilestone();
+      if (shouldCelebrate) {
+        setMilestoneStreak(streak);
+        setMilestoneOpen(true);
+      }
     } catch (err) {
       toast.error(err?.response?.data?.error || "ثبت تمرین ناموفق بود");
     } finally {
       setLoggingWorkout(false);
     }
+  }
+
+  function handleShareToCommunity() {
+    if (!shareCard) return;
+    const statParts = [];
+    if (shareCard.durationMin > 0) {
+      statParts.push(`⏱️ ${shareCard.durationMin} دقیقه`, `🔥 ${shareCard.calories} kcal`);
+    }
+    statParts.push(`🏋️ ${shareCard.exerciseCount} حرکت`);
+    const lines = [
+      `تمرین ${shareCard.dayLabel} انجام شد 💪`,
+      statParts.join(" · "),
+    ];
+    if (shareCard.bestSet) {
+      lines.push(
+        `بهترین حرکت: ${shareCard.bestSet.exerciseName} ${shareCard.bestSet.weightKg}kg × ${shareCard.bestSet.reps}`
+      );
+    }
+    if (shareCard.newPrExercises.length) {
+      lines.push(`🏆 رکورد جدید: ${shareCard.newPrExercises.join("، ")}`);
+    }
+    try {
+      window.sessionStorage.setItem(
+        SHARE_DRAFT_KEY,
+        JSON.stringify({ content: lines.join("\n"), category: "progress" })
+      );
+    } catch {
+      // sessionStorage unavailable — user can still type the post manually
+    }
+    router.push("/user/community");
   }
 
   if (!program) {
@@ -225,6 +388,7 @@ export default function ProgramDetailsPanel({ program, timeline }) {
       : "روزهای استراحت تمرین غیرقابل انتخاب هستند";
 
   return (
+    <>
     <Card
       className="bg-gradient-to-t from-primary/5 to-card shadow-xs dark:bg-card"
       dir="rtl"
@@ -387,6 +551,12 @@ export default function ProgramDetailsPanel({ program, timeline }) {
                         </Button>
                       </div>
                     )}
+                    {shareCard ? (
+                      <ShareableProgressCard
+                        card={shareCard}
+                        onShare={handleShareToCommunity}
+                      />
+                    ) : null}
                   </>
                 )}
               </CardContent>
@@ -419,5 +589,11 @@ export default function ProgramDetailsPanel({ program, timeline }) {
         </div>
       </CardContent>
     </Card>
+    <StreakMilestonePopup
+      streak={milestoneStreak}
+      open={milestoneOpen}
+      onOpenChange={setMilestoneOpen}
+    />
+    </>
   );
 }

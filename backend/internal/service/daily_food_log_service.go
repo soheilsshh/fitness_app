@@ -68,17 +68,20 @@ type DailyFoodLogService interface {
 }
 
 type dailyFoodLogService struct {
-	logRepo  repository.DailyFoodLogRepository
-	foodRepo repository.FoodRepository
+	logRepo        repository.DailyFoodLogRepository
+	foodRepo       repository.FoodRepository
+	achievementSvc AchievementService
 }
 
 func NewDailyFoodLogService(
 	logRepo repository.DailyFoodLogRepository,
 	foodRepo repository.FoodRepository,
+	achievementSvc AchievementService,
 ) DailyFoodLogService {
 	return &dailyFoodLogService{
-		logRepo:  logRepo,
-		foodRepo: foodRepo,
+		logRepo:        logRepo,
+		foodRepo:       foodRepo,
+		achievementSvc: achievementSvc,
 	}
 }
 
@@ -141,6 +144,9 @@ func (s *dailyFoodLogService) CreateLog(ctx context.Context, userID uint, req *C
 
 	if err := s.logRepo.Create(ctx, log); err != nil {
 		return nil, err
+	}
+	if s.achievementSvc != nil {
+		s.achievementSvc.HandleFoodLogCreated(ctx, userID)
 	}
 
 	dto := dailyFoodLogToDTO(*log)

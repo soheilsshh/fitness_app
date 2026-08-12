@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronLeft, Trash2 } from "lucide-react";
+import { ChevronLeft, SparklesIcon, Trash2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import PlanForm from "@/app/(panel)/admin/plans/_components/PlanForm";
@@ -89,10 +89,18 @@ export default function CoachPlanDetailsClient() {
           </Button>
           <h2 className="text-lg font-semibold">ویرایش پلن</h2>
         </div>
-        <Button type="button" variant="destructive" size="sm" onClick={onDelete}>
-          <Trash2 data-icon="inline-start" />
-          حذف پلن
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" asChild>
+            <Link href={`/coach/plans/ai-suggest?id=${id}`}>
+              <SparklesIcon data-icon="inline-start" />
+              پیشنهاد AI برای این برنامه
+            </Link>
+          </Button>
+          <Button type="button" variant="destructive" size="sm" onClick={onDelete}>
+            <Trash2 data-icon="inline-start" />
+            حذف پلن
+          </Button>
+        </div>
       </div>
       <PlanForm mode="edit" initialValue={plan} onSubmit={onSubmit} />
     </div>

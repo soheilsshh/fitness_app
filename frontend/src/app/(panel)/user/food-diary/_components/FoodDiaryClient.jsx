@@ -6,6 +6,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Flame,
+  Mic,
   PenLine,
   Plus,
   Trash2,
@@ -15,6 +16,7 @@ import { api } from "@/lib/axios/client";
 import { USER_FOOD_LOGS_PATH, USER_FOODS_PATH } from "@/lib/api/user";
 import FoodPickerModal from "@/app/(panel)/coach/students/nutrition/_components/FoodPickerModal";
 import ManualFoodModal from "@/app/(panel)/coach/students/nutrition/_components/ManualFoodModal";
+import VoiceFoodLogModal from "./VoiceFoodLogModal";
 import PageHeader from "@/app/(panel)/user/_components/ui/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -44,6 +46,8 @@ import {
   startOfDay,
 } from "@/lib/nutrition/foodLog";
 import { toast } from "sonner";
+import { checkStreakMilestone } from "@/lib/streak/checkMilestone";
+import StreakMilestonePopup from "@/components/streak/StreakMilestonePopup";
 
 function MacroBadge({ label, value, unit, className }) {
   if (!value || Number(value) <= 0) return null;
@@ -252,7 +256,10 @@ export default function FoodDiaryClient() {
   const [deletingId, setDeletingId] = useState(null);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
+  const [voiceOpen, setVoiceOpen] = useState(false);
   const [mealType, setMealType] = useState("breakfast");
+  const [milestoneOpen, setMilestoneOpen] = useState(false);
+  const [milestoneStreak, setMilestoneStreak] = useState(0);
 
   const dateISO = useMemo(() => formatDateISO(selectedDate), [selectedDate]);
   const dayLabel = useMemo(() => formatDateFaLong(selectedDate), [selectedDate]);
@@ -351,6 +358,11 @@ export default function FoodDiaryClient() {
       );
       toast.success("غذا با موفقیت ثبت شد");
       await loadLogs();
+      const { shouldCelebrate, streak } = await checkStreakMilestone();
+      if (shouldCelebrate) {
+        setMilestoneStreak(streak);
+        setMilestoneOpen(true);
+      }
     } catch (err) {
       toast.error(err?.response?.data?.error || "ثبت غذا ناموفق بود");
       throw err;
@@ -470,6 +482,16 @@ export default function FoodDiaryClient() {
           <PenLine data-icon="inline-start" />
           ثبت دستی غذا
         </Button>
+        <Button
+          type="button"
+          variant="outline"
+          className="flex-1"
+          onClick={() => setVoiceOpen(true)}
+          disabled={submitting}
+        >
+          <Mic data-icon="inline-start" />
+          ثبت با صدا
+        </Button>
       </div>
 
       <Card>
@@ -549,6 +571,19 @@ export default function FoodDiaryClient() {
         onAdd={handleAddMeal}
         dayLabel={dayLabel}
         {...addLabels}
+      />
+
+      <VoiceFoodLogModal
+        open={voiceOpen}
+        onClose={() => setVoiceOpen(false)}
+        onAdd={handleAddMeal}
+        dayLabel={dayLabel}
+      />
+
+      <StreakMilestonePopup
+        streak={milestoneStreak}
+        open={milestoneOpen}
+        onOpenChange={setMilestoneOpen}
       />
     </div>
   );

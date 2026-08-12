@@ -99,6 +99,39 @@ func (h *TrackingController) UploadTrackingPhoto(c *gin.Context) {
 	c.JSON(http.StatusOK, photo)
 }
 
+// AnalyzePhoto godoc
+// @Summary Run AI observation analysis on an uploaded tracking photo (roadmap BE-5.2)
+// @Tags me-tracking
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Photo ID"
+// @Success 200 {object} service.TrackingPhotoDTO
+// @Failure 401 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Router /me/tracking/photos/{id}/analyze [post]
+func (h *TrackingController) AnalyzePhoto(c *gin.Context) {
+	userID, err := middleware.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	photoID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil || photoID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid photo id"})
+		return
+	}
+	dto, err := h.trackingService.AnalyzePhoto(c.Request.Context(), userID, uint(photoID))
+	if err != nil {
+		if errors.Is(err, service.ErrTrackingPhotoNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusBadGateway, gin.H{"error": "خطا در تحلیل تصویر"})
+		return
+	}
+	c.JSON(http.StatusOK, dto)
+}
+
 type CoachTrackingController struct {
 	trackingService service.TrackingService
 }
@@ -152,4 +185,53 @@ func (h *CoachTrackingController) GetStudentTracking(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, resp)
+}
+
+// ReviewPhoto godoc
+// @Summary Coach approves/rejects a student's AI photo analysis (roadmap Coach-5.5)
+// @Tags coach-tracking
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Photo ID"
+// @Param body body object true "{status: approved|rejected, feedback: string}"
+// @Success 200 {object} service.TrackingPhotoDTO
+// @Failure 400 {object} map[string]string
+// @Failure 403 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Router /coach/tracking/photos/{id}/review [patch]
+func (h *CoachTrackingController) ReviewPhoto(c *gin.Context) {
+	coachID, err := middleware.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	photoID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil || photoID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid photo id"})
+		return
+	}
+	var req struct {
+		Status   string `json:"status"`
+		Feedback string `json:"feedback"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid body"})
+		return
+	}
+	dto, err := h.trackingService.CoachReviewPhoto(c.Request.Context(), coachID, uint(photoID), req.Status, req.Feedback)
+	if err != nil {
+		switch {
+		case errors.Is(err, service.ErrInvalidTrackingPhoto):
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		case errors.Is(err, service.ErrCoachStudentForbidden):
+			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+		case errors.Is(err, service.ErrTrackingPhotoNotFound):
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
+		return
+	}
+	c.JSON(http.StatusOK, dto)
 }

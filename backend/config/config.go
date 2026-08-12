@@ -63,12 +63,13 @@ type Config struct {
 	} `mapstructure:"funnel"`
 
 	SMS struct {
-		APIKey                   string `mapstructure:"api_key"`
-		Originator               string `mapstructure:"originator"`
-		OtpPattern               string `mapstructure:"otp_pattern_code"`
-		ProgramReadyPattern      string `mapstructure:"program_ready_pattern_code"`
-		OtpTTLMinutes            int    `mapstructure:"otp_ttl_minutes"`
-		OtpResendCooldownSeconds int    `mapstructure:"otp_resend_cooldown_seconds"`
+		APIKey                     string `mapstructure:"api_key"`
+		Originator                 string `mapstructure:"originator"`
+		OtpPattern                 string `mapstructure:"otp_pattern_code"`
+		ProgramReadyPattern        string `mapstructure:"program_ready_pattern_code"`
+		InactivityReminderPattern  string `mapstructure:"inactivity_reminder_pattern_code"`
+		OtpTTLMinutes              int    `mapstructure:"otp_ttl_minutes"`
+		OtpResendCooldownSeconds   int    `mapstructure:"otp_resend_cooldown_seconds"`
 	} `mapstructure:"sms"`
 
 	Payments struct {
@@ -86,6 +87,13 @@ type Config struct {
 		Model   string `mapstructure:"model"`
 		BaseURL string `mapstructure:"base_url"`
 	} `mapstructure:"openai"`
+
+	FCM struct {
+		// ServerKey is the legacy FCM HTTP server key (roadmap BE-8.1). Empty in
+		// dev/local: push_notification_service falls back to a console-log no-op,
+		// mirroring the SMS console-delivery mode below.
+		ServerKey string `mapstructure:"server_key"`
+	} `mapstructure:"fcm"`
 }
 
 var (
@@ -169,6 +177,9 @@ func applyExplicitEnvOverrides(c *Config) {
 	if v, ok := os.LookupEnv("OPENAI_MODEL"); ok && strings.TrimSpace(v) != "" {
 		c.OpenAI.Model = v
 	}
+	if v, ok := os.LookupEnv("FCM_SERVER_KEY"); ok {
+		c.FCM.ServerKey = v
+	}
 	// Honor empty DB password in .env (viper would otherwise keep YAML password).
 	if v, ok := os.LookupEnv("DB_PASSWORD"); ok {
 		c.Database.Password = v
@@ -223,6 +234,7 @@ func setDefaults() {
 	viper.SetDefault("seed.catalogs_force", false)
 	viper.SetDefault("sms.otp_pattern_code", "fittino-otp")
 	viper.SetDefault("sms.program_ready_pattern_code", "fittino-program")
+	viper.SetDefault("sms.inactivity_reminder_pattern_code", "fittino-reminder")
 	viper.SetDefault("sms.otp_ttl_minutes", 10)
 	viper.SetDefault("sms.otp_resend_cooldown_seconds", 60)
 	viper.SetDefault("payments.zarinpal.sandbox", false)
@@ -256,6 +268,7 @@ func bindEnvKeys() {
 	_ = viper.BindEnv("sms.originator", "SMS_ORIGINATOR")
 	_ = viper.BindEnv("sms.otp_pattern_code", "SMS_OTP_PATTERN_CODE")
 	_ = viper.BindEnv("sms.program_ready_pattern_code", "SMS_PROGRAM_READY_PATTERN_CODE")
+	_ = viper.BindEnv("sms.inactivity_reminder_pattern_code", "SMS_INACTIVITY_REMINDER_PATTERN_CODE")
 	_ = viper.BindEnv("sms.otp_ttl_minutes", "SMS_OTP_TTL_MINUTES")
 	_ = viper.BindEnv("sms.otp_resend_cooldown_seconds", "SMS_OTP_RESEND_COOLDOWN_SECONDS")
 	_ = viper.BindEnv("payments.zarinpal.merchant_id", "ZARINPAL_MERCHANT_ID")
@@ -266,6 +279,7 @@ func bindEnvKeys() {
 	_ = viper.BindEnv("openai.api_key", "OPENAI_API_KEY")
 	_ = viper.BindEnv("openai.model", "OPENAI_MODEL")
 	_ = viper.BindEnv("openai.base_url", "OPENAI_BASE_URL")
+	_ = viper.BindEnv("fcm.server_key", "FCM_SERVER_KEY")
 }
 
 func applyLegacyOverrides(c *Config) {
@@ -333,6 +347,7 @@ func normalize(c *Config) {
 	c.OpenAI.APIKey = strings.TrimSpace(c.OpenAI.APIKey)
 	c.OpenAI.Model = strings.TrimSpace(c.OpenAI.Model)
 	c.OpenAI.BaseURL = strings.TrimRight(strings.TrimSpace(c.OpenAI.BaseURL), "/")
+	c.FCM.ServerKey = strings.TrimSpace(c.FCM.ServerKey)
 	if c.OpenAI.Model == "" {
 		c.OpenAI.Model = "gemini-3.1-flash-lite"
 	}

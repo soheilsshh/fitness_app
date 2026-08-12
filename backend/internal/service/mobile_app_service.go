@@ -32,6 +32,9 @@ type MobileHeartbeatRequest struct {
 	BuildNumber string `json:"buildNumber"`
 	OSVersion   string `json:"osVersion"`
 	Model       string `json:"model"`
+	// PushToken is the FCM registration token (roadmap BE-8.2), optional —
+	// omitted heartbeats keep whatever token was last stored.
+	PushToken string `json:"pushToken"`
 }
 
 type MobileStoreStat struct {
@@ -143,7 +146,7 @@ func (s *mobileAppService) Heartbeat(ctx context.Context, userID *uint, req *Mob
 		return ErrInvalidMobilePlatform
 	}
 	now := time.Now()
-	return s.devices.UpsertHeartbeat(ctx, &models.MobileDevice{
+	device := &models.MobileDevice{
 		UserID:      userID,
 		DeviceID:    strings.TrimSpace(req.DeviceID),
 		Store:       store,
@@ -154,7 +157,12 @@ func (s *mobileAppService) Heartbeat(ctx context.Context, userID *uint, req *Mob
 		Model:       strings.TrimSpace(req.Model),
 		FirstSeenAt: now,
 		LastSeenAt:  now,
-	})
+	}
+	if token := strings.TrimSpace(req.PushToken); token != "" {
+		device.PushToken = token
+		device.PushTokenUpdatedAt = &now
+	}
+	return s.devices.UpsertHeartbeat(ctx, device)
 }
 
 func (s *mobileAppService) Overview(ctx context.Context) (*MobileOverviewResponse, error) {

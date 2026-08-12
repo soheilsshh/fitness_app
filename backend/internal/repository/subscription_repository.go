@@ -21,6 +21,9 @@ type SubscriptionRepository interface {
 	FindCurrentByUserIDAndCoachID(ctx context.Context, userID, coachID uint, now time.Time) (*models.Subscription, error)
 	CountStudentsByCoachID(ctx context.Context, coachID uint) (int64, error)
 	CountActiveSubscriptionsByCoachID(ctx context.Context, coachID uint, now time.Time) (int64, error)
+	// FindActiveUserIDs returns distinct user ids with a currently-active subscription.
+	// Used by the progress-report scheduler (roadmap BE-4.1).
+	FindActiveUserIDs(ctx context.Context, now time.Time) ([]uint, error)
 }
 
 type subscriptionRepository struct {
@@ -133,6 +136,16 @@ func (r *subscriptionRepository) CountStudentsByCoachID(ctx context.Context, coa
 			models.RoleStudent, coachID, coachID).
 		Count(&count).Error
 	return count, err
+}
+
+func (r *subscriptionRepository) FindActiveUserIDs(ctx context.Context, now time.Time) ([]uint, error) {
+	var ids []uint
+	err := r.db.WithContext(ctx).
+		Model(&models.Subscription{}).
+		Where("ends_at IS NULL OR ends_at > ?", now).
+		Distinct().
+		Pluck("user_id", &ids).Error
+	return ids, err
 }
 
 func (r *subscriptionRepository) CountActiveSubscriptionsByCoachID(ctx context.Context, coachID uint, now time.Time) (int64, error) {

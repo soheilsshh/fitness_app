@@ -96,13 +96,68 @@ func ValidateWorkoutPlan(plan *WorkoutPlanSchema) error {
 	return nil
 }
 
-// ValidateFoodLog is a stub for roadmap phase 2.
+// ValidateIngredientSuggestion rejects empty or unrealistic improvised recipes (roadmap BE-1.9).
+func ValidateIngredientSuggestion(s *IngredientSuggestionSchema) error {
+	if s == nil {
+		return fmt.Errorf("%w: suggestion is nil", ErrInvalidPlan)
+	}
+	if strings.TrimSpace(s.RecipeName) == "" {
+		return fmt.Errorf("%w: نام دستور غذا خالی است", ErrInvalidPlan)
+	}
+	if len(s.Items) == 0 {
+		return fmt.Errorf("%w: هیچ آیتم غذایی پیشنهاد نشده", ErrInvalidPlan)
+	}
+	if s.TotalCalories < 50 || s.TotalCalories > 3000 {
+		return fmt.Errorf("%w: کالری کل خارج از محدوده منطقی است", ErrInvalidPlan)
+	}
+	for _, item := range s.Items {
+		if strings.TrimSpace(item.FoodName) == "" {
+			return fmt.Errorf("%w: نام غذا خالی است", ErrInvalidPlan)
+		}
+		if item.Calories < 0 || item.ProteinG < 0 || item.CarbsG < 0 || item.FatG < 0 || item.AmountG < 0 {
+			return fmt.Errorf("%w: مقادیر آیتم غذایی نامعتبر است", ErrInvalidPlan)
+		}
+	}
+	return nil
+}
+
+// ValidateBodyPhotoAnalysis rejects an empty vision analysis (roadmap BE-5.2).
+func ValidateBodyPhotoAnalysis(a *BodyPhotoAnalysisSchema) error {
+	if a == nil {
+		return fmt.Errorf("%w: analysis is nil", ErrInvalidPlan)
+	}
+	if strings.TrimSpace(a.ObservationText) == "" {
+		return fmt.Errorf("%w: متن مشاهده خالی است", ErrInvalidPlan)
+	}
+	return nil
+}
+
+// ValidateProgressAnalysis rejects an empty AI-written deep-dive summary (roadmap BE-4.3).
+func ValidateProgressAnalysis(a *ProgressAnalysisSchema) error {
+	if a == nil {
+		return fmt.Errorf("%w: analysis is nil", ErrInvalidPlan)
+	}
+	if strings.TrimSpace(a.SummaryText) == "" {
+		return fmt.Errorf("%w: متن خلاصه خالی است", ErrInvalidPlan)
+	}
+	return nil
+}
+
+// ValidateFoodLog rejects empty or nonsensical voice food-log suggestions (roadmap BE-2.4).
 func ValidateFoodLog(log *FoodLogSchema) error {
 	if log == nil {
 		return fmt.Errorf("%w: food log is nil", ErrInvalidPlan)
 	}
 	if len(log.Items) == 0 {
 		return fmt.Errorf("%w: هیچ آیتم غذایی ثبت نشده", ErrInvalidPlan)
+	}
+	for _, item := range log.Items {
+		if strings.TrimSpace(item.FoodName) == "" {
+			return fmt.Errorf("%w: نام غذا خالی است", ErrInvalidPlan)
+		}
+		if item.Calories < 0 || item.ProteinG < 0 || item.CarbsG < 0 || item.FatG < 0 || item.AmountG < 0 {
+			return fmt.Errorf("%w: مقادیر آیتم غذایی نامعتبر است", ErrInvalidPlan)
+		}
 	}
 	return nil
 }

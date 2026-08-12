@@ -248,9 +248,94 @@ func GenerateWorkoutPlan(ctx context.Context, userContext string) (*WorkoutPlanS
 	return &plan, res, nil
 }
 
+// GenerateIngredientSuggestion produces an improvised recipe from ingredients the
+// user has on hand (roadmap BE-1.9, caller should Validate).
+func GenerateIngredientSuggestion(ctx context.Context, userContext string) (*IngredientSuggestionSchema, *GenerateResult, error) {
+	system := PersonaNutrition.SystemPrompt() + "\nفقط با مواد اعلام‌شده (یا معادل بسیار مشابه ایرانی) یک دستور غذای ساده و واقع‌بینانه پیشنهاد بده. خروجی باید دقیقاً JSON مطابق اسکیما باشد."
+	res, err := GenerateStructured(ctx, "ingredient_suggestion", IngredientSuggestionJSONSchema(), system, userContext)
+	if err != nil {
+		return nil, res, err
+	}
+	var suggestion IngredientSuggestionSchema
+	if err := json.Unmarshal(res.RawJSON, &suggestion); err != nil {
+		return nil, res, fmt.Errorf("%w: %v", ErrUnmarshal, err)
+	}
+	return &suggestion, res, nil
+}
+
+// GenerateFoodLog turns a transcribed voice note into structured food-log items
+// (roadmap BE-2.4, step 2 of the voice pipeline; caller should Validate).
+func GenerateFoodLog(ctx context.Context, userContext string) (*FoodLogSchema, *GenerateResult, error) {
+	system := PersonaNutrition.SystemPrompt() + "\nمتن کاربر توصیف غذاهایی است که همین الان خورده. آن را به آیتم‌های غذایی با کالری و ماکرو تخمینی تبدیل کن. خروجی باید دقیقاً JSON مطابق اسکیما باشد."
+	res, err := GenerateStructured(ctx, "food_log", FoodLogJSONSchema(), system, userContext)
+	if err != nil {
+		return nil, res, err
+	}
+	var log FoodLogSchema
+	if err := json.Unmarshal(res.RawJSON, &log); err != nil {
+		return nil, res, fmt.Errorf("%w: %v", ErrUnmarshal, err)
+	}
+	return &log, res, nil
+}
+
+// GenerateSetLog turns a transcribed voice note into a single structured
+// workout set entry (roadmap BE-3.5, step 2 of the voice pipeline; caller
+// should Validate — is_pr from AI is only a hint, the server recomputes it).
+func GenerateSetLog(ctx context.Context, userContext string) (*SetLogSchema, *GenerateResult, error) {
+	system := PersonaWorkout.SystemPrompt() + "\nمتن کاربر توصیف حرکت و رکوردی است که همین الان زده. آن را به یک آیتم ست تمرینی تبدیل کن. خروجی باید دقیقاً JSON مطابق اسکیما باشد."
+	res, err := GenerateStructured(ctx, "set_log", SetLogJSONSchema(), system, userContext)
+	if err != nil {
+		return nil, res, err
+	}
+	var log SetLogSchema
+	if err := json.Unmarshal(res.RawJSON, &log); err != nil {
+		return nil, res, fmt.Errorf("%w: %v", ErrUnmarshal, err)
+	}
+	return &log, res, nil
+}
+
+// GenerateProgressAnalysis turns deterministically-computed weekly/monthly
+// numbers (never AI-computed) into a short, encouraging Persian summary
+// (roadmap BE-4.3; caller should Validate).
+func GenerateProgressAnalysis(ctx context.Context, userContext string) (*ProgressAnalysisSchema, *GenerateResult, error) {
+	system := "تو دستیار تحلیل پیشرفت فیتینو هستی. بر اساس اعداد خام تمرینی که به تو داده می‌شود (که همگی از قبل دقیق محاسبه شده‌اند)، یک خلاصه کوتاه، صادقانه و انگیزه‌بخش به فارسی بنویس. عدد جدید اختراع نکن، فقط همان اعداد داده‌شده را تفسیر کن. خروجی باید دقیقاً JSON مطابق اسکیما باشد."
+	res, err := GenerateStructured(ctx, "progress_analysis", ProgressAnalysisJSONSchema(), system, userContext)
+	if err != nil {
+		return nil, res, err
+	}
+	var analysis ProgressAnalysisSchema
+	if err := json.Unmarshal(res.RawJSON, &analysis); err != nil {
+		return nil, res, fmt.Errorf("%w: %v", ErrUnmarshal, err)
+	}
+	return &analysis, res, nil
+}
+
 func mockStructured(schemaName, model string) *GenerateResult {
 	var raw []byte
 	switch schemaName {
+	case "progress_analysis":
+		raw = []byte(`{"summary_text": "این هفته عملکرد خوبی داشتی و نسبت به هفته قبل پیشرفت کردی.", "highlight": "بهترین روزت رکورد جدید ثبت کرد."}`)
+	case "set_log":
+		raw = []byte(`{"exercise_name": "پرس سینه هالتر", "weight_kg": 80, "reps": 8, "is_pr": true}`)
+	case "food_log":
+		raw = []byte(`{
+  "items": [
+    {"food_name": "تخم‌مرغ آب‌پز", "amount_g": 100, "calories": 155, "protein_g": 13, "carbs_g": 1.1, "fat_g": 11},
+    {"food_name": "شیر کم‌چرب", "amount_g": 240, "calories": 100, "protein_g": 8, "carbs_g": 12, "fat_g": 2.5}
+  ],
+  "notes": "صبحانه"
+}`)
+	case "ingredient_suggestion":
+		raw = []byte(`{
+  "recipe_name": "املت گوجه و پنیر بداهه",
+  "instructions": "تخم‌مرغ‌ها را با گوجه خرد شده و کمی نمک در ماهیتابه با روغن کم تفت بده تا بپزد، در پایان پنیر را روی آن اضافه کن.",
+  "items": [
+    {"food_name": "تخم‌مرغ", "amount_g": 120, "calories": 186, "protein_g": 15.6, "carbs_g": 1.2, "fat_g": 13},
+    {"food_name": "گوجه‌فرنگی", "amount_g": 80, "calories": 15, "protein_g": 0.7, "carbs_g": 3.2, "fat_g": 0.2},
+    {"food_name": "پنیر کم‌چرب", "amount_g": 30, "calories": 60, "protein_g": 6, "carbs_g": 1, "fat_g": 3.5}
+  ],
+  "total_calories": 261
+}`)
 	case "workout_plan":
 		raw = []byte(`{
   "goal_type": "hypertrophy",

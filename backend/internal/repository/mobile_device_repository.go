@@ -17,6 +17,12 @@ type MobileDeviceRepository interface {
 	CountActiveSince(ctx context.Context, since time.Time) (int64, error)
 	CountLinkedUsers(ctx context.Context) (int64, error)
 	VersionBreakdown(ctx context.Context) ([]MobileVersionRow, error)
+
+	// PushTokensForUser returns every distinct FCM token registered for a user's devices (BE-8.1/8.2).
+	PushTokensForUser(ctx context.Context, userID uint) ([]string, error)
+	// UsersInactiveSince returns distinct user IDs whose most recent device
+	// heartbeat is older than `since` — the inactivity-reminder cohort (BE-8.3).
+	UsersInactiveSince(ctx context.Context, since time.Time) ([]uint, error)
 }
 
 type MobileVersionRow struct {
@@ -38,20 +44,45 @@ func (r *mobileDeviceRepository) UpsertHeartbeat(ctx context.Context, device *mo
 		device.FirstSeenAt = now
 	}
 	device.LastSeenAt = now
+	updates := map[string]any{
+		"user_id":      device.UserID,
+		"store":        device.Store,
+		"platform":     device.Platform,
+		"app_version":  device.AppVersion,
+		"build_number": device.BuildNumber,
+		"os_version":   device.OSVersion,
+		"model":        device.Model,
+		"last_seen_at": now,
+		"updated_at":   now,
+	}
+	// Only touch push_token on heartbeats that actually carry one, so a
+	// token-less heartbeat never wipes a previously registered FCM token.
+	if device.PushToken != "" {
+		updates["push_token"] = device.PushToken
+		updates["push_token_updated_at"] = device.PushTokenUpdatedAt
+	}
 	return r.db.WithContext(ctx).Clauses(clause.OnConflict{
-		Columns: []clause.Column{{Name: "device_id"}},
-		DoUpdates: clause.Assignments(map[string]any{
-			"user_id":      device.UserID,
-			"store":        device.Store,
-			"platform":     device.Platform,
-			"app_version":  device.AppVersion,
-			"build_number": device.BuildNumber,
-			"os_version":   device.OSVersion,
-			"model":        device.Model,
-			"last_seen_at": now,
-			"updated_at":   now,
-		}),
+		Columns:   []clause.Column{{Name: "device_id"}},
+		DoUpdates: clause.Assignments(updates),
 	}).Create(device).Error
+}
+
+func (r *mobileDeviceRepository) PushTokensForUser(ctx context.Context, userID uint) ([]string, error) {
+	var tokens []string
+	err := r.db.WithContext(ctx).Model(&models.MobileDevice{}).
+		Where("user_id = ? AND push_token <> ''", userID).
+		Distinct("push_token").Pluck("push_token", &tokens).Error
+	return tokens, err
+}
+
+func (r *mobileDeviceRepository) UsersInactiveSince(ctx context.Context, since time.Time) ([]uint, error) {
+	var userIDs []uint
+	err := r.db.WithContext(ctx).Model(&models.MobileDevice{}).
+		Where("user_id IS NOT NULL").
+		Group("user_id").
+		Having("MAX(last_seen_at) < ?", since).
+		Pluck("user_id", &userIDs).Error
+	return userIDs, err
 }
 
 func (r *mobileDeviceRepository) List(ctx context.Context, store, platform string, page, pageSize int) ([]models.MobileDevice, int64, error) {

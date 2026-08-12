@@ -22,16 +22,20 @@ var (
 )
 
 type WorkoutHistoryItemDTO struct {
-	ID             uint   `json:"id"`
-	SubscriptionID uint   `json:"subscriptionId"`
-	ProgramTitle   string `json:"programTitle"`
-	DayKey         string `json:"dayKey"`
-	DayLabel       string `json:"dayLabel"`
-	ExerciseCount  int    `json:"exerciseCount"`
-	DurationMin    int    `json:"durationMin"`
-	Notes          string `json:"notes,omitempty"`
-	CompletedAt    string `json:"completedAt"`
-	CoachName      string `json:"coachName,omitempty"`
+	ID                 uint     `json:"id"`
+	SubscriptionID     uint     `json:"subscriptionId"`
+	ProgramTitle       string   `json:"programTitle"`
+	DayKey             string   `json:"dayKey"`
+	DayLabel           string   `json:"dayLabel"`
+	ExerciseCount      int      `json:"exerciseCount"`
+	DurationMin        int      `json:"durationMin"`
+	Notes              string   `json:"notes,omitempty"`
+	EffortRPE          int      `json:"effortRpe,omitempty"`
+	FeelingAfter       string   `json:"feelingAfter,omitempty"`
+	SatisfactionRating int      `json:"satisfactionRating,omitempty"`
+	NewPRExercises     []string `json:"newPrExercises,omitempty"`
+	CompletedAt        string   `json:"completedAt"`
+	CoachName          string   `json:"coachName,omitempty"`
 }
 
 type WorkoutHistoryListResponse struct {
@@ -54,7 +58,15 @@ type LogWorkoutSessionRequest struct {
 	DayKey         string        `json:"dayKey"`
 	DurationMin    int           `json:"durationMin"`
 	Notes          string        `json:"notes"`
-	Sets           []LogSetInput `json:"sets,omitempty"`
+	// EffortRPE (1-10) and SatisfactionRating (1-5) are self-reported; 0 = not reported.
+	EffortRPE          int           `json:"effortRpe,omitempty"`
+	FeelingAfter       string        `json:"feelingAfter,omitempty"`
+	SatisfactionRating int           `json:"satisfactionRating,omitempty"`
+	Sets               []LogSetInput `json:"sets,omitempty"`
+}
+
+var validFeelings = map[string]bool{
+	"great": true, "good": true, "ok": true, "tired": true, "exhausted": true,
 }
 
 type WorkoutHistoryService interface {
@@ -63,10 +75,11 @@ type WorkoutHistoryService interface {
 }
 
 type workoutHistoryService struct {
-	db          *gorm.DB
-	subRepo     repository.SubscriptionRepository
-	planRepo    repository.ServicePlanRepository
-	programRepo repository.ProgramRepository
+	db             *gorm.DB
+	subRepo        repository.SubscriptionRepository
+	planRepo       repository.ServicePlanRepository
+	programRepo    repository.ProgramRepository
+	achievementSvc AchievementService
 }
 
 func NewWorkoutHistoryService(
@@ -74,12 +87,14 @@ func NewWorkoutHistoryService(
 	subRepo repository.SubscriptionRepository,
 	planRepo repository.ServicePlanRepository,
 	programRepo repository.ProgramRepository,
+	achievementSvc AchievementService,
 ) WorkoutHistoryService {
 	return &workoutHistoryService{
-		db:          db,
-		subRepo:     subRepo,
-		planRepo:    planRepo,
-		programRepo: programRepo,
+		db:             db,
+		subRepo:        subRepo,
+		planRepo:       planRepo,
+		programRepo:    programRepo,
+		achievementSvc: achievementSvc,
 	}
 }
 
@@ -207,32 +222,98 @@ func (s *workoutHistoryService) LogSession(ctx context.Context, userID uint, req
 		}
 	}
 
+	feeling := strings.ToLower(strings.TrimSpace(req.FeelingAfter))
+	if feeling != "" && !validFeelings[feeling] {
+		feeling = ""
+	}
+	effort := req.EffortRPE
+	if effort < 0 || effort > 10 {
+		effort = 0
+	}
+	satisfaction := req.SatisfactionRating
+	if satisfaction < 0 || satisfaction > 5 {
+		satisfaction = 0
+	}
+
 	session := models.WorkoutSession{
-		UserID:           userID,
-		SubscriptionID:   sub.ID,
-		WorkoutProgramID: wp.ID,
-		ProgramTitle:     programTitle,
-		DayKey:           dayKey,
-		DayLabel:         workoutDayLabels[dayKey],
-		ExerciseCount:    exerciseCount,
-		DurationMin:      durationMin,
-		Notes:            strings.TrimSpace(req.Notes),
-		CompletedAt:      now,
+		UserID:              userID,
+		SubscriptionID:      sub.ID,
+		WorkoutProgramID:    wp.ID,
+		ProgramTitle:        programTitle,
+		DayKey:              dayKey,
+		DayLabel:            workoutDayLabels[dayKey],
+		ExerciseCount:       exerciseCount,
+		DurationMin:         durationMin,
+		Notes:               strings.TrimSpace(req.Notes),
+		EffortRPE:           effort,
+		FeelingAfter:        feeling,
+		SatisfactionRating:  satisfaction,
+		CompletedAt:         now,
 	}
 	if err := s.db.WithContext(ctx).Create(&session).Error; err != nil {
 		return nil, err
 	}
 
-	// Persist any logged sets (weight x reps) for personal-record tracking.
+	// Persist any logged sets (weight x reps), flagging new personal records
+	// (roadmap BE-3.2) before writing them.
+	var newPRExercises []string
 	if logs := buildSetLogs(userID, sub.ID, session.ID, now, req.Sets); len(logs) > 0 {
+		newPRExercises = s.markPersonalRecords(ctx, userID, logs)
 		if err := s.db.WithContext(ctx).Create(&logs).Error; err != nil {
 			return nil, err
 		}
 	}
 
+	if s.achievementSvc != nil {
+		s.achievementSvc.HandleWorkoutSessionCompleted(ctx, userID)
+		for _, exerciseName := range newPRExercises {
+			s.achievementSvc.HandleNewPR(ctx, userID, exerciseName)
+		}
+	}
+
 	coachName := s.resolveCoachName(ctx, sub.CoachID)
 	dto := workoutSessionToDTO(session, coachName)
+	dto.NewPRExercises = newPRExercises
 	return &dto, nil
+}
+
+// markPersonalRecords compares each new set's weight against the user's prior
+// best for the same exercise (case-insensitive) and flags IsPR in place when
+// it's a new max. Returns the distinct exercise names that got a new PR.
+// Uses a running max within the current batch too, so e.g. set 3 beating set 1
+// of the same session is still detected correctly.
+func (s *workoutHistoryService) markPersonalRecords(ctx context.Context, userID uint, logs []models.WorkoutSetLog) []string {
+	priorMax := map[string]float64{}
+	prSet := map[string]bool{}
+
+	for i := range logs {
+		key := strings.ToLower(strings.TrimSpace(logs[i].ExerciseName))
+		if key == "" {
+			continue
+		}
+		best, known := priorMax[key]
+		if !known {
+			var maxWeight *float64
+			_ = s.db.WithContext(ctx).Model(&models.WorkoutSetLog{}).
+				Where("user_id = ? AND LOWER(exercise_name) = ?", userID, key).
+				Select("MAX(weight_kg)").Scan(&maxWeight).Error
+			if maxWeight != nil {
+				best = *maxWeight
+			}
+			priorMax[key] = best
+		}
+		if logs[i].WeightKg > best && logs[i].WeightKg > 0 {
+			logs[i].IsPR = true
+			priorMax[key] = logs[i].WeightKg
+			prSet[logs[i].ExerciseName] = true
+		}
+	}
+
+	names := make([]string, 0, len(prSet))
+	for name := range prSet {
+		names = append(names, name)
+	}
+	return names
 }
 
 // buildSetLogs converts validated set inputs into WorkoutSetLog rows, skipping
@@ -273,16 +354,19 @@ func workoutSessionToDTO(sess models.WorkoutSession, coachName string) WorkoutHi
 		label = workoutDayLabels[sess.DayKey]
 	}
 	return WorkoutHistoryItemDTO{
-		ID:             sess.ID,
-		SubscriptionID: sess.SubscriptionID,
-		ProgramTitle:   sess.ProgramTitle,
-		DayKey:         sess.DayKey,
-		DayLabel:       label,
-		ExerciseCount:  sess.ExerciseCount,
-		DurationMin:    sess.DurationMin,
-		Notes:          sess.Notes,
-		CompletedAt:    sess.CompletedAt.Format(time.RFC3339),
-		CoachName:      coachName,
+		ID:                 sess.ID,
+		SubscriptionID:     sess.SubscriptionID,
+		ProgramTitle:       sess.ProgramTitle,
+		DayKey:             sess.DayKey,
+		DayLabel:           label,
+		ExerciseCount:      sess.ExerciseCount,
+		DurationMin:        sess.DurationMin,
+		Notes:              sess.Notes,
+		EffortRPE:          sess.EffortRPE,
+		FeelingAfter:       sess.FeelingAfter,
+		SatisfactionRating: sess.SatisfactionRating,
+		CompletedAt:        sess.CompletedAt.Format(time.RFC3339),
+		CoachName:          coachName,
 	}
 }
 

@@ -60,6 +60,23 @@ type ExerciseSchema struct {
 	RestSeconds  int    `json:"rest_seconds"`
 }
 
+// IngredientSuggestionSchema is an improvised recipe built from ingredients the
+// user already has at home (roadmap BE-1.9).
+type IngredientSuggestionSchema struct {
+	RecipeName    string     `json:"recipe_name"`
+	Instructions  string     `json:"instructions"`
+	Items         []FoodItem `json:"items"`
+	TotalCalories int        `json:"total_calories"`
+}
+
+// ProgressAnalysisSchema is the AI-written human summary of a deterministically
+// computed weekly/monthly report (roadmap BE-4.3). The numbers themselves are
+// always computed in Go beforehand — AI only turns them into readable Persian text.
+type ProgressAnalysisSchema struct {
+	SummaryText string `json:"summary_text"`
+	Highlight   string `json:"highlight"`
+}
+
 // FoodLogSchema is used later for voice food logging (phase 2 roadmap).
 type FoodLogSchema struct {
 	Items []FoodItem `json:"items"`
@@ -72,6 +89,36 @@ type SetLogSchema struct {
 	WeightKg     float64 `json:"weight_kg"`
 	Reps         int     `json:"reps"`
 	IsPR         bool    `json:"is_pr"`
+}
+
+// ProgressAnalysisJSONSchema returns the OpenAI json_schema object for the
+// weekly/monthly deep-dive text summary (roadmap BE-4.3).
+func ProgressAnalysisJSONSchema() map[string]interface{} {
+	return map[string]interface{}{
+		"type": "object",
+		"properties": map[string]interface{}{
+			"summary_text": map[string]string{"type": "string"},
+			"highlight":    map[string]string{"type": "string"},
+		},
+		"required":             []string{"summary_text", "highlight"},
+		"additionalProperties": false,
+	}
+}
+
+// SetLogJSONSchema returns the OpenAI json_schema object for voice-transcribed
+// workout set entries (roadmap BE-3.5).
+func SetLogJSONSchema() map[string]interface{} {
+	return map[string]interface{}{
+		"type": "object",
+		"properties": map[string]interface{}{
+			"exercise_name": map[string]string{"type": "string"},
+			"weight_kg":     map[string]string{"type": "number"},
+			"reps":          map[string]string{"type": "integer"},
+			"is_pr":         map[string]string{"type": "boolean"},
+		},
+		"required":             []string{"exercise_name", "weight_kg", "reps", "is_pr"},
+		"additionalProperties": false,
+	}
 }
 
 // NutritionPlanJSONSchema returns the OpenAI json_schema object for nutrition plans.
@@ -115,6 +162,68 @@ func NutritionPlanJSONSchema() map[string]interface{} {
 			},
 		},
 		"required":             []string{"goal_type", "total_calories", "protein_g", "carbs_g", "fat_g", "meals"},
+		"additionalProperties": false,
+	}
+}
+
+// IngredientSuggestionJSONSchema returns the OpenAI json_schema object for
+// improvised ingredient-based recipe suggestions (roadmap BE-1.9).
+func IngredientSuggestionJSONSchema() map[string]interface{} {
+	foodItem := map[string]interface{}{
+		"type": "object",
+		"properties": map[string]interface{}{
+			"food_name": map[string]string{"type": "string"},
+			"amount_g":  map[string]string{"type": "number"},
+			"calories":  map[string]string{"type": "integer"},
+			"protein_g": map[string]string{"type": "number"},
+			"carbs_g":   map[string]string{"type": "number"},
+			"fat_g":     map[string]string{"type": "number"},
+		},
+		"required":             []string{"food_name", "amount_g", "calories", "protein_g", "carbs_g", "fat_g"},
+		"additionalProperties": false,
+	}
+	return map[string]interface{}{
+		"type": "object",
+		"properties": map[string]interface{}{
+			"recipe_name":   map[string]string{"type": "string"},
+			"instructions":  map[string]string{"type": "string"},
+			"total_calories": map[string]string{"type": "integer"},
+			"items": map[string]interface{}{
+				"type":  "array",
+				"items": foodItem,
+			},
+		},
+		"required":             []string{"recipe_name", "instructions", "items", "total_calories"},
+		"additionalProperties": false,
+	}
+}
+
+// FoodLogJSONSchema returns the OpenAI json_schema object for voice-transcribed
+// food log entries (roadmap BE-2.4).
+func FoodLogJSONSchema() map[string]interface{} {
+	foodItem := map[string]interface{}{
+		"type": "object",
+		"properties": map[string]interface{}{
+			"food_name": map[string]string{"type": "string"},
+			"amount_g":  map[string]string{"type": "number"},
+			"calories":  map[string]string{"type": "integer"},
+			"protein_g": map[string]string{"type": "number"},
+			"carbs_g":   map[string]string{"type": "number"},
+			"fat_g":     map[string]string{"type": "number"},
+		},
+		"required":             []string{"food_name", "amount_g", "calories", "protein_g", "carbs_g", "fat_g"},
+		"additionalProperties": false,
+	}
+	return map[string]interface{}{
+		"type": "object",
+		"properties": map[string]interface{}{
+			"items": map[string]interface{}{
+				"type":  "array",
+				"items": foodItem,
+			},
+			"notes": map[string]string{"type": "string"},
+		},
+		"required":             []string{"items", "notes"},
 		"additionalProperties": false,
 	}
 }

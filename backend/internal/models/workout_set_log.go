@@ -18,5 +18,9 @@ type WorkoutSetLog struct {
 	SetNumber        int       `gorm:"not null;default:1"`
 	WeightKg         float64   `gorm:"not null;default:0"`
 	Reps             int       `gorm:"not null;default:0"`
+	// IsPR marks this set as a new personal record for the user+exercise pair,
+	// computed at write time by comparing against prior WorkoutSetLog rows
+	// (roadmap BE-3.2).
+	IsPR             bool      `gorm:"not null;default:false;index"`
 	PerformedAt      time.Time `gorm:"not null;index"`
 }

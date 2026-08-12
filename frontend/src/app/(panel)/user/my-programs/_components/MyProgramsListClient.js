@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Zap } from "lucide-react";
 import { api } from "@/lib/axios/client";
 import { Card, CardContent } from "@/components/ui/card";
@@ -43,26 +43,21 @@ export default function MyProgramsListClient() {
   const [programs, setPrograms] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      setLoading(true);
-      try {
-        const res = await api.get("/me/programs");
-        if (!cancelled) {
-          setPrograms((res.data?.programs || []).map(mapApiProgram));
-        }
-      } catch {
-        if (!cancelled) setPrograms([]);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await api.get("/me/programs");
+      setPrograms((res.data?.programs || []).map(mapApiProgram));
+    } catch {
+      setPrograms([]);
+    } finally {
+      setLoading(false);
     }
-    load();
-    return () => {
-      cancelled = true;
-    };
   }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const computed = useMemo(() => {
     return programs.map((p) => ({

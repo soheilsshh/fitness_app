@@ -11,6 +11,8 @@ const (
 	NotificationTypeProgramUpdated    = "program_updated"
 	NotificationTypeCheckInReminder   = "checkin_reminder"
 	NotificationTypeMessageFromCoach  = "message_from_coach"
+	// NotificationTypeInactivityReminder marks the 24h/48h "come back" nudge (roadmap BE-8.3).
+	NotificationTypeInactivityReminder = "inactivity_reminder"
 )
 
 // Notification represents a single user-targeted notification.

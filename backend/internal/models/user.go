@@ -33,6 +33,10 @@ type User struct {
 	MedicalHistory      string     `gorm:"column:medical_history;type:text"`
 	Injuries            string     `gorm:"column:injuries;type:text"`
 	PhysicalLimitations string     `gorm:"column:physical_limitations;type:text"`
+
+	// NotificationsEnabled toggles push/SMS reminders (roadmap FE-8.6); in-app
+	// notifications on GET /me/... stay unaffected.
+	NotificationsEnabled bool `gorm:"column:notifications_enabled;not null;default:true"`
 }
 
 // BeforeSave ensures JSON columns always contain valid JSON for MySQL.

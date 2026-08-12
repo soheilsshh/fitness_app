@@ -17,6 +17,9 @@ type NutritionProgram struct {
 	// Meal rows alone cannot store these, so they live on the program.
 	CaloriesTarget int    `gorm:"not null;default:0"`
 	ProteinTarget  string `gorm:"size:100"`
+	// Goal is the diet objective behind this program: cut | bulk | maintain.
+	// Populated by AI-generated plans (roadmap BE-1.3); blank for coach-authored ones.
+	Goal           string    `gorm:"size:20"`
 	DurationWeeks  int       `gorm:"not null;default:4"`
 	IsActive       bool      `gorm:"not null;default:true"`
 	LastUpdatedAt  time.Time `gorm:"autoUpdateTime"`

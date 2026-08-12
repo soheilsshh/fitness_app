@@ -218,6 +218,26 @@ func SendProgramReadySMS(receptor, firstName string) error {
 	return err
 }
 
+// SendInactivityReminderSMS nudges a long-inactive student (roadmap BE-8.4).
+// Uses the same Kavenegar lookup mechanism as SendProgramReadySMS — the
+// message text itself lives in the pre-approved template, not this call.
+func SendInactivityReminderSMS(receptor, firstName string) error {
+	receptor = strings.TrimSpace(receptor)
+	if receptor == "" {
+		return errors.New("receptor is required")
+	}
+	token := sanitizeLookupName(firstName)
+	if token == "" {
+		token = "کاربر"
+	}
+	template := strings.TrimSpace(config.Get().SMS.InactivityReminderPattern)
+	if template == "" {
+		template = "fittino-reminder"
+	}
+	_, err := SendVerification(receptor, token, template)
+	return err
+}
+
 func sanitizeLookupName(name string) string {
 	name = strings.TrimSpace(name)
 	if name == "" {
