@@ -25,8 +25,8 @@ func NewAuthController(authService service.AuthService, meService service.MeServ
 // DTOs
 
 type registerRequest struct {
-	Name     string `json:"name"`                    // optional at signup; collected in short onboarding
-	Email    string `json:"email"`                   // optional; auto-generated from phone when empty
+	Name     string `json:"name"`  // optional at signup; collected in short onboarding
+	Email    string `json:"email"` // optional; auto-generated from phone when empty
 	Phone    string `json:"phone" binding:"required"`
 	Password string `json:"password" binding:"required,min=6"`
 	Code     string `json:"code" binding:"required"` // OTP verification required
@@ -109,7 +109,7 @@ type meResponse struct {
 }
 
 type changePasswordRequest struct {
-	CurrentPassword string `json:"currentPassword" binding:"required"` // also accepts current_password from Swagger
+	CurrentPassword string `json:"currentPassword" binding:"required"`   // also accepts current_password from Swagger
 	NewPassword     string `json:"newPassword" binding:"required,min=8"` // also accepts new_password from Swagger
 }
 

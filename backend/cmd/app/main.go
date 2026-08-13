@@ -46,7 +46,7 @@ func NewServer(db *gorm.DB) *Server {
 		AllowOriginFunc: func(origin string) bool {
 			return config.IsOriginAllowed(origin)
 		},
-		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders: []string{
 			"Origin",
 			"Content-Type",

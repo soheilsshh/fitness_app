@@ -17,22 +17,15 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import NutritionFactsGrid from "@/components/nutrition/NutritionFactsGrid";
+import { gramsForServing, scaleNutritionByGrams } from "@/lib/nutrition/foodLog";
 import { cn } from "@/lib/utils";
-import {
-  formatFoodDetail,
-  mealFromCatalogFood,
-  roundMacro,
-  scaleMacros,
-} from "../../_components/nutritionHelpers";
+import { mealFromCatalogFood } from "../../_components/nutritionHelpers";
+
+const GRAM_FALLBACK_UNIT = { label: "گرم", gramsPerUnit: 1, isDefault: true };
 
 const PAGE_SIZE = 24;
-
-function formatBaseServing(food) {
-  const amount = roundMacro(food.amount);
-  const unit = food.unit || "";
-  if (!amount) return unit;
-  return `${amount.toLocaleString("fa-IR")} ${unit}`.trim();
-}
 
 export default function FoodPickerModal({
   open,
@@ -51,7 +44,8 @@ export default function FoodPickerModal({
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState("");
   const [selected, setSelected] = useState(null);
-  const [servingAmount, setServingAmount] = useState("");
+  const [unitLabel, setUnitLabel] = useState("");
+  const [qty, setQty] = useState("1");
 
   const hasMore = items.length < total;
   const foodsEndpoint = foodsPath || COACH_FOODS_PATH;
@@ -92,7 +86,8 @@ export default function FoodPickerModal({
       setPage(1);
       setTotal(0);
       setSelected(null);
-      setServingAmount("");
+      setUnitLabel("");
+      setQty("1");
       setError("");
       return;
     }
@@ -109,32 +104,20 @@ export default function FoodPickerModal({
 
   useEffect(() => {
     if (!selected) {
-      setServingAmount("");
+      setUnitLabel("");
+      setQty("1");
       return;
     }
-    const base = Number(selected.amount) || 1;
-    setServingAmount(String(base));
+    const units = selected.servingUnits?.length ? selected.servingUnits : [GRAM_FALLBACK_UNIT];
+    const def = units.find((u) => u.isDefault) || units[0];
+    setUnitLabel(def.label);
+    setQty("1");
   }, [selected]);
 
-  const previewMacros = selected
-    ? (() => {
-        const baseAmount = Number(selected.amount) || 1;
-        const serving = Number(servingAmount);
-        if (!Number.isFinite(serving) || serving <= 0) {
-          return { calories: 0, protein: 0, carbs: 0, fat: 0 };
-        }
-        const multiplier = serving / baseAmount;
-        return scaleMacros(
-          {
-            calories: selected.calories,
-            protein: selected.protein,
-            carbs: selected.carbs,
-            fat: selected.fat,
-          },
-          multiplier
-        );
-      })()
-    : null;
+  const units = selected?.servingUnits?.length ? selected.servingUnits : [GRAM_FALLBACK_UNIT];
+  const activeUnit = units.find((u) => u.label === unitLabel) || units[0];
+  const grams = selected && activeUnit ? gramsForServing(activeUnit, Number(qty)) : 0;
+  const previewFacts = selected && grams > 0 ? scaleNutritionByGrams(selected, grams) : null;
 
   const handleLoadMore = () => {
     if (loadingMore || !hasMore) return;
@@ -143,19 +126,22 @@ export default function FoodPickerModal({
 
   const handleAdd = async (andContinue) => {
     if (!selected) return;
-    const serving = Number(servingAmount);
-    if (!Number.isFinite(serving) || serving <= 0) {
+    if (!(grams > 0)) {
       setError("مقدار مصرفی باید بزرگ‌تر از صفر باشد.");
       return;
     }
     try {
-      await onAdd?.(mealFromCatalogFood(selected, serving));
+      // selected.amount is always 100 (per-100g canonical row), so passing
+      // grams straight through gives mealFromCatalogFood the right
+      // multiplier (grams / 100) without any extra conversion here.
+      await onAdd?.(mealFromCatalogFood(selected, grams));
     } catch {
       return;
     }
     if (andContinue) {
       setSelected(null);
-      setServingAmount("");
+      setUnitLabel("");
+      setQty("1");
       setError("");
     } else {
       onClose?.();
@@ -223,10 +209,13 @@ export default function FoodPickerModal({
                       : "border-border bg-card hover:bg-muted/50"
                   )}
                 >
+                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted">
+                    <Apple className="size-4 text-muted-foreground" />
+                  </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-semibold">{food.name}</p>
                     <p className="mt-0.5 text-xs text-muted-foreground">
-                      واحد پایه: {formatBaseServing(food)}
+                      ارزش غذایی بر اساس ۱۰۰ گرم
                     </p>
                   </div>
                   <Badge variant="secondary" className="shrink-0 tabular-nums">
@@ -271,39 +260,48 @@ export default function FoodPickerModal({
               <div className="space-y-1 text-start">
                 <p className="text-sm font-semibold">{selected.name}</p>
                 <p className="text-xs text-muted-foreground">
-                  پایه: {formatBaseServing(selected)} —{" "}
-                  {Math.round(Number(selected.calories) || 0).toLocaleString("fa-IR")} kcal
+                  {Math.round(Number(selected.calories) || 0).toLocaleString("fa-IR")} kcal در ۱۰۰ گرم
                 </p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="food-serving-amount">
-                  مقدار مصرفی ({selected.unit || "واحد"})
-                </Label>
-                <Input
-                  id="food-serving-amount"
-                  type="number"
-                  min="0"
-                  step="any"
-                  inputMode="decimal"
-                  value={servingAmount}
-                  onChange={(e) => setServingAmount(e.target.value)}
-                  className="tabular-nums"
-                />
-                {servingAmount ? (
-                  <p className="text-xs text-muted-foreground">
-                    نمایش: {formatFoodDetail(servingAmount, selected.unit)}
-                  </p>
-                ) : null}
+                <Label>واحد</Label>
+                <ToggleGroup
+                  type="single"
+                  variant="outline"
+                  value={unitLabel}
+                  onValueChange={(v) => v && setUnitLabel(v)}
+                  className="flex-wrap justify-start"
+                >
+                  {units.map((u) => (
+                    <ToggleGroupItem key={u.label} value={u.label} className="px-3">
+                      {u.label}
+                    </ToggleGroupItem>
+                  ))}
+                </ToggleGroup>
               </div>
 
-              {previewMacros ? (
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                  <MacroPreview label="کالری" value={previewMacros.calories} unit="kcal" />
-                  <MacroPreview label="پروتئین" value={previewMacros.protein} unit="g" />
-                  <MacroPreview label="کربوهیدرات" value={previewMacros.carbs} unit="g" />
-                  <MacroPreview label="چربی" value={previewMacros.fat} unit="g" />
+              <div className="space-y-2">
+                <Label htmlFor="food-serving-qty">مقدار</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="food-serving-qty"
+                    type="number"
+                    min="0"
+                    step="any"
+                    inputMode="decimal"
+                    value={qty}
+                    onChange={(e) => setQty(e.target.value)}
+                    className="w-24 tabular-nums"
+                  />
+                  <span className="text-xs text-muted-foreground">
+                    ≈ {Math.round(grams).toLocaleString("fa-IR")} گرم
+                  </span>
                 </div>
+              </div>
+
+              {previewFacts ? (
+                <NutritionFactsGrid facts={previewFacts} />
               ) : null}
 
               <div className="flex gap-2">
@@ -328,17 +326,5 @@ export default function FoodPickerModal({
         )}
       </DialogContent>
     </Dialog>
-  );
-}
-
-function MacroPreview({ label, value, unit }) {
-  return (
-    <div className="rounded-lg border bg-card px-3 py-2 text-center">
-      <p className="text-[10px] text-muted-foreground">{label}</p>
-      <p className="text-sm font-semibold tabular-nums">
-        {roundMacro(value).toLocaleString("fa-IR")}{" "}
-        <span className="text-xs font-normal text-muted-foreground">{unit}</span>
-      </p>
-    </div>
   );
 }

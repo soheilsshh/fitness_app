@@ -95,9 +95,9 @@ type TicketListResponse struct {
 
 type CoachTicketListResponse struct {
 	Items    []CoachTicketItemDTO `json:"items"`
-	Page     int             `json:"page"`
-	PageSize int             `json:"pageSize"`
-	Total    int64           `json:"total"`
+	Page     int                  `json:"page"`
+	PageSize int                  `json:"pageSize"`
+	Total    int64                `json:"total"`
 }
 
 type TicketService interface {
@@ -302,4 +302,3 @@ func isValidTicketStatus(status string) bool {
 		return false
 	}
 }
-

@@ -106,6 +106,39 @@ export function mealTypeLabel(value) {
   return MEAL_TYPE_OPTIONS.find((o) => o.value === value)?.label || "سایر";
 }
 
+/** All 15 fields from a per-100g Food, scaled to `grams`. Mirrors the Go
+ * `scaleFoodByGrams` / Dart `scaleByGrams` — kept in sync by hand since each
+ * runtime needs its own copy for an instant local preview. */
+export function scaleNutritionByGrams(food, grams) {
+  const g = Number.isFinite(grams) && grams > 0 ? grams : 0;
+  const factor = g / 100;
+  const scaleNullable = (v) => (v === null || v === undefined ? null : Number(v) * factor);
+  return {
+    grams: g,
+    calories: roundMacro((Number(food.calories) || 0) * factor),
+    protein: roundMacro((Number(food.protein) || 0) * factor),
+    fat: roundMacro((Number(food.fat) || 0) * factor),
+    carbs: roundMacro((Number(food.carbs) || 0) * factor),
+    fiber: scaleNullable(food.fiber),
+    sugar: scaleNullable(food.sugar),
+    sodium: scaleNullable(food.sodium),
+    cholesterol: scaleNullable(food.cholesterol),
+    calcium: scaleNullable(food.calcium),
+    iron: scaleNullable(food.iron),
+    magnesium: scaleNullable(food.magnesium),
+    potassium: scaleNullable(food.potassium),
+    phosphorus: scaleNullable(food.phosphorus),
+    transFat: scaleNullable(food.transFat),
+    saturatedFat: scaleNullable(food.saturatedFat),
+  };
+}
+
+/** grams = qty × the serving unit's gram weight — e.g. 2 × قاشق(15g) = 30g. */
+export function gramsForServing(servingUnit, quantity) {
+  const qty = Number.isFinite(quantity) && quantity > 0 ? quantity : 0;
+  return qty * (Number(servingUnit?.gramsPerUnit) || 0);
+}
+
 export function extractNutritionTargets(program, dayKey) {
   const nutrition = program?.planByDay?.[dayKey]?.nutrition;
   if (!nutrition) return { caloriesTarget: 0, proteinTarget: "" };

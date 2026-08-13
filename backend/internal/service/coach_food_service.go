@@ -18,6 +18,28 @@ type CoachFoodItem struct {
 	Carbs    float64  `json:"carbs"`
 	Fiber    *float64 `json:"fiber,omitempty"`
 	Sugar    *float64 `json:"sugar,omitempty"`
+
+	// Extended per-100g nutrition panel — null until USDA-enriched, never a
+	// guessed value (see cmd/enrichfoods).
+	Sodium       *float64 `json:"sodium,omitempty"`
+	Cholesterol  *float64 `json:"cholesterol,omitempty"`
+	Calcium      *float64 `json:"calcium,omitempty"`
+	Iron         *float64 `json:"iron,omitempty"`
+	Magnesium    *float64 `json:"magnesium,omitempty"`
+	Potassium    *float64 `json:"potassium,omitempty"`
+	Phosphorus   *float64 `json:"phosphorus,omitempty"`
+	TransFat     *float64 `json:"transFat,omitempty"`
+	SaturatedFat *float64 `json:"saturatedFat,omitempty"`
+
+	// The spoon/gram/cup picker — always includes a 1g "گرم" entry.
+	ServingUnits []CoachFoodServingUnit `json:"servingUnits"`
+}
+
+type CoachFoodServingUnit struct {
+	ID           uint    `json:"id"`
+	Label        string  `json:"label"`
+	GramsPerUnit float64 `json:"gramsPerUnit"`
+	IsDefault    bool    `json:"isDefault"`
 }
 
 type CoachFoodListResponse struct {
@@ -40,6 +62,16 @@ func NewCoachFoodService(repo repository.FoodRepository) CoachFoodService {
 }
 
 func foodModelToCoachItem(f *models.Food) CoachFoodItem {
+	units := make([]CoachFoodServingUnit, 0, len(f.ServingUnits))
+	for _, u := range f.ServingUnits {
+		units = append(units, CoachFoodServingUnit{
+			ID:           u.ID,
+			Label:        u.Label,
+			GramsPerUnit: u.GramsPerUnit,
+			IsDefault:    u.IsDefault,
+		})
+	}
+
 	return CoachFoodItem{
 		ID:       f.ID,
 		Name:     f.Name,
@@ -51,6 +83,18 @@ func foodModelToCoachItem(f *models.Food) CoachFoodItem {
 		Carbs:    f.Carbs,
 		Fiber:    f.Fiber,
 		Sugar:    f.Sugar,
+
+		Sodium:       f.Sodium,
+		Cholesterol:  f.Cholesterol,
+		Calcium:      f.Calcium,
+		Iron:         f.Iron,
+		Magnesium:    f.Magnesium,
+		Potassium:    f.Potassium,
+		Phosphorus:   f.Phosphorus,
+		TransFat:     f.TransFat,
+		SaturatedFat: f.SaturatedFat,
+
+		ServingUnits: units,
 	}
 }
 

@@ -24,34 +24,34 @@ var (
 
 // MeProfileDTO matches frontend profile and onboarding forms.
 type MeProfileDTO struct {
-	ID                  uint         `json:"id"`
-	FirstName           string       `json:"firstName"`
-	LastName            string       `json:"lastName"`
-	Phone               string       `json:"phone"`
-	Email               string       `json:"email"`
-	AvatarURL           string       `json:"avatarUrl,omitempty"`
-	HeightCm            *float64     `json:"heightCm,omitempty"`
-	WeightKg            *float64     `json:"weightKg,omitempty"`
-	BirthDate           *string      `json:"birthDate,omitempty"`
-	NationalID          string       `json:"nationalId,omitempty"`
-	Gender              string       `json:"gender,omitempty"`
-	Goals               []string     `json:"goals"`
-	PrimaryGoal         string       `json:"primaryGoal,omitempty"`
-	TargetWeightKg      *float64     `json:"targetWeightKg,omitempty"`
-	BodyCondition       string       `json:"bodyCondition,omitempty"`
-	BodyFatPercent      *float64     `json:"bodyFatPercent,omitempty"`
-	MedicalHistory      string       `json:"medicalHistory,omitempty"`
-	Injuries            string       `json:"injuries,omitempty"`
-	PhysicalLimitations string       `json:"physicalLimitations,omitempty"`
-	IsProfileComplete   bool                 `json:"isProfileComplete"`
-	ProfileProgress     *ProfileProgressDTO  `json:"profileProgress,omitempty"`
-	Photos              []MePhotoDTO         `json:"photos"`
-	ProgramsCount       int64                `json:"programsCount"`
-	OrdersCount         int64                `json:"ordersCount"`
-	AssignedCoachID     *uint                `json:"assignedCoachId,omitempty"`
-	AssignedCoachName   string               `json:"assignedCoachName,omitempty"`
-	AssignedCoachSlug   string               `json:"assignedCoachSlug,omitempty"`
-	CreatedAt           time.Time            `json:"createdAt"`
+	ID                  uint                `json:"id"`
+	FirstName           string              `json:"firstName"`
+	LastName            string              `json:"lastName"`
+	Phone               string              `json:"phone"`
+	Email               string              `json:"email"`
+	AvatarURL           string              `json:"avatarUrl,omitempty"`
+	HeightCm            *float64            `json:"heightCm,omitempty"`
+	WeightKg            *float64            `json:"weightKg,omitempty"`
+	BirthDate           *string             `json:"birthDate,omitempty"`
+	NationalID          string              `json:"nationalId,omitempty"`
+	Gender              string              `json:"gender,omitempty"`
+	Goals               []string            `json:"goals"`
+	PrimaryGoal         string              `json:"primaryGoal,omitempty"`
+	TargetWeightKg      *float64            `json:"targetWeightKg,omitempty"`
+	BodyCondition       string              `json:"bodyCondition,omitempty"`
+	BodyFatPercent      *float64            `json:"bodyFatPercent,omitempty"`
+	MedicalHistory      string              `json:"medicalHistory,omitempty"`
+	Injuries            string              `json:"injuries,omitempty"`
+	PhysicalLimitations string              `json:"physicalLimitations,omitempty"`
+	IsProfileComplete   bool                `json:"isProfileComplete"`
+	ProfileProgress     *ProfileProgressDTO `json:"profileProgress,omitempty"`
+	Photos              []MePhotoDTO        `json:"photos"`
+	ProgramsCount       int64               `json:"programsCount"`
+	OrdersCount         int64               `json:"ordersCount"`
+	AssignedCoachID     *uint               `json:"assignedCoachId,omitempty"`
+	AssignedCoachName   string              `json:"assignedCoachName,omitempty"`
+	AssignedCoachSlug   string              `json:"assignedCoachSlug,omitempty"`
+	CreatedAt           time.Time           `json:"createdAt"`
 }
 
 // ProfileProgressDTO drives progressive / gamified profile completion UI.
@@ -91,24 +91,24 @@ type MeProfileUpdateRequest struct {
 
 // MeOrderItemDTO for order items (type, refId, title, qty, price).
 type MeOrderItemDTO struct {
-	Type   string `json:"type"`
-	RefID  string `json:"refId"`
-	Title  string `json:"title"`
-	Qty    int    `json:"qty"`
-	Price  int64  `json:"price"`
+	Type  string `json:"type"`
+	RefID string `json:"refId"`
+	Title string `json:"title"`
+	Qty   int    `json:"qty"`
+	Price int64  `json:"price"`
 }
 
 // MeOrderDTO matches frontend OrderCardLink / OrderDetailsPanel.
 type MeOrderDTO struct {
-	ID              uint            `json:"id"`
-	CreatedAt       time.Time       `json:"createdAt"`
-	Status          string          `json:"status"`
-	PaymentMethod   string          `json:"paymentMethod"`
-	TrackingCode    string          `json:"trackingCode"`
+	ID              uint             `json:"id"`
+	CreatedAt       time.Time        `json:"createdAt"`
+	Status          string           `json:"status"`
+	PaymentMethod   string           `json:"paymentMethod"`
+	TrackingCode    string           `json:"trackingCode"`
 	Items           []MeOrderItemDTO `json:"items"`
-	DiscountPercent int             `json:"discountPercent"`
-	Note            string          `json:"note"`
-	CoachName       string          `json:"coachName,omitempty"`
+	DiscountPercent int              `json:"discountPercent"`
+	Note            string           `json:"note"`
+	CoachName       string           `json:"coachName,omitempty"`
 }
 
 // MeOrderListResponse for GET /me/orders.
@@ -142,12 +142,12 @@ type MeProgramsResponse struct {
 // MeProgramDetailDTO for GET /me/programs/:id (with schedule, planByDay - optional).
 type MeProgramDetailDTO struct {
 	MeProgramDTO
-	Goal       string                 `json:"goal,omitempty"`
-	Level      string                 `json:"level,omitempty"`
-	Coach      string                 `json:"coach,omitempty"`
-	Tags       []string               `json:"tags,omitempty"`
-	Schedule   *MeScheduleDTO         `json:"schedule,omitempty"`
-	PlanByDay  map[string]MeDayPlanDTO `json:"planByDay,omitempty"`
+	Goal      string                  `json:"goal,omitempty"`
+	Level     string                  `json:"level,omitempty"`
+	Coach     string                  `json:"coach,omitempty"`
+	Tags      []string                `json:"tags,omitempty"`
+	Schedule  *MeScheduleDTO          `json:"schedule,omitempty"`
+	PlanByDay map[string]MeDayPlanDTO `json:"planByDay,omitempty"`
 }
 
 type MeScheduleDTO struct {
@@ -156,7 +156,7 @@ type MeScheduleDTO struct {
 }
 
 type MeDayPlanDTO struct {
-	Workout  *MeWorkoutDTO  `json:"workout,omitempty"`
+	Workout   *MeWorkoutDTO   `json:"workout,omitempty"`
 	Nutrition *MeNutritionDTO `json:"nutrition,omitempty"`
 }
 
@@ -174,14 +174,14 @@ type MeWorkoutExerciseDTO struct {
 	SetsDetails       []MeWorkoutSetDTO `json:"setsDetails,omitempty"`
 	SupersetID        *string           `json:"supersetId,omitempty"`
 	WorkoutSystemType string            `json:"workoutSystemType,omitempty"`
-	ImageURL         string   `json:"imageUrl,omitempty"`
-	GifURL           string   `json:"gifUrl,omitempty"`
-	Category         string   `json:"category,omitempty"`
-	BodyPart         string   `json:"bodyPart,omitempty"`
-	Equipment        string   `json:"equipment,omitempty"`
-	Target           string   `json:"target,omitempty"`
-	Description      string   `json:"description,omitempty"`
-	InstructionSteps []string `json:"instructionSteps,omitempty"`
+	ImageURL          string            `json:"imageUrl,omitempty"`
+	GifURL            string            `json:"gifUrl,omitempty"`
+	Category          string            `json:"category,omitempty"`
+	BodyPart          string            `json:"bodyPart,omitempty"`
+	Equipment         string            `json:"equipment,omitempty"`
+	Target            string            `json:"target,omitempty"`
+	Description       string            `json:"description,omitempty"`
+	InstructionSteps  []string          `json:"instructionSteps,omitempty"`
 }
 
 type MeWorkoutDTO struct {
@@ -193,9 +193,9 @@ type MeWorkoutDTO struct {
 }
 
 type MeNutritionDTO struct {
-	CaloriesTarget  int           `json:"caloriesTarget"`
-	ProteinTarget   string        `json:"proteinTarget"`
-	Meals           []MeMealDTO  `json:"meals"`
+	CaloriesTarget int         `json:"caloriesTarget"`
+	ProteinTarget  string      `json:"proteinTarget"`
+	Meals          []MeMealDTO `json:"meals"`
 }
 
 type MeMealDTO struct {

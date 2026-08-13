@@ -6,28 +6,6 @@ part of 'food_models.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_Food _$FoodFromJson(Map<String, dynamic> json) => _Food(
-  id: (json['id'] as num).toInt(),
-  name: json['name'] as String? ?? '',
-  unit: json['unit'] as String? ?? '',
-  amount: (json['amount'] as num?)?.toDouble() ?? 0,
-  calories: (json['calories'] as num?)?.toDouble() ?? 0,
-  fat: (json['fat'] as num?)?.toDouble() ?? 0,
-  protein: (json['protein'] as num?)?.toDouble() ?? 0,
-  carbs: (json['carbs'] as num?)?.toDouble() ?? 0,
-);
-
-Map<String, dynamic> _$FoodToJson(_Food instance) => <String, dynamic>{
-  'id': instance.id,
-  'name': instance.name,
-  'unit': instance.unit,
-  'amount': instance.amount,
-  'calories': instance.calories,
-  'fat': instance.fat,
-  'protein': instance.protein,
-  'carbs': instance.carbs,
-};
-
 _FoodListResponse _$FoodListResponseFromJson(Map<String, dynamic> json) =>
     _FoodListResponse(
       items:

@@ -36,6 +36,9 @@ func SeedCatalogs(ctx context.Context, db *gorm.DB, opts CatalogSeedOptions) err
 	if err := seedFoodsIfNeeded(ctx, db, opts); err != nil {
 		log.Printf("[catalog-seed] foods error: %v", err)
 	}
+	if err := EnrichFoodServingUnits(ctx, db); err != nil {
+		log.Printf("[catalog-seed] food serving-unit enrichment error: %v", err)
+	}
 	if !opts.SkipTemplates {
 		if err := seedTemplatesIfNeeded(ctx, db, opts.Force); err != nil {
 			log.Printf("[catalog-seed] templates error: %v", err)

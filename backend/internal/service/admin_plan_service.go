@@ -33,7 +33,7 @@ type AdminPlanDetail struct {
 	Title           string    `json:"title"`
 	Subtitle        string    `json:"subtitle"`
 	CourseName      string    `json:"courseName"`
-	Description     string   `json:"description"`
+	Description     string    `json:"description"`
 	FeaturesText    string    `json:"featuresText"`
 	PlanType        string    `json:"planType"`
 	Price           int64     `json:"price"`

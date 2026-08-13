@@ -38,21 +38,21 @@ type MobileHeartbeatRequest struct {
 }
 
 type MobileStoreStat struct {
-	Store           string `json:"store"`
-	Label           string `json:"label"`
-	Devices         int64  `json:"devices"`
-	InstallsReported int64 `json:"installsReported"`
-	LatestVersion   string `json:"latestVersion"`
-	IsPublished     bool   `json:"isPublished"`
+	Store            string `json:"store"`
+	Label            string `json:"label"`
+	Devices          int64  `json:"devices"`
+	InstallsReported int64  `json:"installsReported"`
+	LatestVersion    string `json:"latestVersion"`
+	IsPublished      bool   `json:"isPublished"`
 }
 
 type MobileOverviewResponse struct {
-	TotalDevices     int64             `json:"totalDevices"`
-	ActiveLast7Days  int64             `json:"activeLast7Days"`
-	ActiveLast30Days int64             `json:"activeLast30Days"`
-	LinkedUsers      int64             `json:"linkedUsers"`
-	ByStore          []MobileStoreStat `json:"byStore"`
-	ByPlatform       map[string]int64  `json:"byPlatform"`
+	TotalDevices     int64              `json:"totalDevices"`
+	ActiveLast7Days  int64              `json:"activeLast7Days"`
+	ActiveLast30Days int64              `json:"activeLast30Days"`
+	LinkedUsers      int64              `json:"linkedUsers"`
+	ByStore          []MobileStoreStat  `json:"byStore"`
+	ByPlatform       map[string]int64   `json:"byPlatform"`
 	Versions         []MobileVersionDTO `json:"versions"`
 }
 

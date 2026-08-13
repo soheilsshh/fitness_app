@@ -32,15 +32,15 @@ type TrackingAlert struct {
 }
 
 type TrackingPhotoDTO struct {
-	ID                 uint   `json:"id"`
-	URL                string `json:"url"`
-	Type               string `json:"type"`
-	UploadedAt         string `json:"uploadedAt"`
-	CheckInDate        string `json:"checkInDate,omitempty"`
-	AIAnalysisText     string `json:"aiAnalysisText,omitempty"`
-	AIAnalysisStatus   string `json:"aiAnalysisStatus,omitempty"`
-	CoachReviewStatus  string `json:"coachReviewStatus,omitempty"`
-	CoachFeedback      string `json:"coachFeedback,omitempty"`
+	ID                uint   `json:"id"`
+	URL               string `json:"url"`
+	Type              string `json:"type"`
+	UploadedAt        string `json:"uploadedAt"`
+	CheckInDate       string `json:"checkInDate,omitempty"`
+	AIAnalysisText    string `json:"aiAnalysisText,omitempty"`
+	AIAnalysisStatus  string `json:"aiAnalysisStatus,omitempty"`
+	CoachReviewStatus string `json:"coachReviewStatus,omitempty"`
+	CoachFeedback     string `json:"coachFeedback,omitempty"`
 }
 
 func trackingPhotoToDTO(p models.UserPhoto) TrackingPhotoDTO {
@@ -72,40 +72,40 @@ type WeightPointDTO struct {
 }
 
 type TrackingStatusDTO struct {
-	NextDueDate            string            `json:"nextDueDate,omitempty"`
-	FrequencyDays          int               `json:"frequencyDays"`
-	WeightSubmitted        bool              `json:"weightSubmitted"`
-	PhotosSubmitted        map[string]bool   `json:"photosSubmitted"`
-	Alerts                 []TrackingAlert   `json:"alerts"`
-	WeightHistory          []WeightPointDTO  `json:"weightHistory"`
-	PhotoHistories         []PhotoTypeHistory `json:"photoHistories"`
-	LastWeightKg           *float64          `json:"lastWeightKg,omitempty"`
-	SubscriptionID         uint              `json:"subscriptionId,omitempty"`
+	NextDueDate     string             `json:"nextDueDate,omitempty"`
+	FrequencyDays   int                `json:"frequencyDays"`
+	WeightSubmitted bool               `json:"weightSubmitted"`
+	PhotosSubmitted map[string]bool    `json:"photosSubmitted"`
+	Alerts          []TrackingAlert    `json:"alerts"`
+	WeightHistory   []WeightPointDTO   `json:"weightHistory"`
+	PhotoHistories  []PhotoTypeHistory `json:"photoHistories"`
+	LastWeightKg    *float64           `json:"lastWeightKg,omitempty"`
+	SubscriptionID  uint               `json:"subscriptionId,omitempty"`
 }
 
 type CoachTrackingStudentItem struct {
-	ID              uint            `json:"id"`
-	FullName        string          `json:"fullName"`
-	Phone           string          `json:"phone"`
-	NextDueDate     string          `json:"nextDueDate,omitempty"`
-	Alerts          []TrackingAlert `json:"alerts"`
-	WeightOverdue   bool            `json:"weightOverdue"`
-	PhotosOverdue   bool            `json:"photosOverdue"`
-	MaxOverdueDays  int             `json:"maxOverdueDays"`
+	ID             uint            `json:"id"`
+	FullName       string          `json:"fullName"`
+	Phone          string          `json:"phone"`
+	NextDueDate    string          `json:"nextDueDate,omitempty"`
+	Alerts         []TrackingAlert `json:"alerts"`
+	WeightOverdue  bool            `json:"weightOverdue"`
+	PhotosOverdue  bool            `json:"photosOverdue"`
+	MaxOverdueDays int             `json:"maxOverdueDays"`
 }
 
 type CoachTrackingListResponse struct {
 	Items    []CoachTrackingStudentItem `json:"items"`
-	Page     int                          `json:"page"`
-	PageSize int                          `json:"pageSize"`
-	Total    int64                        `json:"total"`
+	Page     int                        `json:"page"`
+	PageSize int                        `json:"pageSize"`
+	Total    int64                      `json:"total"`
 }
 
 type CoachStudentTrackingDTO struct {
-	StudentID      uint               `json:"studentId"`
-	FullName       string             `json:"fullName"`
-	Phone          string             `json:"phone"`
-	TrackingStatus TrackingStatusDTO  `json:"tracking"`
+	StudentID      uint              `json:"studentId"`
+	FullName       string            `json:"fullName"`
+	Phone          string            `json:"phone"`
+	TrackingStatus TrackingStatusDTO `json:"tracking"`
 }
 
 type TrackingService interface {

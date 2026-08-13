@@ -25,7 +25,7 @@ var (
 )
 
 const (
-	aiMaxMessageRunes   = 1200
+	aiMaxMessageRunes    = 1200
 	aiMaxHistoryMessages = 12
 	aiRateWindow         = time.Minute
 	aiRateMaxPerWindow   = 20

@@ -14,15 +14,15 @@ import (
 )
 
 var (
-	ErrCoachProfileNotFound       = errors.New("coach profile not found")
-	ErrCoachNotPublished          = errors.New("coach profile is not published")
-	ErrSlugTaken                  = errors.New("slug already in use")
-	ErrInvalidSlug                = errors.New("invalid slug")
-	ErrCoachProfileIncomplete     = errors.New("coach profile is incomplete")
+	ErrCoachProfileNotFound         = errors.New("coach profile not found")
+	ErrCoachNotPublished            = errors.New("coach profile is not published")
+	ErrSlugTaken                    = errors.New("slug already in use")
+	ErrInvalidSlug                  = errors.New("invalid slug")
+	ErrCoachProfileIncomplete       = errors.New("coach profile is incomplete")
 	ErrCoachProfileAlreadyReviewing = errors.New("coach profile is already under review")
 	ErrCoachProfileAlreadyApproved  = errors.New("coach profile is already approved")
-	ErrInvalidCoachNationalID     = errors.New("invalid national id")
-	ErrMissingGrade3Certificate   = errors.New("grade-3 coaching certificate is required")
+	ErrInvalidCoachNationalID       = errors.New("invalid national id")
+	ErrMissingGrade3Certificate     = errors.New("grade-3 coaching certificate is required")
 )
 
 // Canonical title for the mandatory Iranian grade-3 coaching certificate.
@@ -59,20 +59,20 @@ type CoachProfileDTO struct {
 
 // CoachProfileUpdateRequest for PUT /coach/profile.
 type CoachProfileUpdateRequest struct {
-	Slug          *string `json:"slug"`
-	DisplayName   *string `json:"displayName"`
-	Title         *string `json:"title"`
-	Bio           *string `json:"bio"`
-	AboutCoach    *string `json:"aboutCoach"`
-	Specialty     *string `json:"specialty"`
-	NationalID    *string `json:"nationalId"`
-	City          *string `json:"city"`
-	ContactPhone  *string `json:"contactPhone"`
-	Instagram     *string `json:"instagram"`
-	Telegram      *string `json:"telegram"`
-	WhatsApp      *string `json:"whatsapp"`
-	Website       *string `json:"website"`
-	IsPublished   *bool   `json:"isPublished"`
+	Slug         *string `json:"slug"`
+	DisplayName  *string `json:"displayName"`
+	Title        *string `json:"title"`
+	Bio          *string `json:"bio"`
+	AboutCoach   *string `json:"aboutCoach"`
+	Specialty    *string `json:"specialty"`
+	NationalID   *string `json:"nationalId"`
+	City         *string `json:"city"`
+	ContactPhone *string `json:"contactPhone"`
+	Instagram    *string `json:"instagram"`
+	Telegram     *string `json:"telegram"`
+	WhatsApp     *string `json:"whatsapp"`
+	Website      *string `json:"website"`
+	IsPublished  *bool   `json:"isPublished"`
 }
 
 // CoachProfileSubmitResponse for POST /coach/profile/submit-request.
@@ -147,9 +147,9 @@ type CoachProfileService interface {
 }
 
 type coachProfileService struct {
-	coachRepo         repository.CoachProfileRepository
-	planRepo          repository.ServicePlanRepository
-	achievementRepo   repository.CoachAchievementRepository
+	coachRepo       repository.CoachProfileRepository
+	planRepo        repository.ServicePlanRepository
+	achievementRepo repository.CoachAchievementRepository
 }
 
 func NewCoachProfileService(

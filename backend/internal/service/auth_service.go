@@ -46,13 +46,13 @@ type AuthService interface {
 }
 
 type authService struct {
-	userRepo         repository.UserRepository
-	coachProfileRepo repository.CoachProfileRepository
-	refreshTokenRepo repository.RefreshTokenRepository
-	otpRepo          repository.OtpRepository
-	otpTTL           time.Duration
+	userRepo          repository.UserRepository
+	coachProfileRepo  repository.CoachProfileRepository
+	refreshTokenRepo  repository.RefreshTokenRepository
+	otpRepo           repository.OtpRepository
+	otpTTL            time.Duration
 	otpResendCooldown time.Duration
-	defaultUserRole  string
+	defaultUserRole   string
 }
 
 // OTPCooldownError is returned when OTP resend is requested before the cooldown expires.
@@ -89,13 +89,13 @@ func NewAuthService(
 		cooldownSeconds = 60
 	}
 	return &authService{
-		userRepo:         userRepo,
-		coachProfileRepo: coachProfileRepo,
-		refreshTokenRepo: refreshTokenRepo,
-		otpRepo:          otpRepo,
-		otpTTL:           time.Duration(ttlMinutes) * time.Minute,
+		userRepo:          userRepo,
+		coachProfileRepo:  coachProfileRepo,
+		refreshTokenRepo:  refreshTokenRepo,
+		otpRepo:           otpRepo,
+		otpTTL:            time.Duration(ttlMinutes) * time.Minute,
 		otpResendCooldown: time.Duration(cooldownSeconds) * time.Second,
-		defaultUserRole:  models.RoleStudent,
+		defaultUserRole:   models.RoleStudent,
 	}
 }
 
@@ -544,4 +544,3 @@ func (s *authService) sendOTP(ctx context.Context, phone, purpose string) error 
 	}
 	return s.otpRepo.Create(ctx, otp)
 }
-

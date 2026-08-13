@@ -265,4 +265,3 @@ func (h *AdminUserController) DeleteUserBodyPhoto(c *gin.Context) {
 
 	c.Status(http.StatusNoContent)
 }
-

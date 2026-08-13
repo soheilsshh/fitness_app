@@ -36,6 +36,59 @@ func formatFoodQuantity(amount float64, unit string) string {
 	return fmt.Sprintf("%g %s", rounded, unit)
 }
 
+// NutritionFacts is the full per-serving nutrition panel, scaled from a Food's
+// per-100g baseline by grams/100. Pointer fields stay nil when the source Food
+// hasn't been enriched for that nutrient yet — never backfilled with a guess.
+type NutritionFacts struct {
+	Grams        float64  `json:"grams"`
+	Calories     float64  `json:"calories"`
+	Protein      float64  `json:"protein"`
+	Fat          float64  `json:"fat"`
+	Carbs        float64  `json:"carbs"`
+	Sugar        *float64 `json:"sugar,omitempty"`
+	Sodium       *float64 `json:"sodium,omitempty"`
+	Cholesterol  *float64 `json:"cholesterol,omitempty"`
+	Calcium      *float64 `json:"calcium,omitempty"`
+	Iron         *float64 `json:"iron,omitempty"`
+	Fiber        *float64 `json:"fiber,omitempty"`
+	Magnesium    *float64 `json:"magnesium,omitempty"`
+	Potassium    *float64 `json:"potassium,omitempty"`
+	Phosphorus   *float64 `json:"phosphorus,omitempty"`
+	TransFat     *float64 `json:"transFat,omitempty"`
+	SaturatedFat *float64 `json:"saturatedFat,omitempty"`
+}
+
+// scaleFoodByGrams is the single source of truth for "enter grams, get the full
+// nutrition panel": every field scales linearly from the food's per-100g baseline.
+// This is what powers the spoon/gram/cup serving picker end to end.
+func scaleFoodByGrams(f *models.Food, grams float64) NutritionFacts {
+	if f == nil {
+		return NutritionFacts{}
+	}
+	if grams < 0 {
+		grams = 0
+	}
+	factor := grams / 100
+	return NutritionFacts{
+		Grams:        grams,
+		Calories:     f.Calories * factor,
+		Protein:      f.Protein * factor,
+		Fat:          f.Fat * factor,
+		Carbs:        f.Carbs * factor,
+		Sugar:        scaleNullableFloat(f.Sugar, factor),
+		Sodium:       scaleNullableFloat(f.Sodium, factor),
+		Cholesterol:  scaleNullableFloat(f.Cholesterol, factor),
+		Calcium:      scaleNullableFloat(f.Calcium, factor),
+		Iron:         scaleNullableFloat(f.Iron, factor),
+		Fiber:        scaleNullableFloat(f.Fiber, factor),
+		Magnesium:    scaleNullableFloat(f.Magnesium, factor),
+		Potassium:    scaleNullableFloat(f.Potassium, factor),
+		Phosphorus:   scaleNullableFloat(f.Phosphorus, factor),
+		TransFat:     scaleNullableFloat(f.TransFat, factor),
+		SaturatedFat: scaleNullableFloat(f.SaturatedFat, factor),
+	}
+}
+
 func foodModelToMealDTO(food *models.Food, multiplier float64, existing MeMealDTO) MeMealDTO {
 	multiplier = mealMultiplier(multiplier)
 	servingAmount := food.Amount * multiplier
@@ -57,6 +110,36 @@ func foodModelToMealDTO(food *models.Food, multiplier float64, existing MeMealDT
 
 	if dto.Detail == "" {
 		dto.Detail = formatFoodQuantity(servingAmount, food.Unit)
+	}
+	return dto
+}
+
+// foodModelToMealDTOByGrams mirrors foodModelToMealDTO but scales from an
+// explicit gram amount instead of a unit multiplier — the entry point for the
+// spoon/gram/cup serving picker. food must be the canonical (per-100g) row.
+func foodModelToMealDTOByGrams(food *models.Food, grams float64, existing MeMealDTO) MeMealDTO {
+	if grams <= 0 {
+		grams = food.Amount
+	}
+	facts := scaleFoodByGrams(food, grams)
+
+	dto := existing
+	if dto.Title == "" {
+		dto.Title = food.Name
+	}
+	dto.FoodID = food.ID
+	dto.Multiplier = grams / mealMultiplier(food.Amount)
+	dto.Unit = "گرم"
+	dto.Amount = grams
+	dto.Calories = facts.Calories
+	dto.Protein = facts.Protein
+	dto.Carbs = facts.Carbs
+	dto.Fat = facts.Fat
+	dto.Fiber = facts.Fiber
+	dto.Sugar = facts.Sugar
+
+	if dto.Detail == "" {
+		dto.Detail = formatFoodQuantity(grams, "گرم")
 	}
 	return dto
 }

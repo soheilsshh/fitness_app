@@ -47,6 +47,26 @@ class FoodDiaryActions extends _$FoodDiaryActions {
     ref.invalidate(dailyDiaryProvider);
   }
 
+  /// Serving-picker path (spoon/gram/cup) — grams is already resolved
+  /// client-side (qty × unit.gramsPerUnit) for the live preview, so it's
+  /// sent straight through; the server recomputes the authoritative
+  /// macros/nutrients from it rather than trusting a client total.
+  Future<void> addFromFoodByGrams(
+    Food food,
+    double grams,
+    String quantityLabel,
+  ) async {
+    final date = ref.read(selectedDiaryDateProvider);
+    await ref.read(foodRepositoryProvider).createLog(
+          logDate: JalaliDates.isoDate(date),
+          foodId: food.id,
+          foodName: food.name,
+          quantity: quantityLabel,
+          grams: grams,
+        );
+    ref.invalidate(dailyDiaryProvider);
+  }
+
   Future<void> addManual(
     String name,
     String quantity, {

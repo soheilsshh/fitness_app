@@ -18,7 +18,7 @@ var (
 const (
 	MealSlotBreakfast = "breakfast"
 	MealSlotLunch     = "lunch"
-	MealSlotDinner     = "dinner"
+	MealSlotDinner    = "dinner"
 	MealSlotSnack1    = "snack1"
 	MealSlotSnack2    = "snack2"
 	MealSlotSnack3    = "snack3"
@@ -36,7 +36,7 @@ var mealSlotOrder = []string{
 var mealSlotLabels = map[string]string{
 	MealSlotBreakfast: "صبحانه",
 	MealSlotLunch:     "ناهار",
-	MealSlotDinner:     "شام",
+	MealSlotDinner:    "شام",
 	MealSlotSnack1:    "میان‌وعده ۱",
 	MealSlotSnack2:    "میان‌وعده ۲",
 	MealSlotSnack3:    "میان‌وعده ۳",
@@ -147,7 +147,7 @@ type mediaDonorPaths struct {
 }
 
 var (
-	mediaDonorOnce  sync.Once
+	mediaDonorOnce   sync.Once
 	mediaDonorByCore map[string]mediaDonorPaths
 )
 

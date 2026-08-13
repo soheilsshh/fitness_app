@@ -13,10 +13,10 @@ import (
 )
 
 var (
-	ErrEventNotFound        = errors.New("event not found")
-	ErrEventTitleRequired   = errors.New("event title is required")
-	ErrEventTypeInvalid     = errors.New("event type must be offline or online")
-	ErrEventAlreadyJoined   = errors.New("already joined this event")
+	ErrEventNotFound      = errors.New("event not found")
+	ErrEventTitleRequired = errors.New("event title is required")
+	ErrEventTypeInvalid   = errors.New("event type must be offline or online")
+	ErrEventAlreadyJoined = errors.New("already joined this event")
 )
 
 type EventDTO struct {

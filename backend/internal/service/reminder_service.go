@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	inactivityReminderWindow = 24 * time.Hour  // roadmap BE-8.3: 24h "come back" nudge
+	inactivityReminderWindow = 24 * time.Hour     // roadmap BE-8.3: 24h "come back" nudge
 	longInactivitySMSWindow  = 7 * 24 * time.Hour // roadmap BE-8.4: SMS only for real drop-off
 	reminderDedupWindow      = 20 * time.Hour     // don't re-notify inside the same day's run
 )

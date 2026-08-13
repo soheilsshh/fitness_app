@@ -22,8 +22,8 @@ type AchievementDTO struct {
 }
 
 type AchievementSummaryDTO struct {
-	TotalPoints int               `json:"totalPoints"`
-	Awards      []AchievementDTO  `json:"awards"`
+	TotalPoints int              `json:"totalPoints"`
+	Awards      []AchievementDTO `json:"awards"`
 }
 
 // AchievementService implements the event-driven gamification engine (roadmap

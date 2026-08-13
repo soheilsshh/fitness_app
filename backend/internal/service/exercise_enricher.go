@@ -184,7 +184,7 @@ func enrichWorkoutPlan(ctx context.Context, exerciseRepo repository.ExerciseRepo
 			if model == nil {
 				model = byName[strings.TrimSpace(ex.Name)]
 			}
-	if model != nil {
+			if model != nil {
 				// Apply similar-name gif fallback onto the model before DTO mapping.
 				if strings.TrimSpace(model.GifPath) == "" {
 					if donor := lookupMediaDonor(model.Name); donor != nil {

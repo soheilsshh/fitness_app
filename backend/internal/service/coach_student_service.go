@@ -13,26 +13,26 @@ import (
 )
 
 var (
-	ErrCoachStudentNotFound    = errors.New("student not found")
-	ErrCoachStudentForbidden   = errors.New("student does not belong to this coach")
+	ErrCoachStudentNotFound  = errors.New("student not found")
+	ErrCoachStudentForbidden = errors.New("student does not belong to this coach")
 )
 
 type CoachStudentDetail struct {
 	AdminStudentItem
-	Email                   string     `json:"email"`
-	HeightCm                *float64   `json:"heightCm,omitempty"`
-	WeightKg                *float64   `json:"weightKg,omitempty"`
-	StartDate               *time.Time `json:"startDate,omitempty"`
-	DurationDays            int        `json:"durationDays,omitempty"`
-	RemainingDays           int        `json:"remainingDays,omitempty"`
-	SubscriptionID          uint       `json:"subscriptionId,omitempty"`
-	HasWorkoutProgram       bool       `json:"hasWorkoutProgram"`
-	HasNutritionProgram     bool       `json:"hasNutritionProgram"`
-	NeedsProgram            bool       `json:"needsProgram"`
-	ConsultationRequested   bool       `json:"consultationRequested"`
-	OrderNote               string     `json:"orderNote,omitempty"`
-	FunnelAnalysisTitle     string     `json:"funnelAnalysisTitle,omitempty"`
-	FunnelAnalysisBody      string     `json:"funnelAnalysisBody,omitempty"`
+	Email                 string     `json:"email"`
+	HeightCm              *float64   `json:"heightCm,omitempty"`
+	WeightKg              *float64   `json:"weightKg,omitempty"`
+	StartDate             *time.Time `json:"startDate,omitempty"`
+	DurationDays          int        `json:"durationDays,omitempty"`
+	RemainingDays         int        `json:"remainingDays,omitempty"`
+	SubscriptionID        uint       `json:"subscriptionId,omitempty"`
+	HasWorkoutProgram     bool       `json:"hasWorkoutProgram"`
+	HasNutritionProgram   bool       `json:"hasNutritionProgram"`
+	NeedsProgram          bool       `json:"needsProgram"`
+	ConsultationRequested bool       `json:"consultationRequested"`
+	OrderNote             string     `json:"orderNote,omitempty"`
+	FunnelAnalysisTitle   string     `json:"funnelAnalysisTitle,omitempty"`
+	FunnelAnalysisBody    string     `json:"funnelAnalysisBody,omitempty"`
 }
 
 type CoachStudentService interface {

@@ -14,6 +14,7 @@ type FoodRepository interface {
 	FindByIDs(ctx context.Context, ids []uint) ([]models.Food, error)
 	Search(ctx context.Context, query string, page, limit int) ([]models.Food, int64, error)
 	UpsertByExternalID(ctx context.Context, f *models.Food) error
+	FindServingUnitByID(ctx context.Context, id uint) (*models.FoodServingUnit, error)
 }
 
 type foodRepository struct {
@@ -34,7 +35,7 @@ func (r *foodRepository) FindByExternalID(ctx context.Context, externalID string
 
 func (r *foodRepository) FindByID(ctx context.Context, id uint) (*models.Food, error) {
 	var f models.Food
-	if err := r.db.WithContext(ctx).First(&f, id).Error; err != nil {
+	if err := r.db.WithContext(ctx).Preload("ServingUnits").First(&f, id).Error; err != nil {
 		return nil, err
 	}
 	return &f, nil
@@ -45,10 +46,14 @@ func (r *foodRepository) FindByIDs(ctx context.Context, ids []uint) ([]models.Fo
 		return []models.Food{}, nil
 	}
 	var list []models.Food
-	err := r.db.WithContext(ctx).Where("id IN ?", ids).Find(&list).Error
+	err := r.db.WithContext(ctx).Preload("ServingUnits").Where("id IN ?", ids).Find(&list).Error
 	return list, err
 }
 
+// Search returns canonical (per-100g) rows only — pre-enrichment, a food's
+// other serving-unit rows (لیوان/فنجان/...) shared the same Name and showed
+// up as duplicate-looking entries in every picker; now each food surfaces
+// once, carrying its own ServingUnits picker instead.
 func (r *foodRepository) Search(ctx context.Context, query string, page, limit int) ([]models.Food, int64, error) {
 	if page <= 0 {
 		page = 1
@@ -60,7 +65,7 @@ func (r *foodRepository) Search(ctx context.Context, query string, page, limit i
 		limit = 100
 	}
 
-	db := r.db.WithContext(ctx).Model(&models.Food{})
+	db := r.db.WithContext(ctx).Model(&models.Food{}).Where("is_canonical = ?", true)
 	q := strings.TrimSpace(query)
 	if q != "" {
 		like := "%" + q + "%"
@@ -74,10 +79,18 @@ func (r *foodRepository) Search(ctx context.Context, query string, page, limit i
 
 	offset := (page - 1) * limit
 	var list []models.Food
-	if err := db.Order("name ASC").Offset(offset).Limit(limit).Find(&list).Error; err != nil {
+	if err := db.Preload("ServingUnits").Order("name ASC").Offset(offset).Limit(limit).Find(&list).Error; err != nil {
 		return nil, 0, err
 	}
 	return list, total, nil
+}
+
+func (r *foodRepository) FindServingUnitByID(ctx context.Context, id uint) (*models.FoodServingUnit, error) {
+	var u models.FoodServingUnit
+	if err := r.db.WithContext(ctx).First(&u, id).Error; err != nil {
+		return nil, err
+	}
+	return &u, nil
 }
 
 func (r *foodRepository) UpsertByExternalID(ctx context.Context, f *models.Food) error {

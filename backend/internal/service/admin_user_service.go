@@ -39,9 +39,9 @@ type AdminUserProgram struct {
 }
 
 type AdminUserBody struct {
-	HeightCm *float64           `json:"heightCm"`
-	WeightKg *float64           `json:"weightKg"`
-	Photos   []AdminUserPhoto   `json:"photos"`
+	HeightCm *float64         `json:"heightCm"`
+	WeightKg *float64         `json:"weightKg"`
+	Photos   []AdminUserPhoto `json:"photos"`
 }
 
 type AdminUserPhoto struct {
@@ -51,7 +51,7 @@ type AdminUserPhoto struct {
 }
 
 type AdminUserDetails struct {
-	User     AdminUserSummary  `json:"user"`
+	User     AdminUserSummary   `json:"user"`
 	Programs []AdminUserProgram `json:"programs"`
 	Body     AdminUserBody      `json:"body"`
 }
@@ -66,9 +66,9 @@ type AdminUserService interface {
 }
 
 type adminUserService struct {
-	db            *gorm.DB
-	subRepo       repository.SubscriptionRepository
-	txRepo        repository.TransactionRepository
+	db      *gorm.DB
+	subRepo repository.SubscriptionRepository
+	txRepo  repository.TransactionRepository
 }
 
 func NewAdminUserService(
@@ -495,4 +495,3 @@ func (s *adminUserService) DeleteUserBodyPhoto(ctx context.Context, userID uint,
 	}
 	return nil
 }
-

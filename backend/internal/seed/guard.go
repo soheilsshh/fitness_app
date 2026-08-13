@@ -9,12 +9,12 @@ import (
 // DevFixtureEmails maps dev fixture emails to their expected primary keys.
 // Child fixtures reference these IDs; a mismatch indicates an unsafe seed target DB.
 var DevFixtureEmails = map[string]uint{
-	"coach.ali@fitness.dev":     2,
-	"coach.sara@fitness.dev":    3,
-	"student.reza@fitness.dev":  4,
+	"coach.ali@fitness.dev":      2,
+	"coach.sara@fitness.dev":     3,
+	"student.reza@fitness.dev":   4,
 	"student.maryam@fitness.dev": 5,
-	"student.amir@fitness.dev":  6,
-	"student.neda@fitness.dev":  7,
+	"student.amir@fitness.dev":   6,
+	"student.neda@fitness.dev":   7,
 }
 
 // Allowed reports whether dev seeding may run.

@@ -39,13 +39,13 @@ type PaymentService interface {
 }
 
 type paymentService struct {
-	db          *gorm.DB
-	userRepo    repository.UserRepository
-	planRepo    repository.ServicePlanRepository
-	orderRepo   repository.OrderRepository
-	subRepo     repository.SubscriptionRepository
-	funnelRepo  repository.FunnelLeadRepository
-	zarinpal    *ZarinpalClient
+	db         *gorm.DB
+	userRepo   repository.UserRepository
+	planRepo   repository.ServicePlanRepository
+	orderRepo  repository.OrderRepository
+	subRepo    repository.SubscriptionRepository
+	funnelRepo repository.FunnelLeadRepository
+	zarinpal   *ZarinpalClient
 }
 
 func NewPaymentService(

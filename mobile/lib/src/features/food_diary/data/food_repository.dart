@@ -48,6 +48,7 @@ class FoodRepository {
     required String foodName,
     required String quantity,
     double? multiplier,
+    double? grams,
     double? calories,
     double? protein,
     double? carbs,
@@ -62,6 +63,7 @@ class FoodRepository {
         'quantity': quantity,
         // ignore: use_null_aware_elements
         if (multiplier != null) 'multiplier': multiplier,
+        if (grams != null) 'grams': grams,
         if (calories != null) 'calories': calories,
         if (protein != null) 'protein': protein,
         if (carbs != null) 'carbs': carbs,

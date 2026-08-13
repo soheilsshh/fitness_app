@@ -14,11 +14,12 @@ import (
 )
 
 var (
-	ErrFoodLogNotFound      = errors.New("food log not found")
-	ErrFoodLogInvalidDate   = errors.New("invalid log date")
-	ErrFoodLogNameRequired  = errors.New("foodName is required for manual entries")
-	ErrFoodLogFoodNotFound  = errors.New("food not found in catalog")
-	ErrFoodLogEntryRequired = errors.New("either foodId or foodName is required")
+	ErrFoodLogNotFound           = errors.New("food log not found")
+	ErrFoodLogInvalidDate        = errors.New("invalid log date")
+	ErrFoodLogNameRequired       = errors.New("foodName is required for manual entries")
+	ErrFoodLogFoodNotFound       = errors.New("food not found in catalog")
+	ErrFoodLogEntryRequired      = errors.New("either foodId or foodName is required")
+	ErrFoodLogServingUnitInvalid = errors.New("servingUnitId does not belong to the requested food")
 )
 
 type CreateFoodLogRequest struct {
@@ -32,6 +33,13 @@ type CreateFoodLogRequest struct {
 	Protein    float64 `json:"protein,omitempty"`
 	Carbs      float64 `json:"carbs,omitempty"`
 	Fat        float64 `json:"fat,omitempty"`
+
+	// Serving-picker path (spoon/gram/cup) — takes priority over Multiplier
+	// when FoodID is set. Either send Grams directly, or ServingUnitID +
+	// ServingQty (e.g. 2 × "قاشق غذاخوری") and the server resolves grams.
+	Grams         *float64 `json:"grams,omitempty"`
+	ServingUnitID *uint    `json:"servingUnitId,omitempty"`
+	ServingQty    *float64 `json:"servingQty,omitempty"`
 }
 
 type DailyFoodLogDTO struct {
@@ -110,11 +118,19 @@ func (s *dailyFoodLogService) CreateLog(ctx context.Context, userID uint, req *C
 			return nil, err
 		}
 
-		multiplier := mealMultiplier(req.Multiplier)
-		meal := foodModelToMealDTO(food, multiplier, MeMealDTO{
+		base := MeMealDTO{
 			Title:  strings.TrimSpace(req.FoodName),
 			Detail: strings.TrimSpace(req.Quantity),
-		})
+		}
+
+		var meal MeMealDTO
+		if grams, ok, err := s.resolveGrams(ctx, food, req); err != nil {
+			return nil, err
+		} else if ok {
+			meal = foodModelToMealDTOByGrams(food, grams, base)
+		} else {
+			meal = foodModelToMealDTO(food, mealMultiplier(req.Multiplier), base)
+		}
 
 		log.FoodID = req.FoodID
 		log.FoodName = meal.Title
@@ -151,6 +167,36 @@ func (s *dailyFoodLogService) CreateLog(ctx context.Context, userID uint, req *C
 
 	dto := dailyFoodLogToDTO(*log)
 	return &dto, nil
+}
+
+// resolveGrams turns the serving-picker part of a request into a gram
+// amount: either Grams directly, or ServingUnitID (validated against this
+// food) times ServingQty. ok=false means neither was provided, so the
+// caller should fall back to the legacy Multiplier path.
+func (s *dailyFoodLogService) resolveGrams(ctx context.Context, food *models.Food, req *CreateFoodLogRequest) (float64, bool, error) {
+	if req.Grams != nil && *req.Grams > 0 {
+		return *req.Grams, true, nil
+	}
+	if req.ServingUnitID == nil {
+		return 0, false, nil
+	}
+
+	unit, err := s.foodRepo.FindServingUnitByID(ctx, *req.ServingUnitID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return 0, false, ErrFoodLogServingUnitInvalid
+		}
+		return 0, false, err
+	}
+	if unit.FoodID != food.ID {
+		return 0, false, ErrFoodLogServingUnitInvalid
+	}
+
+	qty := 1.0
+	if req.ServingQty != nil && *req.ServingQty > 0 {
+		qty = *req.ServingQty
+	}
+	return unit.GramsPerUnit * qty, true, nil
 }
 
 func (s *dailyFoodLogService) ListByDate(ctx context.Context, userID uint, dateStr string) (*DailyFoodLogListResponse, error) {

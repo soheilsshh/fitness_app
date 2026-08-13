@@ -11,12 +11,12 @@ import (
 
 // DashboardStatsResponse matches frontend AdminDashboardClient expectations.
 type DashboardStatsResponse struct {
-	Year              int   `json:"year"`
-	TotalUsers        int64 `json:"totalUsers"`
-	ActiveUsers       int64 `json:"activeUsers"`
-	PurchasedCourses  int64 `json:"purchasedCourses"`
-	TotalCoaches      int64 `json:"totalCoaches"`
-	ActiveCoaches     int64 `json:"activeCoaches"`
+	Year             int   `json:"year"`
+	TotalUsers       int64 `json:"totalUsers"`
+	ActiveUsers      int64 `json:"activeUsers"`
+	PurchasedCourses int64 `json:"purchasedCourses"`
+	TotalCoaches     int64 `json:"totalCoaches"`
+	ActiveCoaches    int64 `json:"activeCoaches"`
 }
 
 // MonthlySaleItem matches frontend SalesChart data: month (Persian name), courses, sales.

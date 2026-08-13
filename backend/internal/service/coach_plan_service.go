@@ -11,8 +11,8 @@ import (
 )
 
 var (
-	ErrCoachPlanNotFound    = errors.New("plan not found")
-	ErrCoachPlanForbidden   = errors.New("plan does not belong to this coach")
+	ErrCoachPlanNotFound  = errors.New("plan not found")
+	ErrCoachPlanForbidden = errors.New("plan does not belong to this coach")
 )
 
 type CoachPlanService interface {

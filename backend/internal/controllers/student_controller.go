@@ -41,13 +41,13 @@ type planSummary struct {
 }
 
 type subscriptionResponse struct {
-	ID                  uint       `json:"id"`
-	StartsAt            time.Time  `json:"starts_at"`
-	EndsAt              *time.Time `json:"ends_at,omitempty"`
-	LastCheckInDate     *time.Time `json:"last_checkin_date,omitempty"`
-	NextCheckInDueDate  *time.Time `json:"next_checkin_due_date,omitempty"`
-	CheckinFrequencyDays int       `json:"checkin_frequency_days"`
-	Plan                planSummary `json:"plan"`
+	ID                   uint        `json:"id"`
+	StartsAt             time.Time   `json:"starts_at"`
+	EndsAt               *time.Time  `json:"ends_at,omitempty"`
+	LastCheckInDate      *time.Time  `json:"last_checkin_date,omitempty"`
+	NextCheckInDueDate   *time.Time  `json:"next_checkin_due_date,omitempty"`
+	CheckinFrequencyDays int         `json:"checkin_frequency_days"`
+	Plan                 planSummary `json:"plan"`
 }
 
 type currentSubscriptionResponse struct {
@@ -76,12 +76,12 @@ type workoutItemResponse struct {
 }
 
 type workoutProgramResponse struct {
-	ID            uint                   `json:"id"`
-	Title         string                 `json:"title"`
-	Version       int                    `json:"version"`
-	DurationWeeks int                    `json:"duration_weeks"`
-	LastUpdatedAt time.Time              `json:"last_updated_at"`
-	Items         []workoutItemResponse  `json:"items"`
+	ID            uint                  `json:"id"`
+	Title         string                `json:"title"`
+	Version       int                   `json:"version"`
+	DurationWeeks int                   `json:"duration_weeks"`
+	LastUpdatedAt time.Time             `json:"last_updated_at"`
+	Items         []workoutItemResponse `json:"items"`
 }
 
 type nutritionItemResponse struct {
@@ -344,4 +344,3 @@ func (h *StudentController) GetCurrentPrograms(c *gin.Context) {
 
 	c.JSON(http.StatusOK, resp)
 }
-

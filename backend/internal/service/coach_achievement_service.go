@@ -12,10 +12,10 @@ import (
 )
 
 var (
-	ErrCoachAchievementNotFound   = errors.New("achievement not found")
-	ErrCoachAchievementForbidden  = errors.New("achievement does not belong to this coach")
-	ErrInvalidAchievementType     = errors.New("invalid achievement type")
-	ErrAchievementTitleRequired   = errors.New("title is required")
+	ErrCoachAchievementNotFound  = errors.New("achievement not found")
+	ErrCoachAchievementForbidden = errors.New("achievement does not belong to this coach")
+	ErrInvalidAchievementType    = errors.New("invalid achievement type")
+	ErrAchievementTitleRequired  = errors.New("title is required")
 )
 
 // CoachAchievementDTO is the authenticated coach's achievement for editing.

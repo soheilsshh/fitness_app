@@ -5,6 +5,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/state_views.dart';
 import '../application/food_diary_controller.dart';
 import '../data/food_models.dart';
+import 'serving_picker_sheet.dart';
 
 /// Bottom sheet to add a food log — either from the catalog (with a multiplier)
 /// or as a free-text manual entry.
@@ -27,47 +28,19 @@ class _AddFoodSheetState extends ConsumerState<AddFoodSheet> {
   }
 
   Future<void> _addFood(Food food) async {
-    final multiplier = await _askMultiplier(food);
-    if (multiplier == null) return;
+    final result = await ServingPickerSheet.show(context, food);
+    if (result == null) return;
     setState(() => _busy = true);
     try {
       await ref
           .read(foodDiaryActionsProvider.notifier)
-          .addFromFood(food, multiplier);
+          .addFromFoodByGrams(food, result.grams, result.label);
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       _toast(e.toString());
     } finally {
       if (mounted) setState(() => _busy = false);
     }
-  }
-
-  Future<double?> _askMultiplier(Food food) async {
-    final ctrl = TextEditingController(text: '1');
-    return showDialog<double>(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text(food.name),
-        content: TextField(
-          controller: ctrl,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          decoration: InputDecoration(
-            labelText: 'تعداد واحد (${food.amount} ${food.unit})',
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('انصراف'),
-          ),
-          ElevatedButton(
-            onPressed: () =>
-                Navigator.pop(context, double.tryParse(ctrl.text) ?? 1),
-            child: const Text('افزودن'),
-          ),
-        ],
-      ),
-    );
   }
 
   Future<void> _addManual() async {

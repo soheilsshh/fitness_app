@@ -37,7 +37,8 @@ func (h *DailyFoodLogController) CreateLog(c *gin.Context) {
 		switch {
 		case errors.Is(err, service.ErrFoodLogInvalidDate),
 			errors.Is(err, service.ErrFoodLogNameRequired),
-			errors.Is(err, service.ErrFoodLogEntryRequired):
+			errors.Is(err, service.ErrFoodLogEntryRequired),
+			errors.Is(err, service.ErrFoodLogServingUnitInvalid):
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		case errors.Is(err, service.ErrFoodLogFoodNotFound):
 			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})

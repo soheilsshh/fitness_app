@@ -37,8 +37,8 @@ type kavenegarEntry struct {
 }
 
 type kavenegarResponse struct {
-	Return   kavenegarReturn  `json:"return"`
-	Entries  []kavenegarEntry `json:"entries"`
+	Return  kavenegarReturn  `json:"return"`
+	Entries []kavenegarEntry `json:"entries"`
 }
 
 var invalidTokenChar = regexp.MustCompile(`[\s_\n\r\t]`)

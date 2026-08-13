@@ -128,4 +128,3 @@ func (h *MeTicketController) GetTicket(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, resp)
 }
-

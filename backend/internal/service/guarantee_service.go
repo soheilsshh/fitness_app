@@ -13,11 +13,11 @@ import (
 )
 
 var (
-	ErrGuaranteeTypeInvalid   = errors.New("guarantee type must be result or quality")
-	ErrGuaranteeReasonRequired = errors.New("reason is required")
-	ErrGuaranteeNoSubscription = errors.New("no active subscription")
-	ErrGuaranteeAlreadyOpen   = errors.New("an open guarantee case already exists for this subscription")
-	ErrGuaranteeNotFound      = errors.New("guarantee case not found")
+	ErrGuaranteeTypeInvalid       = errors.New("guarantee type must be result or quality")
+	ErrGuaranteeReasonRequired    = errors.New("reason is required")
+	ErrGuaranteeNoSubscription    = errors.New("no active subscription")
+	ErrGuaranteeAlreadyOpen       = errors.New("an open guarantee case already exists for this subscription")
+	ErrGuaranteeNotFound          = errors.New("guarantee case not found")
 	ErrGuaranteeResolutionInvalid = errors.New("resolution must be free_extension or refund when approving")
 )
 

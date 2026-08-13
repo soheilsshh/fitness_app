@@ -14,11 +14,11 @@ import (
 )
 
 var (
-	ErrWorkoutSessionNotFound    = errors.New("workout session not found")
-	ErrWorkoutSessionForbidden   = errors.New("subscription does not belong to user")
-	ErrInvalidWorkoutDay         = errors.New("invalid workout day")
-	ErrWorkoutDayEmpty           = errors.New("no workout scheduled for this day")
-	ErrWorkoutSubscriptionEnded  = errors.New("subscription is not active")
+	ErrWorkoutSessionNotFound   = errors.New("workout session not found")
+	ErrWorkoutSessionForbidden  = errors.New("subscription does not belong to user")
+	ErrInvalidWorkoutDay        = errors.New("invalid workout day")
+	ErrWorkoutDayEmpty          = errors.New("no workout scheduled for this day")
+	ErrWorkoutSubscriptionEnded = errors.New("subscription is not active")
 )
 
 type WorkoutHistoryItemDTO struct {
@@ -54,10 +54,10 @@ type LogSetInput struct {
 }
 
 type LogWorkoutSessionRequest struct {
-	SubscriptionID uint          `json:"subscriptionId"`
-	DayKey         string        `json:"dayKey"`
-	DurationMin    int           `json:"durationMin"`
-	Notes          string        `json:"notes"`
+	SubscriptionID uint   `json:"subscriptionId"`
+	DayKey         string `json:"dayKey"`
+	DurationMin    int    `json:"durationMin"`
+	Notes          string `json:"notes"`
 	// EffortRPE (1-10) and SatisfactionRating (1-5) are self-reported; 0 = not reported.
 	EffortRPE          int           `json:"effortRpe,omitempty"`
 	FeelingAfter       string        `json:"feelingAfter,omitempty"`
@@ -236,19 +236,19 @@ func (s *workoutHistoryService) LogSession(ctx context.Context, userID uint, req
 	}
 
 	session := models.WorkoutSession{
-		UserID:              userID,
-		SubscriptionID:      sub.ID,
-		WorkoutProgramID:    wp.ID,
-		ProgramTitle:        programTitle,
-		DayKey:              dayKey,
-		DayLabel:            workoutDayLabels[dayKey],
-		ExerciseCount:       exerciseCount,
-		DurationMin:         durationMin,
-		Notes:               strings.TrimSpace(req.Notes),
-		EffortRPE:           effort,
-		FeelingAfter:        feeling,
-		SatisfactionRating:  satisfaction,
-		CompletedAt:         now,
+		UserID:             userID,
+		SubscriptionID:     sub.ID,
+		WorkoutProgramID:   wp.ID,
+		ProgramTitle:       programTitle,
+		DayKey:             dayKey,
+		DayLabel:           workoutDayLabels[dayKey],
+		ExerciseCount:      exerciseCount,
+		DurationMin:        durationMin,
+		Notes:              strings.TrimSpace(req.Notes),
+		EffortRPE:          effort,
+		FeelingAfter:       feeling,
+		SatisfactionRating: satisfaction,
+		CompletedAt:        now,
 	}
 	if err := s.db.WithContext(ctx).Create(&session).Error; err != nil {
 		return nil, err

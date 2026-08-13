@@ -21,29 +21,29 @@ type AdminTemplateSetDTO struct {
 }
 
 type AdminTemplateItemDTO struct {
-	DayNumber         int                  `json:"dayNumber"`
-	OrderIndex        int                  `json:"orderIndex"`
-	ExerciseID        *uint                `json:"exerciseId,omitempty"`
-	Exercise          string               `json:"exercise"`
-	Notes             string               `json:"notes,omitempty"`
-	SupersetID        *string              `json:"supersetId,omitempty"`
-	WorkoutSystemType string               `json:"workoutSystemType,omitempty"`
+	DayNumber         int                   `json:"dayNumber"`
+	OrderIndex        int                   `json:"orderIndex"`
+	ExerciseID        *uint                 `json:"exerciseId,omitempty"`
+	Exercise          string                `json:"exercise"`
+	Notes             string                `json:"notes,omitempty"`
+	SupersetID        *string               `json:"supersetId,omitempty"`
+	WorkoutSystemType string                `json:"workoutSystemType,omitempty"`
 	SetsDetails       []AdminTemplateSetDTO `json:"setsDetails"`
-	ImageURL          string               `json:"imageUrl,omitempty"`
-	GifURL            string               `json:"gifUrl,omitempty"`
+	ImageURL          string                `json:"imageUrl,omitempty"`
+	GifURL            string                `json:"gifUrl,omitempty"`
 }
 
 type AdminWorkoutTemplateSummary struct {
-	ID       uint   `json:"id"`
-	Title    string `json:"title"`
-	Type     string `json:"type"`
-	Gender   string `json:"gender"`
-	Location string `json:"location"`
-	DayCount int    `json:"dayCount"`
-	Target   string `json:"target"`
-	Level    string `json:"level"`
-	Injury   string `json:"injury"`
-	ItemCount int   `json:"itemCount"`
+	ID        uint   `json:"id"`
+	Title     string `json:"title"`
+	Type      string `json:"type"`
+	Gender    string `json:"gender"`
+	Location  string `json:"location"`
+	DayCount  int    `json:"dayCount"`
+	Target    string `json:"target"`
+	Level     string `json:"level"`
+	Injury    string `json:"injury"`
+	ItemCount int    `json:"itemCount"`
 }
 
 type AdminWorkoutTemplateDetail struct {
@@ -104,8 +104,8 @@ type AdminNutritionTemplateSummary struct {
 
 type AdminNutritionTemplateDetail struct {
 	AdminNutritionTemplateSummary
-	Description string                   `json:"description"`
-	Meals       []AdminNutritionMealDTO  `json:"meals"`
+	Description string                  `json:"description"`
+	Meals       []AdminNutritionMealDTO `json:"meals"`
 }
 
 type AdminNutritionTemplateListResponse struct {

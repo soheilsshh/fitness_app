@@ -26,16 +26,16 @@ type crulExerciseFile struct {
 }
 
 type crulExerciseTemplate struct {
-	ID        int              `json:"id"`
-	Title     string           `json:"title"`
-	Type      string           `json:"type"`
-	Gender    string           `json:"gender"`
-	Location  string           `json:"location"`
-	DayCount  int              `json:"dayCount"`
-	Target    string           `json:"target"`
-	Injury    string           `json:"injury"`
-	Level     string           `json:"level"`
-	CreatorID *int             `json:"creatorId"`
+	ID        int               `json:"id"`
+	Title     string            `json:"title"`
+	Type      string            `json:"type"`
+	Gender    string            `json:"gender"`
+	Location  string            `json:"location"`
+	DayCount  int               `json:"dayCount"`
+	Target    string            `json:"target"`
+	Injury    string            `json:"injury"`
+	Level     string            `json:"level"`
+	CreatorID *int              `json:"creatorId"`
 	Days      []crulExerciseDay `json:"days"`
 }
 
@@ -48,16 +48,16 @@ type crulExerciseDay struct {
 }
 
 type crulExerciseBlock struct {
-	ExerciseSystem   string              `json:"exercise_system"`
-	ExerciseSystemID int                 `json:"exercise_system_id"`
-	MovementList     []crulExerciseMove  `json:"movement_list"`
+	ExerciseSystem   string             `json:"exercise_system"`
+	ExerciseSystemID int                `json:"exercise_system_id"`
+	MovementList     []crulExerciseMove `json:"movement_list"`
 }
 
 type crulExerciseMove struct {
-	ActionTitle       string          `json:"action_title"`
-	ActionID          int             `json:"action_id"`
-	ActionDescription string          `json:"action_description"`
-	Description       string          `json:"description"`
+	ActionTitle       string            `json:"action_title"`
+	ActionID          int               `json:"action_id"`
+	ActionDescription string            `json:"action_description"`
+	Description       string            `json:"description"`
 	Sets              []crulExerciseSet `json:"sets"`
 }
 
@@ -87,16 +87,16 @@ type crulDietTemplate struct {
 }
 
 type crulDietMeal struct {
-	MealName    string          `json:"meal_name"`
-	MealCalorie int             `json:"meal_calorie"`
-	StartTime   string          `json:"start_time"`
-	EndTime     string          `json:"end_time"`
-	Menu        []crulDietMenu  `json:"menu"`
+	MealName    string         `json:"meal_name"`
+	MealCalorie int            `json:"meal_calorie"`
+	StartTime   string         `json:"start_time"`
+	EndTime     string         `json:"end_time"`
+	Menu        []crulDietMenu `json:"menu"`
 }
 
 type crulDietMenu struct {
-	MenuName string           `json:"menu_name"`
-	Items    []crulDietFood   `json:"items"`
+	MenuName string         `json:"menu_name"`
+	Items    []crulDietFood `json:"items"`
 }
 
 type crulDietFood struct {

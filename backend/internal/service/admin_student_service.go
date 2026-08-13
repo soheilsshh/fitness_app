@@ -16,7 +16,7 @@ type AdminStudentItem struct {
 	ID        uint     `json:"id"`
 	FullName  string   `json:"fullName"`
 	Phone     string   `json:"phone"`
-	Status    string   `json:"status"`    // "pending" | "active"
+	Status    string   `json:"status"` // "pending" | "active"
 	CoachName string   `json:"coachName"`
 	PlanTitle string   `json:"planTitle"`
 	PlanType  string   `json:"planType"` // "workout" | "nutrition" | "both"

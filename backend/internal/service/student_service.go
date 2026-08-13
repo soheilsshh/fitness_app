@@ -43,10 +43,10 @@ type StudentService interface {
 }
 
 type studentService struct {
-	userRepo         repository.UserRepository
-	subRepo          repository.SubscriptionRepository
-	planRepo         repository.ServicePlanRepository
-	programRepo      repository.ProgramRepository
+	userRepo    repository.UserRepository
+	subRepo     repository.SubscriptionRepository
+	planRepo    repository.ServicePlanRepository
+	programRepo repository.ProgramRepository
 }
 
 func NewStudentService(
@@ -161,4 +161,3 @@ func (s *studentService) GetCurrentPrograms(ctx context.Context, userID uint) (*
 		Nutrition: nutritionWithItems,
 	}, nil
 }
-
