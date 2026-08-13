@@ -2,7 +2,6 @@
 
 import { useId, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   Eye,
@@ -14,6 +13,7 @@ import {
 } from "lucide-react";
 import { api } from "@/lib/axios/client";
 import { persistAuthSession } from "@/lib/auth/session";
+import { navigateAfterAuth } from "@/lib/auth/postAuthRedirect";
 import {
   isValidIranPhone,
   normalizeIranPhone,
@@ -43,7 +43,6 @@ const inputClass =
   "h-12 rounded-xl border-border/80 bg-background/60 ps-10 text-base transition-[box-shadow,border-color] duration-200 focus-visible:ring-2 focus-visible:ring-ring/40";
 
 export default function CoachRegisterForm() {
-  const router = useRouter();
   const formId = useId();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -78,7 +77,7 @@ export default function CoachRegisterForm() {
       });
       persistAuthSession(res.data);
       toastSuccess("ثبت‌نام موفق", "حساب مربی ساخته شد");
-      router.replace("/coach/profile");
+      navigateAfterAuth("/coach/profile");
     } catch (error) {
       const msg = error?.response?.data?.error || "ثبت‌نام ناموفق بود";
       toastError("خطا", msg);

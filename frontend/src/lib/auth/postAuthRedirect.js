@@ -1,12 +1,34 @@
 import { ROLES, getPostLoginPath } from "@/lib/auth/roles";
 
+/** Paths that must never be used as post-login return targets. */
+function isAuthLoopPath(path) {
+  const bare = path.split("?")[0].replace(/\/+$/, "") || "/";
+  return (
+    bare === "/auth" ||
+    bare === "/login" ||
+    bare.startsWith("/auth/") ||
+    bare.startsWith("/login/")
+  );
+}
+
 /**
- * Validates an internal redirect path (prevents open redirects).
+ * Ensures a path works with next.config trailingSlash + static export.
+ */
+export function withTrailingSlash(path) {
+  if (!path || typeof path !== "string") return "/";
+  const [pathname, query = ""] = path.split("?");
+  const base = pathname.endsWith("/") ? pathname : `${pathname}/`;
+  return query ? `${base}?${query}` : base;
+}
+
+/**
+ * Validates an internal redirect path (prevents open redirects + auth loops).
  */
 export function getSafeRedirectPath(next) {
   if (!next || typeof next !== "string") return null;
   const path = next.trim();
   if (!path.startsWith("/") || path.startsWith("//")) return null;
+  if (isAuthLoopPath(path)) return null;
   return path;
 }
 
@@ -29,18 +51,27 @@ export function resolvePostAuthPath({ role, isProfileComplete, nextPath }) {
   const safe = getSafeRedirectPath(nextPath);
 
   if (safe?.startsWith("/payment")) {
-    return safe;
+    return withTrailingSlash(safe);
   }
 
   if (role === ROLES.STUDENT && !isProfileComplete) {
-    return getPostLoginPath(role, false);
+    return withTrailingSlash(getPostLoginPath(role, false));
   }
 
   if (safe) {
-    return safe;
+    return withTrailingSlash(safe);
   }
 
-  return getPostLoginPath(role, isProfileComplete);
+  return withTrailingSlash(getPostLoginPath(role, isProfileComplete));
+}
+
+/**
+ * Hard navigation after auth. Soft router.replace is unreliable with
+ * `output: "export"` + trailingSlash — session is saved but the URL stays on /auth.
+ */
+export function navigateAfterAuth(path) {
+  if (typeof window === "undefined") return;
+  window.location.assign(withTrailingSlash(path || "/"));
 }
 
 export function buildAuthUrl(basePath, returnPath) {

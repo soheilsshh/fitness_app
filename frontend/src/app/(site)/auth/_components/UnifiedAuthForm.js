@@ -2,7 +2,7 @@
 
 import { useId, useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
   Eye,
@@ -28,6 +28,7 @@ import { api } from "@/lib/axios/client";
 import { persistAuthSession } from "@/lib/auth/session";
 import {
   buildAuthUrl,
+  navigateAfterAuth,
   readRedirectParam,
   resolvePostAuthPath,
 } from "@/lib/auth/postAuthRedirect";
@@ -56,7 +57,6 @@ const inputClass =
   "h-12 rounded-xl border-border/80 bg-background/60 ps-10 text-base transition-[box-shadow,border-color] duration-200 focus-visible:ring-2 focus-visible:ring-ring/40";
 
 export default function UnifiedAuthForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const returnPath = readRedirectParam(searchParams);
   const forgotHref = buildAuthUrl("/auth/forgot", returnPath);
@@ -103,7 +103,8 @@ export default function UnifiedAuthForm() {
       isProfileComplete: data?.user?.isProfileComplete,
       nextPath: returnPath,
     });
-    router.replace(target);
+    // Hard navigate: with static export, router.replace often leaves the user on /auth.
+    navigateAfterAuth(target);
   };
 
   const onContinueWithPhone = async (e) => {
