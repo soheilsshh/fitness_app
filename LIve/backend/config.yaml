@@ -3,7 +3,7 @@
 db_host: localhost
 db_port: 3306
 db_user: fitini
-db_password: ""  # set locally — never commit real passwords
+db_password: aramezani82A@
 db_name: monetizeai
 server_port: "8081"
 
@@ -30,7 +30,7 @@ faraz_sms:
 telegram:
   bot_token: ""  # Telegram Bot Token
   webhook_url: "https://webinar.sianacademy.com/webhook/telegram"  # Webhook URL (optional - can be set via API)
-  api_key: ""  # API Key for bot to authenticate with backend (set locally)
+  api_key: "0741a71b70336bf3d956cac3ac7f1582bbdc7a2fa661420a8e86c620c50f3e46"  # API Key for bot to authenticate with backend
   enabled: true  # Enable/disable Telegram Bot
 
 groq:

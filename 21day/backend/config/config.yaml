@@ -2,16 +2,16 @@ server_port: "8081"
 
 db:
   user: monetizeai_free_user
-  password: ""  # set locally — never commit real passwords
+  password: mgstudio884
   host: 127.0.0.1
   port: 3306
   name: monetizeai_free_farsi
 
 admin:
   username: admin
-  password: ""  # set locally
+  password: admin123
 
-smsapikey: ""  # set locally — never commit real keys
+smsapikey: "OWYzZmNmNGYtZjEzMi00YjIyLWJhMzgtYmFjZjQ3NWFmMjIxMDcwZGE0ZWMwZDcyYzAxNjcxZDlkMjU0MzAzZmJhMGY="
 from_number: "+983000505"
 sms_base_url: "https://api2.ippanel.com/api/v1"
 
@@ -28,4 +28,4 @@ patterns:
   complete1: "8zbli5m2ey9ppg4"
   complete2: "saxojb1e5ey93ro"
   complete3: "an762f2qh77ncie"
-  complete4: "iuwoc9d0bu5axy8" 
+  complete4: "iuwoc9d0bu5axy8"

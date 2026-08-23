@@ -1,10 +1,9 @@
 # Production Backend configuration for MonetizeAI Webinar
-# Copy to config.production.yaml and fill secrets locally (do not commit real keys).
 
 db_host: localhost
 db_port: 3306
 db_user: monetizeai_user_live
-db_password: ""  # set locally / via env
+db_password: StrongPassword123!
 db_name: monetizeai
 server_port: "8081"
 
@@ -19,7 +18,9 @@ allowed_origins:
   - "https://sianmarketing.com"
 
 # Groq AI Configuration
+# api_key stays empty in git — GitHub push protection blocks Groq keys.
+# Set GROQ_API_KEY in the server environment, or fill locally and do not commit.
 groq:
-  api_key: ""  # set locally — never commit real keys
+  api_key: ""
   model: "llama-3.3-70b-versatile"
   enabled: true
