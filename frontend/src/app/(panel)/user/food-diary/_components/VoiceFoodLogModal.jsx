@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Loader2, Mic, Square } from "lucide-react";
 import { api } from "@/lib/axios/client";
+import { VOICE_API_TIMEOUT_MS, voiceApiErrorMessage } from "@/lib/api/voice";
+import { blobToWav16kMono } from "@/lib/audio/wav";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -32,6 +34,7 @@ export default function VoiceFoodLogModal({ open, onClose, onAdd, dayLabel }) {
   const [items, setItems] = useState([]);
   const [selected, setSelected] = useState({});
   const [notes, setNotes] = useState("");
+  const [transcript, setTranscript] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -46,6 +49,7 @@ export default function VoiceFoodLogModal({ open, onClose, onAdd, dayLabel }) {
       setItems([]);
       setSelected({});
       setNotes("");
+      setTranscript("");
       setError("");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -82,18 +86,21 @@ export default function VoiceFoodLogModal({ open, onClose, onAdd, dayLabel }) {
 
   const handleRecordingStop = async () => {
     setStatus("transcribing");
-    const blob = new Blob(chunksRef.current, { type: "audio/webm" });
-    const form = new FormData();
-    form.append("file", blob, "voice-note.webm");
+    const rawBlob = new Blob(chunksRef.current, { type: "audio/webm" });
     try {
+      const wavBlob = await blobToWav16kMono(rawBlob);
+      const form = new FormData();
+      form.append("file", wavBlob, "voice-note.wav");
       const res = await api.post("/me/food-logs/voice", form, {
         headers: { "Content-Type": "multipart/form-data" },
+        timeout: VOICE_API_TIMEOUT_MS,
       });
       const data = res.data || {};
       const foundItems = data.items || [];
       setItems(foundItems);
       setSelected(Object.fromEntries(foundItems.map((_, i) => [i, true])));
       setNotes(data.notes || "");
+      setTranscript(data.transcript || "");
       if (foundItems.length === 0) {
         setError("چیزی از صدا تشخیص داده نشد — دوباره تلاش کنید");
         setStatus("idle");
@@ -101,7 +108,7 @@ export default function VoiceFoodLogModal({ open, onClose, onAdd, dayLabel }) {
       }
       setStatus("review");
     } catch (err) {
-      setError(err?.response?.data?.error || "پردازش صدا ناموفق بود");
+      setError(voiceApiErrorMessage(err));
       setStatus("idle");
     }
   };
@@ -181,6 +188,14 @@ export default function VoiceFoodLogModal({ open, onClose, onAdd, dayLabel }) {
             </div>
           ) : (
             <div className="space-y-3">
+              {transcript ? (
+                <div className="rounded-xl border border-primary/20 bg-primary/5 px-3 py-3 text-start">
+                  <p className="text-[11px] font-iranianSansDemiBold text-primary">
+                    متن تشخیص‌داده‌شده
+                  </p>
+                  <p className="mt-1 text-sm leading-relaxed text-foreground">{transcript}</p>
+                </div>
+              ) : null}
               {notes ? (
                 <p className="rounded-lg bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
                   {notes}

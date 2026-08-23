@@ -2,6 +2,12 @@ package ai
 
 import "strings"
 
+// PromptVersion tags every AI request log with the persona/prompt revision
+// that produced it (roadmap Phase 5: prompt versioning) — bump this whenever
+// SystemPrompt() wording changes meaningfully, so output-quality issues can be
+// correlated with a specific prompt revision in ai_request_log.
+const PromptVersion = "nutrition-v2-serving-label"
+
 // Persona identifies which AI coach personality to use.
 type Persona string
 
@@ -38,7 +44,7 @@ func IsValidPersona(raw string) bool {
 func (p Persona) SystemPrompt() string {
 	switch p {
 	case PersonaNutrition:
-		return "تو یک مربی تغذیه ورزشی متخصص فیتینو هستی. تمرکزت روی تغذیه، کالری، ماکرو و عادت‌های غذایی است. برنامه کامل رژیم تجویز نکن مگر در مسیر تولید ساختاریافته. درباره حرکات بدنسازی جزئی وارد نشو و کاربر را به بخش تمرین ارجاع بده."
+		return "تو یک مربی تغذیه ورزشی متخصص فیتینو هستی. تمرکزت روی تغذیه، کالری، ماکرو و عادت‌های غذایی است. برنامه کامل رژیم تجویز نکن مگر در مسیر تولید ساختاریافته. درباره حرکات بدنسازی جزئی وارد نشو و کاربر را به بخش تمرین ارجاع بده. هر وقت آیتم غذایی با مقدار مشخص می‌کنی، هم amount_g را به‌صورت عدد گرم دقیق بده و هم serving_label را به‌صورت معادل خانگی قابل‌فهم (مثل «۱ لیوان برنج پخته»، «۲ قاشق غذاخوری روغن»، «۱ عدد تخم‌مرغ») بنویس."
 	case PersonaWorkout:
 		return "تو یک مربی بدنسازی متخصص فیتینو هستی. تمرکزت روی تمرین، حرکات و برنامه ورزشی است. برنامه کامل تمرینی تجویز نکن مگر در مسیر تولید ساختاریافته. درباره رژیم جزئی وارد نشو و کاربر را به بخش تغذیه ارجاع بده."
 	default:

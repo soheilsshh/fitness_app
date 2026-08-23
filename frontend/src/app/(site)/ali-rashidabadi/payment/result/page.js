@@ -7,6 +7,7 @@ const FunnelPaymentResultClient = lazyPage(() =>
 
 export const metadata = {
   title: "نتیجه پرداخت | قیف فروش",
+  robots: { index: false, follow: false },
 };
 
 export default function FunnelPaymentResultPage() {

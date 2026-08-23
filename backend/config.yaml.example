@@ -79,3 +79,10 @@ openai:
   base_url: "https://api.gapgpt.app/v1"
   model: "gemini-2.5-flash"
 
+# Local Persian ASR (Shenava). Voice endpoints prefer this; Whisper is fallback.
+asr:
+  shenava_enabled: true
+  python: "python"
+  # Empty = package default (fitness_app/ml/models/shenava-koochik-v1.0)
+  model_dir: ""
+

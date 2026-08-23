@@ -1,7 +1,7 @@
 {
   "cmd/app/main.go": {
-    "mtime": 1786357693.3606565,
-    "ast_hash": "683ac24a0339a3fc42ba79498a193ced",
+    "mtime": 1786798030.9538028,
+    "ast_hash": "55c70ab8749656f2cab3e81d39dd0ad8",
     "semantic_hash": ""
   },
   "cmd/create_tier_customers/main.go": {
@@ -20,8 +20,8 @@
     "semantic_hash": ""
   },
   "config/config.go": {
-    "mtime": 1786351807.3370688,
-    "ast_hash": "b59bf6de0bf82dfc1a1ac551f98d1589",
+    "mtime": 1786885202.3837726,
+    "ast_hash": "4d2ac7c752a2a87230b10674f7117878",
     "semantic_hash": ""
   },
   "config/database.go": {
@@ -75,183 +75,183 @@
     "semantic_hash": ""
   },
   "internal/controllers/admin_coach_controller.go": {
-    "mtime": 1784912233.124478,
-    "ast_hash": "eba793df73a27f1b1e9627c20cd1f869",
+    "mtime": 1786564792.0050087,
+    "ast_hash": "3a651672fa972e58d6c1007284b945dd",
     "semantic_hash": ""
   },
   "internal/controllers/admin_dashboard_controller.go": {
-    "mtime": 1784912233.124478,
-    "ast_hash": "ee22a45d7a57d5f5ffb0011433813639",
+    "mtime": 1786564792.0055227,
+    "ast_hash": "91bcfe19a0c14a413f1f259bf0867e9a",
     "semantic_hash": ""
   },
   "internal/controllers/admin_exercise_controller.go": {
-    "mtime": 1786352406.7839985,
-    "ast_hash": "619ddae6ad1adaef3c4311f27fcb214c",
+    "mtime": 1786564792.0071783,
+    "ast_hash": "c267124b9a36a3150b8e00a36b131262",
     "semantic_hash": ""
   },
   "internal/controllers/admin_feedback_controller.go": {
-    "mtime": 1784912233.12548,
-    "ast_hash": "bacfb684065403d4243f6bfbc4b3177a",
+    "mtime": 1786564792.0071783,
+    "ast_hash": "942065bdd46e205c3247c2039f56885c",
     "semantic_hash": ""
   },
   "internal/controllers/admin_plan_controller.go": {
-    "mtime": 1784912233.1264827,
-    "ast_hash": "d4ff2fae9349754e221483c7eb33afed",
+    "mtime": 1786564792.0081708,
+    "ast_hash": "45c9fdc6a67f03a9645ad513287d83a7",
     "semantic_hash": ""
   },
   "internal/controllers/admin_program_controller.go": {
-    "mtime": 1786352406.7839985,
-    "ast_hash": "8fbfb55fa3bf378db111ea098ebc18b6",
+    "mtime": 1786564792.009174,
+    "ast_hash": "5211b5dd4b960016501a8a4d48e60fda",
     "semantic_hash": ""
   },
   "internal/controllers/admin_student_controller.go": {
-    "mtime": 1784912233.1264827,
-    "ast_hash": "38d2e829e5c4873536f182bb6c297232",
+    "mtime": 1786564792.009174,
+    "ast_hash": "78a3f9d4edb03c0f60c23d347483ba42",
     "semantic_hash": ""
   },
   "internal/controllers/admin_template_controller.go": {
-    "mtime": 1786352406.7850027,
-    "ast_hash": "d465f0e8c983ced3475bbf30e24b5811",
+    "mtime": 1786564792.0103319,
+    "ast_hash": "5312345e63b1124b94e3355df2de86c5",
     "semantic_hash": ""
   },
   "internal/controllers/admin_user_controller.go": {
-    "mtime": 1784912233.1264827,
-    "ast_hash": "0670ad3125dae933a68f0199c774d6fb",
+    "mtime": 1786564792.0108454,
+    "ast_hash": "88037bea2d7c90cba9e030728bdb9ad0",
     "semantic_hash": ""
   },
   "internal/controllers/ai_chat_controller.go": {
-    "mtime": 1784912233.127485,
-    "ast_hash": "dee3ec6877a944a4a7e5ac28847ded58",
+    "mtime": 1786564792.0118465,
+    "ast_hash": "1fe9aef8c80022d258681d023c5add20",
     "semantic_hash": ""
   },
   "internal/controllers/ai_generate_controller.go": {
-    "mtime": 1786357605.7120233,
-    "ast_hash": "f785053d80f22300c88a48b1017b7036",
+    "mtime": 1786798021.591399,
+    "ast_hash": "28748d4ab62b743a1ecac175fcdd9ba3",
     "semantic_hash": ""
   },
   "internal/controllers/auth_controller.go": {
-    "mtime": 1784912233.127485,
-    "ast_hash": "924b26c77994cac33f71036d38bdeca0",
+    "mtime": 1786564792.0128412,
+    "ast_hash": "df6fce7c113259588db5451619a53fa7",
     "semantic_hash": ""
   },
   "internal/controllers/checkout_controller.go": {
-    "mtime": 1784912233.127485,
-    "ast_hash": "f0d212ccce5840b6094230bdf6f2caa4",
+    "mtime": 1786564792.0128412,
+    "ast_hash": "97e3aa6bd485af38b3a100d8d5ac5888",
     "semantic_hash": ""
   },
   "internal/controllers/coach_achievement_controller.go": {
-    "mtime": 1784912233.1284885,
-    "ast_hash": "be3f897852bbd3d4fd85e5cdccdd59bc",
+    "mtime": 1786564792.013844,
+    "ast_hash": "9565c9f9bd86599be4b85a5403b0efb8",
     "semantic_hash": ""
   },
   "internal/controllers/coach_dashboard_controller.go": {
-    "mtime": 1784912233.1284885,
-    "ast_hash": "6e61ebb6984e9cff7cd0331e9c6573a1",
+    "mtime": 1786564792.014846,
+    "ast_hash": "0df743a1cec520d81525469a6b2b5be2",
     "semantic_hash": ""
   },
   "internal/controllers/coach_exercise_controller.go": {
-    "mtime": 1784912233.1294906,
-    "ast_hash": "ce91855fdcade40f4923ca0bb4d6d4d0",
+    "mtime": 1786564792.015596,
+    "ast_hash": "49aeeddb82af58d6cea4db9f3e6adf43",
     "semantic_hash": ""
   },
   "internal/controllers/coach_food_controller.go": {
-    "mtime": 1784912233.1294906,
-    "ast_hash": "37ecd9a9b7d955917aa034ccaa427e07",
+    "mtime": 1786564792.0161693,
+    "ast_hash": "e45bc6b311d0346c9a2633c8dbbc3363",
     "semantic_hash": ""
   },
   "internal/controllers/coach_plan_controller.go": {
-    "mtime": 1784912233.1294906,
-    "ast_hash": "fd92ae34a221c8e2c188b88b1b03bb9b",
+    "mtime": 1786564792.016681,
+    "ast_hash": "ed98632348766c04007c98b86a41f334",
     "semantic_hash": ""
   },
   "internal/controllers/coach_profile_controller.go": {
-    "mtime": 1784912233.1304934,
-    "ast_hash": "c934089380df8221c8523877301a31a9",
+    "mtime": 1786564792.0174346,
+    "ast_hash": "bb38232a8957e067aec30e82cc9340ed",
     "semantic_hash": ""
   },
   "internal/controllers/coach_program_controller.go": {
-    "mtime": 1786352406.7850027,
-    "ast_hash": "4cb1ce8cbdfe002fd9cf9af30f669738",
+    "mtime": 1786736024.9996295,
+    "ast_hash": "96f78c3f5acc8bf47527235bf134ea09",
     "semantic_hash": ""
   },
   "internal/controllers/coach_student_controller.go": {
-    "mtime": 1784912233.1304934,
-    "ast_hash": "cd5ac36df7e9a7ea3a3d544d12c5b836",
+    "mtime": 1786564792.0185566,
+    "ast_hash": "021561e42d11ae9719a087ba692f51f4",
     "semantic_hash": ""
   },
   "internal/controllers/coach_ticket_controller.go": {
-    "mtime": 1784912233.131496,
-    "ast_hash": "44e989841225a82c9a2e96e2fb18850c",
+    "mtime": 1786564792.0195463,
+    "ast_hash": "5684930765004afeabe7c5bf599ff5ab",
     "semantic_hash": ""
   },
   "internal/controllers/daily_food_log_controller.go": {
-    "mtime": 1784912233.131496,
-    "ast_hash": "e8a2eae35774fc803074eaca233c26e6",
+    "mtime": 1786564792.0201578,
+    "ast_hash": "f54cf8978750f4dfa713b1e5fcc19a7e",
     "semantic_hash": ""
   },
   "internal/controllers/feedback_controller.go": {
-    "mtime": 1784912233.131496,
-    "ast_hash": "fce3e752fd15b00eae8900706cb72d1c",
+    "mtime": 1786564792.0201578,
+    "ast_hash": "cb18bbf660c9f925d912764b8f2a80eb",
     "semantic_hash": ""
   },
   "internal/controllers/funnel_controller.go": {
-    "mtime": 1784912233.1324983,
-    "ast_hash": "90e0713332932e5a8891111007c018e8",
+    "mtime": 1786564792.02115,
+    "ast_hash": "ebe9171bbc56e8da44c3e23a1760e540",
     "semantic_hash": ""
   },
   "internal/controllers/me_controller.go": {
-    "mtime": 1784912233.1324983,
-    "ast_hash": "33ea5ee46713626569eba23382a47cc5",
+    "mtime": 1786795187.6677923,
+    "ast_hash": "16e670521457a0ad9cedeccaef099832",
     "semantic_hash": ""
   },
   "internal/controllers/me_dashboard_controller.go": {
-    "mtime": 1784912233.1335008,
-    "ast_hash": "e83b61d2f05264a69a4fcc8460d4e813",
+    "mtime": 1786564792.022153,
+    "ast_hash": "e73446141b230a2137ddf0b3c4cbb57f",
     "semantic_hash": ""
   },
   "internal/controllers/me_ticket_controller.go": {
-    "mtime": 1784912233.1335008,
-    "ast_hash": "5b228a78b9281480113b46c936b6c523",
+    "mtime": 1786564792.0231557,
+    "ast_hash": "56a988af3d5e806d865b7ebca4796c2d",
     "semantic_hash": ""
   },
   "internal/controllers/mobile_app_controller.go": {
-    "mtime": 1784912233.1335008,
-    "ast_hash": "bed9781684340abf743a306396da5b87",
+    "mtime": 1786564792.0231557,
+    "ast_hash": "598d3e82cae840d9707e2aa38b742f34",
     "semantic_hash": ""
   },
   "internal/controllers/notification_controller.go": {
-    "mtime": 1784912233.1345043,
-    "ast_hash": "a76b031a9a535633be6f117027e46f1a",
+    "mtime": 1786739111.5368316,
+    "ast_hash": "3d7035b1677b2133c079ddeaaf8f9920",
     "semantic_hash": ""
   },
   "internal/controllers/payment_controller.go": {
-    "mtime": 1784912233.1345043,
-    "ast_hash": "3afce2cb3b75134a6a06130971e82e96",
+    "mtime": 1786564792.0251625,
+    "ast_hash": "b0e7ff000cca3bcc6e1a73b9fbb7b9f5",
     "semantic_hash": ""
   },
   "internal/controllers/public_coach_controller.go": {
-    "mtime": 1784912233.1345043,
-    "ast_hash": "1aa93c26359212b9fb70da0649697118",
+    "mtime": 1786564792.0251625,
+    "ast_hash": "22d468d758f0715620f9f3e4af5c5a49",
     "semantic_hash": ""
   },
   "internal/controllers/site_settings_controller.go": {
-    "mtime": 1784912233.1355062,
-    "ast_hash": "9514b2fa1c7a5a621d9432f103d2eadf",
+    "mtime": 1786564792.0261633,
+    "ast_hash": "bbb0fc400e9760779e3fea755f121d8c",
     "semantic_hash": ""
   },
   "internal/controllers/student_controller.go": {
-    "mtime": 1784912233.1355062,
-    "ast_hash": "0afdd0b422ade4ef8684f945643ca4ac",
+    "mtime": 1786564792.027166,
+    "ast_hash": "95d4449afb24e2e35f03c13dc6f7822e",
     "semantic_hash": ""
   },
   "internal/controllers/tracking_controller.go": {
-    "mtime": 1784912233.1365085,
-    "ast_hash": "1808959f2fe12b009a1bca3aa9112e00",
+    "mtime": 1786738739.286101,
+    "ast_hash": "fb3d7f4d47d1d365ad49bbb4d11b9f9d",
     "semantic_hash": ""
   },
   "internal/controllers/workout_history_controller.go": {
-    "mtime": 1784912233.1365085,
-    "ast_hash": "e2f16c57f37aa27edf02a8b3798614fd",
+    "mtime": 1786740318.8967223,
+    "ast_hash": "a27afc23b5b43727f1e1ac8009f21718",
     "semantic_hash": ""
   },
   "internal/middleware/admin.go": {
@@ -275,8 +275,8 @@
     "semantic_hash": ""
   },
   "internal/models/ai_request_log.go": {
-    "mtime": 1786357860.8161516,
-    "ast_hash": "6010553981f813684d64d26a4479d070",
+    "mtime": 1786796376.2316594,
+    "ast_hash": "6ad6398c95094bca3b7648aec107c49f",
     "semantic_hash": ""
   },
   "internal/models/check_in.go": {
@@ -315,8 +315,8 @@
     "semantic_hash": ""
   },
   "internal/models/food.go": {
-    "mtime": 1784912233.1405203,
-    "ast_hash": "ec1aa4c113c8c41f60bc19222886f8e3",
+    "mtime": 1786576659.4601824,
+    "ast_hash": "850a4e51f2b6bad0c0474d9f7aa3edf0",
     "semantic_hash": ""
   },
   "internal/models/funnel_lead.go": {
@@ -325,13 +325,13 @@
     "semantic_hash": ""
   },
   "internal/models/mobile_device.go": {
-    "mtime": 1784912233.1415215,
-    "ast_hash": "eb780567efcbd495a7600dc316c7f9d6",
+    "mtime": 1786369261.0538845,
+    "ast_hash": "50a4da9ebee595dbfa8675cbbb56b403",
     "semantic_hash": ""
   },
   "internal/models/notification.go": {
-    "mtime": 1784912233.1415215,
-    "ast_hash": "a7730958537449d6481ec8aecf64a06e",
+    "mtime": 1786740155.577934,
+    "ast_hash": "a7fb5c71a9753633fbc17c86304cce98",
     "semantic_hash": ""
   },
   "internal/models/nutrition_item.go": {
@@ -340,8 +340,8 @@
     "semantic_hash": ""
   },
   "internal/models/nutrition_program.go": {
-    "mtime": 1786351807.3370688,
-    "ast_hash": "f9366c3725380c4d5b6c8d8322977bc0",
+    "mtime": 1786709606.341024,
+    "ast_hash": "6944248705ff6e9d3c4a3e7b3de7c28c",
     "semantic_hash": ""
   },
   "internal/models/nutrition_template.go": {
@@ -375,8 +375,8 @@
     "semantic_hash": ""
   },
   "internal/models/registry.go": {
-    "mtime": 1786357467.6568284,
-    "ast_hash": "9b2615ce14469fb9b77ba43bc67f650b",
+    "mtime": 1786738599.7460215,
+    "ast_hash": "22b0d7c23885a9e5cc1607c19b1f6413",
     "semantic_hash": ""
   },
   "internal/models/roles.go": {
@@ -410,13 +410,13 @@
     "semantic_hash": ""
   },
   "internal/models/user.go": {
-    "mtime": 1784912233.146535,
-    "ast_hash": "3e7a4e6ce44a8985dc8145cb998d04e8",
+    "mtime": 1786369377.6330168,
+    "ast_hash": "528c9301775b236c043f3075a3de3951",
     "semantic_hash": ""
   },
   "internal/models/user_photo.go": {
-    "mtime": 1784912233.146535,
-    "ast_hash": "170c8b03c2ec772bd159b4e18053ddfa",
+    "mtime": 1786361689.735912,
+    "ast_hash": "b13ab0057a67a99a97e6cac9d1b285a2",
     "semantic_hash": ""
   },
   "internal/models/user_profile.go": {
@@ -425,18 +425,18 @@
     "semantic_hash": ""
   },
   "internal/models/workout_program.go": {
-    "mtime": 1784912233.146535,
-    "ast_hash": "b0ae033aa04a78e18f378cdb256a6840",
+    "mtime": 1786709606.342027,
+    "ast_hash": "ed3210a5c514e297c7a652e2afafca17",
     "semantic_hash": ""
   },
   "internal/models/workout_session.go": {
-    "mtime": 1784912233.147537,
-    "ast_hash": "2a33a0d6e99d36d4b1dab8b64fab8133",
+    "mtime": 1786737759.3859768,
+    "ast_hash": "b8bb63776cf8cf05ec3d5d71b1b8e8f5",
     "semantic_hash": ""
   },
   "internal/models/workout_set_log.go": {
-    "mtime": 1784912233.147537,
-    "ast_hash": "4318cf35f0347e41364909060f44c5c0",
+    "mtime": 1786361052.0148146,
+    "ast_hash": "c316853b79973778b1242ea1eb8c1252",
     "semantic_hash": ""
   },
   "internal/models/workout_template.go": {
@@ -455,8 +455,8 @@
     "semantic_hash": ""
   },
   "internal/repository/ai_request_log_repository.go": {
-    "mtime": 1786357595.7531326,
-    "ast_hash": "a0f442db5e01891fdefe10c6fd177197",
+    "mtime": 1786796450.6442912,
+    "ast_hash": "60676c3b23e5c52656cf2d146f7cf712",
     "semantic_hash": ""
   },
   "internal/repository/coach_achievement_repository.go": {
@@ -485,8 +485,8 @@
     "semantic_hash": ""
   },
   "internal/repository/food_repository.go": {
-    "mtime": 1784912233.15255,
-    "ast_hash": "0e674fe611dec70177535629f9eaff69",
+    "mtime": 1786564515.1546698,
+    "ast_hash": "5adfd4e4a57a119526e95e259e7f15a1",
     "semantic_hash": ""
   },
   "internal/repository/funnel_lead_repository.go": {
@@ -495,13 +495,13 @@
     "semantic_hash": ""
   },
   "internal/repository/mobile_device_repository.go": {
-    "mtime": 1784912233.153553,
-    "ast_hash": "dc5aa167b58b249f798a44fd27ca3787",
+    "mtime": 1786369327.162989,
+    "ast_hash": "c800e93df8b0832637c23e5f58a4bd76",
     "semantic_hash": ""
   },
   "internal/repository/notification_repository.go": {
-    "mtime": 1784912233.153553,
-    "ast_hash": "c2236cdff029d7b63bbb90697b420dca",
+    "mtime": 1786739060.9891853,
+    "ast_hash": "8c84868147c5606c38bbfb1fdefea9dc",
     "semantic_hash": ""
   },
   "internal/repository/order_repository.go": {
@@ -515,8 +515,8 @@
     "semantic_hash": ""
   },
   "internal/repository/program_repository.go": {
-    "mtime": 1784912233.154556,
-    "ast_hash": "014e6b57cd34058b83966718504cebcb",
+    "mtime": 1786735743.1653707,
+    "ast_hash": "a35eacce75f0a6c1ef555a2aeb876dca",
     "semantic_hash": ""
   },
   "internal/repository/refresh_token_repository.go": {
@@ -535,8 +535,8 @@
     "semantic_hash": ""
   },
   "internal/repository/subscription_repository.go": {
-    "mtime": 1784912233.1555576,
-    "ast_hash": "98b7823f17934818488a1b25300976fd",
+    "mtime": 1786361429.9280229,
+    "ast_hash": "5d0263855c691735a2d270940e738f7b",
     "semantic_hash": ""
   },
   "internal/repository/template_repository.go": {
@@ -560,38 +560,38 @@
     "semantic_hash": ""
   },
   "internal/seed/ali_funnel.go": {
-    "mtime": 1785347904.9741454,
-    "ast_hash": "d4e4c3b49bb487cf31498011897bd49a",
+    "mtime": 1786564792.0291712,
+    "ast_hash": "c918299bfd4aa0d174389cf6ad465836",
     "semantic_hash": ""
   },
   "internal/seed/catalogs.go": {
-    "mtime": 1786352406.7870069,
-    "ast_hash": "a2b6b5f67e889724b51a210d5d748724",
+    "mtime": 1786559385.9775257,
+    "ast_hash": "e78a277270d5835b973bb75e08c52257",
     "semantic_hash": ""
   },
   "internal/seed/datapath.go": {
-    "mtime": 1784912233.157563,
-    "ast_hash": "688a3267470d6fabbcbe0c88b54b2ace",
+    "mtime": 1786576692.8755004,
+    "ast_hash": "10e35e715d223862c8f2c419ffd70777",
     "semantic_hash": ""
   },
   "internal/seed/demo.go": {
-    "mtime": 1786351807.3450675,
-    "ast_hash": "c5065030b980ffdf974229d0baf61635",
+    "mtime": 1786564792.0387058,
+    "ast_hash": "0a67ba4f4ddebf3a8b7ed55104e6f3c0",
     "semantic_hash": ""
   },
   "internal/seed/embed.go": {
-    "mtime": 1784912233.1585658,
-    "ast_hash": "b3e66e28776fee065b6c26cb12796664",
+    "mtime": 1786564792.0398133,
+    "ast_hash": "2fd8633683636bd210c6027329d48cba",
     "semantic_hash": ""
   },
   "internal/seed/exercise_media_fill.go": {
-    "mtime": 1786352406.7870069,
-    "ast_hash": "8a8fa8e31be94efc2845a3dd506e0733",
+    "mtime": 1786564792.0408142,
+    "ast_hash": "55652c2d58525cbe81a1f787894d85ca",
     "semantic_hash": ""
   },
   "internal/seed/exercises.go": {
-    "mtime": 1784912233.1585658,
-    "ast_hash": "7b6d4eeddda29f254b4fce5bfc8e578c",
+    "mtime": 1786564792.0408142,
+    "ast_hash": "fd1a99e0678857c46c56694e1ebf51b3",
     "semantic_hash": ""
   },
   "internal/seed/fixtures/check_ins.json": {
@@ -675,98 +675,98 @@
     "semantic_hash": ""
   },
   "internal/seed/foods.go": {
-    "mtime": 1784912233.162577,
-    "ast_hash": "e80208cd9b55713a66dcbcc41c2fa341",
+    "mtime": 1786564792.0418172,
+    "ast_hash": "0fffd3fbf452455c820d14e93c7fe77e",
     "semantic_hash": ""
   },
   "internal/seed/guard.go": {
-    "mtime": 1784912233.1638472,
-    "ast_hash": "558d639546e621a99a6f92c28893a401",
+    "mtime": 1786564792.0428188,
+    "ast_hash": "0f9472ab0cd6dec79f72dbf324499fd3",
     "semantic_hash": ""
   },
   "internal/seed/guard_test.go": {
-    "mtime": 1784912233.1638472,
-    "ast_hash": "f54a98f0645109672834c3253120eb80",
+    "mtime": 1786564792.0435336,
+    "ast_hash": "f0e48ac16ec12e19f81927962eca41ce",
     "semantic_hash": ""
   },
   "internal/seed/registry.go": {
-    "mtime": 1784912233.1645832,
-    "ast_hash": "7840d618871d1285c426f4a9c0034252",
+    "mtime": 1786564792.0437834,
+    "ast_hash": "4fe9dbefa3fe14203785ba46e6a72f0f",
     "semantic_hash": ""
   },
   "internal/seed/seed.go": {
-    "mtime": 1784912233.1645832,
-    "ast_hash": "b8c0fb3bc3261f70479b8ca80a12701e",
+    "mtime": 1786564792.044287,
+    "ast_hash": "e8c5c68374674b536377ec3e262bacca",
     "semantic_hash": ""
   },
   "internal/seed/site_contact.go": {
-    "mtime": 1784912233.1655848,
-    "ast_hash": "72a940c78cb1a50828d1829ccc596af0",
+    "mtime": 1786564792.0452888,
+    "ast_hash": "b94a0d45e3ccc5b6a9782571c757e345",
     "semantic_hash": ""
   },
   "internal/seed/templates.go": {
-    "mtime": 1784912233.1655848,
-    "ast_hash": "381527c15aaf16b293f631739cd6bca9",
+    "mtime": 1786564792.0452888,
+    "ast_hash": "787c346a05d56fe9e911996439c416b9",
     "semantic_hash": ""
   },
   "internal/seed/validate.go": {
-    "mtime": 1784912233.1655848,
-    "ast_hash": "48db2350a74b8129d88e8534087b6124",
+    "mtime": 1786564792.0462894,
+    "ast_hash": "f6e573477528214e4d969f69bc3c0bb8",
     "semantic_hash": ""
   },
   "internal/service/admin_coach_service.go": {
-    "mtime": 1784912233.166587,
-    "ast_hash": "04537d29f6de2c5bf2a7d6ab54984974",
+    "mtime": 1786564791.9636633,
+    "ast_hash": "d4185699b5f568a04c7b6bfe8c6bb750",
     "semantic_hash": ""
   },
   "internal/service/admin_dashboard_service.go": {
-    "mtime": 1784912233.166587,
-    "ast_hash": "49a29467bf67d7e08dfa8754303526de",
+    "mtime": 1786564791.964183,
+    "ast_hash": "ce2e0c4948fa4711437c92f2b19a2569",
     "semantic_hash": ""
   },
   "internal/service/admin_exercise_service.go": {
-    "mtime": 1786352406.78801,
-    "ast_hash": "9c38fe5f71b224f9498d0ee7cc8dee1b",
+    "mtime": 1786564791.964699,
+    "ast_hash": "e2e50b9ec430e86911f75836ae01ea6c",
     "semantic_hash": ""
   },
   "internal/service/admin_plan_service.go": {
-    "mtime": 1784912233.1675894,
-    "ast_hash": "2c0398666c14fe5130a3491107b73b20",
+    "mtime": 1786564791.9652324,
+    "ast_hash": "cf873012e9b09e1288ad820accb3fa67",
     "semantic_hash": ""
   },
   "internal/service/admin_program_service.go": {
-    "mtime": 1786352406.78801,
-    "ast_hash": "b8b1469ea67b0bfe958d52f57aeb1095",
+    "mtime": 1786564791.9657488,
+    "ast_hash": "d249f764fab938375b36f4ae63498960",
     "semantic_hash": ""
   },
   "internal/service/admin_student_service.go": {
-    "mtime": 1784912233.1675894,
-    "ast_hash": "51f2746c2b502e9fe3d81347cbfc067c",
+    "mtime": 1786564791.9662826,
+    "ast_hash": "86fc99dca4ff65c4e37311ca40b66eef",
     "semantic_hash": ""
   },
   "internal/service/admin_template_service.go": {
-    "mtime": 1786352406.78801,
-    "ast_hash": "f20588afc2bffe55cb6593352ab790be",
+    "mtime": 1786564791.9667962,
+    "ast_hash": "bdd2973723cf166678d1e0ae0c6496ae",
     "semantic_hash": ""
   },
   "internal/service/admin_user_service.go": {
-    "mtime": 1784912233.1685984,
-    "ast_hash": "0769396fbecfc28e74c40ddc3fad740e",
+    "mtime": 1786738891.7263439,
+    "ast_hash": "3e3a75e32698894d282a34f0085d7aed",
     "semantic_hash": ""
   },
   "internal/service/ai/generator.go": {
-    "mtime": 1786357891.7173116,
-    "ast_hash": "04f092f25db071571fc98c834f508447",
+    "mtime": 1786797966.2796066,
+    "ast_hash": "a31cbd9e73440bbc3f2b70d4ec29d4f3",
     "semantic_hash": ""
   },
   "internal/service/ai/persona.go": {
-    "mtime": 1786357484.0540738,
-    "ast_hash": "f955e962f485f88c9ea3cf9b76eedc2e",
+    "mtime": 1786796365.682389,
+    "ast_hash": "bbf0283525ba73c1fb0986e03aa55d87",
     "semantic_hash": ""
   },
   "internal/service/ai/schemas.go": {
-    "mtime": 1786357495.5032513,
-    "ast_hash": "7d59b5877275f21446e39335ee431afd",
+    "mtime": 1786885065.9318202,
+    "ast_hash": "9bd3eb2c9a0be6280b89eb8109a1606e",
     "semantic_hash": ""
   },
   "internal/service/ai/schemas_test.go": {
@@ -775,8 +775,8 @@
     "semantic_hash": ""
   },
   "internal/service/ai/validate.go": {
-    "mtime": 1786357495.608145,
-    "ast_hash": "3538a1253f34af5b3c9c5c0dace24832",
+    "mtime": 1786797979.0447767,
+    "ast_hash": "af5117451568d762e376a1aaf2681669",
     "semantic_hash": ""
   },
   "internal/service/ai/validate_test.go": {
@@ -785,168 +785,168 @@
     "semantic_hash": ""
   },
   "internal/service/ai_chat_service.go": {
-    "mtime": 1786357639.969481,
-    "ast_hash": "42c993803ec3f325d17d87946eb1d6d5",
+    "mtime": 1786564791.967829,
+    "ast_hash": "4a61234484a183943f80521039a92ff1",
     "semantic_hash": ""
   },
   "internal/service/ai_generate_service.go": {
-    "mtime": 1786357861.934806,
-    "ast_hash": "978b632f3f98a45908dd3b11407e704e",
+    "mtime": 1786885168.3306785,
+    "ast_hash": "67e638aaf506c2aac8fef102397fa0d6",
     "semantic_hash": ""
   },
   "internal/service/auth_service.go": {
-    "mtime": 1785347904.9585197,
-    "ast_hash": "4028d1c67c541a6a57bf298bb309b399",
+    "mtime": 1786564791.9694648,
+    "ast_hash": "3c8490cea5c3356c699f0f977bb9461d",
     "semantic_hash": ""
   },
   "internal/service/authorization.go": {
-    "mtime": 1784912233.1695957,
-    "ast_hash": "980bbb6888b5b38c6480241d568b33d9",
+    "mtime": 1786564791.9700794,
+    "ast_hash": "17b460ba64d004f6f2c7d25b48d9f002",
     "semantic_hash": ""
   },
   "internal/service/checkout_service.go": {
-    "mtime": 1784912233.1695957,
-    "ast_hash": "db4f075336ac3de8e03c64efa5f56b4b",
+    "mtime": 1786564791.9705956,
+    "ast_hash": "ae482170a86e160ac0d3ff12540704b1",
     "semantic_hash": ""
   },
   "internal/service/coach_achievement_service.go": {
-    "mtime": 1784912233.1705997,
-    "ast_hash": "d81cba3b6960e4ef53ed4680005b9ec3",
+    "mtime": 1786564791.9710991,
+    "ast_hash": "d29f33050b63bbfb4f52358350c8faa0",
     "semantic_hash": ""
   },
   "internal/service/coach_dashboard_service.go": {
-    "mtime": 1784912233.1705997,
-    "ast_hash": "a1cd174f1479c69a8354674d955d0bb3",
+    "mtime": 1786564791.9720998,
+    "ast_hash": "7b5f3a8f40ecdbea7b226121bd77ea0d",
     "semantic_hash": ""
   },
   "internal/service/coach_food_service.go": {
-    "mtime": 1784912233.1705997,
-    "ast_hash": "2b8f4346996135c351392699c4f02457",
+    "mtime": 1786576671.2717226,
+    "ast_hash": "97ce7482f8c38baaba4df728b6253855",
     "semantic_hash": ""
   },
   "internal/service/coach_plan_service.go": {
-    "mtime": 1784912233.1705997,
-    "ast_hash": "edbd3405d1fa80beea8038218a3156a0",
+    "mtime": 1786564791.973394,
+    "ast_hash": "c0c4cdc9a1a0ccabc9f26e847ffbf365",
     "semantic_hash": ""
   },
   "internal/service/coach_profile_service.go": {
-    "mtime": 1784912233.1716,
-    "ast_hash": "cd66938b6ee0ec1415c5ebb38eace5e9",
+    "mtime": 1786564791.9738996,
+    "ast_hash": "d72d8f8cdd896defafc4f82f0d8745d4",
     "semantic_hash": ""
   },
   "internal/service/coach_program_service.go": {
-    "mtime": 1786352406.789042,
-    "ast_hash": "260765b67c6adc5abb3b2750c527913d",
+    "mtime": 1786735961.7220693,
+    "ast_hash": "3605d6227b648d6b770e3a378f488175",
     "semantic_hash": ""
   },
   "internal/service/coach_student_service.go": {
-    "mtime": 1784912233.1716,
-    "ast_hash": "ada18bcc901b5aee9590a9f7ec3360be",
+    "mtime": 1786564791.9759035,
+    "ast_hash": "eb568934924747e89975772d7fda7704",
     "semantic_hash": ""
   },
   "internal/service/daily_food_log_service.go": {
-    "mtime": 1785347904.9585197,
-    "ast_hash": "3ac324348bdf5c71d402a401f1482a79",
+    "mtime": 1786564791.9759035,
+    "ast_hash": "322cac7ade4b3b6e384dec2065b1af61",
     "semantic_hash": ""
   },
   "internal/service/exercise_enricher.go": {
-    "mtime": 1786352406.789042,
-    "ast_hash": "1ceda4f1d63fb123643050bedb6767be",
+    "mtime": 1786564791.9777522,
+    "ast_hash": "c8ec3d6a77ecb966e99aef5b3371ded3",
     "semantic_hash": ""
   },
   "internal/service/feedback_service.go": {
-    "mtime": 1784912233.1726024,
-    "ast_hash": "510346dca429f28ad2436d69189dcf68",
+    "mtime": 1786564791.9898667,
+    "ast_hash": "a7015735eb6cc31dd963c679dadf470e",
     "semantic_hash": ""
   },
   "internal/service/food_enricher.go": {
-    "mtime": 1786352406.789042,
-    "ast_hash": "979a3a228ff281e0716f98f1ffb350ef",
+    "mtime": 1786557977.6489997,
+    "ast_hash": "bd3b9010ee2682e40337eb44a051d6a9",
     "semantic_hash": ""
   },
   "internal/service/funnel_service.go": {
-    "mtime": 1784912233.1736052,
-    "ast_hash": "51c2d6f61ebd23a64e55222795fce07e",
+    "mtime": 1786564791.9903855,
+    "ast_hash": "a5abb164e0876e97239974ba83295096",
     "semantic_hash": ""
   },
   "internal/service/me_dashboard_service.go": {
-    "mtime": 1784912233.1736052,
-    "ast_hash": "43ac960a0715f4d3787a56d90dbc217e",
+    "mtime": 1786564791.9932804,
+    "ast_hash": "e4a61166d5de5b4799219cf722d8c532",
     "semantic_hash": ""
   },
   "internal/service/me_service.go": {
-    "mtime": 1786352406.7900147,
-    "ast_hash": "1e36960109b3aa790d2ebc4a366043a5",
+    "mtime": 1786795175.7850492,
+    "ast_hash": "154e018be6257a326ba943cbd82c65e3",
     "semantic_hash": ""
   },
   "internal/service/meal_slots.go": {
-    "mtime": 1786352406.7900147,
-    "ast_hash": "b8598bf0d2d0269f74f21ed69c71ef00",
+    "mtime": 1786564791.9947853,
+    "ast_hash": "21b81e5ce39d9f9f6b8ab9315ce863df",
     "semantic_hash": ""
   },
   "internal/service/meal_slots_test.go": {
-    "mtime": 1786352406.7900147,
-    "ast_hash": "2b90113fc99c427c2b91a7eaf85bdab0",
+    "mtime": 1786564791.995566,
+    "ast_hash": "0fd82a47da4854c2bee3f692eadd7f14",
     "semantic_hash": ""
   },
   "internal/service/mobile_app_service.go": {
-    "mtime": 1784912233.1746085,
-    "ast_hash": "331ca45a4d0bbdc508297f63577f95b4",
+    "mtime": 1786564791.9965818,
+    "ast_hash": "479c628c40eba6db944b267374667419",
     "semantic_hash": ""
   },
   "internal/service/notification_service.go": {
-    "mtime": 1784912233.1746085,
-    "ast_hash": "c9c915ad63fb89082340321fdcb0e1b8",
+    "mtime": 1786739092.415845,
+    "ast_hash": "848a7a15784d08cbb6c8ee372f2937b1",
     "semantic_hash": ""
   },
   "internal/service/payment_service.go": {
-    "mtime": 1784912233.1756113,
-    "ast_hash": "ed0df04c272ba85dd86010b6a1663cfb",
+    "mtime": 1786564791.9979227,
+    "ast_hash": "0231df46a970fd65df2563bf88c3fe77",
     "semantic_hash": ""
   },
   "internal/service/program_mapper.go": {
-    "mtime": 1786352406.7910173,
-    "ast_hash": "530707471acf08f634e77c0421429868",
+    "mtime": 1786564791.9984267,
+    "ast_hash": "8e61622c4a66a950f908d00b3ac42ca9",
     "semantic_hash": ""
   },
   "internal/service/site_settings_service.go": {
-    "mtime": 1784912233.1756113,
-    "ast_hash": "8874908dc524234a11870391ee388a54",
+    "mtime": 1786564791.9994273,
+    "ast_hash": "0bae66f78cd54e5a2300b722a9e32082",
     "semantic_hash": ""
   },
   "internal/service/sms_service.go": {
-    "mtime": 1784912233.1766136,
-    "ast_hash": "c125aae6dd8b4fbff90d03b0088d32de",
+    "mtime": 1786564792.0004299,
+    "ast_hash": "5bf864a95c577240046ef450515297c4",
     "semantic_hash": ""
   },
   "internal/service/student_service.go": {
-    "mtime": 1784912233.1766136,
-    "ast_hash": "9ef4733f3944b85495ea2a8212032572",
+    "mtime": 1786564792.0004299,
+    "ast_hash": "3c6588f24b0b1179d00b2e05e6794cc0",
     "semantic_hash": ""
   },
   "internal/service/template_mapper.go": {
-    "mtime": 1786352406.7910173,
-    "ast_hash": "13a7ef1d783a9f54052d9e5184abb8e5",
+    "mtime": 1786564792.001434,
+    "ast_hash": "c43d9c0a0062b98907da119294e3fa99",
     "semantic_hash": ""
   },
   "internal/service/ticket_service.go": {
-    "mtime": 1784912233.1776156,
-    "ast_hash": "ae47ec3870919797ba22082ff8c3abcf",
+    "mtime": 1786564792.0019596,
+    "ast_hash": "6995e3213e6d31f2c8929152f91e722b",
     "semantic_hash": ""
   },
   "internal/service/tracking_service.go": {
-    "mtime": 1784912233.1776156,
-    "ast_hash": "5df3e8eebfbb0d4fdfc31377299c7d60",
+    "mtime": 1786738762.035326,
+    "ast_hash": "641fb6816b80c94f47521f67d2e6f3b3",
     "semantic_hash": ""
   },
   "internal/service/workout_history_service.go": {
-    "mtime": 1784912233.1776156,
-    "ast_hash": "7ff1372579ad9d9dd4fcf92e86c795d0",
+    "mtime": 1786740262.654317,
+    "ast_hash": "6384ed165398a81724cbe0c5fc0b81ed",
     "semantic_hash": ""
   },
   "internal/service/zarinpal_service.go": {
-    "mtime": 1784912233.1786187,
-    "ast_hash": "d7dc16789f542a2dd83bdbab366baf97",
+    "mtime": 1786564792.0043256,
+    "ast_hash": "b55e5785a05eef8f99daad90badb1037",
     "semantic_hash": ""
   },
   "run.sh": {
@@ -1007,6 +1007,301 @@
   "scripts/seed_peyman_yazdani.b64.txt": {
     "mtime": 1786352406.7910173,
     "ast_hash": "2b83a265082b2e47f0cff7c0f7b693c5",
+    "semantic_hash": ""
+  },
+  "cmd/enrichfoods/enrich.go": {
+    "mtime": 1786559965.7096503,
+    "ast_hash": "b12fdb093c7952bd2e648f45250c1ef6",
+    "semantic_hash": ""
+  },
+  "cmd/enrichfoods/main.go": {
+    "mtime": 1786559975.739625,
+    "ast_hash": "d7c00fb450779e324eff499db8abf457",
+    "semantic_hash": ""
+  },
+  "cmd/enrichfoods/usda.go": {
+    "mtime": 1786561618.8710246,
+    "ast_hash": "9b8865d5913bff210e3e0e2b3c5872f8",
+    "semantic_hash": ""
+  },
+  "internal/controllers/achievement_controller.go": {
+    "mtime": 1786362307.3051517,
+    "ast_hash": "4d5f63c2788ea8d713659e1f99abbb5d",
+    "semantic_hash": ""
+  },
+  "internal/controllers/admin_recipe_controller.go": {
+    "mtime": 1786360661.4043915,
+    "ast_hash": "3c9f94b5f6dcffe741b3e2d9ba337bb3",
+    "semantic_hash": ""
+  },
+  "internal/controllers/checkin_controller.go": {
+    "mtime": 1786738658.64011,
+    "ast_hash": "033adea13727a0e648f557949ed06931",
+    "semantic_hash": ""
+  },
+  "internal/controllers/coach_session_controller.go": {
+    "mtime": 1786369929.5098536,
+    "ast_hash": "4fc264a8ef8cbfe4f05e8a2f4cda4925",
+    "semantic_hash": ""
+  },
+  "internal/controllers/community_post_controller.go": {
+    "mtime": 1786537602.1149442,
+    "ast_hash": "9671793a2528ef9576af62ea1d706f05",
+    "semantic_hash": ""
+  },
+  "internal/controllers/event_controller.go": {
+    "mtime": 1786369071.601703,
+    "ast_hash": "90150e2343da420f9da85e87662930c7",
+    "semantic_hash": ""
+  },
+  "internal/controllers/guarantee_controller.go": {
+    "mtime": 1786532644.9135096,
+    "ast_hash": "8630cda85c57dfac33888027ac31682c",
+    "semantic_hash": ""
+  },
+  "internal/controllers/motivational_quote_controller.go": {
+    "mtime": 1786369649.5484755,
+    "ast_hash": "55ef0900fae8b4fa21c2c45024462918",
+    "semantic_hash": ""
+  },
+  "internal/controllers/pose_bank_controller.go": {
+    "mtime": 1786361949.303723,
+    "ast_hash": "ea570fd07b7662090b9f3fdcec21b050",
+    "semantic_hash": ""
+  },
+  "internal/controllers/progress_report_controller.go": {
+    "mtime": 1786754108.4611573,
+    "ast_hash": "3af496af9d778bd75637b6cb05f2cb6e",
+    "semantic_hash": ""
+  },
+  "internal/controllers/recipe_controller.go": {
+    "mtime": 1786360651.2234552,
+    "ast_hash": "c3dba1de2b1a2ead5a6d8af480c3eae8",
+    "semantic_hash": ""
+  },
+  "internal/controllers/streak_controller.go": {
+    "mtime": 1786537843.4668891,
+    "ast_hash": "a5104cac1ab9599dc3e4496240db846b",
+    "semantic_hash": ""
+  },
+  "internal/models/achievement_rule.go": {
+    "mtime": 1786362099.7458148,
+    "ast_hash": "a8a26d7cae7447c90d8ee8ba04de29f7",
+    "semantic_hash": ""
+  },
+  "internal/models/coach_session.go": {
+    "mtime": 1786369837.7776778,
+    "ast_hash": "6543c37e73364a4207fc7ab01b810b3f",
+    "semantic_hash": ""
+  },
+  "internal/models/community_post.go": {
+    "mtime": 1786724194.7448635,
+    "ast_hash": "38f156fb36e0c2ea9aa83c1e5c2619ff",
+    "semantic_hash": ""
+  },
+  "internal/models/daily_check_in.go": {
+    "mtime": 1786738578.04098,
+    "ast_hash": "0e3cbe1b5be5a813818ee0753e3b0a69",
+    "semantic_hash": ""
+  },
+  "internal/models/event.go": {
+    "mtime": 1786362981.1933806,
+    "ast_hash": "667d52f8eaee825537e5138f60e81778",
+    "semantic_hash": ""
+  },
+  "internal/models/guarantee_case.go": {
+    "mtime": 1786370185.4586873,
+    "ast_hash": "5a9cb585e05a8baa71d85b9da408376e",
+    "semantic_hash": ""
+  },
+  "internal/models/motivational_quote.go": {
+    "mtime": 1786369386.0897644,
+    "ast_hash": "e43efe6919b01810a0eec7a406310c95",
+    "semantic_hash": ""
+  },
+  "internal/models/personal_record.go": {
+    "mtime": 1786711156.3440928,
+    "ast_hash": "c22002e7a37ca594b57ea90de5515079",
+    "semantic_hash": ""
+  },
+  "internal/models/pose_bank.go": {
+    "mtime": 1786361696.4573824,
+    "ast_hash": "8420041e8313a7c4d285c9959009dbc3",
+    "semantic_hash": ""
+  },
+  "internal/models/program_status.go": {
+    "mtime": 1786708874.8030028,
+    "ast_hash": "28fb95f07aeea28da2abb46e4b9c9804",
+    "semantic_hash": ""
+  },
+  "internal/models/progress_report.go": {
+    "mtime": 1786751167.5117955,
+    "ast_hash": "ac17fb60468f482bffca1e428996b15b",
+    "semantic_hash": ""
+  },
+  "internal/models/recipe.go": {
+    "mtime": 1786360613.1269045,
+    "ast_hash": "042eddc0236c457e264cabdf2696134d",
+    "semantic_hash": ""
+  },
+  "internal/models/user_achievement.go": {
+    "mtime": 1786362113.2908344,
+    "ast_hash": "c8e8996d64c7f990189252217235bcca",
+    "semantic_hash": ""
+  },
+  "internal/models/weekly_check_in.go": {
+    "mtime": 1786738557.3845508,
+    "ast_hash": "44f12ef10f66868a23efff66b65aa184",
+    "semantic_hash": ""
+  },
+  "internal/repository/achievement_repository.go": {
+    "mtime": 1786362158.5829544,
+    "ast_hash": "e022c7f09578adc22d15f8d4a811c644",
+    "semantic_hash": ""
+  },
+  "internal/repository/coach_session_repository.go": {
+    "mtime": 1786369864.7745676,
+    "ast_hash": "53e2656eac0ea966cb0c002fbeedcfcf",
+    "semantic_hash": ""
+  },
+  "internal/repository/community_post_repository.go": {
+    "mtime": 1786533479.8972168,
+    "ast_hash": "bdb3d6f4b4169dbdf8bda1c132f1ecab",
+    "semantic_hash": ""
+  },
+  "internal/repository/event_repository.go": {
+    "mtime": 1786363301.1052291,
+    "ast_hash": "374b7768a551f006103c1d67f3694fae",
+    "semantic_hash": ""
+  },
+  "internal/repository/guarantee_repository.go": {
+    "mtime": 1786370208.3384047,
+    "ast_hash": "f2ef74bff3fdae38ebd2f936a597c4d9",
+    "semantic_hash": ""
+  },
+  "internal/repository/motivational_quote_repository.go": {
+    "mtime": 1786369618.2721195,
+    "ast_hash": "beab90fe55d496a1e280e1ace8420401",
+    "semantic_hash": ""
+  },
+  "internal/repository/pose_bank_repository.go": {
+    "mtime": 1786361924.8519878,
+    "ast_hash": "1f50273d53a106bb597c2ab9ae0e61bc",
+    "semantic_hash": ""
+  },
+  "internal/repository/progress_report_repository.go": {
+    "mtime": 1786361410.8869488,
+    "ast_hash": "a39dc9281288606f576ba1ec06a0bf77",
+    "semantic_hash": ""
+  },
+  "internal/repository/recipe_repository.go": {
+    "mtime": 1786360629.3322823,
+    "ast_hash": "66ab14647590eb7232ae7709e24eae34",
+    "semantic_hash": ""
+  },
+  "internal/seed/food_enrichment.go": {
+    "mtime": 1786559369.3792605,
+    "ast_hash": "b9906387b67200bf2672fc99cf58fc94",
+    "semantic_hash": ""
+  },
+  "internal/seed/persian_food_translations.go": {
+    "mtime": 1786559984.3548272,
+    "ast_hash": "7a1114ee79ed727e7bf101a84fed431c",
+    "semantic_hash": ""
+  },
+  "internal/service/achievement_service.go": {
+    "mtime": 1786564791.9625852,
+    "ast_hash": "25a42b725a9f4944311259c0d7a42c27",
+    "semantic_hash": ""
+  },
+  "internal/service/ai/shenava.go": {
+    "mtime": 1786885134.7837658,
+    "ast_hash": "0ba7b6f9f400a90a68d8511a299d4eff",
+    "semantic_hash": ""
+  },
+  "internal/service/ai/transcribe.go": {
+    "mtime": 1786885134.7953339,
+    "ast_hash": "c47ca17609d03568be5cc3493da26527",
+    "semantic_hash": ""
+  },
+  "internal/service/ai/vision.go": {
+    "mtime": 1786361726.9406934,
+    "ast_hash": "8023e233cbdd31220d987f8ed59fe0f1",
+    "semantic_hash": ""
+  },
+  "internal/service/checkin_reminder_service.go": {
+    "mtime": 1786739205.7286384,
+    "ast_hash": "23f2dbbffb5ce8da65c1556871096e1c",
+    "semantic_hash": ""
+  },
+  "internal/service/checkin_service.go": {
+    "mtime": 1786738643.5314374,
+    "ast_hash": "e6e10aebf82fafb18f38b70fadeaa497",
+    "semantic_hash": ""
+  },
+  "internal/service/coach_session_service.go": {
+    "mtime": 1786369898.1671064,
+    "ast_hash": "14d715adf848078e2f7947a3da11903a",
+    "semantic_hash": ""
+  },
+  "internal/service/community_post_service.go": {
+    "mtime": 1786724216.4830463,
+    "ast_hash": "0dde88f5b27fdd98fae5b873f122b208",
+    "semantic_hash": ""
+  },
+  "internal/service/event_service.go": {
+    "mtime": 1786564791.9772184,
+    "ast_hash": "465ff8a6f1bb6632ff4e7cfa15b8b9ff",
+    "semantic_hash": ""
+  },
+  "internal/service/guarantee_service.go": {
+    "mtime": 1786564791.9915068,
+    "ast_hash": "420aa051da147b09cd534030904b87b7",
+    "semantic_hash": ""
+  },
+  "internal/service/motivational_quote_service.go": {
+    "mtime": 1786369628.6705477,
+    "ast_hash": "c03ba5dbdafcb09e943fccf8d169095b",
+    "semantic_hash": ""
+  },
+  "internal/service/nutrition_calc.go": {
+    "mtime": 1786360676.567596,
+    "ast_hash": "7f166ef184192474b8d515f7342c9af1",
+    "semantic_hash": ""
+  },
+  "internal/service/nutrition_calc_test.go": {
+    "mtime": 1786360683.3345423,
+    "ast_hash": "b42d76c60015c1523afd79d275f541c3",
+    "semantic_hash": ""
+  },
+  "internal/service/pose_bank_service.go": {
+    "mtime": 1786361934.4833248,
+    "ast_hash": "9a723c67756bf8b38eeecc2e83e31c0f",
+    "semantic_hash": ""
+  },
+  "internal/service/progress_report_service.go": {
+    "mtime": 1786751273.2693276,
+    "ast_hash": "6b7b4c227316d322326394e227b270a7",
+    "semantic_hash": ""
+  },
+  "internal/service/push_notification_service.go": {
+    "mtime": 1786369425.5031095,
+    "ast_hash": "bf74e141fb3af9837639d6040d52db62",
+    "semantic_hash": ""
+  },
+  "internal/service/recipe_service.go": {
+    "mtime": 1786360643.5633335,
+    "ast_hash": "500a95fd55f82a1329ad9218bdd657f1",
+    "semantic_hash": ""
+  },
+  "internal/service/reminder_service.go": {
+    "mtime": 1786564791.9984267,
+    "ast_hash": "4f39b1d7f026b9ef4543202aeb1eb103",
+    "semantic_hash": ""
+  },
+  "internal/service/streak_service.go": {
+    "mtime": 1786537812.3598955,
+    "ast_hash": "1dc974ce47114610898adc9d94a93b36",
     "semantic_hash": ""
   }
 }

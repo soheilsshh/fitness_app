@@ -13,6 +13,20 @@
       "runtimeExecutable": "go",
       "runtimeArgs": ["-C", "backend", "run", "./cmd/app"],
       "port": 8088
+    },
+    {
+      "name": "21day",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "21day", "run", "dev"],
+      "port": 8080,
+      "autoPort": true
+    },
+    {
+      "name": "live",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "LIve", "run", "dev"],
+      "port": 8080,
+      "autoPort": true
     }
   ]
 }

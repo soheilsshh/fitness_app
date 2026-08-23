@@ -8,6 +8,9 @@ type AIRequestLog struct {
 	UserID           uint   `gorm:"index;not null"`
 	RequestType      string `gorm:"size:64;index;not null"` // nutrition_plan, workout_plan, chat, ...
 	Persona          string `gorm:"size:32"`
+	// PromptVersion tags which persona/prompt revision produced this call
+	// (roadmap Phase 5: prompt versioning) — see ai.PromptVersion.
+	PromptVersion    string `gorm:"size:64;index"`
 	InputText        string `gorm:"type:text"`
 	OutputJSON       string `gorm:"type:text"`
 	ModelName        string `gorm:"size:128"`

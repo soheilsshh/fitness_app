@@ -75,7 +75,12 @@ type apiResponse struct {
 	} `json:"error"`
 }
 
-var defaultHTTPClient = &http.Client{Timeout: 45 * time.Second}
+var defaultHTTPClient = &http.Client{Timeout: 90 * time.Second}
+
+// structuredMaxTokens is intentionally high: some Gemini flash models spend a
+// large share of the budget on reasoning tokens, which previously truncated
+// food-log JSON mid-number (see ai_request_logs unmarshal errors).
+const structuredMaxTokens = 8192
 
 // GenerateStructured calls the configured OpenAI-compatible API and returns raw JSON content.
 func GenerateStructured(ctx context.Context, schemaName string, schema map[string]interface{}, systemPrompt, userContext string) (*GenerateResult, error) {
@@ -103,6 +108,19 @@ func GenerateStructured(ctx context.Context, schemaName string, schema map[strin
 	}
 	if err != nil {
 		return nil, err
+	}
+
+	// Gemini/GapGPT sometimes returns truncated JSON (e.g. `"fat_g": 10.`). Retry
+	// once with json_object and an explicit completeness instruction.
+	if !json.Valid(bytes.TrimSpace(raw)) {
+		raw2, usage2, err2 := callWithSchema(
+			ctx, model, schemaName, schema,
+			systemPrompt+"\nخروجی قبلی ناقص یا نامعتبر بود. فقط یک JSON کامل و فشرده مطابق اسکیما برگردان. اعداد را کامل بنویس (نه مثل 10. بدون رقم اعشار).",
+			userContext, false,
+		)
+		if err2 == nil && json.Valid(bytes.TrimSpace(raw2)) {
+			raw, usage = raw2, usage2
+		}
 	}
 
 	res := &GenerateResult{
@@ -133,7 +151,7 @@ func callWithSchema(
 			{Role: "user", Content: userContext},
 		},
 		Temperature: 0.3,
-		MaxTokens:   2500,
+		MaxTokens:   structuredMaxTokens,
 	}
 	if strictSchema {
 		reqBody.ResponseFormat = &responseFormat{
@@ -234,6 +252,21 @@ func GenerateNutritionPlan(ctx context.Context, userContext string) (*NutritionP
 	return &plan, res, nil
 }
 
+// GenerateWeeklyNutritionPlan produces a 7-day nutrition plan struct (roadmap
+// Phase 3: برنامه هفتگی; caller should Validate).
+func GenerateWeeklyNutritionPlan(ctx context.Context, userContext string) (*NutritionWeekSchema, *GenerateResult, error) {
+	system := PersonaNutrition.SystemPrompt() + "\nبرای هر یک از ۷ روز هفته، به‌ترتیب شنبه، یکشنبه، دوشنبه، سه‌شنبه، چهارشنبه، پنج‌شنبه، جمعه، وعده‌های غذایی جداگانه بساز. لازم نیست وعده‌های هر روز کاملاً یکسان باشند، ولی هر روز باید در محدوده هدف کالری/ماکرو روزانه بماند و از تنوع غذایی معقول برخوردار باشد. خروجی باید دقیقاً JSON مطابق اسکیما باشد و آرایه days دقیقاً ۷ عضو داشته باشد."
+	res, err := GenerateStructured(ctx, "nutrition_week", NutritionWeekJSONSchema(), system, userContext)
+	if err != nil {
+		return nil, res, err
+	}
+	var plan NutritionWeekSchema
+	if err := json.Unmarshal(res.RawJSON, &plan); err != nil {
+		return nil, res, fmt.Errorf("%w: %v", ErrUnmarshal, err)
+	}
+	return &plan, res, nil
+}
+
 // GenerateWorkoutPlan produces a workout plan struct (caller should Validate).
 func GenerateWorkoutPlan(ctx context.Context, userContext string) (*WorkoutPlanSchema, *GenerateResult, error) {
 	system := PersonaWorkout.SystemPrompt() + "\nخروجی باید دقیقاً JSON مطابق اسکیما باشد. نام روزها و حرکات به فارسی باشند."
@@ -246,6 +279,23 @@ func GenerateWorkoutPlan(ctx context.Context, userContext string) (*WorkoutPlanS
 		return nil, res, fmt.Errorf("%w: %v", ErrUnmarshal, err)
 	}
 	return &plan, res, nil
+}
+
+// GenerateMealReplacement produces a single replacement meal for the "تغییر این
+// وعده" flow — the caller supplies which meal is being replaced, why, and a
+// calorie target to keep the day's total roughly on track; only that one meal
+// is regenerated, not the whole plan (caller should Validate).
+func GenerateMealReplacement(ctx context.Context, userContext string) (*MealSchema, *GenerateResult, error) {
+	system := PersonaNutrition.SystemPrompt() + "\nفقط یک وعده جایگزین (نه کل برنامه) پیشنهاد بده که با دلیل درخواست‌شده کاربر سازگار باشد و تا حد امکان نزدیک به کالری هدف همان وعده بماند. خروجی باید دقیقاً JSON مطابق اسکیما باشد."
+	res, err := GenerateStructured(ctx, "meal_replacement", MealJSONSchema(), system, userContext)
+	if err != nil {
+		return nil, res, err
+	}
+	var meal MealSchema
+	if err := json.Unmarshal(res.RawJSON, &meal); err != nil {
+		return nil, res, fmt.Errorf("%w: %v", ErrUnmarshal, err)
+	}
+	return &meal, res, nil
 }
 
 // GenerateIngredientSuggestion produces an improvised recipe from ingredients the
@@ -266,7 +316,7 @@ func GenerateIngredientSuggestion(ctx context.Context, userContext string) (*Ing
 // GenerateFoodLog turns a transcribed voice note into structured food-log items
 // (roadmap BE-2.4, step 2 of the voice pipeline; caller should Validate).
 func GenerateFoodLog(ctx context.Context, userContext string) (*FoodLogSchema, *GenerateResult, error) {
-	system := PersonaNutrition.SystemPrompt() + "\nمتن کاربر توصیف غذاهایی است که همین الان خورده. آن را به آیتم‌های غذایی با کالری و ماکرو تخمینی تبدیل کن. خروجی باید دقیقاً JSON مطابق اسکیما باشد."
+	system := PersonaNutrition.SystemPrompt() + "\nمتن کاربر توصیف غذاهایی است که همین الان خورده. آن را به آیتم‌های غذایی با کالری و ماکرو تخمینی تبدیل کن. خروجی باید دقیقاً JSON کامل مطابق اسکیما باشد؛ اعداد را کامل و بدون فاصله بنویس و JSON را وسط راه قطع نکن."
 	res, err := GenerateStructured(ctx, "food_log", FoodLogJSONSchema(), system, userContext)
 	if err != nil {
 		return nil, res, err
@@ -310,13 +360,65 @@ func GenerateProgressAnalysis(ctx context.Context, userContext string) (*Progres
 	return &analysis, res, nil
 }
 
+// GenerateWorkoutNoteSummary turns a raw voice transcript from the
+// post-workout survey into a tidy, structured Persian paragraph — cleanup
+// only, it must not invent details the user didn't say.
+func GenerateWorkoutNoteSummary(ctx context.Context, transcript string) (*WorkoutNoteSummarySchema, *GenerateResult, error) {
+	system := PersonaWorkout.SystemPrompt() + "\nمتن زیر پیاده‌سازی خام صدای کاربر بعد از یک جلسه تمرین است. فقط آن را مرتب، خوانا و بدون غلط ساختاری به فارسی بازنویسی کن؛ هیچ جزئیات جدیدی اضافه نکن و چیزی که کاربر نگفته را حدس نزن. خروجی باید دقیقاً JSON مطابق اسکیما باشد."
+	res, err := GenerateStructured(ctx, "workout_note_summary", WorkoutNoteSummaryJSONSchema(), system, transcript)
+	if err != nil {
+		return nil, res, err
+	}
+	var summary WorkoutNoteSummarySchema
+	if err := json.Unmarshal(res.RawJSON, &summary); err != nil {
+		return nil, res, fmt.Errorf("%w: %v", ErrUnmarshal, err)
+	}
+	return &summary, res, nil
+}
+
 func mockStructured(schemaName, model string) *GenerateResult {
 	var raw []byte
 	switch schemaName {
+	case "nutrition_week":
+		dayNames := []string{"شنبه", "یکشنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنج‌شنبه", "جمعه"}
+		week := NutritionWeekSchema{
+			GoalType: GoalMaintain, TotalCalories: 2100, ProteinG: 150, CarbsG: 220, FatG: 70,
+		}
+		for _, name := range dayNames {
+			week.Days = append(week.Days, NutritionWeekDaySchema{
+				DayName: name,
+				Meals: []MealSchema{
+					{Name: "صبحانه", Items: []FoodItem{
+						{FoodName: "تخم‌مرغ آب‌پز", AmountG: 100, ServingLabel: "۲ عدد", Calories: 155, ProteinG: 13, CarbsG: 1.1, FatG: 11},
+						{FoodName: "نان سنگک", AmountG: 80, ServingLabel: "۱ تکه", Calories: 220, ProteinG: 7, CarbsG: 42, FatG: 1.5},
+					}},
+					{Name: "ناهار", Items: []FoodItem{
+						{FoodName: "سینه مرغ گریل", AmountG: 180, ServingLabel: "۱ سینه مرغ", Calories: 300, ProteinG: 55, CarbsG: 0, FatG: 6},
+						{FoodName: "برنج سفید", AmountG: 200, ServingLabel: "۱ لیوان و نیم", Calories: 260, ProteinG: 5, CarbsG: 56, FatG: 0.5},
+					}},
+					{Name: "شام", Items: []FoodItem{
+						{FoodName: "ماهی سفید", AmountG: 150, ServingLabel: "۱ تکه متوسط", Calories: 200, ProteinG: 35, CarbsG: 0, FatG: 5},
+						{FoodName: "سالاد سبزیجات", AmountG: 150, ServingLabel: "۱ بشقاب", Calories: 50, ProteinG: 2, CarbsG: 8, FatG: 1},
+					}},
+				},
+			})
+		}
+		raw, _ = json.Marshal(week)
+	case "meal_replacement":
+		raw = []byte(`{
+  "name": "ناهار",
+  "items": [
+    {"food_name": "سینه مرغ گریل", "amount_g": 150, "serving_label": "۱ سینه مرغ متوسط", "calories": 250, "protein_g": 46, "carbs_g": 0, "fat_g": 5},
+    {"food_name": "برنج قهوه‌ای", "amount_g": 150, "serving_label": "۱ لیوان برنج پخته", "calories": 170, "protein_g": 4, "carbs_g": 36, "fat_g": 1.5},
+    {"food_name": "سالاد سبزیجات", "amount_g": 150, "serving_label": "۱ بشقاب سالاد", "calories": 50, "protein_g": 2, "carbs_g": 8, "fat_g": 1}
+  ]
+}`)
 	case "progress_analysis":
-		raw = []byte(`{"summary_text": "این هفته عملکرد خوبی داشتی و نسبت به هفته قبل پیشرفت کردی.", "highlight": "بهترین روزت رکورد جدید ثبت کرد."}`)
+		raw = []byte(`{"summary_text": "این هفته عملکرد خوبی داشتی و نسبت به هفته قبل پیشرفت کردی.", "highlight": "بهترین روزت رکورد جدید ثبت کرد.", "pain_severity": ""}`)
 	case "set_log":
 		raw = []byte(`{"exercise_name": "پرس سینه هالتر", "weight_kg": 80, "reps": 8, "is_pr": true}`)
+	case "workout_note_summary":
+		raw = []byte(`{"text": "امروز حس خوبی داشتم، فقط شونه راستم یه کم خسته بود."}`)
 	case "food_log":
 		raw = []byte(`{
   "items": [

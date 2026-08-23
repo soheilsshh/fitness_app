@@ -1,0 +1,25 @@
+#!/usr/bin/env sh
+# After checkout/clone switch: start Shenava ASR model download if weights are missing.
+# Args: prev_head new_head flag (1 = branch checkout)
+flag=${3:-1}
+[ "$flag" = "1" ] || exit 0
+
+repo_root=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
+script="$repo_root/ml/scripts/ensure_shenava_model.py"
+model="$repo_root/ml/models/shenava-koochik-v1.0/model.onnx"
+[ -f "$script" ] || exit 0
+[ -f "$model" ] && exit 0
+
+if command -v python >/dev/null 2>&1; then
+  PY=python
+elif command -v python3 >/dev/null 2>&1; then
+  PY=python3
+else
+  exit 0
+fi
+
+mkdir -p "$repo_root/ml/models"
+log="$repo_root/ml/models/.download.log"
+echo "Shenava model (~450MB) missing — starting background download (log: ml/models/.download.log)"
+nohup "$PY" "$script" >>"$log" 2>&1 &
+exit 0

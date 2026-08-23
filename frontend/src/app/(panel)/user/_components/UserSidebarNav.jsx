@@ -21,7 +21,8 @@ import {
 import { cn } from "@/lib/utils";
 
 /**
- * Desktop IA: five labeled groups with leaf links listed under each.
+ * Desktop IA: labeled groups (mirrors the bottom dock's `userNavGroups`)
+ * with leaf links listed under each.
  */
 export function UserSidebarNav() {
   const pathname = usePathname();

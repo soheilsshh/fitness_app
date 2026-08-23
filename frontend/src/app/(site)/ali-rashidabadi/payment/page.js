@@ -5,6 +5,7 @@ const FunnelPaymentClient = lazyPage(() => import("./_components/FunnelPaymentCl
 
 export const metadata = {
   title: "پرداخت | قیف فروش",
+  robots: { index: false, follow: false },
 };
 
 export default function FunnelPaymentPage() {

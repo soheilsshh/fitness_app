@@ -6,7 +6,7 @@ import { ClipboardList, Plus, Search } from "lucide-react";
 import { api } from "@/lib/axios/client";
 import PlansTable from "@/app/(panel)/admin/plans/_components/PlansTable";
 import FilterChip from "@/app/(panel)/admin/plans/_components/FilterChip";
-import Pagination from "@/app/(panel)/admin/plans/_components/Pagination";
+import Pagination from "@/app/(panel)/_shared/Pagination";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -139,7 +139,7 @@ export default function CoachPlansClient() {
         </CardContent>
       </Card>
 
-      <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+      <Pagination page={page} totalPages={totalPages} onPage={setPage} />
     </div>
   );
 }

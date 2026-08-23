@@ -15,3 +15,11 @@ node_modules
 
 # Local Go build cache (never commit)
 .gocache/
+
+# ML / ASR large weights (~450MB onnx — download on pull via .githooks)
+ml/models/**/*.onnx
+ml/models/.download.log
+ml/models/**/.cache/
+ml/**/__pycache__/
+ml/**/*.egg-info/
+ml/.venv/

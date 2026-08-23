@@ -312,3 +312,153 @@ func (h *MeController) GetMyProgramByID(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, program)
 }
+
+// ListMyWorkoutPrograms godoc
+// @Summary List every saved workout-program version (active + inactive pool) for the current subscription
+// @Tags me
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} map[string][]service.ProgramVersionDTO
+// @Failure 401 {object} map[string]string
+// @Router /me/workout-programs [get]
+func (h *MeController) ListMyWorkoutPrograms(c *gin.Context) {
+	userID, err := middleware.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	items, err := h.meService.ListMyWorkoutPrograms(c.Request.Context(), userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"items": items})
+}
+
+// ListMyNutritionPrograms godoc
+// @Summary List every saved nutrition-program version (active + inactive pool) for the current subscription
+// @Tags me
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} map[string][]service.ProgramVersionDTO
+// @Failure 401 {object} map[string]string
+// @Router /me/nutrition-programs [get]
+func (h *MeController) ListMyNutritionPrograms(c *gin.Context) {
+	userID, err := middleware.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	items, err := h.meService.ListMyNutritionPrograms(c.Request.Context(), userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"items": items})
+}
+
+func (h *MeController) programIDParam(c *gin.Context) (userID, programID uint, ok bool) {
+	userID, err := middleware.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return 0, 0, false
+	}
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid program id"})
+		return 0, 0, false
+	}
+	return userID, uint(id), true
+}
+
+func (h *MeController) handleMeProgramActionError(c *gin.Context, err error) {
+	if errors.Is(err, service.ErrMeProgramNotFound) {
+		c.JSON(http.StatusNotFound, gin.H{"error": "برنامه پیدا نشد"})
+		return
+	}
+	if errors.Is(err, service.ErrMeProgramNotApproved) {
+		c.JSON(http.StatusConflict, gin.H{"error": "این برنامه هنوز توسط مربی تأیید نشده است"})
+		return
+	}
+	c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+}
+
+// ActivateWorkoutProgram godoc
+// @Summary Activate a saved workout-program version (deactivates whatever else is currently active)
+// @Tags me
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Workout program ID"
+// @Success 200 {object} map[string]bool
+// @Router /me/workout-programs/{id}/activate [post]
+func (h *MeController) ActivateWorkoutProgram(c *gin.Context) {
+	userID, programID, ok := h.programIDParam(c)
+	if !ok {
+		return
+	}
+	if err := h.meService.ActivateWorkoutProgram(c.Request.Context(), userID, programID); err != nil {
+		h.handleMeProgramActionError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"ok": true})
+}
+
+// DeactivateWorkoutProgram godoc
+// @Summary Deactivate a workout-program version
+// @Tags me
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Workout program ID"
+// @Success 200 {object} map[string]bool
+// @Router /me/workout-programs/{id}/deactivate [post]
+func (h *MeController) DeactivateWorkoutProgram(c *gin.Context) {
+	userID, programID, ok := h.programIDParam(c)
+	if !ok {
+		return
+	}
+	if err := h.meService.DeactivateWorkoutProgram(c.Request.Context(), userID, programID); err != nil {
+		h.handleMeProgramActionError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"ok": true})
+}
+
+// ActivateNutritionProgram godoc
+// @Summary Activate a saved nutrition-program version (deactivates whatever else is currently active)
+// @Tags me
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Nutrition program ID"
+// @Success 200 {object} map[string]bool
+// @Router /me/nutrition-programs/{id}/activate [post]
+func (h *MeController) ActivateNutritionProgram(c *gin.Context) {
+	userID, programID, ok := h.programIDParam(c)
+	if !ok {
+		return
+	}
+	if err := h.meService.ActivateNutritionProgram(c.Request.Context(), userID, programID); err != nil {
+		h.handleMeProgramActionError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"ok": true})
+}
+
+// DeactivateNutritionProgram godoc
+// @Summary Deactivate a nutrition-program version
+// @Tags me
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Nutrition program ID"
+// @Success 200 {object} map[string]bool
+// @Router /me/nutrition-programs/{id}/deactivate [post]
+func (h *MeController) DeactivateNutritionProgram(c *gin.Context) {
+	userID, programID, ok := h.programIDParam(c)
+	if !ok {
+		return
+	}
+	if err := h.meService.DeactivateNutritionProgram(c.Request.Context(), userID, programID); err != nil {
+		h.handleMeProgramActionError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"ok": true})
+}

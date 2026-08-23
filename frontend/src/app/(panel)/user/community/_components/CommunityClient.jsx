@@ -30,6 +30,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { categoryMeta, FEED_FILTERS, POST_TEMPLATES } from "./postCategories";
+import ExerciseCountReveal from "./ExerciseCountReveal";
 
 export const SHARE_DRAFT_KEY = "fitino:community:shareDraft";
 
@@ -82,6 +83,9 @@ function PostCard({ post, onLike, onOpenComments }) {
         <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
           {post.content}
         </p>
+        {post.metadata?.exerciseNames?.length ? (
+          <ExerciseCountReveal names={post.metadata.exerciseNames} className="max-w-xs" />
+        ) : null}
         {post.imageUrl && post.mediaType === "video" ? (
           <video
             src={apiAssetUrl(post.imageUrl)}
@@ -243,6 +247,7 @@ function FeedTab() {
   const [filter, setFilter] = useState("forYou");
   const [media, setMedia] = useState(null); // { url, mediaType, previewUrl }
   const [uploadingMedia, setUploadingMedia] = useState(false);
+  const [shareMetadata, setShareMetadata] = useState(null);
   const draftConsumed = useRef(false);
   const fileInputRef = useRef(null);
 
@@ -281,6 +286,7 @@ function FeedTab() {
       const draft = JSON.parse(raw);
       if (draft?.content) setNewPost(draft.content);
       if (draft?.category) setSelectedTemplate(draft.category);
+      if (draft?.metadata?.exerciseNames?.length) setShareMetadata(draft.metadata);
     } catch {
       // ignore malformed/missing draft
     }
@@ -338,9 +344,11 @@ function FeedTab() {
         category: selectedTemplate || undefined,
         imageUrl: media?.url || undefined,
         mediaType: media?.mediaType || undefined,
+        metadata: shareMetadata || undefined,
       });
       setNewPost("");
       setSelectedTemplate(null);
+      setShareMetadata(null);
       handleRemoveMedia();
       toast.success("پست شما منتشر شد");
       await loadFeed();
@@ -420,6 +428,9 @@ function FeedTab() {
             placeholder="چه چیزی می‌خواهید با جامعه فیتینو به اشتراک بگذارید؟"
             rows={3}
           />
+          {shareMetadata?.exerciseNames?.length ? (
+            <ExerciseCountReveal names={shareMetadata.exerciseNames} className="max-w-xs" />
+          ) : null}
 
           {media ? (
             <div className="relative w-fit">

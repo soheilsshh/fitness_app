@@ -39,13 +39,14 @@ type PaymentService interface {
 }
 
 type paymentService struct {
-	db         *gorm.DB
-	userRepo   repository.UserRepository
-	planRepo   repository.ServicePlanRepository
-	orderRepo  repository.OrderRepository
-	subRepo    repository.SubscriptionRepository
-	funnelRepo repository.FunnelLeadRepository
-	zarinpal   *ZarinpalClient
+	db             *gorm.DB
+	userRepo       repository.UserRepository
+	planRepo       repository.ServicePlanRepository
+	orderRepo      repository.OrderRepository
+	subRepo        repository.SubscriptionRepository
+	funnelRepo     repository.FunnelLeadRepository
+	zarinpal       *ZarinpalClient
+	achievementSvc AchievementService
 }
 
 func NewPaymentService(
@@ -55,7 +56,7 @@ func NewPaymentService(
 	orderRepo repository.OrderRepository,
 	subRepo repository.SubscriptionRepository,
 ) PaymentService {
-	return NewPaymentServiceWithFunnel(db, userRepo, planRepo, orderRepo, subRepo, nil)
+	return NewPaymentServiceWithFunnel(db, userRepo, planRepo, orderRepo, subRepo, nil, nil)
 }
 
 func NewPaymentServiceWithFunnel(
@@ -65,9 +66,11 @@ func NewPaymentServiceWithFunnel(
 	orderRepo repository.OrderRepository,
 	subRepo repository.SubscriptionRepository,
 	funnelRepo repository.FunnelLeadRepository,
+	achievementSvc AchievementService,
 ) PaymentService {
 	return &paymentService{
-		db:         db,
+		db:             db,
+		achievementSvc: achievementSvc,
 		userRepo:   userRepo,
 		planRepo:   planRepo,
 		orderRepo:  orderRepo,
@@ -358,7 +361,11 @@ func (s *paymentService) fulfillPaidOrder(ctx context.Context, order *models.Ord
 	endsAt := now.AddDate(0, 0, plan.DurationDays)
 	nextDue := now.AddDate(0, 0, models.DefaultCheckinFrequencyDays)
 
-	return s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+	var priorSubCount int64
+	s.db.WithContext(ctx).Model(&models.Subscription{}).Where("user_id = ?", order.UserID).Count(&priorSubCount)
+	isRenewal := priorSubCount > 0
+
+	err = s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		var current models.Order
 		if err := tx.First(&current, order.ID).Error; err != nil {
 			return err
@@ -409,6 +416,13 @@ func (s *paymentService) fulfillPaidOrder(ctx context.Context, order *models.Ord
 		return tx.Model(&models.User{}).Where("id = ?", order.UserID).
 			Update("assigned_coach_id", coachIDCopy).Error
 	})
+	if err != nil {
+		return err
+	}
+	if s.achievementSvc != nil {
+		s.achievementSvc.HandleSubscriptionCreated(ctx, order.UserID, isRenewal)
+	}
+	return nil
 }
 
 func (s *paymentService) markOrderFailed(ctx context.Context, order *models.Order) error {

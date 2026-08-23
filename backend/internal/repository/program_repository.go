@@ -20,10 +20,18 @@ type ProgramRepository interface {
 	UpdateNutritionProgram(ctx context.Context, program *models.NutritionProgram) error
 	UpsertWorkoutItems(ctx context.Context, programID uint, items []models.ProgramItem) error
 	UpsertNutritionItems(ctx context.Context, programID uint, items []models.NutritionItem) error
-	DeactivateWorkoutPrograms(ctx context.Context, subscriptionID uint) error
-	DeactivateNutritionPrograms(ctx context.Context, subscriptionID uint) error
 	MaxWorkoutVersion(ctx context.Context, subscriptionID uint) (int, error)
 	MaxNutritionVersion(ctx context.Context, subscriptionID uint) (int, error)
+	// ListWorkoutProgramsBySubscriptionID / ListNutritionProgramsBySubscriptionID
+	// return every saved version (active + the inactive pool), newest first, for
+	// the "my saved plans" list.
+	ListWorkoutProgramsBySubscriptionID(ctx context.Context, subscriptionID uint) ([]models.WorkoutProgram, error)
+	ListNutritionProgramsBySubscriptionID(ctx context.Context, subscriptionID uint) ([]models.NutritionProgram, error)
+	// SetWorkoutProgramActive / SetNutritionProgramActive activate (deactivating
+	// every other version of the same subscription first) or deactivate a single
+	// program version, leaving the rest untouched.
+	SetWorkoutProgramActive(ctx context.Context, programID uint, active bool) error
+	SetNutritionProgramActive(ctx context.Context, programID uint, active bool) error
 }
 
 type programRepository struct {
@@ -163,20 +171,6 @@ func (r *programRepository) UpsertNutritionItems(ctx context.Context, programID 
 	})
 }
 
-func (r *programRepository) DeactivateWorkoutPrograms(ctx context.Context, subscriptionID uint) error {
-	return r.db.WithContext(ctx).
-		Model(&models.WorkoutProgram{}).
-		Where("subscription_id = ? AND is_active = ?", subscriptionID, true).
-		Update("is_active", false).Error
-}
-
-func (r *programRepository) DeactivateNutritionPrograms(ctx context.Context, subscriptionID uint) error {
-	return r.db.WithContext(ctx).
-		Model(&models.NutritionProgram{}).
-		Where("subscription_id = ? AND is_active = ?", subscriptionID, true).
-		Update("is_active", false).Error
-}
-
 func (r *programRepository) MaxWorkoutVersion(ctx context.Context, subscriptionID uint) (int, error) {
 	var maxVersion *int
 	err := r.db.WithContext(ctx).
@@ -207,4 +201,58 @@ func (r *programRepository) MaxNutritionVersion(ctx context.Context, subscriptio
 		return 0, nil
 	}
 	return *maxVersion, nil
+}
+
+func (r *programRepository) ListWorkoutProgramsBySubscriptionID(ctx context.Context, subscriptionID uint) ([]models.WorkoutProgram, error) {
+	var programs []models.WorkoutProgram
+	err := r.db.WithContext(ctx).
+		Where("subscription_id = ?", subscriptionID).
+		Order("created_at DESC").
+		Find(&programs).Error
+	return programs, err
+}
+
+func (r *programRepository) ListNutritionProgramsBySubscriptionID(ctx context.Context, subscriptionID uint) ([]models.NutritionProgram, error) {
+	var programs []models.NutritionProgram
+	err := r.db.WithContext(ctx).
+		Where("subscription_id = ?", subscriptionID).
+		Order("created_at DESC").
+		Find(&programs).Error
+	return programs, err
+}
+
+func (r *programRepository) SetWorkoutProgramActive(ctx context.Context, programID uint, active bool) error {
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if !active {
+			return tx.Model(&models.WorkoutProgram{}).Where("id = ?", programID).Update("is_active", false).Error
+		}
+		var program models.WorkoutProgram
+		if err := tx.First(&program, programID).Error; err != nil {
+			return err
+		}
+		if err := tx.Model(&models.WorkoutProgram{}).
+			Where("subscription_id = ? AND is_active = ?", program.SubscriptionID, true).
+			Update("is_active", false).Error; err != nil {
+			return err
+		}
+		return tx.Model(&models.WorkoutProgram{}).Where("id = ?", programID).Update("is_active", true).Error
+	})
+}
+
+func (r *programRepository) SetNutritionProgramActive(ctx context.Context, programID uint, active bool) error {
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if !active {
+			return tx.Model(&models.NutritionProgram{}).Where("id = ?", programID).Update("is_active", false).Error
+		}
+		var program models.NutritionProgram
+		if err := tx.First(&program, programID).Error; err != nil {
+			return err
+		}
+		if err := tx.Model(&models.NutritionProgram{}).
+			Where("subscription_id = ? AND is_active = ?", program.SubscriptionID, true).
+			Update("is_active", false).Error; err != nil {
+			return err
+		}
+		return tx.Model(&models.NutritionProgram{}).Where("id = ?", programID).Update("is_active", true).Error
+	})
 }

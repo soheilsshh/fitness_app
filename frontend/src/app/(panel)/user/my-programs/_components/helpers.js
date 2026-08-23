@@ -72,6 +72,8 @@ export function mapApiProgramDetail(item) {
     tags: item.tags || base.tags,
     schedule: item.schedule || base.schedule,
     planByDay: item.planByDay || {},
+    workoutMeta: item.workoutMeta || null,
+    nutritionMeta: item.nutritionMeta || null,
   };
 }
 

@@ -1,0 +1,55 @@
+==========================================
+دستورات برای اجرا روی سرور
+==========================================
+
+1. اتصال به سرور:
+   ssh root@webinar.sianacademy.com
+   Password: Ho3sinWebinar@2024
+
+2. رفتن به دایرکتوری Backend:
+   cd /root/monetizeai-live-webinar/backend
+
+3. Build کردن:
+   go build -o main cmd/main.go
+
+4. بررسی موفقیت Build:
+   echo $?
+   # باید 0 باشد
+
+5. متوقف کردن Service:
+   supervisorctl stop monetizeai-backend
+
+6. Backup:
+   cp main main.backup.$(date +%Y%m%d_%H%M%S)
+
+7. راه‌اندازی مجدد:
+   supervisorctl start monetizeai-backend
+
+8. بررسی وضعیت:
+   supervisorctl status monetizeai-backend
+
+9. بررسی لاگ‌ها:
+   supervisorctl tail -100 monetizeai-backend
+
+10. Monitor real-time:
+    supervisorctl tail -f monetizeai-backend
+
+==========================================
+اگر از systemd استفاده می‌کنید:
+==========================================
+
+systemctl stop monetizeai-backend
+systemctl start monetizeai-backend
+systemctl status monetizeai-backend
+journalctl -u monetizeai-backend -n 100 --no-pager
+
+==========================================
+اگر Build موفق نبود:
+==========================================
+
+go build ./... 2>&1 | head -50
+go mod download
+go mod tidy
+
+==========================================
+

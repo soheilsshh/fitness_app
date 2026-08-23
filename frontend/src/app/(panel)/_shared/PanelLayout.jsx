@@ -11,9 +11,10 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
  * @param {object} props
  * @param {React.ReactNode} props.children
  * @param {object} props.brand - { title, subtitle, href, icon? }
- * @param {Array} props.navItems - main navigation config
+ * @param {Array} [props.navItems] - main navigation config (ignored when navContent is set)
  * @param {Array} [props.secondaryNavItems]
  * @param {string} [props.secondaryNavLabel]
+ * @param {React.ReactNode} [props.navContent] - custom sidebar body (e.g. sectioned nav), replaces navItems/secondaryNavItems
  * @param {object} props.header - { title, subtitle }
  * @param {string} [props.profileHref] - link for NavUser profile action
  * @param {boolean} [props.fetchUserProfile=true]
@@ -27,6 +28,7 @@ export default function PanelLayout({
   navItems,
   secondaryNavItems,
   secondaryNavLabel,
+  navContent,
   header,
   profileHref,
   fetchUserProfile = true,
@@ -41,7 +43,7 @@ export default function PanelLayout({
     <SidebarProvider
         style={{
           "--sidebar-width": "calc(var(--spacing) * 72)",
-          "--header-height": "calc(var(--spacing) * 12)",
+          "--header-height": "calc(var(--spacing) * 14)",
         }}
       >
         <RoleSidebar
@@ -49,6 +51,7 @@ export default function PanelLayout({
           navItems={navItems}
           secondaryItems={secondaryNavItems}
           secondaryLabel={secondaryNavLabel}
+          navContent={navContent}
           user={user}
           profileHref={profileHref}
         />

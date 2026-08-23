@@ -14,6 +14,8 @@ type NotificationRepository interface {
 	// ExistsRecentByUserAndType dedups reminder jobs (BE-8.3): don't re-notify
 	// the same user for the same reason within the given window.
 	ExistsRecentByUserAndType(ctx context.Context, userID uint, notifType string, since time.Time) (bool, error)
+	// MarkRead sets IsRead/ReadAt for a notification owned by userID.
+	MarkRead(ctx context.Context, userID, notificationID uint) error
 }
 
 type notificationRepository struct {
@@ -47,4 +49,11 @@ func (r *notificationRepository) ExistsRecentByUserAndType(ctx context.Context, 
 		Where("user_id = ? AND type = ? AND created_at >= ?", userID, notifType, since).
 		Count(&count).Error
 	return count > 0, err
+}
+
+func (r *notificationRepository) MarkRead(ctx context.Context, userID, notificationID uint) error {
+	now := time.Now()
+	return r.db.WithContext(ctx).Model(&models.Notification{}).
+		Where("id = ? AND user_id = ?", notificationID, userID).
+		Updates(map[string]any{"is_read": true, "read_at": now}).Error
 }

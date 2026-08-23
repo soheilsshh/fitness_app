@@ -11,7 +11,7 @@ import PanelEmptyState from "../../_components/ui/PanelEmptyState";
 import ProgramOffer from "../../_components/ProgramOffer";
 import { computeTimeline, mapApiProgram } from "./helpers";
 import FilterChips from "./FilterChips";
-import Pagination from "../../_components/Pagination";
+import Pagination from "@/app/(panel)/_shared/Pagination";
 import ProgramCardLink from "./ProgramCardLink";
 
 const PAGE_SIZE = 6;
@@ -94,7 +94,7 @@ export default function MyProgramsListClient() {
     <div className="flex flex-col gap-4 md:gap-6" dir="rtl">
       <PageHeader
         title="برنامه‌های من"
-        description="برنامه‌های خریداری‌شده را فیلتر کنید و برای جزئیات، روی برنامه کلیک کنید."
+        description="این‌جا پلن‌هایی است که از مربی خریده‌اید. برای دیدن تمرین و تغذیه، روی کارت بزنید «مشاهده برنامه»."
         meta={
           <MetaBadge
             icon={Zap}
@@ -123,7 +123,11 @@ export default function MyProgramsListClient() {
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <PanelEmptyState className="px-4 py-8 sm:px-6">
+        <PanelEmptyState
+          className="px-4 py-8 sm:px-6"
+          title="هنوز برنامه‌ای در این لیست نیست"
+          description="برنامه هوش مصنوعی کارت جدا نمی‌سازد. اول باید یک پلن از مربی بخرید؛ بعد برنامه AI داخل همان کارت ذخیره می‌شود."
+        >
           <ProgramOffer />
         </PanelEmptyState>
       ) : (

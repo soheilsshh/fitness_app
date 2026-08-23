@@ -1,0 +1,44 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Go build/test cache (local only)
+backend/.gocache/
+.gocache/
+
+# build outputs
+backend/webinar_backend
+backend/*.new
+backend/*.old
+
+# local secrets (use empty placeholders in tracked yaml)
+backend/config.local.yaml
+backend/*.pem
+
+# local assets
+backend/videos/
+public/*.mp4
+public/*.png
+public/*.JPG
+src/services/video-player/

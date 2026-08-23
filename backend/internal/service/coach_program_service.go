@@ -17,6 +17,10 @@ var (
 	ErrCoachNoActiveSubscription = errors.New("student has no active subscription with this coach")
 	ErrCoachProgramNotFound      = errors.New("program not found")
 	ErrCoachTemplateNotFound     = errors.New("template not found")
+	// ErrCoachApproveNotAI is returned when a coach tries to "approve" a
+	// program that wasn't AI-generated — approval only makes sense for AI
+	// content, since coach-authored programs are already official.
+	ErrCoachApproveNotAI = errors.New("only ai-generated programs can be approved")
 )
 
 type ProgramAssignRequest struct {
@@ -75,6 +79,30 @@ type CoachProgramService interface {
 	GetNutritionTemplate(ctx context.Context, id uint) (*AdminNutritionTemplateDetail, error)
 	AssignWorkoutFromTemplate(ctx context.Context, coachID, studentID, templateID uint) (*CoachStudentProgramsResponse, error)
 	AssignNutritionFromTemplate(ctx context.Context, coachID, studentID, templateID uint) (*CoachStudentProgramsResponse, error)
+	// ApproveWorkoutProgram / ApproveNutritionProgram let a coach mark an
+	// AI-generated program version (from a student's own AI builder — coaches
+	// never generate/regenerate with AI themselves) as reviewed. It only
+	// flips Status to coach_approved; program content is untouched.
+	ApproveWorkoutProgram(ctx context.Context, coachID, studentID, programID uint) error
+	ApproveNutritionProgram(ctx context.Context, coachID, studentID, programID uint) error
+	// ListStudentPrograms returns every saved version (active + inactive pool)
+	// of a student's workout/nutrition programs, for the coach's "approve"
+	// list view.
+	ListStudentWorkoutPrograms(ctx context.Context, coachID, studentID uint) ([]ProgramVersionDTO, error)
+	ListStudentNutritionPrograms(ctx context.Context, coachID, studentID uint) ([]ProgramVersionDTO, error)
+}
+
+// ProgramVersionDTO is one saved WorkoutProgram/NutritionProgram version —
+// active or pooled — for the student's "my saved plans" list and the coach's
+// approve list.
+type ProgramVersionDTO struct {
+	ID            uint      `json:"id"`
+	Title         string    `json:"title"`
+	Source        string    `json:"source"` // coach | ai
+	Status        string    `json:"status"` // official | coach_approved
+	DurationWeeks int       `json:"durationWeeks"`
+	IsActive      bool      `json:"isActive"`
+	CreatedAt     time.Time `json:"createdAt"`
 }
 
 type coachProgramService struct {
@@ -85,6 +113,7 @@ type coachProgramService struct {
 	exerciseRepo    repository.ExerciseRepository
 	foodRepo        repository.FoodRepository
 	coachStudentSvc CoachStudentService
+	achievementSvc  AchievementService
 }
 
 func NewCoachProgramService(
@@ -95,6 +124,7 @@ func NewCoachProgramService(
 	exerciseRepo repository.ExerciseRepository,
 	foodRepo repository.FoodRepository,
 	coachStudentSvc CoachStudentService,
+	achievementSvc AchievementService,
 ) CoachProgramService {
 	return &coachProgramService{
 		db:              db,
@@ -104,6 +134,7 @@ func NewCoachProgramService(
 		exerciseRepo:    exerciseRepo,
 		foodRepo:        foodRepo,
 		coachStudentSvc: coachStudentSvc,
+		achievementSvc:  achievementSvc,
 	}
 }
 
@@ -181,7 +212,7 @@ func (s *coachProgramService) AssignWorkoutProgram(ctx context.Context, coachID,
 		title = "برنامه تمرین"
 	}
 
-	resp, err := s.createWorkoutProgram(ctx, coachID, sub.ID, title, durationWeeks, req.Notes, req.PlanByDay)
+	resp, err := s.createWorkoutProgram(ctx, coachID, sub.ID, title, durationWeeks, req.Notes, req.PlanByDay, models.ProgramSourceCoach, models.ProgramStatusOfficial)
 	if err != nil {
 		return nil, err
 	}
@@ -189,7 +220,7 @@ func (s *coachProgramService) AssignWorkoutProgram(ctx context.Context, coachID,
 	return resp, nil
 }
 
-func (s *coachProgramService) createWorkoutProgram(ctx context.Context, coachID, subscriptionID uint, title string, durationWeeks int, notes string, planByDay map[string]MeDayPlanDTO) (*CoachStudentProgramsResponse, error) {
+func (s *coachProgramService) createWorkoutProgram(ctx context.Context, coachID, subscriptionID uint, title string, durationWeeks int, notes string, planByDay map[string]MeDayPlanDTO, source, status string) (*CoachStudentProgramsResponse, error) {
 	var createdID uint
 	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		if err := tx.Model(&models.WorkoutProgram{}).
@@ -215,6 +246,8 @@ func (s *coachProgramService) createWorkoutProgram(ctx context.Context, coachID,
 			Version:        version,
 			Title:          title,
 			Notes:          notes,
+			Source:         source,
+			Status:         status,
 			DurationWeeks:  durationWeeks,
 			IsActive:       true,
 		}
@@ -315,7 +348,7 @@ func (s *coachProgramService) AssignNutritionProgram(ctx context.Context, coachI
 		durationWeeks = 4
 	}
 
-	resp, err := s.createNutritionProgram(ctx, coachID, sub.ID, title, durationWeeks, req.Notes, req.PlanByDay)
+	resp, err := s.createNutritionProgram(ctx, coachID, sub.ID, title, durationWeeks, req.Notes, req.PlanByDay, models.ProgramSourceCoach, models.ProgramStatusOfficial)
 	if err != nil {
 		return nil, err
 	}
@@ -323,7 +356,7 @@ func (s *coachProgramService) AssignNutritionProgram(ctx context.Context, coachI
 	return resp, nil
 }
 
-func (s *coachProgramService) createNutritionProgram(ctx context.Context, coachID, subscriptionID uint, title string, durationWeeks int, notes string, planByDay map[string]MeDayPlanDTO) (*CoachStudentProgramsResponse, error) {
+func (s *coachProgramService) createNutritionProgram(ctx context.Context, coachID, subscriptionID uint, title string, durationWeeks int, notes string, planByDay map[string]MeDayPlanDTO, source, status string) (*CoachStudentProgramsResponse, error) {
 	planByDay = enrichNutritionPlan(ctx, s.foodRepo, planByDay)
 	caloriesTarget, proteinTarget := extractNutritionTargetsFromPlan(planByDay)
 
@@ -354,6 +387,8 @@ func (s *coachProgramService) createNutritionProgram(ctx context.Context, coachI
 			Notes:          notes,
 			CaloriesTarget: caloriesTarget,
 			ProteinTarget:  proteinTarget,
+			Source:         source,
+			Status:         status,
 			DurationWeeks:  durationWeeks,
 			IsActive:       true,
 		}
@@ -568,7 +603,7 @@ func (s *coachProgramService) AssignWorkoutFromTemplate(ctx context.Context, coa
 		title = "برنامه تمرین"
 	}
 
-	resp, err := s.createWorkoutProgram(ctx, coachID, sub.ID, title, durationWeeks, "", planByDay)
+	resp, err := s.createWorkoutProgram(ctx, coachID, sub.ID, title, durationWeeks, "", planByDay, models.ProgramSourceCoach, models.ProgramStatusOfficial)
 	if err != nil {
 		return nil, err
 	}
@@ -597,12 +632,112 @@ func (s *coachProgramService) AssignNutritionFromTemplate(ctx context.Context, c
 	}
 	notes := strings.TrimSpace(template.Description)
 
-	resp, err := s.createNutritionProgram(ctx, coachID, sub.ID, title, 4, notes, planByDay)
+	resp, err := s.createNutritionProgram(ctx, coachID, sub.ID, title, 4, notes, planByDay, models.ProgramSourceCoach, models.ProgramStatusOfficial)
 	if err != nil {
 		return nil, err
 	}
 	s.notifyStudentProgramReady(ctx, studentID)
 	return resp, nil
+}
+
+func (s *coachProgramService) ApproveWorkoutProgram(ctx context.Context, coachID, studentID, programID uint) error {
+	sub, err := s.resolveActiveSubscription(ctx, coachID, studentID)
+	if err != nil {
+		return err
+	}
+	program, err := s.programRepo.FindWorkoutProgramByID(ctx, programID)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return ErrCoachProgramNotFound
+		}
+		return err
+	}
+	if program.SubscriptionID != sub.ID {
+		return ErrCoachProgramNotFound
+	}
+	if program.Source != models.ProgramSourceAI {
+		return ErrCoachApproveNotAI
+	}
+	program.Status = models.ProgramStatusCoachApproved
+	if err := s.programRepo.UpdateWorkoutProgram(ctx, program); err != nil {
+		return err
+	}
+	if s.achievementSvc != nil {
+		s.achievementSvc.HandleAIProgramApproved(ctx, studentID)
+	}
+	return nil
+}
+
+func (s *coachProgramService) ApproveNutritionProgram(ctx context.Context, coachID, studentID, programID uint) error {
+	sub, err := s.resolveActiveSubscription(ctx, coachID, studentID)
+	if err != nil {
+		return err
+	}
+	program, err := s.programRepo.FindNutritionProgramByID(ctx, programID)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return ErrCoachProgramNotFound
+		}
+		return err
+	}
+	if program.SubscriptionID != sub.ID {
+		return ErrCoachProgramNotFound
+	}
+	if program.Source != models.ProgramSourceAI {
+		return ErrCoachApproveNotAI
+	}
+	program.Status = models.ProgramStatusCoachApproved
+	if err := s.programRepo.UpdateNutritionProgram(ctx, program); err != nil {
+		return err
+	}
+	if s.achievementSvc != nil {
+		s.achievementSvc.HandleAIProgramApproved(ctx, studentID)
+	}
+	return nil
+}
+
+func (s *coachProgramService) ListStudentWorkoutPrograms(ctx context.Context, coachID, studentID uint) ([]ProgramVersionDTO, error) {
+	sub, err := s.resolveActiveSubscription(ctx, coachID, studentID)
+	if err != nil {
+		if errors.Is(err, ErrCoachNoActiveSubscription) {
+			return []ProgramVersionDTO{}, nil
+		}
+		return nil, err
+	}
+	programs, err := s.programRepo.ListWorkoutProgramsBySubscriptionID(ctx, sub.ID)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]ProgramVersionDTO, 0, len(programs))
+	for _, p := range programs {
+		out = append(out, ProgramVersionDTO{
+			ID: p.ID, Title: p.Title, Source: p.Source, Status: p.Status,
+			DurationWeeks: p.DurationWeeks, IsActive: p.IsActive, CreatedAt: p.CreatedAt,
+		})
+	}
+	return out, nil
+}
+
+func (s *coachProgramService) ListStudentNutritionPrograms(ctx context.Context, coachID, studentID uint) ([]ProgramVersionDTO, error) {
+	sub, err := s.resolveActiveSubscription(ctx, coachID, studentID)
+	if err != nil {
+		if errors.Is(err, ErrCoachNoActiveSubscription) {
+			return []ProgramVersionDTO{}, nil
+		}
+		return nil, err
+	}
+	programs, err := s.programRepo.ListNutritionProgramsBySubscriptionID(ctx, sub.ID)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]ProgramVersionDTO, 0, len(programs))
+	for _, p := range programs {
+		out = append(out, ProgramVersionDTO{
+			ID: p.ID, Title: p.Title, Source: p.Source, Status: p.Status,
+			DurationWeeks: p.DurationWeeks, IsActive: p.IsActive, CreatedAt: p.CreatedAt,
+		})
+	}
+	return out, nil
 }
 
 func (s *coachProgramService) notifyStudentProgramReady(ctx context.Context, studentID uint) {

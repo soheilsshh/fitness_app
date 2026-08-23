@@ -21,7 +21,6 @@ import (
 var (
 	ErrTrackingNoSubscription = errors.New("no active subscription found")
 	ErrInvalidTrackingPhoto   = errors.New("invalid tracking photo type")
-	ErrInvalidWeight          = errors.New("weight must be between 20 and 300 kg")
 	ErrTrackingPhotoNotFound  = errors.New("tracking photo not found")
 )
 
@@ -110,7 +109,6 @@ type CoachStudentTrackingDTO struct {
 
 type TrackingService interface {
 	GetMyTracking(ctx context.Context, userID uint) (*TrackingStatusDTO, error)
-	SubmitWeight(ctx context.Context, userID uint, weight float64) (*TrackingStatusDTO, error)
 	UploadTrackingPhoto(ctx context.Context, userID uint, file io.Reader, filename, photoType string) (*TrackingPhotoDTO, error)
 	AnalyzePhoto(ctx context.Context, userID, photoID uint) (*TrackingPhotoDTO, error)
 	CoachReviewPhoto(ctx context.Context, coachID, photoID uint, status, feedback string) (*TrackingPhotoDTO, error)
@@ -122,10 +120,11 @@ type trackingService struct {
 	db              *gorm.DB
 	subRepo         repository.SubscriptionRepository
 	coachStudentSvc CoachStudentService
+	achievementSvc  AchievementService
 }
 
-func NewTrackingService(db *gorm.DB, subRepo repository.SubscriptionRepository, coachStudentSvc CoachStudentService) TrackingService {
-	return &trackingService{db: db, subRepo: subRepo, coachStudentSvc: coachStudentSvc}
+func NewTrackingService(db *gorm.DB, subRepo repository.SubscriptionRepository, coachStudentSvc CoachStudentService, achievementSvc AchievementService) TrackingService {
+	return &trackingService{db: db, subRepo: subRepo, coachStudentSvc: coachStudentSvc, achievementSvc: achievementSvc}
 }
 
 var trackingPhotoLabels = map[string]string{
@@ -139,35 +138,6 @@ func (s *trackingService) GetMyTracking(ctx context.Context, userID uint) (*Trac
 	if err != nil {
 		return nil, err
 	}
-	return s.buildTrackingStatus(ctx, userID, sub)
-}
-
-func (s *trackingService) SubmitWeight(ctx context.Context, userID uint, weight float64) (*TrackingStatusDTO, error) {
-	if weight < 20 || weight > 300 {
-		return nil, ErrInvalidWeight
-	}
-	sub, err := s.activeSubscription(ctx, userID)
-	if err != nil {
-		return nil, err
-	}
-
-	now := time.Now()
-	checkIn := models.CheckIn{
-		UserID:         userID,
-		SubscriptionID: sub.ID,
-		CheckInDate:    now,
-		Weight:         weight,
-	}
-	if err := s.db.WithContext(ctx).Create(&checkIn).Error; err != nil {
-		return nil, err
-	}
-
-	if err := s.db.WithContext(ctx).Model(&models.User{}).Where("id = ?", userID).
-		Update("weight_kg", weight).Error; err != nil {
-		return nil, err
-	}
-
-	s.maybeAdvanceCheckInPeriod(ctx, sub)
 	return s.buildTrackingStatus(ctx, userID, sub)
 }
 
@@ -225,6 +195,9 @@ func (s *trackingService) UploadTrackingPhoto(ctx context.Context, userID uint, 
 	}
 
 	s.maybeAdvanceCheckInPeriod(ctx, sub)
+	if s.achievementSvc != nil {
+		s.achievementSvc.HandleTrackingUpdated(ctx, userID)
+	}
 
 	dto := trackingPhotoToDTO(photo)
 	return &dto, nil
@@ -470,11 +443,14 @@ func (s *trackingService) periodStart(sub *models.Subscription) time.Time {
 	return sub.StartsAt
 }
 
+// hasWeightInPeriod now reads DailyCheckIn (weight moved there from the old
+// periodic CheckIn.Weight — the Tracking page's weight card was removed in
+// favor of the daily check-in form).
 func (s *trackingService) hasWeightInPeriod(ctx context.Context, userID uint, sub *models.Subscription) bool {
 	start := s.periodStart(sub)
 	var count int64
-	s.db.WithContext(ctx).Model(&models.CheckIn{}).
-		Where("user_id = ? AND check_in_date > ?", userID, start).
+	s.db.WithContext(ctx).Model(&models.DailyCheckIn{}).
+		Where("user_id = ? AND date > ? AND morning_weight_kg IS NOT NULL", userID, start).
 		Count(&count)
 	return count > 0
 }
@@ -580,17 +556,20 @@ func (s *trackingService) buildTrackingStatus(ctx context.Context, userID uint, 
 }
 
 func (s *trackingService) loadWeightHistory(ctx context.Context, userID uint) []WeightPointDTO {
-	var checkIns []models.CheckIn
+	var checkIns []models.DailyCheckIn
 	s.db.WithContext(ctx).
-		Where("user_id = ?", userID).
-		Order("check_in_date ASC").
+		Where("user_id = ? AND morning_weight_kg IS NOT NULL", userID).
+		Order("date ASC").
 		Find(&checkIns)
 
 	points := make([]WeightPointDTO, 0, len(checkIns))
 	for _, c := range checkIns {
+		if c.MorningWeightKg == nil {
+			continue
+		}
 		points = append(points, WeightPointDTO{
-			Date:   c.CheckInDate.Format("2006-01-02"),
-			Weight: c.Weight,
+			Date:   c.Date.Format("2006-01-02"),
+			Weight: *c.MorningWeightKg,
 		})
 	}
 	return points

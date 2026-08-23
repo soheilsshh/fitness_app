@@ -39,6 +39,24 @@ func (h *NotificationController) ListRecent(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"items": items})
 }
 
+func (h *NotificationController) MarkRead(c *gin.Context) {
+	userID, err := middleware.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	notificationID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid notification id"})
+		return
+	}
+	if err := h.notificationService.MarkRead(c.Request.Context(), userID, uint(notificationID)); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"ok": true})
+}
+
 // GetSettings godoc
 // @Summary Get notification (push/SMS) preference
 // @Tags notifications

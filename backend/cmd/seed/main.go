@@ -83,6 +83,9 @@ func main() {
 		if err := seed.ImportFoodsCSV(ctx, db, filePath); err != nil {
 			log.Fatalf("food import failed: %v", err)
 		}
+		if err := seed.EnrichFoodServingUnits(ctx, db); err != nil {
+			log.Fatalf("food serving-unit enrichment failed: %v", err)
+		}
 		return
 	}
 

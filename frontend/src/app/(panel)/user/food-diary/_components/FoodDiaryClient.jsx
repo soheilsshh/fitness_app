@@ -420,8 +420,10 @@ export default function FoodDiaryClient() {
           </Button>
 
           <div className="min-w-0 flex-1 text-center">
-            <p className="truncate text-sm font-semibold">{dayLabel}</p>
-            <p className="mt-0.5 text-xs text-muted-foreground tabular-nums">{dateISO}</p>
+            <p className="truncate text-sm font-iranianSansDemiBold">{dayLabel}</p>
+            <p className="mt-0.5 text-xs font-iranianSansMedium text-muted-foreground tabular-nums">
+              {dateISO}
+            </p>
           </div>
 
           <Button

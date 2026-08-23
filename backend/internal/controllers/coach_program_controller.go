@@ -100,6 +100,87 @@ func (h *CoachProgramController) UpdateNutritionProgram(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+func (h *CoachProgramController) ApproveWorkoutProgram(c *gin.Context) {
+	coachID, studentID, programID, ok := h.parseCoachStudentProgramParams(c)
+	if !ok {
+		return
+	}
+	if err := h.programService.ApproveWorkoutProgram(c.Request.Context(), coachID, studentID, programID); err != nil {
+		h.handleProgramError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"ok": true})
+}
+
+func (h *CoachProgramController) ApproveNutritionProgram(c *gin.Context) {
+	coachID, studentID, programID, ok := h.parseCoachStudentProgramParams(c)
+	if !ok {
+		return
+	}
+	if err := h.programService.ApproveNutritionProgram(c.Request.Context(), coachID, studentID, programID); err != nil {
+		h.handleProgramError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"ok": true})
+}
+
+func (h *CoachProgramController) ListStudentWorkoutPrograms(c *gin.Context) {
+	coachID, err := middleware.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	studentID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid student id"})
+		return
+	}
+	resp, err := h.programService.ListStudentWorkoutPrograms(c.Request.Context(), coachID, uint(studentID))
+	if err != nil {
+		h.handleProgramError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"items": resp})
+}
+
+func (h *CoachProgramController) ListStudentNutritionPrograms(c *gin.Context) {
+	coachID, err := middleware.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	studentID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid student id"})
+		return
+	}
+	resp, err := h.programService.ListStudentNutritionPrograms(c.Request.Context(), coachID, uint(studentID))
+	if err != nil {
+		h.handleProgramError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"items": resp})
+}
+
+func (h *CoachProgramController) parseCoachStudentProgramParams(c *gin.Context) (coachID, studentID, programID uint, ok bool) {
+	coachID, err := middleware.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return 0, 0, 0, false
+	}
+	sid, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid student id"})
+		return 0, 0, 0, false
+	}
+	pid, err := strconv.ParseUint(c.Param("programId"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid program id"})
+		return 0, 0, 0, false
+	}
+	return coachID, uint(sid), uint(pid), true
+}
+
 func (h *CoachProgramController) ListWorkoutTemplates(c *gin.Context) {
 	if _, err := middleware.GetUserID(c); err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
@@ -259,6 +340,8 @@ func (h *CoachProgramController) handleProgramError(c *gin.Context, err error) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "program not found"})
 	case errors.Is(err, service.ErrCoachTemplateNotFound):
 		c.JSON(http.StatusNotFound, gin.H{"error": "template not found"})
+	case errors.Is(err, service.ErrCoachApproveNotAI):
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": "فقط برنامه‌های ساخته‌شده با هوش مصنوعی قابل تأیید هستند"})
 	default:
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}

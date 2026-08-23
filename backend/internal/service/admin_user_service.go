@@ -251,21 +251,7 @@ func (s *adminUserService) GetUserDetails(ctx context.Context, id uint) (*AdminU
 
 	// Build basic body info: height from user, weight from latest check-in, photos from UserPhoto
 	heightPtr := user.HeightCm
-
-	var latestCheck models.CheckIn
-	var hasCheck bool
-	if err := s.db.WithContext(ctx).
-		Where("user_id = ?", user.ID).
-		Order("check_in_date DESC").
-		First(&latestCheck).Error; err == nil {
-		hasCheck = true
-	}
-
-	var weightPtr *float64
-	if hasCheck {
-		w := latestCheck.Weight
-		weightPtr = &w
-	}
+	weightPtr := s.latestDailyWeight(ctx, user.ID)
 
 	var photosDB []models.UserPhoto
 	if err := s.db.WithContext(ctx).
@@ -302,6 +288,20 @@ func (s *adminUserService) GetUserDetails(ctx context.Context, id uint) (*AdminU
 }
 
 // GetUserPrograms returns only the program list for a user (used by admin endpoints).
+// latestDailyWeight returns the most recent morning weight from DailyCheckIn
+// (weight now lives there — the periodic CheckIn.Weight field is unused).
+func (s *adminUserService) latestDailyWeight(ctx context.Context, userID uint) *float64 {
+	var row models.DailyCheckIn
+	err := s.db.WithContext(ctx).
+		Where("user_id = ? AND morning_weight_kg IS NOT NULL", userID).
+		Order("date DESC").
+		First(&row).Error
+	if err != nil {
+		return nil
+	}
+	return row.MorningWeightKg
+}
+
 func (s *adminUserService) GetUserPrograms(ctx context.Context, id uint) ([]AdminUserProgram, error) {
 	now := time.Now()
 
@@ -364,22 +364,7 @@ func (s *adminUserService) GetUserBody(ctx context.Context, id uint) (*AdminUser
 		return nil, err
 	}
 	heightPtr := user.HeightCm
-
-	// latest check-in for weight
-	var latestCheck models.CheckIn
-	var hasCheck bool
-	if err := s.db.WithContext(ctx).
-		Where("user_id = ?", id).
-		Order("check_in_date DESC").
-		First(&latestCheck).Error; err == nil {
-		hasCheck = true
-	}
-
-	var weightPtr *float64
-	if hasCheck {
-		w := latestCheck.Weight
-		weightPtr = &w
-	}
+	weightPtr := s.latestDailyWeight(ctx, id)
 
 	// photos
 	var photosDB []models.UserPhoto

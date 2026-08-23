@@ -3,6 +3,7 @@ import PaymentResultClient from "./_components/PaymentResultClient";
 
 export const metadata = {
   title: "نتیجه پرداخت | فیتینو",
+  robots: { index: false, follow: false },
 };
 
 export default function PaymentResultPage() {

@@ -47,6 +47,7 @@ import {
 import FoodPickerModal from "./FoodPickerModal";
 import ManualFoodModal from "./ManualFoodModal";
 import TemplatePickerModal from "../../_components/TemplatePickerModal";
+import SavedProgramsApprovalCard from "../../_components/SavedProgramsApprovalCard";
 
 function applyCaloriesToPlan(planByDay, calories) {
   const value = Math.round(Number(calories));
@@ -286,6 +287,10 @@ export default function NutritionEditorClient({
           {saving ? "در حال ذخیره..." : "ذخیره برنامه"}
         </Button>
       </div>
+
+      {apiBase === "coach" ? (
+        <SavedProgramsApprovalCard studentId={studentId} apiBase={apiBase} type="nutrition" />
+      ) : null}
 
       <Card>
         <CardContent className="space-y-2 pt-6">

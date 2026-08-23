@@ -94,6 +94,34 @@ export const adminNav = [
   },
 ];
 
+/**
+ * Same items as `adminNav`, sectioned for the sidebar so 14 links aren't
+ * dumped as one flat scrolling list (desktop sidebar + mobile offcanvas
+ * sheet both render this).
+ */
+export const adminNavGroups = [
+  {
+    id: "overview",
+    label: "نمای کلی",
+    items: [adminNav[0], adminNav[1]],
+  },
+  {
+    id: "people",
+    label: "افراد",
+    items: [adminNav[2], adminNav[3], adminNav[4], adminNav[5], adminNav[6]],
+  },
+  {
+    id: "content",
+    label: "محتوای برنامه",
+    items: [adminNav[7], adminNav[8], adminNav[9], adminNav[10]],
+  },
+  {
+    id: "site",
+    label: "سایت و پشتیبانی",
+    items: [adminNav[11], adminNav[12], adminNav[13]],
+  },
+];
+
 export const adminHeader = {
   title: "پنل مدیر",
   subtitle: "مدیریت برنامه‌ها، سفارش‌ها و اپ موبایل",

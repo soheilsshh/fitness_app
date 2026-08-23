@@ -1,0 +1,25 @@
+# Production Backend configuration for MonetizeAI Webinar
+# Copy to config.production.yaml and fill secrets locally (do not commit real keys).
+
+db_host: localhost
+db_port: 3306
+db_user: monetizeai_user_live
+db_password: ""  # set locally / via env
+db_name: monetizeai
+server_port: "8081"
+
+# HTTPS Configuration (for production)
+enable_https: true
+ssl_cert_file: "/etc/letsencrypt/live/sianmarketing.com/fullchain.pem"
+ssl_key_file: "/etc/letsencrypt/live/sianmarketing.com/privkey.pem"
+
+# CORS Configuration
+allowed_origins:
+  - "https://live.sianmarketing.com"
+  - "https://sianmarketing.com"
+
+# Groq AI Configuration
+groq:
+  api_key: ""  # set locally — never commit real keys
+  model: "llama-3.3-70b-versatile"
+  enabled: true

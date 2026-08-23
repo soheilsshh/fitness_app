@@ -1,0 +1,15 @@
+#!/usr/bin/env sh
+# Install repo git hooks (copy into .git/hooks — no git config changes).
+set -e
+repo_root=$(git rev-parse --show-toplevel)
+hooks_src="$repo_root/.githooks"
+hooks_dst="$repo_root/.git/hooks"
+for name in post-merge post-checkout; do
+  src="$hooks_src/$name"
+  dst="$hooks_dst/$name"
+  [ -f "$src" ] || continue
+  cp "$src" "$dst"
+  chmod +x "$dst" 2>/dev/null || true
+  echo "installed $name -> .git/hooks/$name"
+done
+echo "Done. Future git pull/checkout will auto-download the Shenava model if missing."

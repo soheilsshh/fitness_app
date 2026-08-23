@@ -1,38 +1,38 @@
-# Graph Report - backend  (2026-08-10)
+# Graph Report - backend  (2026-08-16)
 
 ## Corpus Check
-- 200 files · ~11,401,784 words
+- 259 files · ~11,445,277 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1953 nodes · 4268 edges · 72 communities (70 shown, 2 thin omitted)
-- Extraction: 91% EXTRACTED · 9% INFERRED · 0% AMBIGUOUS · INFERRED: 392 edges (avg confidence: 0.8)
+- 2657 nodes · 5997 edges · 117 communities (115 shown, 2 thin omitted)
+- Extraction: 91% EXTRACTED · 9% INFERRED · 0% AMBIGUOUS · INFERRED: 551 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `7f8e832f`
+- Built from commit: `c24f3ff7`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - CoachProgramService
-- TemplateRepository
-- funnel_service.go
+- admin_template_service.go
+- FunnelService
 - generator.go
 - AuthService
 - RunDev
 - ExerciseRepository
-- templates.go
+- TemplateRepository
 - ProgramRepository
-- MobileAppService
+- MobileDeviceRepository
 - AdminUserService
 - SubscriptionRepository
-- ServicePlanRepository
-- SiteSettingsController
+- AdminPlanService
+- .Get
 - تسک‌های بکند — Morabiyar Multi-Coach
-- MeService
-- CoachStudentService
-- daily_food_log_service.go
+- .buildProfileDTO
+- AdminStudentService
+- .CreateLog
 - TicketService
 - تسک‌های Jira — موارد پیاده‌سازی‌نشده پنل مربی
 - AuthController
@@ -40,31 +40,31 @@
 - CoachProfileService
 - .Chat
 - FeedbackService
-- WorkoutHistoryService
+- NotificationRepository
 - DataFile
 - مستندات API بکند — Morabiyar Multi-Coach
-- PaymentService
+- UserRepository
 - Config
-- NotificationRepository
+- NotificationController
 - NewServer
 - Pagination Audit Report
 - CoachAchievementService
 - Context
-- NewCheckoutService
+- ProgressReportService
 - CoachProfileRepository
 - CoachProgramController
 - AdminCoachService
-- OrderRepository
-- ZarinpalClient
-- sms_service.go
+- CoachSessionRepository
+- CommunityPostService
+- EventRepository
 - AdminProgramController
 - CoachDashboardController
-- GetUserID
+- MeController
 - CoachAchievementRepository
-- UserRepository
+- GuaranteeService
 - CoachProfileController
-- TrackingController
-- PaymentController
+- CoachTrackingController
+- RecipeService
 - CoachExerciseController
 - CoachPlanController
 - run.sh
@@ -83,55 +83,98 @@
 - Transaction
 - seed_peyman_yazdani_paste.sh
 - github.com/yourusername/fitness-management
+- MotivationalQuoteRepository
+- AchievementService
+- PoseBankService
+- usda.go
+- Context
+- FunnelLead
+- funnel_service.go
+- MeService
+- ai_generate_service.go
+- AIGenerateService
+- ServicePlanRepository
+- SiteSettingsController
+- schemas.go
+- CommunityPostController
+- FoodRepository
+- GetJWTSecret
+- coach_food_service.go
+- DailyFoodLogRepository
+- ai/validate.go
+- me_service.go
+- GetUserID
+- AIRequestLogRepository
+- foods.go
+- CoachStudentService
+- AIGenerateController
+- food_enricher.go
+- FeedbackRepository
+- CalculateNutritionTargets
+- AdminPlanController
+- deriveServingUnits
+- leadToAdminItem
+- CheckInController
+- ai_generate_controller.go
+- AdminStudentController
+- DailyFoodLogController
+- AuthorizationService
+- AnalyzeBodyPhoto
+- CoachStudentController
+- NutritionPlanJSONSchema
+- .Join
+- AIChatController
+- PersonalRecord
+- WeeklyCheckIn
 
 ## God Nodes (most connected - your core abstractions)
-1. `NewServer()` - 106 edges
-2. `GetUserID()` - 71 edges
-3. `SubscriptionRepository` - 41 edges
-4. `ServicePlanRepository` - 36 edges
-5. `FunnelService` - 33 edges
-6. `MeService` - 33 edges
-7. `CoachProfileRepository` - 31 edges
-8. `ExerciseRepository` - 29 edges
-9. `ProgramRepository` - 29 edges
-10. `CoachProgramService` - 29 edges
+1. `NewServer()` - 150 edges
+2. `GetUserID()` - 115 edges
+3. `SubscriptionRepository` - 52 edges
+4. `MeService` - 41 edges
+5. `ServicePlanRepository` - 36 edges
+6. `ProgramRepository` - 35 edges
+7. `UserRepository` - 33 edges
+8. `CoachProgramService` - 33 edges
+9. `FunnelService` - 33 edges
+10. `CoachProfileRepository` - 31 edges
 
 ## Surprising Connections (you probably didn't know these)
+- `NewServer()` --calls--> `CORSAllowCredentials()`  [INFERRED]
+  cmd/app/main.go → config/config.go
 - `NewServer()` --calls--> `IsOriginAllowed()`  [INFERRED]
   cmd/app/main.go → config/config.go
+- `NewServer()` --calls--> `NewAchievementController()`  [INFERRED]
+  cmd/app/main.go → internal/controllers/achievement_controller.go
 - `NewServer()` --calls--> `NewAdminCoachController()`  [INFERRED]
   cmd/app/main.go → internal/controllers/admin_coach_controller.go
 - `NewServer()` --calls--> `NewAdminDashboardController()`  [INFERRED]
   cmd/app/main.go → internal/controllers/admin_dashboard_controller.go
-- `NewServer()` --calls--> `NewAdminExerciseController()`  [INFERRED]
-  cmd/app/main.go → internal/controllers/admin_exercise_controller.go
-- `NewServer()` --calls--> `NewAdminFeedbackController()`  [INFERRED]
-  cmd/app/main.go → internal/controllers/admin_feedback_controller.go
 
 ## Import Cycles
 - None detected.
 
-## Communities (72 total, 2 thin omitted)
+## Communities (117 total, 2 thin omitted)
 
 ### Community 0 - "CoachProgramService"
 Cohesion: 0.05
-Nodes (68): Model, Model, Model, Context, NewAdminProgramService(), Context, DB, NewCoachProgramService() (+60 more)
+Nodes (71): Model, Model, Model, Context, NewAdminProgramService(), workoutTemplateToDetail(), Context, DB (+63 more)
 
-### Community 1 - "TemplateRepository"
-Cohesion: 0.06
-Nodes (35): AdminTemplateController, Context, NewAdminTemplateController(), Model, Model, Context, DB, NewTemplateRepository() (+27 more)
+### Community 1 - "admin_template_service.go"
+Cohesion: 0.10
+Nodes (22): AdminTemplateController, Context, NewAdminTemplateController(), Context, DB, mapNutritionMeals(), maxDayFromItems(), NewAdminTemplateService() (+14 more)
 
-### Community 2 - "funnel_service.go"
-Cohesion: 0.06
-Nodes (45): Model, Time, Context, DB, NewFunnelLeadRepository(), applyPlanToLead(), derefString(), funnelCoachSlug() (+37 more)
+### Community 2 - "FunnelService"
+Cohesion: 0.17
+Nodes (11): funnelCoachSlug(), Context, User, hashFunnelPassword(), FunnelCheckoutDTO, FunnelConfigDTO, FunnelPayResponse, FunnelPlanDTO (+3 more)
 
 ### Community 3 - "generator.go"
-Cohesion: 0.05
-Nodes (58): apiResponse, ExerciseSchema, FoodItem, FoodLogSchema, GenerateResult, jsonSchema, MealSchema, message (+50 more)
+Cohesion: 0.24
+Nodes (22): apiResponse, GenerateResult, jsonSchema, message, responseFormat, structuredRequest, usageInfo, callWithSchema() (+14 more)
 
 ### Community 4 - "AuthService"
-Cohesion: 0.06
-Nodes (34): Claims, GetJWTSecret(), GenerateAccessToken(), GenerateRefreshToken(), Time, ParseToken(), AuthMiddleware(), HandlerFunc (+26 more)
+Cohesion: 0.08
+Nodes (25): Model, Time, Model, Time, NormalizePhone(), ToEnglish(), Context, DB (+17 more)
 
 ### Community 5 - "RunDev"
 Cohesion: 0.06
@@ -141,49 +184,49 @@ Nodes (55): main(), FS, DB, MaybeSeedDevData(), PrepareDatabase(), RunMigrations
 Cohesion: 0.07
 Nodes (31): AdminExerciseController, Context, NewAdminExerciseController(), Model, Context, DB, NewExerciseRepository(), extractInstructionSteps() (+23 more)
 
-### Community 7 - "templates.go"
-Cohesion: 0.06
-Nodes (51): CoachFoodController, Context, NewCoachFoodController(), Model, Context, DB, NewFoodRepository(), foodExternalID() (+43 more)
+### Community 7 - "TemplateRepository"
+Cohesion: 0.08
+Nodes (36): Model, Model, Context, DB, NewTemplateRepository(), buildNutritionTemplateMeals(), buildWorkoutTemplateItems(), Context (+28 more)
 
 ### Community 8 - "ProgramRepository"
 Cohesion: 0.06
 Nodes (32): currentProgramsResponse, currentSubscriptionResponse, nutritionItemResponse, nutritionProgramResponse, planSummary, StudentController, studentMeResponse, subscriptionResponse (+24 more)
 
-### Community 9 - "MobileAppService"
-Cohesion: 0.07
-Nodes (25): MobileAppController, Context, NewMobileAppController(), Time, Context, DB, Time, NewMobileDeviceRepository() (+17 more)
+### Community 9 - "MobileDeviceRepository"
+Cohesion: 0.05
+Nodes (37): MobileAppController, Context, NewMobileAppController(), Time, Context, DB, Time, NewMobileDeviceRepository() (+29 more)
 
 ### Community 10 - "AdminUserService"
-Cohesion: 0.06
+Cohesion: 0.07
 Nodes (31): AdminDashboardController, AdminUserController, adminUsersListResponse, Context, NewAdminDashboardController(), Context, NewAdminUserController(), Context (+23 more)
 
 ### Community 11 - "SubscriptionRepository"
-Cohesion: 0.10
-Nodes (26): Model, Time, Context, DB, Time, NewSubscriptionRepository(), coachAlertsFromStudent(), daysBetween() (+18 more)
+Cohesion: 0.06
+Nodes (47): Model, Time, Model, Time, Context, DB, Time, NewSubscriptionRepository() (+39 more)
 
-### Community 12 - "ServicePlanRepository"
-Cohesion: 0.08
-Nodes (23): AdminPlanController, Context, NewAdminPlanController(), Model, Context, DB, NewServicePlanRepository(), Context (+15 more)
+### Community 12 - "AdminPlanService"
+Cohesion: 0.18
+Nodes (14): Context, Time, NewAdminPlanService(), planToDetail(), planToItem(), Context, NewCoachPlanService(), AdminPlanCreateRequest (+6 more)
 
-### Community 13 - "SiteSettingsController"
-Cohesion: 0.08
-Nodes (25): GetUploadDir(), SiteSettingsController, Context, NewSiteSettingsController(), Model, RawMessage, Context, DB (+17 more)
+### Community 13 - ".Get"
+Cohesion: 0.06
+Nodes (45): Model, RawMessage, Context, DB, NewSiteSettingsRepository(), Context, transcribeWithShenava(), Context (+37 more)
 
 ### Community 14 - "تسک‌های بکند — Morabiyar Multi-Coach"
 Cohesion: 0.04
 Nodes (48): TASK-B0-01: به‌روزرسانی مستندات API, TASK-B0-02: تعریف ثابت‌های نقش, TASK-B1-01: Migration — فیلد AssignedCoachID روی User, TASK-B1-02: Migration — گسترش CoachProfile, TASK-B1-03: Migration — CoachID روی ServicePlan, TASK-B1-04: Migration — CoachID روی Subscription, TASK-B1-05: Migration — CoachID روی Order (اختیاری), TASK-B1-06: CoachProfile Repository (+40 more)
 
-### Community 15 - "MeService"
-Cohesion: 0.10
-Nodes (30): Model, Time, containsString(), User, IsStudentProfileComplete(), StudentProfileProgress(), containsMeString(), Context (+22 more)
+### Community 15 - ".buildProfileDTO"
+Cohesion: 0.22
+Nodes (8): Model, Time, containsString(), User, IsStudentProfileComplete(), StudentProfileProgress(), User, UserPhoto
 
-### Community 16 - "CoachStudentService"
-Cohesion: 0.08
-Nodes (27): AdminStudentController, CoachStudentController, Context, NewAdminStudentController(), Context, NewCoachStudentController(), Context, DB (+19 more)
+### Community 16 - "AdminStudentService"
+Cohesion: 0.27
+Nodes (10): Context, DB, Time, User, NewAdminStudentService(), AdminStudentDetail, AdminStudentItem, AdminStudentListResponse (+2 more)
 
-### Community 17 - "daily_food_log_service.go"
-Cohesion: 0.08
-Nodes (31): DailyFoodLogController, Context, NewDailyFoodLogController(), Model, Time, Context, DB, Time (+23 more)
+### Community 17 - ".CreateLog"
+Cohesion: 0.28
+Nodes (12): dailyFoodLogToDTO(), formatFoodLogDate(), Context, Time, normalizeFoodLogDate(), normalizeMealType(), parseFoodLogDate(), CreateFoodLogRequest (+4 more)
 
 ### Community 18 - "TicketService"
 Cohesion: 0.10
@@ -198,24 +241,24 @@ Cohesion: 0.10
 Nodes (20): AuthController, authResponse, authUserResponse, changePasswordRequest, checkPhoneRequest, checkPhoneResponse, forgotSendOTPRequest, loginPasswordRequest (+12 more)
 
 ### Community 21 - "CoachDashboardService"
-Cohesion: 0.12
-Nodes (21): deltaPct(), Context, DB, Time, NewCoachDashboardService(), prevMonth(), epley(), Context (+13 more)
+Cohesion: 0.11
+Nodes (23): MeDashboardController, NewMeDashboardController(), deltaPct(), Context, DB, Time, NewCoachDashboardService(), prevMonth() (+15 more)
 
 ### Community 22 - "CoachProfileService"
 Cohesion: 0.13
 Nodes (22): IsValidIranNationalID(), Fallback(), Normalize(), coachProfileSubmissionMissingFields(), Context, Time, hasGrade3CoachingCertificate(), NewCoachProfileService() (+14 more)
 
 ### Community 23 - ".Chat"
-Cohesion: 0.10
-Nodes (23): Persona, AIChatController, Context, NewAIChatController(), aiDevMockReply(), buildFitinoSystemPrompt(), Client, Context (+15 more)
+Cohesion: 0.12
+Nodes (20): Persona, aiDevMockReply(), buildFitinoSystemPrompt(), Client, Context, Mutex, Time, hitsProgramOrDietTopic() (+12 more)
 
 ### Community 24 - "FeedbackService"
-Cohesion: 0.10
-Nodes (19): AdminFeedbackController, FeedbackController, Context, NewAdminFeedbackController(), Context, NewFeedbackController(), Model, Context (+11 more)
+Cohesion: 0.15
+Nodes (13): AdminFeedbackController, FeedbackController, Context, NewAdminFeedbackController(), Context, NewFeedbackController(), Context, Time (+5 more)
 
-### Community 25 - "WorkoutHistoryService"
-Cohesion: 0.12
-Nodes (20): WorkoutHistoryController, Context, NewWorkoutHistoryController(), Model, Time, Model, Time, buildSetLogs() (+12 more)
+### Community 25 - "NotificationRepository"
+Cohesion: 0.07
+Nodes (34): Model, Time, Model, Time, Context, DB, Time, NewNotificationRepository() (+26 more)
 
 ### Community 26 - "DataFile"
 Cohesion: 0.18
@@ -225,21 +268,21 @@ Nodes (22): countFiles(), Context, DB, SeedCatalogs(), SeedCatalogsFromConfig(),
 Cohesion: 0.08
 Nodes (23): CoachProfile (گسترش یافته) ✅, Order, ServicePlan, Subscription, User, داشبورد ✅, دانشجویان ✅, عمومی (+15 more)
 
-### Community 28 - "PaymentService"
-Cohesion: 0.22
-Nodes (8): Context, DB, NewPaymentService(), NewPaymentServiceWithFunnel(), ZarinpalAmountRials(), PaymentService, preparedOrder, ZarinpalPaymentResponse
+### Community 28 - "UserRepository"
+Cohesion: 0.05
+Nodes (40): CheckoutController, PaymentController, zarinpalRequestBody, Context, NewCheckoutController(), Context, NewPaymentController(), webResultButton() (+32 more)
 
 ### Community 29 - "Config"
 Cohesion: 0.19
-Nodes (22): Config, applyExplicitEnvOverrides(), applyLegacyOverrides(), bindEnvKeys(), CORSAllowedOrigins(), CORSAllowLocalhost(), Get(), GetAccessTokenDuration() (+14 more)
+Nodes (22): Config, applyExplicitEnvOverrides(), applyLegacyOverrides(), bindEnvKeys(), CORSAllowCredentials(), CORSAllowedOrigins(), CORSAllowLocalhost(), Get() (+14 more)
 
-### Community 30 - "NotificationRepository"
-Cohesion: 0.13
-Nodes (14): NotificationController, Context, NewNotificationController(), Model, Time, Context, DB, NewNotificationRepository() (+6 more)
+### Community 30 - "NotificationController"
+Cohesion: 0.39
+Nodes (3): NotificationController, Context, NewNotificationController()
 
 ### Community 31 - "NewServer"
-Cohesion: 0.16
-Nodes (16): Server, DB, main(), maybeSeedDevData(), NewServer(), runMigrations(), seedDefaultAdmin(), CORSAllowCredentials() (+8 more)
+Cohesion: 0.20
+Nodes (13): Server, DB, main(), maybeSeedDevData(), NewServer(), runMigrations(), seedDefaultAdmin(), Engine (+5 more)
 
 ### Community 32 - "Pagination Audit Report"
 Cohesion: 0.10
@@ -250,68 +293,68 @@ Cohesion: 0.21
 Nodes (13): IsValidCoachAchievementType(), ValidCoachAchievementTypes(), Context, NewCoachAchievementService(), toCoachAchievementDTO(), toPublicAchievementDTO(), CoachAchievementType, CoachAchievementCreateRequest (+5 more)
 
 ### Community 34 - "Context"
-Cohesion: 0.20
-Nodes (5): AdminFunnelController, FunnelController, Context, NewAdminFunnelController(), writeFunnelAuthSession()
+Cohesion: 0.16
+Nodes (8): AdminFunnelController, FunnelController, Context, NewAdminFunnelController(), NewFunnelController(), writeFunnelAuthSession(), containsPersian(), SMSErrorMessage()
 
-### Community 35 - "NewCheckoutService"
-Cohesion: 0.18
-Nodes (12): CheckoutController, Context, NewCheckoutController(), generateTrackingCode(), Context, DB, NewCheckoutService(), orderItemsToDTO() (+4 more)
+### Community 35 - "ProgressReportService"
+Cohesion: 0.07
+Nodes (34): ProgressReportController, StreakController, Context, NewProgressReportController(), Context, NewStreakController(), Model, Time (+26 more)
 
 ### Community 36 - "CoachProfileRepository"
 Cohesion: 0.21
 Nodes (6): Model, Context, DB, NewCoachProfileRepository(), CoachProfile, CoachProfileRepository
 
 ### Community 37 - "CoachProgramController"
-Cohesion: 0.30
+Cohesion: 0.25
 Nodes (4): CoachProgramController, Context, NewCoachProgramController(), parseOptionalPage()
 
 ### Community 38 - "AdminCoachService"
 Cohesion: 0.22
 Nodes (11): IsValidCoachProfileStatus(), Context, Time, NewAdminCoachService(), toAdminCoachAchievement(), AdminCoachAchievement, AdminCoachDetail, AdminCoachItem (+3 more)
 
-### Community 39 - "OrderRepository"
-Cohesion: 0.22
-Nodes (8): Model, Time, Context, DB, NewOrderRepository(), Order, OrderItem, OrderRepository
+### Community 39 - "CoachSessionRepository"
+Cohesion: 0.09
+Nodes (24): CoachSessionController, MeSessionController, Context, NewCoachSessionController(), NewMeSessionController(), writeSessionError(), Model, Time (+16 more)
 
-### Community 40 - "ZarinpalClient"
-Cohesion: 0.25
-Nodes (9): Client, RawMessage, NewZarinpalClient(), parseZarinpalPayload(), zarinpalPersianMessage(), zarinpalAPIResponse, ZarinpalClient, zarinpalData (+1 more)
+### Community 40 - "CommunityPostService"
+Cohesion: 0.09
+Nodes (26): Model, Context, DB, NewCommunityPostRepository(), Context, DB, Reader, marshalPostMetadata() (+18 more)
 
-### Community 41 - "sms_service.go"
-Cohesion: 0.23
-Nodes (15): IsDevelopment(), containsPersian(), escapeAPIKeyForPath(), normalizeKavenegarAPIKey(), persianKavenegarError(), sanitizeLookupName(), SendProgramReadySMS(), SendVerification() (+7 more)
+### Community 41 - "EventRepository"
+Cohesion: 0.09
+Nodes (21): AdminEventController, EventController, Context, NewAdminEventController(), NewEventController(), Model, Time, Context (+13 more)
 
 ### Community 42 - "AdminProgramController"
 Cohesion: 0.35
 Nodes (3): AdminProgramController, Context, NewAdminProgramController()
 
 ### Community 43 - "CoachDashboardController"
-Cohesion: 0.23
-Nodes (7): CoachDashboardController, MeDashboardController, Context, NewCoachDashboardController(), parseIntQuery(), Context, NewMeDashboardController()
+Cohesion: 0.29
+Nodes (5): CoachDashboardController, Context, NewCoachDashboardController(), parseIntQuery(), Context
 
-### Community 44 - "GetUserID"
-Cohesion: 0.31
-Nodes (5): MeController, Context, NewMeController(), GetUserID(), Context
+### Community 44 - "MeController"
+Cohesion: 0.23
+Nodes (3): MeController, Context, NewMeController()
 
 ### Community 45 - "CoachAchievementRepository"
 Cohesion: 0.27
 Nodes (6): Model, Context, DB, NewCoachAchievementRepository(), CoachAchievement, CoachAchievementRepository
 
-### Community 46 - "UserRepository"
-Cohesion: 0.30
-Nodes (6): Context, DB, User, NewUserRepository(), NewFunnelService(), UserRepository
+### Community 46 - "GuaranteeService"
+Cohesion: 0.10
+Nodes (24): AdminGuaranteeController, GuaranteeController, Context, NewAdminGuaranteeController(), NewGuaranteeController(), writeGuaranteeError(), Model, Context (+16 more)
 
 ### Community 47 - "CoachProfileController"
 Cohesion: 0.35
 Nodes (3): CoachProfileController, Context, NewCoachProfileController()
 
-### Community 48 - "TrackingController"
-Cohesion: 0.29
+### Community 48 - "CoachTrackingController"
+Cohesion: 0.27
 Nodes (5): CoachTrackingController, TrackingController, Context, NewCoachTrackingController(), NewTrackingController()
 
-### Community 49 - "PaymentController"
-Cohesion: 0.31
-Nodes (6): PaymentController, zarinpalRequestBody, Context, NewPaymentController(), webResultButton(), BuildMobilePaymentDeepLink()
+### Community 49 - "RecipeService"
+Cohesion: 0.10
+Nodes (20): AdminRecipeController, RecipeController, Context, NewAdminRecipeController(), Context, NewRecipeController(), Model, Context (+12 more)
 
 ### Community 50 - "CoachExerciseController"
 Cohesion: 0.33
@@ -377,25 +420,197 @@ Nodes (3): Model, Time, CheckIn
 Cohesion: 0.50
 Nodes (3): Model, Time, Transaction
 
+### Community 72 - "MotivationalQuoteRepository"
+Cohesion: 0.11
+Nodes (18): AdminMotivationalQuoteController, MotivationalQuoteController, Context, NewAdminMotivationalQuoteController(), NewMotivationalQuoteController(), Model, Context, DB (+10 more)
+
+### Community 73 - "AchievementService"
+Cohesion: 0.10
+Nodes (18): AchievementController, Context, NewAchievementController(), Model, Model, Context, DB, NewAchievementRepository() (+10 more)
+
+### Community 74 - "PoseBankService"
+Cohesion: 0.11
+Nodes (19): AdminPoseBankController, PoseBankController, Context, NewAdminPoseBankController(), NewPoseBankController(), Model, Context, DB (+11 more)
+
+### Community 75 - "usda.go"
+Cohesion: 0.15
+Nodes (26): applyMatch(), Context, DB, markUnmatched(), runEnrichment(), main(), csvHeaderIndex(), downloadFile() (+18 more)
+
+### Community 76 - "Context"
+Cohesion: 0.18
+Nodes (13): FoodLogSchema, SetLogSchema, WorkoutPlanSchema, Context, mapAIGenErr(), workoutPlanToItems(), Context, isShenavaUnavailable() (+5 more)
+
+### Community 77 - "FunnelLead"
+Cohesion: 0.17
+Nodes (8): Model, Time, Context, DB, NewFunnelLeadRepository(), FunnelLead, FunnelLeadRepository, FunnelStats
+
+### Community 78 - "funnel_service.go"
+Cohesion: 0.16
+Nodes (19): applyPlanToLead(), generateFunnelToken(), generateFunnelTrackingCode(), isValidActivityLevel(), isValidCommitment(), isValidExperience(), isValidMainObstacle(), isValidNutritionChallenge() (+11 more)
+
+### Community 79 - "MeService"
+Cohesion: 0.21
+Nodes (8): Context, DB, NewMeService(), MeOrderDTO, MeOrderItemDTO, MeOrderListResponse, MeProgramsResponse, MeService
+
+### Community 80 - "ai_generate_service.go"
+Cohesion: 0.23
+Nodes (15): NutritionPlanSchema, NutritionWeekSchema, buildAIUserContext(), buildWorkoutConstraintsContext(), derefFloat(), mapPrimaryGoalToPlanGoal(), mealSlotFromIndex(), nutritionPlanToItems() (+7 more)
+
+### Community 81 - "AIGenerateService"
+Cohesion: 0.19
+Nodes (13): FoodItem, IngredientSuggestionSchema, MealSchema, NutritionWeekDaySchema, buildIngredientUserContext(), buildMealRegenerateContext(), DB, Mutex (+5 more)
+
+### Community 82 - "ServicePlanRepository"
+Cohesion: 0.24
+Nodes (6): Model, Context, DB, NewServicePlanRepository(), ServicePlan, ServicePlanRepository
+
+### Community 83 - "SiteSettingsController"
+Cohesion: 0.23
+Nodes (4): GetUploadDir(), SiteSettingsController, Context, NewSiteSettingsController()
+
+### Community 84 - "schemas.go"
+Cohesion: 0.14
+Nodes (14): ExerciseSchema, ProgressAnalysisSchema, WorkoutDaySchema, WorkoutNoteSummarySchema, FoodLogJSONSchema(), IngredientSuggestionJSONSchema(), MealJSONSchema(), NutritionWeekJSONSchema() (+6 more)
+
+### Community 85 - "CommunityPostController"
+Cohesion: 0.24
+Nodes (5): AdminCommunityPostController, CommunityPostController, Context, NewAdminCommunityPostController(), NewCommunityPostController()
+
+### Community 86 - "FoodRepository"
+Cohesion: 0.27
+Nodes (7): Model, Context, DB, NewFoodRepository(), Food, FoodServingUnit, FoodRepository
+
+### Community 87 - "GetJWTSecret"
+Cohesion: 0.20
+Nodes (12): Claims, GetAccessTokenDuration(), GetJWTSecret(), GetRefreshTokenDuration(), Duration, GenerateAccessToken(), GenerateRefreshToken(), Time (+4 more)
+
+### Community 88 - "coach_food_service.go"
+Cohesion: 0.23
+Nodes (10): CoachFoodController, Context, NewCoachFoodController(), foodModelToCoachItem(), Context, NewCoachFoodService(), CoachFoodItem, CoachFoodListResponse (+2 more)
+
+### Community 89 - "DailyFoodLogRepository"
+Cohesion: 0.20
+Nodes (9): Model, Time, Context, DB, Time, NewDailyFoodLogRepository(), NewDailyFoodLogService(), DailyFoodLog (+1 more)
+
+### Community 90 - "ai/validate.go"
+Cohesion: 0.26
+Nodes (12): T, TestParsePersona(), TestValidateNutritionPlan_AcceptsValid(), TestValidateNutritionPlan_RejectsBadCalories(), TestValidateNutritionPlan_RejectsEmptyMeals(), TestValidateWorkoutPlan_AcceptsValid(), TestValidateWorkoutPlan_RejectsEmptyDays(), ValidateBodyPhotoAnalysis() (+4 more)
+
+### Community 91 - "me_service.go"
+Cohesion: 0.24
+Nodes (11): containsMeString(), Time, mePhotosToDTO(), meSplitName(), MeNutritionDTO, MePhotoDTO, MeProfileDTO, MeProfileUpdateRequest (+3 more)
+
+### Community 92 - "GetUserID"
+Cohesion: 0.32
+Nodes (5): WorkoutHistoryController, Context, NewWorkoutHistoryController(), GetUserID(), Context
+
+### Community 93 - "AIRequestLogRepository"
+Cohesion: 0.21
+Nodes (8): Model, Context, DB, Time, NewAIRequestLogRepository(), AIRequestLog, AIRequestLogRepository, AIUsageSummaryRow
+
+### Community 94 - "foods.go"
+Cohesion: 0.31
+Nodes (12): foodExternalID(), Context, DB, ImportFoodsCSV(), mapCSVFoodHeader(), mapCSVRowToFood(), normalizeNumber(), parseCSVFoodRow() (+4 more)
+
+### Community 95 - "CoachStudentService"
+Cohesion: 0.33
+Nodes (7): Context, DB, Time, User, NewCoachStudentService(), CoachStudentDetail, CoachStudentService
+
+### Community 96 - "AIGenerateController"
+Cohesion: 0.41
+Nodes (3): AIGenerateController, Context, writeAIGenerateError()
+
+### Community 97 - "food_enricher.go"
+Cohesion: 0.35
+Nodes (11): foodModelToMealDTO(), foodModelToMealDTOByGrams(), formatFoodQuantity(), mealMultiplier(), mealSlotFromLegacyNumber(), mealSlotToNumber(), nutritionItemToMealDTO(), scaleFoodByGrams() (+3 more)
+
+### Community 98 - "FeedbackRepository"
+Cohesion: 0.29
+Nodes (6): Model, Context, DB, NewFeedbackRepository(), Feedback, FeedbackRepository
+
+### Community 99 - "CalculateNutritionTargets"
+Cohesion: 0.38
+Nodes (8): ageFromBirthDate(), CalculateNutritionTargets(), T, TestCalculateNutritionTargets_BodyFatUsesKatchMcArdle(), TestCalculateNutritionTargets_CutIsLowerThanBulk(), TestCalculateNutritionTargets_DefaultsWhenMissing(), TestCalculateNutritionTargets_MaintainMale(), NutritionCalcInput
+
+### Community 100 - "AdminPlanController"
+Cohesion: 0.36
+Nodes (3): AdminPlanController, Context, NewAdminPlanController()
+
+### Community 101 - "deriveServingUnits"
+Cohesion: 0.36
+Nodes (8): deriveServingUnits(), EnrichFoodServingUnits(), Context, DB, gramsPerUnitFromSibling(), isJunkLabel(), normalizeUnitLabel(), derivedUnit
+
+### Community 102 - "leadToAdminItem"
+Cohesion: 0.28
+Nodes (7): derefString(), funnelStage(), Time, leadToAdminItem(), AdminFunnelLeadDetail, AdminFunnelLeadItem, AdminFunnelLeadListResponse
+
+### Community 103 - "CheckInController"
+Cohesion: 0.39
+Nodes (3): CheckInController, Context, NewCheckInController()
+
+### Community 104 - "ai_generate_controller.go"
+Cohesion: 0.25
+Nodes (7): generateNutritionRequest, generateWeeklyNutritionRequest, generateWorkoutRequest, regenerateMealRequest, suggestFromIngredientsRequest, transcribeResponse, NewAIGenerateController()
+
+### Community 105 - "AdminStudentController"
+Cohesion: 0.43
+Nodes (3): AdminStudentController, Context, NewAdminStudentController()
+
+### Community 106 - "DailyFoodLogController"
+Cohesion: 0.43
+Nodes (3): DailyFoodLogController, Context, NewDailyFoodLogController()
+
+### Community 107 - "AuthorizationService"
+Cohesion: 0.43
+Nodes (4): Context, DB, NewAuthorizationService(), AuthorizationService
+
+### Community 108 - "AnalyzeBodyPhoto"
+Cohesion: 0.60
+Nodes (5): BodyPhotoAnalysisSchema, AnalyzeBodyPhoto(), BodyPhotoAnalysisJSONSchema(), Context, mockBodyPhotoAnalysis()
+
+### Community 109 - "CoachStudentController"
+Cohesion: 0.47
+Nodes (3): CoachStudentController, Context, NewCoachStudentController()
+
+### Community 110 - "NutritionPlanJSONSchema"
+Cohesion: 0.47
+Nodes (5): NutritionPlanJSONSchema(), T, TestNutritionPlanJSONSchemaShape(), TestSchemaNutritionFixtureUnmarshal(), TestSchemaWorkoutFixtureUnmarshal()
+
+### Community 111 - ".Join"
+Cohesion: 0.67
+Nodes (3): Reader, meGetUploadDir(), meRemovePhotoFile()
+
+### Community 112 - "AIChatController"
+Cohesion: 0.50
+Nodes (3): AIChatController, Context, NewAIChatController()
+
+### Community 114 - "PersonalRecord"
+Cohesion: 0.50
+Nodes (3): Model, Time, PersonalRecord
+
+### Community 115 - "WeeklyCheckIn"
+Cohesion: 0.50
+Nodes (3): Model, Time, WeeklyCheckIn
+
 ## Knowledge Gaps
-- **135 isolated node(s):** `github.com/yourusername/fitness-management`, `registerRequest`, `checkPhoneRequest`, `checkPhoneResponse`, `registerCoachRequest` (+130 more)
+- **138 isolated node(s):** `github.com/yourusername/fitness-management`, `regenerateMealRequest`, `suggestFromIngredientsRequest`, `transcribeResponse`, `registerRequest` (+133 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **2 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `NewServer()` connect `NewServer` to `CoachProgramService`, `TemplateRepository`, `funnel_service.go`, `generator.go`, `AuthService`, `ExerciseRepository`, `templates.go`, `ProgramRepository`, `MobileAppService`, `AdminUserService`, `SubscriptionRepository`, `ServicePlanRepository`, `SiteSettingsController`, `MeService`, `CoachStudentService`, `daily_food_log_service.go`, `TicketService`, `AuthController`, `CoachDashboardService`, `CoachProfileService`, `.Chat`, `FeedbackService`, `WorkoutHistoryService`, `DataFile`, `PaymentService`, `Config`, `NotificationRepository`, `CoachAchievementService`, `Context`, `NewCheckoutService`, `CoachProfileRepository`, `CoachProgramController`, `AdminCoachService`, `OrderRepository`, `AdminProgramController`, `CoachDashboardController`, `GetUserID`, `CoachAchievementRepository`, `UserRepository`, `CoachProfileController`, `TrackingController`, `PaymentController`, `CoachExerciseController`, `CoachPlanController`, `CoachAchievementController`, `CoachTicketController`, `AdminCoachController`, `MeTicketController`, `PublicCoachController`?**
-  _High betweenness centrality (0.383) - this node is a cross-community bridge._
-- **Why does `MeService` connect `MeService` to `CoachProgramService`, `generator.go`, `ExerciseRepository`, `templates.go`, `OrderRepository`, `ProgramRepository`, `SubscriptionRepository`, `GetUserID`, `ServicePlanRepository`, `UserRepository`, `AuthController`, `.Chat`?**
-  _High betweenness centrality (0.119) - this node is a cross-community bridge._
-- **Why does `GetUserID()` connect `GetUserID` to `generator.go`, `AuthService`, `MobileAppService`, `CoachStudentService`, `daily_food_log_service.go`, `.Chat`, `WorkoutHistoryService`, `NotificationRepository`, `NewServer`, `NewCheckoutService`, `CoachProgramController`, `CoachDashboardController`, `CoachProfileController`, `TrackingController`, `PaymentController`, `CoachExerciseController`, `CoachPlanController`, `CoachAchievementController`, `CoachTicketController`, `MeTicketController`?**
-  _High betweenness centrality (0.063) - this node is a cross-community bridge._
-- **Are the 102 inferred relationships involving `NewServer()` (e.g. with `CORSAllowCredentials()` and `IsOriginAllowed()`) actually correct?**
-  _`NewServer()` has 102 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 69 inferred relationships involving `GetUserID()` (e.g. with `.Chat()` and `.GenerateNutrition()`) actually correct?**
-  _`GetUserID()` has 69 INFERRED edges - model-reasoned connections that need verification._
-- **What connects `github.com/yourusername/fitness-management`, `registerRequest`, `checkPhoneRequest` to the rest of the system?**
-  _135 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Why does `NewServer()` connect `NewServer` to `CoachProgramService`, `admin_template_service.go`, `AuthService`, `ExerciseRepository`, `TemplateRepository`, `ProgramRepository`, `MobileDeviceRepository`, `AdminUserService`, `SubscriptionRepository`, `AdminPlanService`, `.Get`, `AdminStudentService`, `TicketService`, `AuthController`, `CoachDashboardService`, `CoachProfileService`, `.Chat`, `FeedbackService`, `NotificationRepository`, `DataFile`, `UserRepository`, `Config`, `NotificationController`, `CoachAchievementService`, `Context`, `ProgressReportService`, `CoachProfileRepository`, `CoachProgramController`, `AdminCoachService`, `CoachSessionRepository`, `CommunityPostService`, `EventRepository`, `AdminProgramController`, `CoachDashboardController`, `MeController`, `CoachAchievementRepository`, `GuaranteeService`, `CoachProfileController`, `CoachTrackingController`, `RecipeService`, `CoachExerciseController`, `CoachPlanController`, `CoachAchievementController`, `CoachTicketController`, `AdminCoachController`, `MeTicketController`, `PublicCoachController`, `MotivationalQuoteRepository`, `AchievementService`, `PoseBankService`, `FunnelLead`, `MeService`, `AIGenerateService`, `ServicePlanRepository`, `SiteSettingsController`, `CommunityPostController`, `FoodRepository`, `GetJWTSecret`, `coach_food_service.go`, `DailyFoodLogRepository`, `GetUserID`, `AIRequestLogRepository`, `CoachStudentService`, `FeedbackRepository`, `AdminPlanController`, `CheckInController`, `ai_generate_controller.go`, `AdminStudentController`, `DailyFoodLogController`, `AuthorizationService`, `CoachStudentController`, `AIChatController`?**
+  _High betweenness centrality (0.475) - this node is a cross-community bridge._
+- **Why does `GetUserID()` connect `GetUserID` to `MobileDeviceRepository`, `UserRepository`, `NotificationController`, `NewServer`, `ProgressReportService`, `CoachProgramController`, `CoachSessionRepository`, `EventRepository`, `CoachDashboardController`, `MeController`, `GuaranteeService`, `CoachProfileController`, `CoachTrackingController`, `CoachExerciseController`, `CoachPlanController`, `CoachAchievementController`, `CoachTicketController`, `MeTicketController`, `AchievementService`, `CommunityPostController`, `GetJWTSecret`, `AIGenerateController`, `CheckInController`, `DailyFoodLogController`, `CoachStudentController`, `AIChatController`?**
+  _High betweenness centrality (0.098) - this node is a cross-community bridge._
+- **Why does `SubscriptionRepository` connect `SubscriptionRepository` to `CoachProgramService`, `ProgressReportService`, `ProgramRepository`, `AdminUserService`, `GuaranteeService`, `MeService`, `AdminStudentService`, `AIGenerateService`, `CoachDashboardService`, `NotificationRepository`, `UserRepository`, `CoachStudentService`?**
+  _High betweenness centrality (0.065) - this node is a cross-community bridge._
+- **Are the 146 inferred relationships involving `NewServer()` (e.g. with `CORSAllowCredentials()` and `IsOriginAllowed()`) actually correct?**
+  _`NewServer()` has 146 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 113 inferred relationships involving `GetUserID()` (e.g. with `.GetMyAchievements()` and `.Review()`) actually correct?**
+  _`GetUserID()` has 113 INFERRED edges - model-reasoned connections that need verification._
+- **What connects `github.com/yourusername/fitness-management`, `regenerateMealRequest`, `suggestFromIngredientsRequest` to the rest of the system?**
+  _138 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `CoachProgramService` be split into smaller, more focused modules?**
-  _Cohesion score 0.05384615384615385 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05025284450063211 - nodes in this community are weakly interconnected._

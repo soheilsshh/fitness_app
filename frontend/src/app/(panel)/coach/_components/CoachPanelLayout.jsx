@@ -16,6 +16,7 @@ import {
   CoachProfileProvider,
   useCoachProfile,
 } from "@/app/(panel)/coach/_context/CoachProfileContext";
+import { CoachSidebarNav } from "./CoachSidebarNav";
 
 const COACH_PANEL_SEGMENTS = new Set([
   "dashboard",
@@ -63,9 +64,9 @@ function CoachPanelShell({ children }) {
   return (
     <PanelLayout
       brand={coachBrand}
-      navItems={navItems}
-      secondaryNavItems={secondaryNavItems}
-      secondaryNavLabel="ابزارها"
+      navContent={
+        <CoachSidebarNav navItems={navItems} toolsItems={secondaryNavItems} />
+      }
       header={coachHeader}
       profileHref={PROFILE_HREF}
       gate={CoachApprovalGate}

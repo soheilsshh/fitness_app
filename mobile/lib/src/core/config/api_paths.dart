@@ -31,6 +31,12 @@ class ApiPaths {
   static const meWorkoutSessions = '/me/workout-sessions';
   static const meTickets = '/me/tickets';
   static const meAiChat = '/me/ai/chat';
+  static const meAiTranscribe = '/me/ai/transcribe';
+  static const meNutritionSuggestFromIngredients =
+      '/me/nutrition/suggest-from-ingredients';
+  static const meNutritionGenerate = '/me/nutrition/generate';
+  static const meNutritionRegenerateMeal = '/me/nutrition/regenerate-meal';
+  static const meNutritionGenerateWeek = '/me/nutrition/generate-week';
   static const meAvatar = '/me/avatar';
   static const programsCurrent = '/programs/current';
   static const userFoods = '/user/foods';

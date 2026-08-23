@@ -1,11 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Apple, ArrowRight, Check, RefreshCw, Save, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/axios/client";
 import { getApiErrorMessage } from "@/lib/api/translateError";
+import { navigateAfterAuth } from "@/lib/auth/postAuthRedirect";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -73,31 +75,65 @@ export default function PreviewStep({ goal, details, onBack }) {
   const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [savedSubscriptionId, setSavedSubscriptionId] = useState(null);
   const [error, setError] = useState("");
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(null);
 
   const [nutritionPlan, setNutritionPlan] = useState(null);
   const [nutritionGenerating, setNutritionGenerating] = useState(false);
   const [nutritionSaving, setNutritionSaving] = useState(false);
   const [nutritionSaved, setNutritionSaved] = useState(false);
+  const [nutritionSavedSubscriptionId, setNutritionSavedSubscriptionId] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadSubscriptions() {
+      try {
+        const res = await api.get("/me/programs");
+        const active = (res.data?.programs || []).some((p) => p.status === "active");
+        if (!cancelled) setHasActiveSubscription(active);
+      } catch {
+        if (!cancelled) setHasActiveSubscription(false);
+      }
+    }
+    loadSubscriptions();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const generate = useCallback(
-    async (save) => {
-      setGenerating(true);
+    async ({ save = false, planToSave = null } = {}) => {
+      setGenerating(!save);
       setError("");
       try {
-        const res = await api.post("/me/workout/generate", {
+        const body = {
           save,
           equipment: details.equipmentLabels,
           daysPerWeek: details.daysPerWeek,
           sessionMinutes: details.sessionMinutes,
-        });
-        setPlan(res.data?.plan || null);
-        if (save) {
+        };
+        if (planToSave) {
+          body.plan = planToSave;
+        }
+        const res = await api.post("/me/workout/generate", body);
+        if (!save) {
+          setPlan(res.data?.plan || null);
+        }
+        if (save && res.data?.programId) {
           setSaved(true);
-          toast.success("برنامه تمرینی ذخیره شد و در «برنامه‌های من» فعال است");
+          setSavedSubscriptionId(res.data.subscriptionId || null);
+          toast.success("برنامه تمرینی ذخیره شد");
+          if (res.data.subscriptionId) {
+            toast.message("برنامه داخل اشتراک فعال شماست", {
+              description: "برای دیدن جزئیات، وارد همان برنامه در «برنامه‌های من» شوید.",
+            });
+          }
         }
       } catch (e) {
-        setError(getApiErrorMessage(e, "ساخت برنامه ناموفق بود"));
+        const msg = getApiErrorMessage(e, save ? "ذخیره برنامه ناموفق بود" : "ساخت برنامه ناموفق بود");
+        setError(msg);
+        if (save) toast.error(msg);
       } finally {
         setGenerating(false);
       }
@@ -106,37 +142,68 @@ export default function PreviewStep({ goal, details, onBack }) {
   );
 
   useEffect(() => {
-    generate(false);
+    generate({ save: false });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const generateNutrition = async (save) => {
-    setNutritionGenerating(true);
+  const generateNutrition = async ({ save = false, planToSave = null } = {}) => {
+    if (!save) setNutritionGenerating(true);
     try {
-      const res = await api.post("/me/nutrition/generate", {
+      const body = {
         save,
         goal: goalToNutritionGoal(goal),
-      });
-      setNutritionPlan(res.data?.plan || null);
-      if (save) {
+      };
+      if (planToSave) {
+        body.plan = planToSave;
+      }
+      const res = await api.post("/me/nutrition/generate", body);
+      if (!save) {
+        setNutritionPlan(res.data?.plan || null);
+      }
+      if (save && res.data?.programId) {
         setNutritionSaved(true);
-        toast.success("برنامه غذایی ذخیره شد و در «برنامه‌های من» فعال است");
+        setNutritionSavedSubscriptionId(res.data.subscriptionId || null);
+        toast.success("برنامه غذایی ذخیره شد");
       }
     } catch (e) {
-      toast.error(getApiErrorMessage(e, "ساخت برنامه غذایی ناموفق بود"));
+      toast.error(getApiErrorMessage(e, save ? "ذخیره برنامه غذایی ناموفق بود" : "ساخت برنامه غذایی ناموفق بود"));
     } finally {
       setNutritionGenerating(false);
     }
   };
+
+  const goToSavedProgram = (subscriptionId) => {
+    if (!subscriptionId) {
+      router.push("/user/my-programs");
+      return;
+    }
+    navigateAfterAuth(`/user/my-programs/detail?id=${subscriptionId}`);
+  };
+
+  const canSave = hasActiveSubscription === true;
+  const subscriptionHint =
+    hasActiveSubscription === false
+      ? "برای ذخیره برنامه در «برنامه‌های من»، ابتدا باید یک اشتراک فعال با مربی داشته باشید. پیش‌نمایش AI بدون اشتراک هم ساخته می‌شود."
+      : null;
 
   return (
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-iranianSansDemiBold text-foreground">پیش‌نمایش برنامه</h3>
         <p className="mt-1 text-sm text-muted-foreground">
-          این پیش‌نویس هوش مصنوعی است. تا وقتی آن را ذخیره نکنید، رسمی محسوب نمی‌شود.
+          این پیش‌نویس هوش مصنوعی است. با «ذخیره»، برنامه داخل اشتراک فعال شما در «برنامه‌های من» قرار
+          می‌گیرد (کارت جدا ساخته نمی‌شود).
         </p>
       </div>
+
+      {subscriptionHint ? (
+        <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-100">
+          {subscriptionHint}{" "}
+          <Link href="/user/orders" className="font-iranianSansDemiBold underline underline-offset-2">
+            مشاهده سفارش‌ها / خرید پلن
+          </Link>
+        </div>
+      ) : null}
 
       {error ? (
         <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-800 dark:text-rose-200">
@@ -177,7 +244,7 @@ export default function PreviewStep({ goal, details, onBack }) {
               variant="outline"
               size="sm"
               disabled={generating || saving}
-              onClick={() => generate(false)}
+              onClick={() => generate({ save: false })}
             >
               <RefreshCw data-icon="inline-start" />
               تولید مجدد
@@ -185,10 +252,10 @@ export default function PreviewStep({ goal, details, onBack }) {
             <Button
               type="button"
               size="sm"
-              disabled={generating || saving || !plan}
+              disabled={generating || saving || !plan || !canSave}
               onClick={async () => {
                 setSaving(true);
-                await generate(true);
+                await generate({ save: true, planToSave: plan });
                 setSaving(false);
               }}
             >
@@ -198,7 +265,8 @@ export default function PreviewStep({ goal, details, onBack }) {
           </div>
           {saved ? (
             <p className="text-xs text-muted-foreground">
-              چون برنامه دوباره توسط هوش مصنوعی ساخته شد، ممکن است با پیش‌نمایش قبلی کمی تفاوت جزئی داشته باشد.
+              برنامه داخل اشتراک فعال شما ذخیره شد. برای دیدن حرکات و وعده‌ها، همان کارت را در «برنامه‌های
+              من» باز کنید.
             </p>
           ) : null}
         </CardContent>
@@ -233,7 +301,7 @@ export default function PreviewStep({ goal, details, onBack }) {
               variant="outline"
               size="sm"
               disabled={nutritionGenerating || nutritionSaving}
-              onClick={() => generateNutrition(false)}
+              onClick={() => generateNutrition({ save: false })}
             >
               <RefreshCw data-icon="inline-start" />
               {nutritionPlan ? "تولید مجدد" : "ساخت برنامه غذایی"}
@@ -242,10 +310,10 @@ export default function PreviewStep({ goal, details, onBack }) {
               <Button
                 type="button"
                 size="sm"
-                disabled={nutritionGenerating || nutritionSaving}
+                disabled={nutritionGenerating || nutritionSaving || !canSave}
                 onClick={async () => {
                   setNutritionSaving(true);
-                  await generateNutrition(true);
+                  await generateNutrition({ save: true, planToSave: nutritionPlan });
                   setNutritionSaving(false);
                 }}
               >
@@ -263,8 +331,12 @@ export default function PreviewStep({ goal, details, onBack }) {
           قبلی
         </Button>
         {saved ? (
-          <Button type="button" className="h-11 gap-2" onClick={() => router.push("/user/my-programs")}>
-            رفتن به برنامه‌های من
+          <Button
+            type="button"
+            className="h-11 gap-2"
+            onClick={() => goToSavedProgram(savedSubscriptionId)}
+          >
+            مشاهده در برنامه‌های من
           </Button>
         ) : null}
       </div>

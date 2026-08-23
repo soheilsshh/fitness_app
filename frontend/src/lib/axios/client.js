@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { clearAuthSession } from "@/lib/auth/session";
 import { translateApiError } from "@/lib/api/translateError";
 import { API_BASE_URL } from "@/lib/api/baseUrl";
+import { withTrailingSlash } from "@/lib/auth/postAuthRedirect";
 
 const baseURL = API_BASE_URL;
 
@@ -51,7 +52,7 @@ if (typeof window !== "undefined") {
         );
         // Brief delay so the toast is visible before the navigation.
         setTimeout(() => {
-          window.location.href = `/auth?redirect=${next}`;
+          window.location.href = withTrailingSlash(`/auth?redirect=${next}`);
         }, 1200);
       }
 

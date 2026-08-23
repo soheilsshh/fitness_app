@@ -8,16 +8,18 @@ import (
 )
 
 type CoachFoodItem struct {
-	ID       uint     `json:"id"`
-	Name     string   `json:"name"`
-	Unit     string   `json:"unit"`
-	Amount   float64  `json:"amount"`
-	Calories float64  `json:"calories"`
-	Fat      float64  `json:"fat"`
-	Protein  float64  `json:"protein"`
-	Carbs    float64  `json:"carbs"`
-	Fiber    *float64 `json:"fiber,omitempty"`
-	Sugar    *float64 `json:"sugar,omitempty"`
+	ID          uint     `json:"id"`
+	Name        string   `json:"name"`
+	Category    string   `json:"category,omitempty"`
+	Unit        string   `json:"unit"`
+	Amount      float64  `json:"amount"`
+	Calories    float64  `json:"calories"`
+	Fat         float64  `json:"fat"`
+	Protein     float64  `json:"protein"`
+	Carbs       float64  `json:"carbs"`
+	Fiber       *float64 `json:"fiber,omitempty"`
+	Sugar       *float64 `json:"sugar,omitempty"`
+	KcalPerGram *float64 `json:"kcalPerGram,omitempty"`
 
 	// Extended per-100g nutrition panel — null until USDA-enriched, never a
 	// guessed value (see cmd/enrichfoods).
@@ -30,6 +32,19 @@ type CoachFoodItem struct {
 	Phosphorus   *float64 `json:"phosphorus,omitempty"`
 	TransFat     *float64 `json:"transFat,omitempty"`
 	SaturatedFat *float64 `json:"saturatedFat,omitempty"`
+	Water        *float64 `json:"water,omitempty"`
+	Omega3       *float64 `json:"omega3,omitempty"`
+	Omega6       *float64 `json:"omega6,omitempty"`
+	Zinc         *float64 `json:"zinc,omitempty"`
+	VitaminC     *float64 `json:"vitaminC,omitempty"`
+	GlycemicLoad *float64 `json:"glycemicLoad,omitempty"`
+
+	BurnRun10KphMinPerGram   *float64 `json:"burnRun10KphMinPerGram,omitempty"`
+	BurnWalk7KphMinPerGram   *float64 `json:"burnWalk7KphMinPerGram,omitempty"`
+	BurnCycle15KphMinPerGram *float64 `json:"burnCycle15KphMinPerGram,omitempty"`
+	BurnSwimCrawlMinPerGram  *float64 `json:"burnSwimCrawlMinPerGram,omitempty"`
+	BurnHikeMinPerGram       *float64 `json:"burnHikeMinPerGram,omitempty"`
+	BurnAerobicsMinPerGram   *float64 `json:"burnAerobicsMinPerGram,omitempty"`
 
 	// The spoon/gram/cup picker — always includes a 1g "گرم" entry.
 	ServingUnits []CoachFoodServingUnit `json:"servingUnits"`
@@ -73,16 +88,18 @@ func foodModelToCoachItem(f *models.Food) CoachFoodItem {
 	}
 
 	return CoachFoodItem{
-		ID:       f.ID,
-		Name:     f.Name,
-		Unit:     f.Unit,
-		Amount:   f.Amount,
-		Calories: f.Calories,
-		Fat:      f.Fat,
-		Protein:  f.Protein,
-		Carbs:    f.Carbs,
-		Fiber:    f.Fiber,
-		Sugar:    f.Sugar,
+		ID:          f.ID,
+		Name:        f.Name,
+		Category:    f.Category,
+		Unit:        f.Unit,
+		Amount:      f.Amount,
+		Calories:    f.Calories,
+		Fat:         f.Fat,
+		Protein:     f.Protein,
+		Carbs:       f.Carbs,
+		Fiber:       f.Fiber,
+		Sugar:       f.Sugar,
+		KcalPerGram: f.KcalPerGram,
 
 		Sodium:       f.Sodium,
 		Cholesterol:  f.Cholesterol,
@@ -93,6 +110,19 @@ func foodModelToCoachItem(f *models.Food) CoachFoodItem {
 		Phosphorus:   f.Phosphorus,
 		TransFat:     f.TransFat,
 		SaturatedFat: f.SaturatedFat,
+		Water:        f.Water,
+		Omega3:       f.Omega3,
+		Omega6:       f.Omega6,
+		Zinc:         f.Zinc,
+		VitaminC:     f.VitaminC,
+		GlycemicLoad: f.GlycemicLoad,
+
+		BurnRun10KphMinPerGram:   f.BurnRun10KphMinPerGram,
+		BurnWalk7KphMinPerGram:   f.BurnWalk7KphMinPerGram,
+		BurnCycle15KphMinPerGram: f.BurnCycle15KphMinPerGram,
+		BurnSwimCrawlMinPerGram:  f.BurnSwimCrawlMinPerGram,
+		BurnHikeMinPerGram:       f.BurnHikeMinPerGram,
+		BurnAerobicsMinPerGram:   f.BurnAerobicsMinPerGram,
 
 		ServingUnits: units,
 	}
