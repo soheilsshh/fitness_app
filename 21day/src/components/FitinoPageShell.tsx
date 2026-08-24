@@ -1,45 +1,11 @@
 import { useEffect, type ReactNode } from "react";
 import FitinoBrandMark from "@/components/FitinoBrandMark";
 import JourneyRail, { type JourneyStep } from "@/components/JourneyRail";
-import { REGISTRATION_COUNTDOWN, padCountdown } from "@/lib/registrationCountdown";
 
 interface FitinoPageShellProps {
   children: ReactNode;
   railSteps?: JourneyStep[];
 }
-
-const HeaderCountdown = () => {
-  const units = [
-    { value: REGISTRATION_COUNTDOWN.days, label: "روز" },
-    { value: REGISTRATION_COUNTDOWN.hours, label: "ساعت" },
-    { value: REGISTRATION_COUNTDOWN.minutes, label: "دقیقه" },
-    { value: REGISTRATION_COUNTDOWN.seconds, label: "ثانیه" },
-  ];
-
-  return (
-    <div className="sticky top-[4.75rem] z-40 px-4">
-      <div className="container mx-auto flex max-w-3xl justify-end">
-        <a
-          href="#countdown"
-          aria-label="مهلت ثبت‌نام باقی‌مانده"
-          className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-[#0e0e0e]/85 px-2.5 py-1.5 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.7)] backdrop-blur-xl sm:gap-2 sm:px-3 sm:py-2"
-        >
-          {units.map((unit, index) => (
-            <span key={unit.label} className="flex items-center gap-1.5 sm:gap-2">
-              {index > 0 && <span className="text-[10px] text-white/25 sm:text-xs">:</span>}
-              <span className="flex flex-col items-center leading-none">
-                <span className="text-[11px] font-extrabold tabular-nums text-[#26fce3] sm:text-sm">
-                  {padCountdown(unit.value)}
-                </span>
-                <span className="mt-0.5 text-[8px] text-muted-foreground sm:text-[9px]">{unit.label}</span>
-              </span>
-            </span>
-          ))}
-        </a>
-      </div>
-    </div>
-  );
-};
 
 const FitinoPageShell = ({ children, railSteps }: FitinoPageShellProps) => {
   useEffect(() => {
@@ -81,8 +47,6 @@ const FitinoPageShell = ({ children, railSteps }: FitinoPageShellProps) => {
           </a>
         </div>
       </header>
-
-      <HeaderCountdown />
 
       {railSteps && railSteps.length > 0 && <JourneyRail steps={railSteps} />}
 

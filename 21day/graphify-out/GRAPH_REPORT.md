@@ -1,13 +1,18 @@
-# Graph Report - fitness_app\21day  (2026-08-24)
+# Graph Report - 21day  (2026-08-24)
 
 ## Corpus Check
-- 115 files · ~66,105 words
+- 115 files · ~66,032 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 769 nodes · 1008 edges · 98 communities (46 shown, 52 thin omitted)
+- 768 nodes · 1002 edges · 98 communities (47 shown, 51 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 12 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
+
+## Graph Freshness
+- Built from commit: `2f7e4033`
+- Run `git rev-parse HEAD` and compare to check if the graph is stale.
+- Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - devDependencies
@@ -17,44 +22,44 @@
 - AdminDashboard.tsx
 - hooks/use-toast.ts
 - compilerOptions
-- cn
-- card.tsx
+- button.tsx
+- Videos.tsx
 - utils.ts
 - compilerOptions
 - command.tsx
 - API Integration Documentation
 - components.json
-- button.tsx
+- Index.tsx
 - admin_controller.go
 - dependencies
-- FitinoPageShell.tsx
+- input-otp.tsx
 - form.tsx
 - menubar.tsx
 - compilerOptions
 - مستند UI و فلوهای چالش ۲۱ روزه فیتینو
 - context-menu.tsx
 - dropdown-menu.tsx
-- SessionQuiz.tsx
+- card.tsx
 - alert-dialog.tsx
 - breadcrumb.tsx
-- drawer.tsx
+- cn
 - navigation-menu.tsx
 - select.tsx
 - Welcome to your Lovable project
 - chart.tsx
-- toggle-group.tsx
+- badge.tsx
 - tabs.tsx
-- textarea.tsx
+- SessionQuiz.tsx
+- toggle-group.tsx
 - alert.tsx
+- radio-group.tsx
 - response.go
 - avatar.tsx
-- badge.tsx
 - AdminSession
 - Progress
 - User
 - CountdownTimer.tsx
 - TopCountdownTimer.tsx
-- radio-group.tsx
 - video.go
 - clsx
 - cmdk
@@ -105,7 +110,7 @@
 1. `cn()` - 71 edges
 2. `compilerOptions` - 19 edges
 3. `compilerOptions` - 14 edges
-4. `Button` - 12 edges
+4. `Button` - 11 edges
 5. `useToast()` - 10 edges
 6. `ApiService` - 10 edges
 7. `مستند UI و فلوهای چالش ۲۱ روزه فیتینو` - 10 edges
@@ -114,21 +119,21 @@
 10. `useUser()` - 7 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `main()` --calls--> `LoadConfig()`  [INFERRED]
-  fitness_app/21day/backend/main.go → fitness_app/21day/backend/config/config.go
-- `CompleteVideo()` --calls--> `CancelScheduledSMS()`  [INFERRED]
-  fitness_app/21day/backend/controllers/video_controller.go → fitness_app/21day/backend/database/mysql.go
-- `startSMSScheduler()` --calls--> `MarkSMSSent()`  [INFERRED]
-  fitness_app/21day/backend/main.go → fitness_app/21day/backend/database/mysql.go
-- `FitinoBrandMark()` --calls--> `cn()`  [EXTRACTED]
-  fitness_app/21day/src/components/FitinoBrandMark.tsx → fitness_app/21day/src/lib/utils.ts
-- `AlertDialogHeader()` --calls--> `cn()`  [EXTRACTED]
-  fitness_app/21day/src/components/ui/alert-dialog.tsx → fitness_app/21day/src/lib/utils.ts
+- `useCarousel()` --references--> `react`  [EXTRACTED]
+  src/components/ui/carousel.tsx → package.json
+- `useChart()` --references--> `react`  [EXTRACTED]
+  src/components/ui/chart.tsx → package.json
+- `useFormField()` --references--> `react`  [EXTRACTED]
+  src/components/ui/form.tsx → package.json
+- `useSidebar()` --references--> `react`  [EXTRACTED]
+  src/components/ui/sidebar.tsx → package.json
+- `useToast()` --references--> `react`  [EXTRACTED]
+  src/hooks/use-toast.ts → package.json
 
 ## Import Cycles
 - None detected.
 
-## Communities (98 total, 52 thin omitted)
+## Communities (98 total, 51 thin omitted)
 
 ### Community 0 - "devDependencies"
 Cohesion: 0.04
@@ -136,7 +141,7 @@ Nodes (45): autoprefixer, eslint, @eslint/js, eslint-plugin-react-hooks, eslint-
 
 ### Community 1 - "sidebar.tsx"
 Cohesion: 0.05
-Nodes (43): react, react, useCarousel(), useChart(), useFormField(), Separator, SheetContent, SheetContentProps (+35 more)
+Nodes (42): react, react, useCarousel(), useChart(), useFormField(), Separator, SheetContent, SheetContentProps (+34 more)
 
 ### Community 2 - "carousel.tsx"
 Cohesion: 0.15
@@ -148,27 +153,27 @@ Nodes (28): LoadConfig(), GetAdminUsersCSV(), Context, RegisterUser(), writeUser
 
 ### Community 4 - "AdminDashboard.tsx"
 Cohesion: 0.06
-Nodes (32): queryClient, ErrorBoundary, FitinoBrandMark(), FitinoBrandMarkProps, Input, Toaster(), ToasterProps, Table (+24 more)
+Nodes (35): queryClient, ErrorBoundary, Props, State, FitinoBrandMark(), FitinoBrandMarkProps, Button, Input (+27 more)
 
 ### Community 5 - "hooks/use-toast.ts"
-Cohesion: 0.12
-Nodes (22): Toast, ToastAction, ToastActionElement, ToastClose, ToastDescription, ToastProps, ToastTitle, toastVariants (+14 more)
+Cohesion: 0.11
+Nodes (25): NEXT_STEPS, RegistrationForm(), Toast, ToastAction, ToastActionElement, ToastClose, ToastDescription, ToastProps (+17 more)
 
 ### Community 6 - "compilerOptions"
 Cohesion: 0.08
 Nodes (24): DOM, DOM.Iterable, ES2020, src, compilerOptions, allowImportingTsExtensions, baseUrl, isolatedModules (+16 more)
 
-### Community 7 - "cn"
-Cohesion: 0.20
-Nodes (14): buttonVariants, Calendar(), CalendarProps, Pagination(), PaginationContent, PaginationEllipsis(), PaginationItem, PaginationLink() (+6 more)
+### Community 7 - "button.tsx"
+Cohesion: 0.18
+Nodes (12): ButtonProps, buttonVariants, Calendar(), CalendarProps, Pagination(), PaginationContent, PaginationEllipsis(), PaginationItem (+4 more)
 
-### Community 8 - "card.tsx"
-Cohesion: 0.25
-Nodes (6): Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle
+### Community 8 - "Videos.tsx"
+Cohesion: 0.10
+Nodes (20): LoadingSpinner(), LoadingSpinnerProps, pad(), TimeLeft, VideoCountdownTimer(), useUser(), ApiService, Progress (+12 more)
 
 ### Community 9 - "utils.ts"
-Cohesion: 0.10
-Nodes (12): Checkbox, HoverCardContent, InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot, PopoverContent, Progress (+4 more)
+Cohesion: 0.11
+Nodes (10): Checkbox, HoverCardContent, PopoverContent, Progress, ScrollArea, ScrollBar, Slider, Switch (+2 more)
 
 ### Community 10 - "compilerOptions"
 Cohesion: 0.11
@@ -186,9 +191,9 @@ Nodes (16): API Endpoints, API Integration Documentation, API Service (`src/lib/
 Cohesion: 0.12
 Nodes (16): aliases, components, hooks, lib, ui, utils, rsc, $schema (+8 more)
 
-### Community 14 - "button.tsx"
-Cohesion: 0.05
-Nodes (37): Props, State, FAQSection(), formatTrainingTime(), IncomeCalculator(), LevelId, LEVELS, TIME_STEPS (+29 more)
+### Community 14 - "Index.tsx"
+Cohesion: 0.09
+Nodes (18): CountdownSection(), FAQSection(), FitinoPageShell(), FitinoPageShellProps, formatTrainingTime(), IncomeCalculator(), LevelId, LEVELS (+10 more)
 
 ### Community 15 - "admin_controller.go"
 Cohesion: 0.27
@@ -198,9 +203,9 @@ Nodes (13): AdminAuthMiddleware(), AdminLogin(), AdminLogout(), extractBearerTok
 Cohesion: 0.15
 Nodes (13): class-variance-authority, dependencies, class-variance-authority, @radix-ui/react-accordion, @radix-ui/react-dialog, @radix-ui/react-navigation-menu, @radix-ui/react-popover, @radix-ui/react-tabs (+5 more)
 
-### Community 17 - "FitinoPageShell.tsx"
-Cohesion: 0.27
-Nodes (8): CountdownSection(), FitinoPageShellProps, HeaderCountdown(), JourneyRail(), JourneyRailProps, JourneyStep, padCountdown(), REGISTRATION_COUNTDOWN
+### Community 17 - "input-otp.tsx"
+Cohesion: 0.40
+Nodes (4): InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot
 
 ### Community 18 - "form.tsx"
 Cohesion: 0.15
@@ -226,9 +231,9 @@ Nodes (9): ContextMenuCheckboxItem, ContextMenuContent, ContextMenuItem, Context
 Cohesion: 0.20
 Nodes (9): DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuShortcut(), DropdownMenuSubContent (+1 more)
 
-### Community 24 - "SessionQuiz.tsx"
-Cohesion: 0.27
-Nodes (7): Phase, SessionQuiz(), SessionQuizProps, getSessionQuiz(), QuizOption, QuizQuestion, SESSION_QUIZZES
+### Community 24 - "card.tsx"
+Cohesion: 0.25
+Nodes (6): Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle
 
 ### Community 25 - "alert-dialog.tsx"
 Cohesion: 0.22
@@ -238,9 +243,9 @@ Nodes (8): AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialog
 Cohesion: 0.25
 Nodes (7): Breadcrumb, BreadcrumbEllipsis(), BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator()
 
-### Community 27 - "drawer.tsx"
-Cohesion: 0.25
-Nodes (6): DrawerContent, DrawerDescription, DrawerFooter(), DrawerHeader(), DrawerOverlay, DrawerTitle
+### Community 27 - "cn"
+Cohesion: 0.20
+Nodes (10): DrawerContent, DrawerDescription, DrawerFooter(), DrawerHeader(), DrawerOverlay, DrawerTitle, ResizableHandle(), ResizablePanelGroup() (+2 more)
 
 ### Community 28 - "navigation-menu.tsx"
 Cohesion: 0.25
@@ -258,13 +263,21 @@ Nodes (6): Can I connect a custom domain to my Lovable project?, How can I deplo
 Cohesion: 0.20
 Nodes (7): ChartConfig, ChartContainer, ChartContext, ChartContextProps, ChartLegendContent, ChartTooltipContent, THEMES
 
-### Community 32 - "toggle-group.tsx"
-Cohesion: 0.33
-Nodes (5): ToggleGroup, ToggleGroupContext, ToggleGroupItem, Toggle, toggleVariants
+### Community 32 - "badge.tsx"
+Cohesion: 0.67
+Nodes (3): Badge(), BadgeProps, badgeVariants
 
 ### Community 33 - "tabs.tsx"
 Cohesion: 0.50
 Nodes (3): TabsContent, TabsList, TabsTrigger
+
+### Community 34 - "SessionQuiz.tsx"
+Cohesion: 0.27
+Nodes (7): Phase, SessionQuiz(), SessionQuizProps, getSessionQuiz(), QuizOption, QuizQuestion, SESSION_QUIZZES
+
+### Community 35 - "toggle-group.tsx"
+Cohesion: 0.33
+Nodes (5): ToggleGroup, ToggleGroupContext, ToggleGroupItem, Toggle, toggleVariants
 
 ### Community 36 - "alert.tsx"
 Cohesion: 0.40
@@ -278,29 +291,25 @@ Nodes (3): Context, RespondError(), RespondSuccess()
 Cohesion: 0.50
 Nodes (3): Avatar, AvatarFallback, AvatarImage
 
-### Community 40 - "badge.tsx"
-Cohesion: 0.67
-Nodes (3): Badge(), BadgeProps, badgeVariants
-
 ## Knowledge Gaps
 - **384 isolated node(s):** `monetizeai-backend`, `Video`, `ippanelPatternRequest`, `$schema`, `style` (+379 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **52 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **51 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `dependencies` connect `dependencies` to `devDependencies`, `sidebar.tsx`, `clsx`, `cmdk`, `date-fns`, `embla-carousel-react`, `framer-motion`, `@hookform/resolvers`, `input-otp`, `lucide-react`, `next-themes`, `@radix-ui/react-alert-dialog`, `@radix-ui/react-aspect-ratio`, `@radix-ui/react-avatar`, `@radix-ui/react-checkbox`, `@radix-ui/react-collapsible`, `@radix-ui/react-context-menu`, `@radix-ui/react-dropdown-menu`, `@radix-ui/react-hover-card`, `@radix-ui/react-label`, `@radix-ui/react-menubar`, `@radix-ui/react-progress`, `@radix-ui/react-radio-group`, `@radix-ui/react-scroll-area`, `@radix-ui/react-select`, `@radix-ui/react-separator`, `@radix-ui/react-slider`, `@radix-ui/react-slot`, `@radix-ui/react-switch`, `@radix-ui/react-toast`, `@radix-ui/react-toggle`, `@radix-ui/react-toggle-group`, `@radix-ui/react-tooltip`, `react-day-picker`, `react-dom`, `react-hook-form`, `react-resizable-panels`, `react-router-dom`, `recharts`, `sonner`, `tailwind-merge`, `tailwindcss-animate`, `@tanstack/react-query`, `vaul`, `zod`?**
   _High betweenness centrality (0.235) - this node is a cross-community bridge._
-- **Why does `react` connect `sidebar.tsx` to `dependencies`, `button.tsx`?**
+- **Why does `react` connect `sidebar.tsx` to `dependencies`, `hooks/use-toast.ts`?**
   _High betweenness centrality (0.207) - this node is a cross-community bridge._
-- **Why does `cn()` connect `cn` to `sidebar.tsx`, `carousel.tsx`, `AdminDashboard.tsx`, `hooks/use-toast.ts`, `card.tsx`, `utils.ts`, `command.tsx`, `button.tsx`, `form.tsx`, `menubar.tsx`, `context-menu.tsx`, `dropdown-menu.tsx`, `alert-dialog.tsx`, `breadcrumb.tsx`, `drawer.tsx`, `navigation-menu.tsx`, `select.tsx`, `chart.tsx`, `toggle-group.tsx`, `tabs.tsx`, `textarea.tsx`, `alert.tsx`, `avatar.tsx`, `badge.tsx`, `radio-group.tsx`?**
-  _High betweenness centrality (0.167) - this node is a cross-community bridge._
+- **Why does `cn()` connect `cn` to `sidebar.tsx`, `carousel.tsx`, `AdminDashboard.tsx`, `hooks/use-toast.ts`, `button.tsx`, `utils.ts`, `command.tsx`, `Index.tsx`, `input-otp.tsx`, `form.tsx`, `menubar.tsx`, `context-menu.tsx`, `dropdown-menu.tsx`, `card.tsx`, `alert-dialog.tsx`, `breadcrumb.tsx`, `navigation-menu.tsx`, `select.tsx`, `chart.tsx`, `badge.tsx`, `tabs.tsx`, `toggle-group.tsx`, `alert.tsx`, `radio-group.tsx`, `avatar.tsx`?**
+  _High betweenness centrality (0.168) - this node is a cross-community bridge._
 - **What connects `monetizeai-backend`, `Video`, `ippanelPatternRequest` to the rest of the system?**
   _384 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `devDependencies` be split into smaller, more focused modules?**
   _Cohesion score 0.043478260869565216 - nodes in this community are weakly interconnected._
 - **Should `sidebar.tsx` be split into smaller, more focused modules?**
-  _Cohesion score 0.04591836734693878 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.04717853839037928 - nodes in this community are weakly interconnected._
 - **Should `mysql.go` be split into smaller, more focused modules?**
   _Cohesion score 0.07539118065433854 - nodes in this community are weakly interconnected._

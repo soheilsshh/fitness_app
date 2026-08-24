@@ -8,8 +8,7 @@ import IncomeCalculator from '@/components/IncomeCalculator';
 import FAQSection from '@/components/FAQSection';
 import FitinoPageShell from '@/components/FitinoPageShell';
 import { useUser } from '@/hooks/useUser';
-import { Button } from '@/components/ui/button';
-import { Video, ArrowRight } from 'lucide-react';
+import { Play, ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const RAIL_STEPS = [
@@ -33,15 +32,24 @@ const Index = () => {
   return (
     <FitinoPageShell railSteps={RAIL_STEPS}>
       {isLoggedIn && (
-        <div className="fixed bottom-6 left-4 z-50 sm:top-20 sm:bottom-auto">
-          <Button
+        <div className="pointer-events-none fixed inset-x-4 bottom-4 z-50 sm:inset-x-auto sm:bottom-auto sm:end-4 sm:top-24">
+          <button
+            type="button"
             onClick={handleContinueLearning}
-            className="cursor-pointer rounded-full bg-primary text-white shadow-[0_10px_28px_-12px_rgba(24,114,114,0.7)] hover:bg-primary/90"
+            aria-label="ادامه یادگیری؛ رفتن به جلسات ویدیویی"
+            className="learning-dock pointer-events-auto mx-auto flex min-h-[72px] max-w-sm cursor-pointer items-center gap-3 px-3 py-3 sm:mx-0"
           >
-            <Video className="w-4 h-4 ml-2" />
-            ادامه یادگیری
-            <ArrowRight className="w-4 h-4 mr-2" />
-          </Button>
+            <span className="relative z-10 grid size-12 shrink-0 place-items-center rounded-2xl bg-[#26fce3] text-[#0e0e0e] shadow-[0_0_24px_-6px_rgba(38,252,227,0.8)]">
+              <Play className="size-5 fill-current" aria-hidden />
+            </span>
+            <span className="relative z-10 min-w-0 flex-1">
+              <span className="block text-sm font-extrabold text-white">ادامه یادگیری</span>
+              <span className="mt-0.5 block text-[11px] leading-relaxed text-white/60">
+                جلسات ویدیویی چالش ۲۱ روزه منتظرته
+              </span>
+            </span>
+            <ChevronLeft className="relative z-10 size-5 shrink-0 text-[#26fce3]" aria-hidden />
+          </button>
         </div>
       )}
 

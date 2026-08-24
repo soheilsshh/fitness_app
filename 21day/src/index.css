@@ -393,6 +393,55 @@
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
 }
 
+.learning-dock {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  width: 100%;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background:
+    linear-gradient(165deg, rgba(255, 255, 255, 0.1) 0%, rgba(24, 114, 114, 0.14) 42%, rgba(14, 14, 14, 0.82) 100%);
+  backdrop-filter: blur(28px) saturate(1.45);
+  -webkit-backdrop-filter: blur(28px) saturate(1.45);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 18px 40px -20px rgba(0, 0, 0, 0.85);
+  text-align: start;
+  transition: border-color 0.2s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.learning-dock::before {
+  content: "";
+  position: absolute;
+  inset: -40% -20%;
+  background: linear-gradient(
+    115deg,
+    transparent 25%,
+    rgba(38, 252, 227, 0.16) 46%,
+    rgba(217, 119, 6, 0.1) 58%,
+    transparent 78%
+  );
+  transform: translateX(-28%);
+  animation: dock-sheen 9s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.learning-dock:hover {
+  border-color: rgba(38, 252, 227, 0.4);
+  transform: translateY(-2px);
+}
+
+@keyframes dock-sheen {
+  0%,
+  100% {
+    transform: translateX(-28%);
+  }
+  50% {
+    transform: translateX(18%);
+  }
+}
+
 .no-scrollbar {
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -427,7 +476,8 @@ select:focus-visible,
   .aurora-blob,
   .aurora-blob-delay,
   .fitino-logo-breathe,
-  .glow-card:hover::before {
+  .glow-card:hover::before,
+  .learning-dock::before {
     animation: none !important;
   }
 
