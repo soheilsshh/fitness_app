@@ -39,6 +39,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { emitProfileUpdated } from "@/app/(panel)/user/_components/profileEvents";
 import { getApiErrorMessage } from "@/lib/api/translateError";
 import { cn } from "@/lib/utils";
+import HealthStatusCard from "@/components/health/HealthStatusCard";
 import ChangePasswordModal from "./ChangePasswordModal";
 
 const EMPTY_JALALI = { year: "", month: "", day: "" };
@@ -104,6 +105,9 @@ function emptyProfile() {
     gender: "",
     heightCm: "",
     weightKg: "",
+    age: null,
+    bmi: null,
+    bmiStatus: "",
     targetWeightKg: "",
     bodyCondition: "",
     bodyFatPercent: "",
@@ -151,6 +155,9 @@ function mapMeToProfile(data) {
     gender: data.gender || "",
     heightCm: data.heightCm ?? "",
     weightKg: data.weightKg ?? "",
+    age: data.age ?? null,
+    bmi: data.bmi ?? null,
+    bmiStatus: data.bmiStatus || "",
     targetWeightKg: data.targetWeightKg ?? "",
     bodyCondition: data.bodyCondition || "",
     bodyFatPercent: data.bodyFatPercent ?? "",
@@ -817,6 +824,13 @@ export default function ProfileClient() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
+            <HealthStatusCard
+              bmi={profile.bmi}
+              bmiStatus={profile.bmiStatus}
+              weightKg={profile.weightKg || null}
+              heightCm={profile.heightCm || null}
+              age={profile.age}
+            />
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
               <NumberField
                 label="قد"

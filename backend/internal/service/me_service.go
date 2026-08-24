@@ -13,6 +13,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/yourusername/fitness-management/config"
+	"github.com/yourusername/fitness-management/internal/bodymetrics"
 	"github.com/yourusername/fitness-management/internal/models"
 	"github.com/yourusername/fitness-management/internal/repository"
 )
@@ -32,6 +33,9 @@ type MeProfileDTO struct {
 	AvatarURL           string              `json:"avatarUrl,omitempty"`
 	HeightCm            *float64            `json:"heightCm,omitempty"`
 	WeightKg            *float64            `json:"weightKg,omitempty"`
+	Age                 *int                `json:"age,omitempty"`
+	BMI                 *float64            `json:"bmi,omitempty"`
+	BMIStatus           string              `json:"bmiStatus,omitempty"`
 	BirthDate           *string             `json:"birthDate,omitempty"`
 	NationalID          string              `json:"nationalId,omitempty"`
 	Gender              string              `json:"gender,omitempty"`
@@ -347,6 +351,7 @@ func (s *meService) buildProfileDTO(ctx context.Context, user *models.User) (*Me
 	}
 
 	essentials, bodyDone, medicalDone, photosDone, percent := models.StudentProfileProgress(user, initialPhotos)
+	metrics := bodymetrics.FromUser(user)
 
 	return &MeProfileDTO{
 		ID:                  user.ID,
@@ -357,6 +362,9 @@ func (s *meService) buildProfileDTO(ctx context.Context, user *models.User) (*Me
 		AvatarURL:           user.AvatarURL,
 		HeightCm:            user.HeightCm,
 		WeightKg:            user.WeightKg,
+		Age:                 metrics.Age,
+		BMI:                 metrics.BMI,
+		BMIStatus:           metrics.BMIStatus,
 		BirthDate:           birthDate,
 		NationalID:          user.NationalID,
 		Gender:              user.Gender,

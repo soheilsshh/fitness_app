@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Zap } from "lucide-react";
 import { api } from "@/lib/axios/client";
+import HealthStatusCard from "@/components/health/HealthStatusCard";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import MetaBadge from "../../_components/ui/MetaBadge";
@@ -41,15 +42,28 @@ export default function MyProgramsListClient() {
   const [filter, setFilter] = useState("all");
   const [page, setPage] = useState(1);
   const [programs, setPrograms] = useState([]);
+  const [health, setHealth] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await api.get("/me/programs");
-      setPrograms((res.data?.programs || []).map(mapApiProgram));
+      const [programsRes, profileRes] = await Promise.all([
+        api.get("/me/programs"),
+        api.get("/me"),
+      ]);
+      setPrograms((programsRes.data?.programs || []).map(mapApiProgram));
+      const profile = profileRes.data || {};
+      setHealth({
+        bmi: profile.bmi ?? null,
+        bmiStatus: profile.bmiStatus || "",
+        weightKg: profile.weightKg ?? null,
+        heightCm: profile.heightCm ?? null,
+        age: profile.age ?? null,
+      });
     } catch {
       setPrograms([]);
+      setHealth(null);
     } finally {
       setLoading(false);
     }
@@ -103,6 +117,16 @@ export default function MyProgramsListClient() {
           />
         }
       />
+
+      {health ? (
+        <HealthStatusCard
+          bmi={health.bmi}
+          bmiStatus={health.bmiStatus}
+          weightKg={health.weightKg}
+          heightCm={health.heightCm}
+          age={health.age}
+        />
+      ) : null}
 
       <Card>
         <CardContent className="flex flex-wrap items-center justify-between gap-3 pt-6">

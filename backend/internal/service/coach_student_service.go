@@ -8,6 +8,7 @@ import (
 
 	"gorm.io/gorm"
 
+	"github.com/yourusername/fitness-management/internal/bodymetrics"
 	"github.com/yourusername/fitness-management/internal/models"
 	"github.com/yourusername/fitness-management/internal/repository"
 )
@@ -18,10 +19,14 @@ var (
 )
 
 type CoachStudentDetail struct {
-	AdminStudentItem
+	CoachStudentListItem
 	Email                 string     `json:"email"`
 	HeightCm              *float64   `json:"heightCm,omitempty"`
 	WeightKg              *float64   `json:"weightKg,omitempty"`
+	Gender                string     `json:"gender,omitempty"`
+	Age                   *int       `json:"age,omitempty"`
+	BMI                   *float64   `json:"bmi,omitempty"`
+	BMIStatus             string     `json:"bmiStatus,omitempty"`
 	StartDate             *time.Time `json:"startDate,omitempty"`
 	DurationDays          int        `json:"durationDays,omitempty"`
 	RemainingDays         int        `json:"remainingDays,omitempty"`
@@ -198,11 +203,17 @@ func (s *coachStudentService) GetStudent(ctx context.Context, coachID, studentID
 		return nil, err
 	}
 
+	metrics := bodymetrics.FromUser(&user)
+
 	detail := &CoachStudentDetail{
 		AdminStudentItem: *item,
 		Email:            user.Email,
 		HeightCm:         user.HeightCm,
 		WeightKg:         user.WeightKg,
+		Gender:           user.Gender,
+		Age:              metrics.Age,
+		BMI:              metrics.BMI,
+		BMIStatus:        metrics.BMIStatus,
 	}
 
 	sub, err := s.subRepo.FindCurrentByUserIDAndCoachID(ctx, studentID, coachID, now)

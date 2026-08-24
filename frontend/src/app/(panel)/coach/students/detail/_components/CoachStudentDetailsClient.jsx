@@ -157,6 +157,16 @@ export default function CoachStudentDetailsClient() {
           {student.weightKg ? (
             <InfoCard label="وزن" value={`${student.weightKg} kg`} />
           ) : null}
+          {student.age ? (
+            <InfoCard label="سن" value={`${student.age} سال`} />
+          ) : null}
+          {student.bmi ? (
+            <InfoCard
+              icon={Activity}
+              label="BMI"
+              value={`${student.bmi}${student.bmiStatus ? ` (${student.bmiStatus})` : ""}`}
+            />
+          ) : null}
           {student.remainingDays > 0 ? (
             <InfoCard
               label="روز باقی‌مانده"
