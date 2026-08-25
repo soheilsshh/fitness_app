@@ -47,6 +47,7 @@ type AIGenerateService struct {
 	programRepo    repository.ProgramRepository
 	foodRepo       repository.FoodRepository
 	achievementSvc AchievementService
+	funnelAIRepo   repository.FunnelAIAnalysisRepository
 
 	mu    sync.Mutex
 	rates map[uint][]time.Time
@@ -74,6 +75,7 @@ func NewAIGenerateService(
 	programRepo repository.ProgramRepository,
 	foodRepo repository.FoodRepository,
 	achievementSvc AchievementService,
+	funnelAIRepo repository.FunnelAIAnalysisRepository,
 ) *AIGenerateService {
 	return &AIGenerateService{
 		db:             db,
@@ -83,6 +85,7 @@ func NewAIGenerateService(
 		programRepo:    programRepo,
 		foodRepo:       foodRepo,
 		achievementSvc: achievementSvc,
+		funnelAIRepo:   funnelAIRepo,
 		rates:          make(map[uint][]time.Time),
 		mealCache:      make(map[string]mealCacheEntry),
 	}
@@ -127,7 +130,7 @@ func (s *AIGenerateService) GenerateNutrition(ctx context.Context, userID uint, 
 			Goal:           goal,
 		})
 
-		userContext := buildAIUserContext(profile) + fmt.Sprintf(
+		userContext := buildAIUserContext(profile) + s.loadFunnelAIContext(ctx, profile) + fmt.Sprintf(
 			"\nهدف تغذیه‌ای انتخاب‌شده: %s\nهدف کالری روزانه محاسبه‌شده (حتماً نزدیک به همین عدد بمان): %d کیلوکالری، پروتئین %dگرم، کربوهیدرات %dگرم، چربی %dگرم.",
 			targets.Goal, targets.TargetCalories, targets.ProteinG, targets.CarbsG, targets.FatG,
 		)
@@ -210,7 +213,7 @@ func (s *AIGenerateService) GenerateWeeklyNutrition(ctx context.Context, userID 
 			Goal:           goal,
 		})
 
-		userContext := buildAIUserContext(profile) + fmt.Sprintf(
+		userContext := buildAIUserContext(profile) + s.loadFunnelAIContext(ctx, profile) + fmt.Sprintf(
 			"\nهدف تغذیه‌ای انتخاب‌شده: %s\nهدف کالری روزانه محاسبه‌شده (حتماً هر روز نزدیک به همین عدد بمان): %d کیلوکالری، پروتئین %dگرم، کربوهیدرات %dگرم، چربی %dگرم.",
 			targets.Goal, targets.TargetCalories, targets.ProteinG, targets.CarbsG, targets.FatG,
 		)
@@ -748,7 +751,7 @@ func (s *AIGenerateService) GenerateWorkout(ctx context.Context, userID uint, sa
 		if err != nil {
 			return nil, err
 		}
-		userContext := buildAIUserContext(profile) + buildWorkoutConstraintsContext(constraints)
+		userContext := buildAIUserContext(profile) + s.loadFunnelAIContext(ctx, profile) + buildWorkoutConstraintsContext(constraints)
 		persona := string(ai.PersonaWorkout)
 
 		generated, genRes, genErr := ai.GenerateWorkoutPlan(ctx, userContext)
@@ -957,6 +960,81 @@ func buildAIUserContext(profile *MeProfileDTO) string {
 		b.WriteString("- محدودیت فیزیکی: " + truncateRunes(profile.PhysicalLimitations, 300) + "\n")
 	}
 	b.WriteString("یک برنامه واقع‌بینانه و مناسب سبک زندگی ایرانی پیشنهاد بده.")
+	return b.String()
+}
+
+// loadFunnelAIContext appends the latest /analiz funnel AI packet for this
+// phone/user so nutrition & workout generators stay aligned with the sales-funnel analysis.
+func (s *AIGenerateService) loadFunnelAIContext(ctx context.Context, profile *MeProfileDTO) string {
+	if s == nil || s.funnelAIRepo == nil || profile == nil {
+		return ""
+	}
+	var row *models.FunnelAIAnalysis
+	var err error
+	if phone := strings.TrimSpace(profile.Phone); phone != "" {
+		row, err = s.funnelAIRepo.FindLatestByPhone(ctx, phone)
+	}
+	if (err != nil || row == nil) && profile.ID > 0 {
+		row, err = s.funnelAIRepo.FindLatestByUserID(ctx, profile.ID)
+	}
+	if err != nil || row == nil {
+		return ""
+	}
+
+	var b strings.Builder
+	b.WriteString("\n\nتحلیل اختصاصی فانل /analiz فیتینو (منبع حقیقت — برنامه را با این هم‌راستا کن):\n")
+	if row.Gender != "" {
+		b.WriteString("- جنسیت فانل: " + row.Gender + "\n")
+	}
+	if row.PrimaryGoal != "" {
+		b.WriteString("- هدف فانل: " + row.PrimaryGoal + "\n")
+	}
+	if row.ActivityLevel != "" {
+		b.WriteString("- فعالیت روزانه: " + row.ActivityLevel + "\n")
+	}
+	if row.TrainingFrequency != "" {
+		b.WriteString("- تعداد جلسات ورزش: " + row.TrainingFrequency + "\n")
+	}
+	if row.Experience != "" {
+		b.WriteString("- سطح آمادگی: " + row.Experience + "\n")
+	}
+	if row.NutritionChallenge != "" {
+		b.WriteString("- وضعیت تغذیه: " + row.NutritionChallenge + "\n")
+	}
+	if row.SleepHours != "" {
+		b.WriteString("- خواب: " + row.SleepHours + "\n")
+	}
+	if row.StressLevel != "" {
+		b.WriteString("- استرس: " + row.StressLevel + "\n")
+	}
+	if row.Commitment != "" {
+		b.WriteString("- تعهد اجرایی: " + row.Commitment + "\n")
+	}
+	if row.Age > 0 {
+		b.WriteString(fmt.Sprintf("- سن فانل: %d\n", row.Age))
+	}
+	if row.HeightCm > 0 {
+		b.WriteString(fmt.Sprintf("- قد فانل: %.0f cm\n", row.HeightCm))
+	}
+	if row.WeightKg > 0 {
+		b.WriteString(fmt.Sprintf("- وزن فانل: %.1f kg\n", row.WeightKg))
+	}
+	if row.SuccessPct > 0 {
+		b.WriteString(fmt.Sprintf("- شاخص موفقیت پیش‌بینی‌شده: %d٪\n", row.SuccessPct))
+	}
+	if tw := strings.TrimSpace(row.AIWarning); tw != "" {
+		b.WriteString("- هشدار AI: " + truncateRunes(tw, 400) + "\n")
+	}
+	if tw := strings.TrimSpace(row.StatusSummary); tw != "" {
+		b.WriteString("- خلاصه وضعیت: " + truncateRunes(tw, 500) + "\n")
+	}
+	if tw := strings.TrimSpace(row.CustomSolution); tw != "" {
+		b.WriteString("- راهکار اختصاصی: " + truncateRunes(tw, 500) + "\n")
+	}
+	if tw := strings.TrimSpace(row.RoutePrediction); tw != "" {
+		b.WriteString("- پیش‌بینی مسیر: " + truncateRunes(tw, 400) + "\n")
+	}
+	b.WriteString("شدت، حجم و تغذیه برنامه را متناسب با تعهد و موانع بالا تنظیم کن.")
 	return b.String()
 }
 

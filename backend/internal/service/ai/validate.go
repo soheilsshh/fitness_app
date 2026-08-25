@@ -182,6 +182,100 @@ func ValidateBodyPhotoAnalysis(a *BodyPhotoAnalysisSchema) error {
 	return nil
 }
 
+var funnelBannedNames = []string{
+	"علی رشیدآبادی",
+	"علی رشیدابادی",
+	"علی رشید آبادی",
+	"مربی علی رشیدآبادی",
+	"مربی علی",
+}
+
+func sanitizeFunnelText(s string) string {
+	out := s
+	for _, banned := range funnelBannedNames {
+		out = strings.ReplaceAll(out, banned, "ایجنت‌های فیتینو")
+	}
+	return strings.TrimSpace(out)
+}
+
+// SanitizeFunnelAnalysis strips banned personal names from model output.
+func SanitizeFunnelAnalysis(a *FunnelAnalysisSchema) {
+	if a == nil {
+		return
+	}
+	a.AIWarning = sanitizeFunnelText(a.AIWarning)
+	a.StatusSummaryTitle = sanitizeFunnelText(a.StatusSummaryTitle)
+	a.StatusSummaryBody = sanitizeFunnelText(a.StatusSummaryBody)
+	a.CustomSolutionTitle = sanitizeFunnelText(a.CustomSolutionTitle)
+	a.CustomSolutionBody = sanitizeFunnelText(a.CustomSolutionBody)
+	a.RoutePredictionTitle = sanitizeFunnelText(a.RoutePredictionTitle)
+	a.RoutePredictionBody = sanitizeFunnelText(a.RoutePredictionBody)
+	a.AnalysisReadyTitle = sanitizeFunnelText(a.AnalysisReadyTitle)
+	a.AnalysisReadyBody = sanitizeFunnelText(a.AnalysisReadyBody)
+	a.AIGuard = sanitizeFunnelText(a.AIGuard)
+	a.TrendChartTitle = sanitizeFunnelText(a.TrendChartTitle)
+	a.TrendChartYLabel = sanitizeFunnelText(a.TrendChartYLabel)
+	if a.TrendChartYMax < 10 {
+		a.TrendChartYMax = 40
+	}
+	if a.TrendChartYMax > 100 {
+		a.TrendChartYMax = 100
+	}
+	for i := range a.TrendChartValues {
+		if a.TrendChartValues[i] < 0 {
+			a.TrendChartValues[i] = 0
+		}
+		if a.TrendChartValues[i] > a.TrendChartYMax {
+			a.TrendChartValues[i] = a.TrendChartYMax
+		}
+	}
+	for i := range a.ChartBars {
+		a.ChartBars[i].Label = sanitizeFunnelText(a.ChartBars[i].Label)
+		if a.ChartBars[i].Value < 0 {
+			a.ChartBars[i].Value = 0
+		}
+		if a.ChartBars[i].Value > 100 {
+			a.ChartBars[i].Value = 100
+		}
+	}
+	if a.SuccessPct < 55 {
+		a.SuccessPct = 55
+	}
+	if a.SuccessPct > 95 {
+		a.SuccessPct = 95
+	}
+}
+
+// ValidateFunnelAnalysis rejects an empty or incomplete funnel analysis packet.
+func ValidateFunnelAnalysis(a *FunnelAnalysisSchema) error {
+	if a == nil {
+		return fmt.Errorf("%w: analysis is nil", ErrInvalidPlan)
+	}
+	if strings.TrimSpace(a.AIWarning) == "" ||
+		strings.TrimSpace(a.StatusSummaryBody) == "" ||
+		strings.TrimSpace(a.CustomSolutionBody) == "" ||
+		strings.TrimSpace(a.RoutePredictionBody) == "" ||
+		strings.TrimSpace(a.AnalysisReadyBody) == "" ||
+		strings.TrimSpace(a.AIGuard) == "" {
+		return fmt.Errorf("%w: متن آنالیز فانل ناقص است", ErrInvalidPlan)
+	}
+	if len(a.TrendChartValues) != 12 {
+		return fmt.Errorf("%w: trend_chart_values باید ۱۲ مقدار داشته باشد", ErrInvalidPlan)
+	}
+	if strings.TrimSpace(a.TrendChartTitle) == "" || strings.TrimSpace(a.TrendChartYLabel) == "" {
+		return fmt.Errorf("%w: trend chart ناقص است", ErrInvalidPlan)
+	}
+	if len(a.ChartBars) != 5 {
+		return fmt.Errorf("%w: chart_bars باید ۵ محور داشته باشد", ErrInvalidPlan)
+	}
+	for _, bar := range a.ChartBars {
+		if strings.TrimSpace(bar.Label) == "" {
+			return fmt.Errorf("%w: chart_bars.label خالی است", ErrInvalidPlan)
+		}
+	}
+	return nil
+}
+
 // ValidateProgressAnalysis rejects an empty AI-written deep-dive summary (roadmap BE-4.3).
 func ValidateProgressAnalysis(a *ProgressAnalysisSchema) error {
 	if a == nil {

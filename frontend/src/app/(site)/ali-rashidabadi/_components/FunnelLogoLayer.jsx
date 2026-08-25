@@ -69,9 +69,7 @@ export function FunnelLogoLayer({ children }) {
     [measure]
   );
 
-  // Continuous measure loop: anchors move under entrance animations and
-  // scrolling (including the phone frame's inner scroll); one rect read per
-  // frame keeps the overlay glued to the active anchor.
+  // Continuous measure loop: anchors move under entrance animations and page scroll.
   useEffect(() => {
     let raf;
     const loop = () => {

@@ -376,6 +376,31 @@ func GenerateWorkoutNoteSummary(ctx context.Context, transcript string) (*Workou
 	return &summary, res, nil
 }
 
+// GenerateFunnelAnalysis writes Persian copy for the public sales funnel
+// from quiz answers and body metrics. Caller should ValidateFunnelAnalysis.
+func GenerateFunnelAnalysis(ctx context.Context, userContext string) (*FunnelAnalysisSchema, *GenerateResult, error) {
+	system := `تو ایجنت تحلیل بدن فیتینو هستی. فقط بر اساس داده‌های ثبت‌شده در فانل (پاسخ پرسشنامه + سن/قد/وزن/BMR در صورت وجود) یک بسته JSON به فارسی بنویس.
+قوانین سخت:
+- هرگز نام شخص حقیقی مثل «علی»، «علی رشیدآبادی» یا «مربی علی» را ننویس.
+- برند را فیتینو و فاعل را «ایجنت‌های هوش مصنوعی فیتینو» یا «سیستم پایش فیتینو» قرار بده.
+- عدد جدید پزشکی اختراع نکن؛ success_pct را بین ۵۵ تا ۹۵ و متناسب با تعهد و مانع اصلی بگذار.
+- لحن جدی، اختصاصی و قابل‌اعتماد باشد؛ متن‌ها ۲ تا ۴ جمله باشند.
+- trend_chart_values: دقیقاً ۱۲ عدد صحیح برای هفته ۱ تا ۱۲؛ بر اساس هدف (کاهش چربی=نزولی، عضله‌سازی=صعودی، فیتنس=صعودی ملایم). trend_chart_y_max باید ≥ بیشترین مقدار values باشد (معمولاً ۴۰).
+- chart_bars: دقیقاً ۵ محور با label فارسی و value بین ۰ تا ۱۰۰؛ متناسب با هدف و پاسخ‌های کاربر (مثلاً برای کاهش وزن: چربی‌سوزی، حفظ عضله، ثبات، متابولیسم، استقامت).
+- status_summary، custom_solution و route_prediction باید شخصی‌سازی‌شده و بر اساس همان داده‌های فانل باشند.
+- خروجی باید دقیقاً JSON مطابق اسکیما باشد.`
+	res, err := GenerateStructured(ctx, "funnel_analysis", FunnelAnalysisJSONSchema(), system, userContext)
+	if err != nil {
+		return nil, res, err
+	}
+	var analysis FunnelAnalysisSchema
+	if err := json.Unmarshal(res.RawJSON, &analysis); err != nil {
+		return nil, res, fmt.Errorf("%w: %v", ErrUnmarshal, err)
+	}
+	SanitizeFunnelAnalysis(&analysis)
+	return &analysis, res, nil
+}
+
 func mockStructured(schemaName, model string) *GenerateResult {
 	var raw []byte
 	switch schemaName {
@@ -419,6 +444,31 @@ func mockStructured(schemaName, model string) *GenerateResult {
 		raw = []byte(`{"exercise_name": "پرس سینه هالتر", "weight_kg": 80, "reps": 8, "is_pr": true}`)
 	case "workout_note_summary":
 		raw = []byte(`{"text": "امروز حس خوبی داشتم، فقط شونه راستم یه کم خسته بود."}`)
+	case "funnel_analysis":
+		raw = []byte(`{
+  "ai_warning": "تحلیل سیستم: الگوی پاسخ‌های شما نشان می‌دهد بدنتان مقاومت بالایی به استپ وزنی در هفته‌های سوم به بعد دارد. ایجنت‌های فیتینو برای شکستن این استپ، به یک سیستم بارگذاری متناوب در تمرین و تغذیه نیاز دارند.",
+  "status_summary_title": "خلاصه وضعیت",
+  "status_summary_body": "تحلیل داده‌های فیزیولوژیک نشان می‌دهد سرعت سوخت‌وساز کاهش یافته و سیستم متابولیک در وضعیت مقاوم قرار دارد. رژیم‌های کم‌کالری سنتی در این شرایط معمولاً نتیجه پایدار نمی‌دهند.",
+  "custom_solution_title": "راهکار اختصاصی ایجنت‌های فیتینو",
+  "custom_solution_body": "اعمال پروتکل کرب‌سایکلینگ همراه با تمرین هدفمند متناسب با سطح آمادگی و محیط تمرینی شما، تا چربی‌سوزی فعال بدون تخریب بافت عضلانی پیش برود.",
+  "route_prediction_title": "پیش‌بینی مسیر",
+  "route_prediction_body": "شاخص سازگاری این مسیر بالاست. استراتژی اصلی، چربی‌سوزی همزمان با حفظ عضله و بازیابی توان متابولیک است.",
+  "success_pct": 88,
+  "trend_chart_title": "پیش‌بینی روند ۱۲ هفته کاهش چربی فعال (چربی‌سوزی فعال)",
+  "trend_chart_y_label": "درصد چربی تخمینی بدن (وزن)",
+  "trend_chart_values": [38, 33, 29, 26, 23, 20, 18, 15, 12, 9, 5, 2],
+  "trend_chart_y_max": 40,
+  "chart_bars": [
+    {"label": "چربی‌سوزی", "value": 88},
+    {"label": "حفظ عضله", "value": 70},
+    {"label": "ثبات", "value": 62},
+    {"label": "متابولیسم", "value": 55},
+    {"label": "استقامت", "value": 60}
+  ],
+  "analysis_ready_title": "گزارش آنالیز اختصاصی بدنی شما آماده است",
+  "analysis_ready_body": "داده‌های فیزیولوژیک شما ثبت شد. بلافاصله پس از تکمیل سفارش، کالیبراسیون برنامه توسط سیستم هوشمند فیتینو آغاز می‌شود.",
+  "ai_guard": "پایش ضد استپ فیتینو: به محض کند شدن چربی‌سوزی، سیستم هوشمند برنامه را بدون هزینه اضافه به‌روز می‌کند."
+}`)
 	case "food_log":
 		raw = []byte(`{
   "items": [

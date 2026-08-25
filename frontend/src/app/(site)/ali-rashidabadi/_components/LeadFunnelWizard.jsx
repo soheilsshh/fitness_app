@@ -13,6 +13,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { api } from "@/lib/axios/client";
+import { cn } from "@/lib/utils";
 import {
   isValidIranPhone,
   normalizeIranPhone,
@@ -20,7 +21,7 @@ import {
   toPersianDigits,
   toastError,
 } from "@/app/(site)/auth/_components/helpers";
-import { cn } from "@/lib/utils";
+import { FUNNEL_PATH } from "@/lib/funnel/offer";
 import {
   ANALYZING_STEPS,
   ANALYZING_TITLE,
@@ -31,7 +32,11 @@ import {
   QUESTIONS,
   RESULT_COPY,
   buildAnalysis,
+  mergeFunnelAI,
+  mapAnswersForBackend,
   funnelProgress,
+  QUIZ_PROGRESS_HINT,
+  QUIZ_PROGRESS_LABEL,
 } from "../_lib/funnelConfig";
 import {
   clearFunnelDraft,
@@ -51,6 +56,27 @@ import OtpSixSlots from "./OtpSixSlots";
 import Typewriter from "./Typewriter";
 
 const LAST_INDEX = QUESTIONS.length - 1;
+
+function buildAnalyzePayload(answers, age, heightCm, weightKg) {
+  return {
+    ...mapAnswersForBackend(answers),
+    age: Number(answers.age || age) || 0,
+    heightCm: Number(answers.heightCm || heightCm) || 0,
+    weightKg: Number(answers.weightKg || weightKg) || 0,
+  };
+}
+
+async function fetchFunnelAnalysis(payload) {
+  const res = await api.post("/public/funnel/analyze", payload, { timeout: 90000 });
+  return res.data || null;
+}
+
+function analysisSourceLabel(source) {
+  if (source === "openai") return "تحلیل زنده AI";
+  if (source === "mock") return "تحلیل شخصی‌سازی‌شده (حالت توسعه)";
+  if (source === "fallback") return "تحلیل شخصی‌سازی‌شده";
+  return null;
+}
 
 function splitFullName(fullName) {
   const parts = fullName.trim().split(/\s+/).filter(Boolean);
@@ -81,6 +107,9 @@ export default function LeadFunnelWizard() {
   const [sendingOtp, setSendingOtp] = useState(false);
   const [otpCooldown, setOtpCooldown] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const [aiPacket, setAiPacket] = useState(null);
+  const [loaderDone, setLoaderDone] = useState(false);
+  const [aiDone, setAiDone] = useState(false);
   /** Stage whose headline finished typing (null = still typing current stage). */
   const [typedStage, setTypedStage] = useState(null);
   const headlineDone = typedStage === stage;
@@ -98,7 +127,7 @@ export default function LeadFunnelWizard() {
       if (draft.stage === "checkout" && draft.checkoutToken) {
         persistReady.current = true;
         setReady(true);
-        router.replace(`/ali-rashidabadi/payment?token=${draft.checkoutToken}`);
+        router.replace(`${FUNNEL_PATH}/payment?token=${draft.checkoutToken}`);
         return;
       }
       setAnswers(draft.answers || {});
@@ -133,8 +162,9 @@ export default function LeadFunnelWizard() {
       weightKg,
       fullName,
       phone,
+      aiPacket,
     });
-  }, [ready, stage, qIndex, answers, age, heightCm, weightKg, fullName, phone]);
+  }, [ready, stage, qIndex, answers, age, heightCm, weightKg, fullName, phone, aiPacket]);
 
   useEffect(() => {
     api
@@ -157,6 +187,58 @@ export default function LeadFunnelWizard() {
     return () => clearTimeout(id);
   }, [otpCooldown]);
 
+  useEffect(() => {
+    if (stage !== "analyzing") return;
+    let cancelled = false;
+    setLoaderDone(false);
+    setAiDone(false);
+    setAiPacket(null);
+    (async () => {
+      try {
+        const data = await fetchFunnelAnalysis(
+          buildAnalyzePayload(answers, age, heightCm, weightKg)
+        );
+        if (!cancelled) setAiPacket(data);
+      } catch (err) {
+        if (process.env.NODE_ENV === "development") {
+          console.warn("[funnel] analyze failed:", err?.response?.data || err?.message);
+        }
+        if (!cancelled) setAiPacket(null);
+      } finally {
+        if (!cancelled) setAiDone(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [stage, answers, age, heightCm, weightKg]);
+
+  // Draft may resume straight to result — fetch a fresh packet then.
+  useEffect(() => {
+    if (stage !== "result" && stage !== "lead") return;
+    if (!answers.primaryGoal || aiPacket) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await fetchFunnelAnalysis(
+          buildAnalyzePayload(answers, age, heightCm, weightKg)
+        );
+        if (!cancelled) setAiPacket(data);
+      } catch {
+        /* buildAnalysis fallback still renders */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [stage, answers, age, heightCm, weightKg, aiPacket]);
+
+  useEffect(() => {
+    if (stage === "analyzing" && loaderDone && aiDone) {
+      setStage("result");
+    }
+  }, [stage, loaderDone, aiDone]);
+
   // Result/lead are tall; sticky CTA + scroll anchoring otherwise opens at the bottom.
   useLayoutEffect(() => {
     if (stage !== "result" && stage !== "lead") return;
@@ -171,8 +253,8 @@ export default function LeadFunnelWizard() {
 
   const analysis = useMemo(() => {
     if ((stage !== "result" && stage !== "lead") || !answers.primaryGoal) return null;
-    return buildAnalysis(answers, coachName);
-  }, [answers, coachName, stage]);
+    return mergeFunnelAI(buildAnalysis(answers, coachName), aiPacket);
+  }, [answers, coachName, stage, aiPacket]);
 
   useEffect(() => {
     if (stage !== "quiz" || phase !== "preparing") return;
@@ -194,7 +276,7 @@ export default function LeadFunnelWizard() {
     const draft = loadFunnelDraft();
     if (draft && hasFunnelProgress(draft)) {
       if (draft.stage === "checkout" && draft.checkoutToken) {
-        router.push(`/ali-rashidabadi/payment?token=${draft.checkoutToken}`);
+        router.push(`${FUNNEL_PATH}/payment?token=${draft.checkoutToken}`);
         return;
       }
       setAnswers(draft.answers || {});
@@ -326,21 +408,20 @@ export default function LeadFunnelWizard() {
       ]
         .filter(Boolean)
         .join("\n\n");
+      const backendAnswers = mapAnswersForBackend(answers);
       const res = await api.post("/public/funnel/leads", {
         firstName,
         lastName,
         phone: normalizedPhone,
         otpCode: code,
-        primaryGoal: answers.primaryGoal,
-        activityLevel: answers.activityLevel,
-        trainingEnv: answers.trainingEnv,
-        experience: answers.experience,
-        nutritionChallenge: answers.nutritionChallenge,
-        mainObstacle: answers.mainObstacle,
-        commitment: answers.commitment,
+        ...backendAnswers,
         scenario: analysis.scenario,
         analysisTitle: analysis.title,
         analysisBody: (narrativeBody || analysis.sections.map((s) => `${s.title}\n${s.body}`).join("\n\n")) + metricsLine,
+        analysisJson: aiPacket ? JSON.stringify(aiPacket) : "",
+        age: Number(answers.age || age) || 0,
+        heightCm: Number(answers.heightCm || heightCm) || 0,
+        weightKg: Number(answers.weightKg || weightKg) || 0,
         utmSource,
         utmCampaign,
       });
@@ -357,7 +438,7 @@ export default function LeadFunnelWizard() {
         fullName,
         phone: normalizedPhone,
       });
-      router.push(`/ali-rashidabadi/payment?token=${token}`);
+      router.push(`${FUNNEL_PATH}/payment?token=${token}`);
     } catch (err) {
       const codeErr = err?.response?.data?.code;
       if (codeErr === "already_subscribed") {
@@ -402,7 +483,7 @@ export default function LeadFunnelWizard() {
 
   if (stage === "hero") {
     const canResume = hasFunnelProgress(loadFunnelDraft());
-    return <FunnelHero coachName={coachName} onStart={startQuiz} resume={canResume} />;
+    return <FunnelHero onStart={startQuiz} resume={canResume} />;
   }
 
   const progressValue = funnelProgress(stage, qIndex);
@@ -413,7 +494,10 @@ export default function LeadFunnelWizard() {
       {showProgress && (
         <FunnelProgressBar
           value={progressValue}
-          label="پردازش پردازنده هوشمند"
+          label={stage === "quiz" ? QUIZ_PROGRESS_LABEL : "پردازش پردازنده هوشمند"}
+          hint={stage === "quiz" ? QUIZ_PROGRESS_HINT : undefined}
+          compact={stage === "quiz"}
+          showPercent={stage !== "quiz"}
         />
       )}
 
@@ -456,9 +540,6 @@ export default function LeadFunnelWizard() {
                 thinking={phase === "typing"}
                 className="mx-auto mb-4 rounded-full"
               />
-              <p className="mb-3 text-xs text-white/40">
-                سوال {qIndex + 1} از {QUESTIONS.length}
-              </p>
               <h1 className="min-h-[3.5rem] text-2xl font-extrabold leading-relaxed text-white md:text-3xl">
                 {phase === "typing" ? (
                   <Typewriter key={`tw-${qIndex}`} text={currentQ.title} onDone={onTitleDone} />
@@ -467,7 +548,7 @@ export default function LeadFunnelWizard() {
                 )}
               </h1>
               <AnimatePresence>
-                {phase !== "typing" && (
+                {phase !== "typing" && currentQ.subtitle ? (
                   <motion.p
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -475,7 +556,7 @@ export default function LeadFunnelWizard() {
                   >
                     {currentQ.subtitle}
                   </motion.p>
-                )}
+                ) : null}
               </AnimatePresence>
             </div>
 
@@ -495,9 +576,10 @@ export default function LeadFunnelWizard() {
                         transition={{ delay: i * 0.1, duration: 0.35 }}
                         onClick={() => selectOption(opt.value)}
                         className={cn(
-                          "group flex w-full items-center gap-4 rounded-2xl border p-5 text-start transition-all duration-200",
-                          "bg-white/[0.03] backdrop-blur-md hover:bg-white/[0.06]",
-                          !locked && "hover:scale-[1.015]",
+                          "group flex w-full cursor-pointer items-center gap-4 rounded-2xl border p-4 text-start transition-all duration-200 sm:p-5",
+                          "min-h-[3.5rem] bg-white/[0.03] backdrop-blur-md hover:bg-white/[0.06]",
+                          "active:scale-[0.99] motion-reduce:active:scale-100",
+                          !locked && "hover:scale-[1.01] motion-reduce:hover:scale-100",
                           selected
                             ? "border-primary/60 shadow-[0_0_24px_-6px_oklch(0.58_0.11_187_/_0.4)]"
                             : "border-white/10 hover:border-primary/40"
@@ -647,7 +729,7 @@ export default function LeadFunnelWizard() {
             <FinalAnalyzeLoader
               title={ANALYZING_TITLE}
               steps={ANALYZING_STEPS}
-              onComplete={() => setStage("result")}
+              onComplete={() => setLoaderDone(true)}
             />
           </motion.div>
         )}
@@ -674,13 +756,18 @@ export default function LeadFunnelWizard() {
                 />
               </h2>
               {headlineDone ? (
-                <motion.p
+                <motion.div
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="mt-2 text-sm text-white/50"
+                  className="mt-2 space-y-2"
                 >
-                  {analysis.subtitle}
-                </motion.p>
+                  <p className="text-sm text-white/50">{analysis.subtitle}</p>
+                  {analysisSourceLabel(analysis.source) ? (
+                    <span className="inline-flex rounded-full border border-primary/25 bg-primary/10 px-2.5 py-0.5 text-[10px] font-medium text-primary">
+                      {analysisSourceLabel(analysis.source)}
+                    </span>
+                  ) : null}
+                </motion.div>
               ) : null}
             </div>
 
@@ -694,17 +781,20 @@ export default function LeadFunnelWizard() {
               </div>
               <div className="space-y-6 p-5 md:p-6">
                 <AnalysisVisuals analysis={analysis} />
-
+                <AnalysisNarrative analysis={analysis} />
                 <div className="rounded-2xl border border-orange-400/35 bg-orange-500/10 p-4 shadow-[0_0_28px_-10px_rgba(251,146,60,0.4)]">
                   <p className="text-xs font-bold text-orange-300">هشدار هوش مصنوعی</p>
                   <p className="mt-2 text-sm leading-8 text-orange-50/90">{analysis.aiWarning}</p>
                 </div>
-
-                <AnalysisNarrative analysis={analysis} />
               </div>
             </FunnelGlass>
 
-            <PaymentConversionBlocks storageKey="result" />
+            <PaymentConversionBlocks
+              storageKey="result"
+              analysisReadyTitle={analysis.analysisReadyTitle}
+              analysisReadyBody={analysis.analysisReadyBody}
+              aiGuard={analysis.aiGuard}
+            />
 
             <FunnelStickyBar>
               <DelayedFunnelCta typingDone={headlineDone} onClick={() => setStage("lead")}>

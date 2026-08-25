@@ -33,6 +33,7 @@ func AllModels() []any {
 		&DailyFoodLog{},
 		&WorkoutSession{},
 		&FunnelLead{},
+		&FunnelAIAnalysis{},
 		&WorkoutSetLog{},
 		&PersonalRecord{},
 		&WorkoutTemplate{},

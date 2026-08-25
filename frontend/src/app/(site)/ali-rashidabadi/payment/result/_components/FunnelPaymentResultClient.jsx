@@ -9,6 +9,7 @@ import { api } from "@/lib/axios/client";
 import { toastError } from "@/app/(site)/auth/_components/helpers";
 import { PAY_RESULT_COPY } from "../../../_lib/funnelConfig";
 import { clearFunnelDraft } from "../../../_lib/funnelDraft";
+import { FUNNEL_PATH } from "@/lib/funnel/offer";
 import FunnelShell, { FunnelCta, FunnelGlass, FunnelStickyBar } from "../../../_components/FunnelShell";
 import { LogoAnchor } from "../../../_components/FunnelLogoLayer";
 
@@ -25,7 +26,7 @@ export default function FunnelPaymentResultClient() {
     if (status === "success" && token) {
       clearFunnelDraft();
       router.replace(
-        `/ali-rashidabadi/success?token=${encodeURIComponent(token)}&code=${encodeURIComponent(code)}`
+        `${FUNNEL_PATH}/success?token=${encodeURIComponent(token)}&code=${encodeURIComponent(code)}`
       );
     }
   }, [status, token, code, router]);
@@ -120,13 +121,13 @@ export default function FunnelPaymentResultClient() {
               )}
             </FunnelCta>
           ) : (
-            <Link href="/ali-rashidabadi" className="btn-cta block text-center">
+            <Link href={FUNNEL_PATH} className="btn-cta block text-center">
               شروع مجدد ارزیابی
             </Link>
           )}
           {token ? (
             <Link
-              href={`/ali-rashidabadi/payment?token=${encodeURIComponent(token)}`}
+              href={`${FUNNEL_PATH}/payment?token=${encodeURIComponent(token)}`}
               className="mt-2 block text-center text-xs text-white/45 underline-offset-2 hover:text-white/70 hover:underline"
             >
               {PAY_RESULT_COPY.backToPlans}

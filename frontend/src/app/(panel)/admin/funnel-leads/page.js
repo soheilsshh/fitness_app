@@ -4,7 +4,7 @@ const FunnelLeadsClient = lazyPage(() => import("./_components/FunnelLeadsClient
 
 export const metadata = {
   title: "فانل ۱ · لید و فانل | پنل مدیر",
-  description: "فانل ۱ — اختصاصی علی رشیدآبادی",
+  description: "فانل ۱ — ارزیابی هوشمند بدن",
 };
 
 export default function AdminFunnelLeadsPage() {

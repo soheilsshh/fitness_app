@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Flame, Gauge, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { TREND_BY_SCENARIO } from "../_lib/funnelConfig";
 // Import → /_next/static/media (safe if nginx SPA-falls / back to index.html)
 import ectomorphImg from "@/assets/body-types/ectomorph.png";
 import mesomorphImg from "@/assets/body-types/mesomorph.png";
@@ -229,36 +230,30 @@ function BodyTypeShowcase({ selectedKey }) {
 
 const GREEN = "#3ee27f";
 
-const TREND_BY_SCENARIO = {
-  // A: weight loss — excess fat % falling toward target
-  A: {
-    title: "پیش‌بینی روند ۱۲ هفته کاهش چربی فعال (چربی‌سوزی فعال)",
-    yLabel: "درصد چربی تخمینی بدن (وزن)",
-    values: [40, 34, 30, 27, 24, 21, 19, 16, 13, 10, 6, 2],
-    yMax: 40,
-  },
-  // B: muscle gain — lean mass progress rising
-  B: {
-    title: "پیش‌بینی روند ۱۲ هفته عضله‌سازی فعال (هایپرتروفی)",
-    yLabel: "پیشرفت حجم عضلانی (٪)",
-    values: [4, 9, 14, 18, 22, 26, 29, 32, 35, 37, 39, 40],
-    yMax: 40,
-  },
-  // C: fitness — conditioning score rising
-  C: {
-    title: "پیش‌بینی روند ۱۲ هفته فرم‌دهی و آمادگی بدنی",
-    yLabel: "امتیاز فرم و آمادگی (٪)",
-    values: [6, 11, 16, 20, 24, 27, 30, 33, 35, 37, 39, 40],
-    yMax: 40,
-  },
-};
+function buildTrendTicks(yMax) {
+  const max = Math.max(10, Number(yMax) || 40);
+  const step = max <= 40 ? 5 : 10;
+  const ticks = [];
+  for (let t = 0; t <= max; t += step) ticks.push(t);
+  return ticks;
+}
 
-function TrendChart({ scenario }) {
-  const conf = TREND_BY_SCENARIO[scenario] || TREND_BY_SCENARIO.A;
+function TrendChart({ scenario, trendChart }) {
+  const fallback = TREND_BY_SCENARIO[scenario] || TREND_BY_SCENARIO.A;
+  const conf =
+    trendChart?.values?.length === 12
+      ? {
+          title: trendChart.title || fallback.title,
+          yLabel: trendChart.yLabel || fallback.yLabel,
+          values: trendChart.values,
+          yMax: trendChart.yMax || fallback.yMax,
+        }
+      : fallback;
   const W = 340;
   const H = 168;
   const plot = { x0: 36, x1: 330, y0: 10, y1: 128 };
   const n = conf.values.length;
+  const ticks = buildTrendTicks(conf.yMax);
 
   const pts = conf.values.map((v, i) => {
     const x = plot.x0 + (i / (n - 1)) * (plot.x1 - plot.x0);
@@ -267,7 +262,6 @@ function TrendChart({ scenario }) {
   });
   const line = pts.map((p, i) => `${i ? "L" : "M"} ${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(" ");
   const area = `${line} L ${pts[n - 1][0].toFixed(1)} ${plot.y1} L ${pts[0][0].toFixed(1)} ${plot.y1} Z`;
-  const ticks = [0, 5, 10, 15, 20, 25, 30, 35, 40];
   const [tx, ty] = pts[n - 1];
   const badgeAbove = ty > 46;
 
@@ -415,8 +409,8 @@ function RadarChart({ bars }) {
   return (
     <div className="space-y-2">
       <p className="text-xs font-medium text-white/70">پروفیل بیومکانیک بدن (مقایسه نسبی)</p>
-      <div className="rounded-2xl border border-white/10 bg-black/35 p-2">
-        <svg dir="ltr" viewBox={`0 0 ${W} ${H}`} className="w-full" fill="none">
+      <div className="flex justify-center rounded-2xl border border-white/10 bg-black/35 p-2">
+        <svg dir="ltr" viewBox={`0 0 ${W} ${H}`} className="block w-[65%]" fill="none">
           {/* grid rings */}
           {levels.map((f) => (
             <polygon key={f} points={ring(f)} stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
@@ -540,7 +534,7 @@ export default function AnalysisVisuals({ analysis }) {
     <div className="space-y-5">
       <MetricCards highlights={analysis.highlights} />
       <BodyTypeShowcase selectedKey={selectedKey} />
-      <TrendChart scenario={analysis.scenario} />
+      <TrendChart scenario={analysis.scenario} trendChart={analysis.trendChart} />
       <RadarChart bars={analysis.chartBars} />
     </div>
   );

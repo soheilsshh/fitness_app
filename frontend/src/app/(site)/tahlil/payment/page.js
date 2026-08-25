@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import LegacyFunnelRedirect from "@/lib/funnel/LegacyFunnelRedirect";
 
-export default function LegacyLeadFunnelPage() {
+export default function LegacyTahlilPaymentPage() {
   return (
     <Suspense fallback={null}>
       <LegacyFunnelRedirect />

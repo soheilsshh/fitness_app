@@ -1170,7 +1170,7 @@ select:focus-visible,
   animation: blink-cursor 1s step-start infinite;
 }
 
-/* Phone frame: full-bleed on mobile, centered 430px device on md+ */
+/* Funnel shell: full-bleed on phones, wide panel on tablet/desktop (768px+) */
 .funnel-frame-shell {
   min-height: 100dvh;
   width: 100%;
@@ -1183,33 +1183,49 @@ select:focus-visible,
 }
 
 .funnel-frame-device {
-  /* block, not flex: a flex column would shrink tall screens down to the
-     frame height and clip them instead of letting the frame scroll */
   position: relative;
   width: 100%;
   background: #0e0e0e;
 }
 
-/* Full-height section inside the frame (navbar is hidden on funnel routes) */
 .funnel-screen {
   min-height: 100dvh;
 }
 
 @media (min-width: 768px) {
   .funnel-frame-shell {
-    padding: 18px 0;
+    padding: 16px 20px 24px;
+    align-items: flex-start;
+    background:
+      radial-gradient(1100px 520px at 12% 0%, rgba(38, 252, 227, 0.08), transparent 58%),
+      radial-gradient(900px 480px at 88% 100%, rgba(24, 114, 114, 0.14), transparent 62%),
+      #060b0b;
   }
   .funnel-frame-device {
-    width: min(430px, 100vw);
-    height: calc(100dvh - 36px);
-    border-radius: 28px;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow: 0 20px 70px rgba(0, 0, 0, 0.45);
-    overflow: hidden auto;
-    overscroll-behavior: contain;
+    width: min(1120px, calc(100vw - 40px));
+    max-width: 1120px;
+    min-height: calc(100dvh - 40px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow:
+      0 32px 100px rgba(0, 0, 0, 0.55),
+      0 0 0 1px rgba(38, 252, 227, 0.06);
+    /* Page scroll (window) — inner overflow breaks wheel/trackpad on desktop */
+    overflow: visible;
   }
   .funnel-screen {
-    min-height: calc(100dvh - 36px);
+    min-height: calc(100dvh - 40px);
+  }
+}
+
+@media (min-width: 1280px) {
+  .funnel-frame-shell {
+    padding: 20px 24px 28px;
+  }
+  .funnel-frame-device {
+    width: min(1180px, calc(100vw - 48px));
+    max-width: 1180px;
+    border-radius: 24px;
   }
 }
 

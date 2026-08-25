@@ -482,7 +482,7 @@ func (s *paymentService) buildFunnelSuccessURL(lead *models.FunnelLead) string {
 		code = strings.TrimSpace(*lead.TrackingCode)
 	}
 	return fmt.Sprintf(
-		"%s/ali-rashidabadi/success?token=%s&code=%s",
+		"%s/analiz/success?token=%s&code=%s",
 		strings.TrimRight(base, "/"),
 		url.QueryEscape(lead.CheckoutToken),
 		url.QueryEscape(code),
@@ -505,7 +505,7 @@ func (s *paymentService) funnelPayResultURL(ctx context.Context, orderID uint, s
 		}
 	}
 	return fmt.Sprintf(
-		"%s/ali-rashidabadi/payment/result?status=%s&token=%s&tx_id=%d&ref_id=%s",
+		"%s/analiz/payment/result?status=%s&token=%s&tx_id=%d&ref_id=%s",
 		strings.TrimRight(base, "/"),
 		url.QueryEscape(status),
 		url.QueryEscape(lead.CheckoutToken),

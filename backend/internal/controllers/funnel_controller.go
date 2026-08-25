@@ -55,6 +55,25 @@ func (h *FunnelController) RequestLeadOTP(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "کد تایید ارسال شد"})
 }
 
+func (h *FunnelController) Analyze(c *gin.Context) {
+	var req service.AnalyzeFunnelRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid body"})
+		return
+	}
+	resp, err := h.funnelService.Analyze(c.Request.Context(), &req)
+	if err != nil {
+		if errors.Is(err, service.ErrFunnelInvalidInput) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "اطلاعات ارزیابی ناقص است"})
+			return
+		}
+		log.Printf("funnel analyze error: %v", err)
+		c.JSON(http.StatusBadGateway, gin.H{"error": "تحلیل هوشمند در دسترس نیست"})
+		return
+	}
+	c.JSON(http.StatusOK, resp)
+}
+
 func (h *FunnelController) CreateLead(c *gin.Context) {
 	var req service.CreateFunnelLeadRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

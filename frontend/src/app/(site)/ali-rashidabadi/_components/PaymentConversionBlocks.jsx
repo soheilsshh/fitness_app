@@ -44,7 +44,12 @@ function persistDeadline(storageKey, end) {
  * AI Guard + fake 10-minute urgency — analysis is saved permanently on the server;
  * the timer only creates conversion pressure and silently restarts when it hits zero.
  */
-export default function PaymentConversionBlocks({ storageKey = "default" }) {
+export default function PaymentConversionBlocks({
+  storageKey = "default",
+  analysisReadyTitle,
+  analysisReadyBody,
+  aiGuard,
+}) {
   const key = `${STORAGE_PREFIX}${storageKey}`;
   const [remaining, setRemaining] = useState(COUNTDOWN_MS);
 
@@ -74,9 +79,11 @@ export default function PaymentConversionBlocks({ storageKey = "default" }) {
       {/* Analysis ready — first conversion box */}
       <div className="rounded-2xl border border-sky-400/40 bg-sky-500/[0.08] p-4 shadow-[0_0_28px_-12px_rgba(56,189,248,0.35)]">
         <p className="text-sm font-bold leading-7 text-sky-100">
-          {RESULT_COPY.analysisReadyTitle}
+          {analysisReadyTitle || RESULT_COPY.analysisReadyTitle}
         </p>
-        <p className="mt-2 text-sm leading-8 text-sky-50/85">{RESULT_COPY.analysisReadyBody}</p>
+        <p className="mt-2 text-sm leading-8 text-sky-50/85">
+          {analysisReadyBody || RESULT_COPY.analysisReadyBody}
+        </p>
       </div>
 
       {/* AI Guard */}
@@ -87,7 +94,7 @@ export default function PaymentConversionBlocks({ storageKey = "default" }) {
           </span>
           <p className="text-sm leading-8 text-emerald-50/90">
             <span className="font-bold text-emerald-300">🛡 </span>
-            {RESULT_COPY.aiGuard}
+            {aiGuard || RESULT_COPY.aiGuard}
           </p>
         </div>
       </div>

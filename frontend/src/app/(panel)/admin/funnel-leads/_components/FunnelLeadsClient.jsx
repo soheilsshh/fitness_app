@@ -48,6 +48,7 @@ import {
   QUESTIONS,
   STATUS_LABELS,
 } from "@/app/(site)/ali-rashidabadi/_lib/funnelConfig";
+import { FUNNEL_LABEL, FUNNEL_PATH } from "@/lib/funnel/offer";
 
 const Q_SHORT = {
   primaryGoal: "هدف اصلی",
@@ -230,13 +231,13 @@ function PipelineBar({ stats, filter, onSelect }) {
       <CardContent className="space-y-4 p-4 md:p-5">
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div>
-            <h2 className="text-sm font-bold text-foreground">مسیر فانل ۱ · علی رشیدآبادی</h2>
+            <h2 className="text-sm font-bold text-foreground">{FUNNEL_LABEL}</h2>
             <p className="mt-0.5 text-xs text-muted-foreground">
               از ثبت لید تا خرید نهایی و تماس تیم — روی هر مرحله کلیک کنید تا فیلتر شود
             </p>
           </div>
           <Link
-            href="/ali-rashidabadi"
+            href={FUNNEL_PATH}
             target="_blank"
             className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline"
           >
@@ -425,7 +426,7 @@ export default function FunnelLeadsClient() {
       <div>
         <h1 className="text-xl font-extrabold md:text-2xl">فانل ۱ · لید و فانل</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          اختصاصی طراحی‌شده برای علی رشیدآبادی — وضعیت هر لید، پاسخ سوالات، و خرید نهایی
+          ارزیابی هوشمند بدن فیتینو — وضعیت هر لید، پاسخ سوالات، و خرید نهایی
         </p>
       </div>
 
@@ -521,8 +522,8 @@ export default function FunnelLeadsClient() {
           ) : items.length === 0 ? (
             <div className="py-16 text-center text-sm text-muted-foreground">
               لیدی در این فیلتر نیست. لینک فانل:{" "}
-              <Link href="/ali-rashidabadi" className="text-primary hover:underline">
-                /ali-rashidabadi
+              <Link href={FUNNEL_PATH} className="text-primary hover:underline">
+                {FUNNEL_PATH}
               </Link>
             </div>
           ) : (
@@ -656,7 +657,7 @@ export default function FunnelLeadsClient() {
               )}
             </DialogTitle>
             <DialogDescription>
-              مسیر لید در قیف فروش علی رشیدآبادی + پاسخ‌های ارزیابی
+              مسیر لید در قیف ارزیابی هوشمند + پاسخ‌های ارزیابی
             </DialogDescription>
           </DialogHeader>
 

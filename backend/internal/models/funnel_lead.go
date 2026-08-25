@@ -36,6 +36,11 @@ type FunnelLead struct {
 
 	AnalysisTitle string `gorm:"size:255;not null"`
 	AnalysisBody  string `gorm:"type:text;not null"`
+	AnalysisJSON  string `gorm:"type:text"`
+
+	Age      int     `gorm:"not null;default:0"`
+	HeightCm float64 `gorm:"not null;default:0"`
+	WeightKg float64 `gorm:"not null;default:0"`
 
 	ServicePlanID uint   `gorm:"index;not null;default:0"`
 	PackageKey    string `gorm:"size:40;not null;default:''"` // stringified ServicePlanID (UI key)

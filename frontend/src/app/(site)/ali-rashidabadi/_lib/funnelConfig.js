@@ -1,84 +1,149 @@
-// 7 specialized funnel questions (keys match CreateFunnelLeadRequest).
+// 8 funnel questions — keys stored in answers; mapAnswersForBackend() maps to lead API.
 export const QUESTIONS = [
   {
-    key: "primaryGoal",
-    title: "هدف اصلی شما برای تغییر استایل چیست؟",
-    subtitle: "پایه علمی برنامه تو بر اساس این انتخاب شکل می‌گیرد.",
+    key: "gender",
+    title: "برای محاسبات دقیق‌تر، جنسیت شما چیست؟",
+    subtitle: "",
     options: [
-      { value: "weight_loss", label: "چربی‌سوزی سریع و کات بدون ریزش عضلات", emoji: "🔥", scenario: "A" },
-      { value: "muscle_gain", label: "ساخت عضلات باکیفیت و حجم‌دهی عضلانی", emoji: "💪", scenario: "B" },
-      { value: "fitness", label: "افزایش قدرت، انرژی روزانه و فیتنس عمومی", emoji: "⚡", scenario: "C" },
+      { value: "male", label: "مرد", emoji: "👨" },
+      { value: "female", label: "زن", emoji: "👩" },
+      { value: "prefer_not_say", label: "ترجیح می‌دهم نگویم", emoji: "🙂" },
+    ],
+  },
+  {
+    key: "primaryGoal",
+    title: "هدف اصلی شما چیست؟",
+    subtitle: "پایه علمی برنامه بر اساس این انتخاب شکل می‌گیرد.",
+    options: [
+      { value: "weight_loss", label: "کاهش چربی و وزن", emoji: "🔥", scenario: "A" },
+      { value: "muscle_gain", label: "عضله‌سازی و فرم‌دهی", emoji: "💪", scenario: "B" },
+      { value: "fitness", label: "تناسب اندام و سلامت عمومی", emoji: "⚡", scenario: "C" },
     ],
   },
   {
     key: "activityLevel",
-    title: "وضعیت فعالیت روزانه شما (خارج از باشگاه) چطور است؟",
-    subtitle: "سطح متابولیسم و کالری مورد نیاز شما از اینجا محاسبه می‌شود",
+    title: "در طول روز چقدر فعالیت دارید؟",
+    subtitle: "",
     options: [
-      { value: "sedentary", label: "پشت‌میزنشین و کم‌تحرک (کارمندی / دانشجویی)", emoji: "🪑" },
-      { value: "moderate", label: "تحرک متوسط (پیاده‌روی روزانه یا کار سرپا)", emoji: "🚶" },
-      { value: "active", label: "بسیار پرتحرک (کار بدنی سنگین یا ورزشکار فعال)", emoji: "🏃" },
+      { value: "sedentary", label: "بیشتر نشسته و کم‌تحرک", emoji: "🪑" },
+      { value: "moderate", label: "فعالیت متوسط و پیاده‌روی روزانه", emoji: "🚶" },
+      { value: "active", label: "بسیار فعال / کار فیزیکی یا ورزش منظم", emoji: "🏃" },
     ],
   },
   {
-    key: "trainingEnv",
-    title: "شرایط و ترجیح شما برای انجام تمرینات چگونه است؟",
-    subtitle: "برنامه تمرینی شما متناسب با امکانات شما نوشته می‌شود",
+    key: "trainingFrequency",
+    title: "در حال حاضر چقدر ورزش می‌کنید؟",
+    subtitle: "",
     options: [
-      { value: "home", label: "فقط در خانه (با کش، دمبل یا وزن بدن)", emoji: "🏠" },
-      { value: "gym", label: "در باشگاه بدنسازی (دسترسی به تمام دستگاه‌ها)", emoji: "🏋️" },
-    ],
-  },
-  {
-    key: "experience",
-    title: "چقدر با محیط باشگاه و حرکات بدنسازی آشنایی دارید؟",
-    subtitle: "سطح آموزشی برنامه با تجربه شما تنظیم می‌شود",
-    options: [
-      { value: "beginner", label: "مبتدی (صفر هستم و نیاز به آموزش تک‌تک حرکات دارم)", emoji: "🌱" },
-      { value: "intermediate", label: "متوسط (حرکات را می‌شناسم اما برنامه اصولی نداشته‌ام)", emoji: "📘" },
-      { value: "advanced", label: "پیشرفته (سابقه تمرین مداوم دارم و حرفه‌ای کار می‌کنم)", emoji: "🏅" },
+      { value: "none", label: "اصلاً ورزش نمی‌کنم", emoji: "🛋️" },
+      { value: "sessions_1_3", label: "۱ تا ۳ جلسه در هفته", emoji: "📅" },
+      { value: "sessions_4_plus", label: "۴ جلسه یا بیشتر در هفته", emoji: "🏋️" },
     ],
   },
   {
     key: "nutritionChallenge",
-    title: "بزرگ‌ترین چالش شما در رعایت رژیم غذایی چیست؟",
-    subtitle: "نقطه ضعف تغذیه‌ای شما کلید طراحی رژیم پایدار است",
+    title: "وضعیت تغذیه فعلی‌تان را چطور توصیف می‌کنید؟",
+    subtitle: "",
     options: [
-      { value: "sweets", label: "اشتیاق شدید به شیرینی‌جات و ریزه‌خواری عصبی", emoji: "🍫" },
-      { value: "low_appetite", label: "کم‌اشتهایی شدید (نمی‌توانم به اندازه کافی غذا بخورم)", emoji: "🍽️" },
-      { value: "no_time", label: "نداشتن وقت برای آشپزی و آماده‌سازی وعده‌ها", emoji: "⏰" },
+      { value: "irregular", label: "معمولاً نامنظم و بدون برنامه", emoji: "🍔" },
+      { value: "partly_controlled", label: "نسبتاً خوب ولی گاهی از برنامه خارج می‌شوم", emoji: "🥗" },
+      { value: "controlled", label: "منظم و کنترل‌شده", emoji: "✅" },
     ],
   },
   {
-    key: "mainObstacle",
-    title: "بزرگترین مانعی که در برنامه‌های قبلی شما را متوقف کرد چه بود؟",
-    subtitle: "ما اینجاییم تا زنجیره شکست‌های قبلی را قطع کنیم.",
+    key: "sleepHours",
+    title: "معمولاً چند ساعت در شب می‌خوابید؟",
+    subtitle: "",
     options: [
-      { value: "motivation", label: "رها شدن توسط مربی و عدم نظارت و پیگیری مداوم", emoji: "🎯" },
-      { value: "plateau", label: "استپ وزنی و نتیجه نگرفتن از رژیم‌های سخت", emoji: "📉" },
-      { value: "knowledge", label: "تا به حال مسیر اصولی را شروع نکرده‌ام", emoji: "🚀" },
+      { value: "under_6", label: "کمتر از ۶ ساعت", emoji: "🌙" },
+      { value: "hours_6_8", label: "۶ تا ۸ ساعت", emoji: "😴" },
+      { value: "over_8", label: "بیشتر از ۸ ساعت", emoji: "💤" },
+    ],
+  },
+  {
+    key: "stressLevel",
+    title: "سطح استرس روزانه شما چقدر است؟",
+    subtitle: "",
+    options: [
+      { value: "low", label: "کم", emoji: "🧘" },
+      { value: "medium", label: "متوسط", emoji: "⚖️" },
+      { value: "high", label: "زیاد", emoji: "😰" },
     ],
   },
   {
     key: "commitment",
-    title: "چقدر برای رسیدن به این هدف مصمم هستید؟",
-    subtitle: "میزان تعهد شما، شدت و سرعت برنامه را مشخص می‌کند",
+    title: "چقدر برای اجرای یک برنامه منظم آماده‌اید؟",
+    subtitle: "شدت پیشنهاد AI بر اساس این پاسخ تنظیم می‌شود.",
     options: [
-      { value: "flexible", label: "می‌خواهم با یک برنامه منعطف و بدون فشار زیاد شروع کنم", emoji: "🌿" },
-      { value: "max_results", label: "کاملاً آماده‌ام؛ سریع‌ترین و بهترین نتیجه را می‌خواهم", emoji: "🔥" },
+      { value: "flexible", label: "فقط تغییرات ساده و کم‌فشار", emoji: "🌿" },
+      { value: "steady", label: "می‌توانم بیشتر روزها پایبند باشم", emoji: "📆" },
+      { value: "max_results", label: "کاملاً آماده‌ام و می‌خواهم جدی پیش بروم", emoji: "🔥" },
     ],
   },
 ];
 
+export const QUIZ_KEYS = QUESTIONS.map((q) => q.key);
+
+export const QUIZ_PROGRESS_LABEL = "کمتر از ۱ دقیقه تا تحلیل شما";
+export const QUIZ_PROGRESS_HINT = "فقط ۸ انتخاب سریع";
+
+/** Map quiz answers to backend lead/analyze contract fields. */
+export function mapAnswersForBackend(answers = {}) {
+  let experience = "";
+  switch (answers.trainingFrequency) {
+    case "none":
+      experience = "beginner";
+      break;
+    case "sessions_1_3":
+      experience = "intermediate";
+      break;
+    case "sessions_4_plus":
+      experience = "advanced";
+      break;
+    default:
+      experience = answers.experience || "";
+  }
+
+  let mainObstacle = "";
+  switch (answers.stressLevel) {
+    case "low":
+      mainObstacle = "knowledge";
+      break;
+    case "medium":
+      mainObstacle = "motivation";
+      break;
+    case "high":
+      mainObstacle = "plateau";
+      break;
+    default:
+      mainObstacle = answers.mainObstacle || "knowledge";
+  }
+
+  return {
+    primaryGoal: answers.primaryGoal || "",
+    activityLevel: answers.activityLevel || "",
+    trainingEnv: "",
+    experience,
+    nutritionChallenge: answers.nutritionChallenge || "",
+    mainObstacle,
+    commitment: answers.commitment || "",
+    gender: answers.gender || "",
+    sleepHours: answers.sleepHours || "",
+    stressLevel: answers.stressLevel || "",
+    trainingFrequency: answers.trainingFrequency || "",
+  };
+}
+
 const ACTIVITY_LABELS = {
-  sedentary: "کم‌تحرک (پشت‌میزنشین)",
-  moderate: "تحرک متوسط",
-  active: "پرتحرک و ورزشکار",
+  sedentary: "کم‌تحرک",
+  moderate: "فعالیت متوسط",
+  active: "بسیار فعال",
 };
 
-const ENV_LABELS = {
-  home: "تمرین در خانه",
-  gym: "باشگاه بدنسازی",
+const TRAINING_FREQ_LABELS = {
+  none: "بدون ورزش منظم",
+  sessions_1_3: "۱ تا ۳ جلسه در هفته",
+  sessions_4_plus: "۴ جلسه یا بیشتر در هفته",
 };
 
 const EXPERIENCE_LABELS = {
@@ -88,20 +153,42 @@ const EXPERIENCE_LABELS = {
 };
 
 const NUTRITION_LABELS = {
+  irregular: "تغذیه نامنظم",
+  partly_controlled: "تغذیه نسبتاً کنترل‌شده",
+  controlled: "تغذیه منظم و کنترل‌شده",
   sweets: "ریزه‌خواری و شیرینی عصبی",
   low_appetite: "کم‌اشتهایی شدید",
   no_time: "نبود وقت برای آشپزی",
 };
 
+const SLEEP_LABELS = {
+  under_6: "خواب کمتر از ۶ ساعت",
+  hours_6_8: "خواب ۶ تا ۸ ساعت",
+  over_8: "خواب بیشتر از ۸ ساعت",
+};
+
+const STRESS_LABELS = {
+  low: "استرس کم",
+  medium: "استرس متوسط",
+  high: "استرس زیاد",
+};
+
 const OBSTACLE_LABELS = {
-  motivation: "رها کردن مسیر و کمبود انگیزه",
-  plateau: "استپ وزنی و نتیجه نگرفتن",
-  knowledge: "نداشتن برنامه و دانش تمرینی",
+  motivation: "استرس و انگیزه",
+  plateau: "استرس بالا و مقاومت متابولیک",
+  knowledge: "نیاز به مسیر ساده‌تر",
 };
 
 const COMMITMENT_LABELS = {
-  flexible: "شروع منعطف و بدون فشار",
-  max_results: "حداکثر نتیجه در کمترین زمان",
+  flexible: "تغییرات ساده و کم‌فشار",
+  steady: "پایبندی در بیشتر روزها",
+  max_results: "برنامه جدی و پرشدت",
+};
+
+const GENDER_LABELS = {
+  male: "مرد",
+  female: "زن",
+  prefer_not_say: "نامشخص",
 };
 
 const SCENARIO_META = {
@@ -125,23 +212,21 @@ const SCENARIO_META = {
   },
 };
 
-/** Funnel 1 — dedicated sales funnel for علی رشیدآبادی.
- *  Funnel 2 (future) would be a separate route for another coach.
- */
+/** Funnel 1 — public AI body-analysis sales funnel (coach binding stays internal). */
 export const FUNNEL_META = {
   key: "funnel_1",
   label: "فانل ۱",
-  coachName: "علی رشیدآبادی",
-  description: "اختصاصی طراحی‌شده برای علی رشیدآبادی",
-  path: "/ali-rashidabadi",
+  coachName: "فیتینو",
+  description: "ارزیابی هوشمند بدن با ایجنت‌های هوش مصنوعی فیتینو",
+  path: "/analiz",
 };
 
 export const HERO_COPY = {
   title: "فرمول اختصاصی بدن تو؛ ترکیب علم مربیگری و پایش ۲۴ ساعته هوش مصنوعی",
   subtitle:
-    "رژیم‌های تکراری و برنامه‌های رها شده را فراموش کن. در فیتینو، مربی علی و ایجنت‌های هوش مصنوعی، لحظه به لحظه مسیر تغییر بدنت را زیر نظر دارند تا مطمئن شویم این‌بار حتماً به نتیجه می‌رسی.",
+    "رژیم‌های تکراری و برنامه‌های رها شده را فراموش کن. در فیتینو، ایجنت‌های هوش مصنوعی لحظه به لحظه مسیر تغییر بدنت را زیر نظر دارند تا مطمئن شویم این‌بار حتماً به نتیجه می‌رسی.",
   cta: "شروع ارزیابی هوشمند بدنم (رایگان)",
-  funnelBadge: "فانل ۱ · اختصاصی علی رشیدآبادی",
+  funnelBadge: "ارزیابی هوشمند بدن · پایش ۲۴ ساعته AI",
 };
 
 export const METRICS_COPY = {
@@ -152,7 +237,7 @@ export const METRICS_COPY = {
 };
 
 export const LEAD_COPY = {
-  title: "اتصال دیتای ارزیابی به پنل اختصاصی مربی علی",
+  title: "اتصال دیتای ارزیابی به پنل اختصاصی فیتینو",
   subtitle:
     "برای ذخیره دایمی این آنالیز در بانک داده فیتینو و فعال‌سازی پروتکل پایش هوشمند، نام و شماره موبایل خود را وارد کنید.",
   otpSubtitle: "کد ۶ رقمی پیامک‌شده را وارد کنید تا هویت شما تایید شود.",
@@ -165,21 +250,21 @@ export const LEAD_COPY = {
 
 export const RESULT_COPY = {
   title: "گزارش اولیه آنالیز هوشمند بدنی شما آماده شد",
-  cta: "دریافت راهکار و برنامه اختصاصی از مربی علی 🚀",
+  cta: "دریافت راهکار و برنامه اختصاصی فیتینو 🚀",
   analysisReadyTitle: "📊 گزارش آنالیز اختصاصی بدنی شما آماده است",
   analysisReadyBody:
-    "داده‌های فیزیولوژیک شما ثبت شد. بلافاصله پس از تکمیل سفارش، کالیبراسیون و تنظیم برنامه توسط مربی علی آغاز می‌شود.",
+    "داده‌های فیزیولوژیک شما ثبت شد. بلافاصله پس از تکمیل سفارش، کالیبراسیون و تنظیم برنامه توسط سیستم هوشمند فیتینو آغاز می‌شود.",
   aiWarning:
-    "تحلیل سیستم: الگوی پاسخ‌های شما نشان می‌دهد بدنتان مقاومت بالایی به استپ وزنی در هفته‌های سوم به بعد دارد. مربی علی رشیدآبادی برای شکستن این استپ عضلانی، نیاز به اعمال یک سیستم بارگذاری متناوب در تمرین شما دارد.",
+    "تحلیل سیستم: الگوی پاسخ‌های شما نشان می‌دهد بدنتان مقاومت بالایی به استپ وزنی در هفته‌های سوم به بعد دارد. ایجنت‌های فیتینو برای شکستن این استپ عضلانی، یک سیستم بارگذاری متناوب در تمرین شما اعمال می‌کنند.",
   aiGuard:
-    "پایش ضد استپ فیتینو: این برنامه مجهز به پروتکل پایش روزانه است. به محض اینکه سرعت چربی‌سوزی شما کند شود، سیستم هوشمند تغییرات را به مربی علی گزارش داده و برنامه شما بدون هزینه اضافه آپدیت می‌شود.",
+    "پایش ضد استپ فیتینو: این برنامه مجهز به پروتکل پایش روزانه است. به محض اینکه سرعت چربی‌سوزی شما کند شود، سیستم هوشمند برنامه شما را بدون هزینه اضافه آپدیت می‌کند.",
   urgency:
-    "به دلیل ترافیک بالای سرور پردازش و محدودیت در ظرفیت پذیرش مربی علی، این آنالیز اختصاصی و رزرو پنل شما فقط تا ۱۰:۰۰ دقیقه دیگر محفوظ می‌ماند.",
+    "به دلیل ترافیک بالای سرور پردازش و محدودیت ظرفیت پذیرش، این آنالیز اختصاصی و رزرو پنل شما فقط تا ۱۰:۰۰ دقیقه دیگر محفوظ می‌ماند.",
 };
 
 /** Canonical coach display name — keep consistent across funnel UI. */
-export const COACH_FULL_NAME = "مربی علی رشیدآبادی";
-export const COACH_SHORT_NAME = "علی رشیدآبادی";
+export const COACH_FULL_NAME = "ایجنت‌های هوش مصنوعی فیتینو";
+export const COACH_SHORT_NAME = "فیتینو";
 
 const TARGET_ZONES = {
   weight_loss: "چربی‌های مقاوم شکم و پهلو",
@@ -285,7 +370,7 @@ export const PAYMENT_COPY = {
       dailyNote: "معادل روزی ۳۲٬۰۰۰ تومان",
       features: [
         "شامل تمامی امکانات و دسترسی‌های کامل پلن VIP",
-        "پشتیبانی مستقیم و اختصاصی توسط شخص مربی علی رشیدآبادی",
+        "پشتیبانی مستقیم و اختصاصی توسط ایجنت‌ها و تیم مربیگری فیتینو",
         "جلسات مشاوره و آنالیز اختصاصی (تصویری / حضوری)",
         "آنالیز ویدیویی فرم اجرای حرکات شما توسط مربی",
         "اولویت پردازش در کالیبراسیون و آپدیت برنامه‌ها",
@@ -301,8 +386,8 @@ export const PAYMENT_COPY = {
     },
     {
       icon: "user",
-      title: "طراحی ۱۰۰٪ اختصاصی با مربی علی",
-      body: "تمامی حرکات طبق فیزیولوژی اختصاصی شما توسط مربی علی تنظیم می‌شود تا در کوتاه‌ترین زمان، بیشترین بازدهی را بگیرید.",
+      title: "طراحی ۱۰۰٪ اختصاصی با سیستم هوشمند فیتینو",
+      body: "تمامی حرکات طبق فیزیولوژی اختصاصی شما توسط ایجنت‌های فیتینو تنظیم می‌شود تا در کوتاه‌ترین زمان، بیشترین بازدهی را بگیرید.",
     },
     {
       icon: "utensils",
@@ -484,7 +569,7 @@ export const PAYMENT_COPY = {
         value: 3_200_000,
       },
       {
-        service: "پشتیبانی اختصاصی و مستقیم مربی علی رشیدآبادی",
+        service: "پشتیبانی اختصاصی و مستقیم ایجنت‌ها و تیم فیتینو",
         value: 1_800_000,
       },
       {
@@ -504,7 +589,7 @@ export const PAYMENT_COPY = {
 export const SUCCESS_COPY = {
   title: "به فیتینو خوش آمدید! اولین و مهم‌ترین قدم را مقتدرانه برداشتید.",
   subtitle:
-    "پرداخت شما با موفقیت تایید شد. سیستم هوشمند و تیم مربی علی در حال آماده‌سازی پنل اختصاصی شما هستند.",
+    "پرداخت شما با موفقیت تایید شد. سیستم هوشمند فیتینو در حال آماده‌سازی پنل اختصاصی شماست.",
   consultationTitle: "درخواست مشاوره و برنامه شما ثبت شد",
   consultationBody:
     "تیم مربی به زودی با شما تماس می‌گیرند. مربی در زمان مناسب با شما هماهنگ می‌کند و برنامه اختصاصی‌تان را آماده می‌کند.",
@@ -523,17 +608,46 @@ export const PAY_RESULT_COPY = {
 };
 
 function getScenario(primaryGoal) {
-  const q = QUESTIONS[0].options.find((o) => o.value === primaryGoal);
-  return q?.scenario || "A";
+  const q = QUESTIONS.find((item) => item.key === "primaryGoal");
+  const opt = q?.options.find((o) => o.value === primaryGoal);
+  return opt?.scenario || "A";
 }
 
-/** Mifflin–St Jeor (male baseline; sex not collected in funnel). */
-export function calculateBmr(age, heightCm, weightKg) {
+/** Default 12-week trend templates by scenario (A/B/C). */
+export const TREND_BY_SCENARIO = {
+  A: {
+    title: "پیش‌بینی روند ۱۲ هفته کاهش چربی فعال (چربی‌سوزی فعال)",
+    yLabel: "درصد چربی تخمینی بدن (وزن)",
+    values: [40, 34, 30, 27, 24, 21, 19, 16, 13, 10, 6, 2],
+    yMax: 40,
+  },
+  B: {
+    title: "پیش‌بینی روند ۱۲ هفته عضله‌سازی فعال (هایپرتروفی)",
+    yLabel: "پیشرفت حجم عضلانی (٪)",
+    values: [4, 9, 14, 18, 22, 26, 29, 32, 35, 37, 39, 40],
+    yMax: 40,
+  },
+  C: {
+    title: "پیش‌بینی روند ۱۲ هفته فرم‌دهی و آمادگی بدنی",
+    yLabel: "امتیاز فرم و آمادگی (٪)",
+    values: [6, 11, 16, 20, 24, 27, 30, 33, 35, 37, 39, 40],
+    yMax: 40,
+  },
+};
+
+export function buildTrendChart(scenario) {
+  return TREND_BY_SCENARIO[scenario] || TREND_BY_SCENARIO.A;
+}
+
+/** Mifflin–St Jeor — uses gender when provided. */
+export function calculateBmr(age, heightCm, weightKg, gender = "male") {
   const a = Number(age);
   const h = Number(heightCm);
   const w = Number(weightKg);
   if (![a, h, w].every((n) => Number.isFinite(n) && n > 0)) return null;
-  return Math.round(10 * w + 6.25 * h - 5 * a + 5);
+  const base = 10 * w + 6.25 * h - 5 * a;
+  if (gender === "female") return Math.round(base - 161);
+  return Math.round(base + 5);
 }
 
 export function estimateBodyType(primaryGoal, bmi) {
@@ -576,27 +690,58 @@ export function buildMacroSplit(primaryGoal, bmr) {
   };
 }
 
+/** Local personalized AI warning — never reuse the static RESULT_COPY string. */
+export function buildPersonalizedAiWarning(answers = {}) {
+  const mapped = mapAnswersForBackend(answers);
+  const goal = GOAL_LABELS[mapped.primaryGoal] || GOAL_LABELS[answers.primaryGoal] || "هدف فعلی";
+  const stress =
+    STRESS_LABELS[answers.stressLevel] ||
+    OBSTACLE_LABELS[mapped.mainObstacle] ||
+    "استرس روزانه";
+  const sleep = SLEEP_LABELS[answers.sleepHours] || "الگوی خواب فعلی";
+  const commit = COMMITMENT_LABELS[mapped.commitment] || "تعهد فعلی";
+  const training =
+    TRAINING_FREQ_LABELS[answers.trainingFrequency] ||
+    EXPERIENCE_LABELS[mapped.experience] ||
+    "سطح تمرین فعلی";
+  const nutrition = NUTRITION_LABELS[mapped.nutritionChallenge] || "وضعیت تغذیه";
+
+  if (mapped.primaryGoal === "muscle_gain") {
+    return `تحلیل سیستم: برای هدف «${goal}» با «${training}» و «${sleep}»، خطر ریزش عضله در فاز حجم بالاست. با توجه به «${stress}» و تعهد «${commit}»، ایجنت‌های فیتینو بار تمرینی و پروتئین را طوری تنظیم می‌کنند که رشد عضله بدون چربی زائد پیش برود.`;
+  }
+  if (mapped.primaryGoal === "fitness") {
+    return `تحلیل سیستم: مسیر «${goal}» با فعالیت فعلی و «${nutrition}» نشان می‌دهد ثبات ریکاوری هنوز بهینه نیست. با «${sleep}» و «${stress}»، پروتکل فیتینو شدت برنامه را متناسب با «${commit}» نگه می‌دارد تا بدون فرسودگی، فرم پایدار بسازید.`;
+  }
+  return `تحلیل سیستم: برای «${goal}» با «${nutrition}» و «${sleep}»، بدن شما در برابر استپ وزنی حساس است. با توجه به «${stress}» و آمادگی «${commit}»، ایجنت‌های فیتینو بارگذاری متناوب تمرین و تغذیه را برای شکستن این استپ تنظیم می‌کنند.`;
+}
+
 export function buildAnalysis(answers, coachName = COACH_SHORT_NAME) {
+  const mapped = mapAnswersForBackend(answers);
   const {
     primaryGoal,
     activityLevel,
-    trainingEnv,
     experience,
     nutritionChallenge,
     mainObstacle,
+    commitment,
+    gender,
+    sleepHours,
+    stressLevel,
+    trainingFrequency,
     age,
     heightCm,
     weightKg,
-  } = answers;
+  } = { ...answers, ...mapped };
 
   const scenario = getScenario(primaryGoal);
   const activity = ACTIVITY_LABELS[activityLevel] || "سطح فعالیت فعلی";
-  const env = ENV_LABELS[trainingEnv] || "محیط تمرینی شما";
-  const exp = EXPERIENCE_LABELS[experience] || "فعلی";
-  const nutrition = NUTRITION_LABELS[nutritionChallenge] || "چالش تغذیه‌ای شما";
-  const obstacle = OBSTACLE_LABELS[mainObstacle] || "موانع قبلی";
+  const training = TRAINING_FREQ_LABELS[trainingFrequency] || EXPERIENCE_LABELS[experience] || "فعلی";
+  const nutrition = NUTRITION_LABELS[nutritionChallenge] || "وضعیت تغذیه فعلی";
+  const sleep = SLEEP_LABELS[sleepHours] || "الگوی خواب فعلی";
+  const stress = STRESS_LABELS[stressLevel] || OBSTACLE_LABELS[mainObstacle] || "استرس روزانه";
+  const commitLabel = COMMITMENT_LABELS[commitment] || "تعهد فعلی";
   const meta = SCENARIO_META[scenario];
-  const bmr = calculateBmr(age, heightCm, weightKg);
+  const bmr = calculateBmr(age, heightCm, weightKg, gender);
   const bmi = calculateBmi(heightCm, weightKg);
   const bodyType = estimateBodyType(primaryGoal, bmi);
   const macros = buildMacroSplit(primaryGoal, bmr);
@@ -609,15 +754,14 @@ export function buildAnalysis(answers, coachName = COACH_SHORT_NAME) {
   const problemIntensity = PROBLEM_INTENSITY[goalKey] || PROBLEM_INTENSITY.fitness;
   const commonMistake = COMMON_MISTAKE[goalKey] || COMMON_MISTAKE.fitness;
   const sideEffect = SIDE_EFFECT[goalKey] || SIDE_EFFECT.fitness;
-  const biggestObstacle =
-    mainObstacle === "plateau"
-      ? "استپ‌های مکرر وزنی شما"
-      : obstacle || "بزرگ‌ترین مانع قبلی شما";
+  const biggestObstacle = stress;
   const methodName = meta?.method || "پروتکل اختصاصی فیتینو";
-  const readinessLevel = exp;
-  const trainingPlace = env;
+  const readinessLevel = training;
+  const trainingPlace = training;
   const targetZones = TARGET_ZONES[goalKey] || TARGET_ZONES.fitness;
-  const successPct = SUCCESS_PCT[goalKey] || 86;
+  const successPct =
+    (SUCCESS_PCT[goalKey] || 86) +
+    (commitment === "max_results" ? 4 : commitment === "steady" ? 2 : 0);
   const strategyFocus = STRATEGY_FOCUS[goalKey] || STRATEGY_FOCUS.fitness;
 
   const statusSummary = {
@@ -633,10 +777,10 @@ export function buildAnalysis(answers, coachName = COACH_SHORT_NAME) {
     },
     body:
       goalKey === "weight_loss"
-        ? `تحلیل داده‌های فیزیولوژیک نشان می‌دهد ${physiologicIndex} و سیستم متابولیک در وضعیت ${metabolicStatus} قرار دارد. در این شرایط، استفاده از ${commonMistake} نه تنها موثر نیست، بلکه با ${sideEffect}، عامل اصلی ${biggestObstacle} خواهد بود.`
+        ? `تحلیل داده‌های فیزیولوژیک نشان می‌دهد ${physiologicIndex} و سیستم متابولیک در وضعیت ${metabolicStatus} قرار دارد. با ${sleep} و ${stress}، ${commonMistake} نه تنها موثر نیست، بلکه با ${sideEffect}، عامل اصلی ${biggestObstacle} خواهد بود.`
         : goalKey === "muscle_gain"
-          ? `تحلیل داده‌های فیزیولوژیک نشان می‌دهد ${physiologicIndex} و سیستم متابولیک در وضعیت ${metabolicStatus} قرار دارد. در این شرایط (${problemIntensity})، ${commonMistake} نه تنها موثر نیست، بلکه با ${sideEffect}، مانع اصلی رشد شماست. چالش «${nutrition}» و «${biggestObstacle}» باید در پروتکل جدید خنثی شوند.`
-          : `تحلیل داده‌های فیزیولوژیک نشان می‌دهد ${physiologicIndex} و سیستم متابولیک در وضعیت ${metabolicStatus} قرار دارد. در این شرایط (${problemIntensity})، ${commonMistake} معمولاً به ${sideEffect} منجر می‌شود. بزرگ‌ترین مانع شما «${biggestObstacle}» است که با چالش «${nutrition}» هم‌پوشانی دارد.`,
+          ? `تحلیل داده‌های فیزیولوژیک نشان می‌دهد ${physiologicIndex} و سیستم متابولیک در وضعیت ${metabolicStatus} قرار دارد. با ${sleep} و ${stress}، ${commonMistake} مانع رشد می‌شود. وضعیت تغذیه «${nutrition}» باید در پروتکل جدید لحاظ شود.`
+          : `تحلیل داده‌های فیزیولوژیک نشان می‌دهد ${physiologicIndex} و سیستم متابولیک در وضعیت ${metabolicStatus} قرار دارد. ${sleep} و ${stress} با «${nutrition}» هم‌پوشانی دارند و ${commonMistake} معمولاً به ${sideEffect} منجر می‌شود.`,
   };
 
   const customSolution = {
@@ -650,10 +794,10 @@ export function buildAnalysis(answers, coachName = COACH_SHORT_NAME) {
     },
     body:
       goalKey === "weight_loss"
-        ? `اعمال پروتکل اختصاصی «${methodName}» جهت وادار کردن بدن به چربی‌سوزی فعال. این متد به همراه تمرینات هدفمند متناسب با سطح آمادگی ${readinessLevel} و امکانات (${trainingPlace}) تنظیم می‌شود تا بدون گرسنگی طاقت‌فرسا، ${targetZones} را از بین ببرد.`
+        ? `اعمال پروتکل «${methodName}» با شدت «${commitLabel}». تمرین متناسب با «${readinessLevel}» و فعالیت روزانه «${activity}» طراحی می‌شود تا ${targetZones} هدف قرار گیرد.`
         : goalKey === "muscle_gain"
-          ? `اعمال پروتکل اختصاصی «${methodName}» برای ساخت عضله باکیفیت. این متد همراه با تغذیه چگال و تمرینات متناسب با سطح «${readinessLevel}» در (${trainingPlace}) طراحی می‌شود تا ${targetZones} بدون چربی زائد رشد کنند.`
-          : `اعمال پروتکل اختصاصی «${methodName}» برای فرم‌دهی پایدار. برنامه با سطح «${readinessLevel}»، فعالیت روزانه «${activity}» و امکانات (${trainingPlace}) هماهنگ می‌شود تا ${targetZones} هدف قرار گیرد.`,
+          ? `اعمال پروتکل «${methodName}» با شدت «${commitLabel}». برنامه با «${readinessLevel}» و فعالیت «${activity}» هماهنگ می‌شود تا ${targetZones} رشد کنند.`
+          : `اعمال پروتکل «${methodName}» با شدت «${commitLabel}». برنامه با «${readinessLevel}»، فعالیت «${activity}» و وضعیت تغذیه «${nutrition}» هماهنگ می‌شود.`,
   };
 
   const routePrediction = {
@@ -733,7 +877,7 @@ export function buildAnalysis(answers, coachName = COACH_SHORT_NAME) {
       ? "تحلیل ژنتیک و متابولیسم اختصاصی شما"
       : goalKey === "fitness"
         ? "برنامه انعطاف‌پذیر برای یک تغییر ماندگار"
-        : "تحلیل اختصاصی بر اساس ۷ پاسخ تخصصی و شاخص‌های فیزیولوژیک شما";
+        : "تحلیل اختصاصی بر اساس ۸ پاسخ تخصصی و شاخص‌های فیزیولوژیک شما";
 
   return {
     scenario,
@@ -744,9 +888,13 @@ export function buildAnalysis(answers, coachName = COACH_SHORT_NAME) {
     bmi,
     bodyType,
     macros,
+    trendChart: buildTrendChart(scenario),
     chartBars,
     successPct,
-    aiWarning: RESULT_COPY.aiWarning,
+    aiWarning: buildPersonalizedAiWarning(answers),
+    analysisReadyTitle: RESULT_COPY.analysisReadyTitle,
+    analysisReadyBody: RESULT_COPY.analysisReadyBody,
+    aiGuard: RESULT_COPY.aiGuard,
     highlights: metricsHighlights,
     statusSummary,
     customSolution,
@@ -763,11 +911,70 @@ export function buildAnalysis(answers, coachName = COACH_SHORT_NAME) {
   };
 }
 
+/** Parse stored funnel AI JSON (checkout API or local draft). */
+export function parseFunnelAnalysisPacket(raw) {
+  if (!raw) return null;
+  try {
+    const packet = typeof raw === "string" ? JSON.parse(raw) : raw;
+    return packet && typeof packet === "object" ? packet : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Overlay the backend AI JSON packet onto the local template analysis. */
+export function mergeFunnelAI(base, packet) {
+  if (!base) return base;
+  if (!packet || typeof packet !== "object") return base;
+  const next = { ...base };
+  if (packet.aiWarning && String(packet.aiWarning).trim()) {
+    next.aiWarning = packet.aiWarning;
+  }
+  if (packet.statusSummary) {
+    next.statusSummary = { ...next.statusSummary, ...packet.statusSummary };
+  }
+  if (packet.customSolution) {
+    next.customSolution = { ...next.customSolution, ...packet.customSolution };
+  }
+  if (packet.routePrediction) {
+    next.routePrediction = { ...next.routePrediction, ...packet.routePrediction };
+  }
+  if (packet.trendChart?.values?.length === 12) {
+    next.trendChart = {
+      title: packet.trendChart.title || next.trendChart?.title,
+      yLabel: packet.trendChart.yLabel || next.trendChart?.yLabel,
+      values: packet.trendChart.values,
+      yMax: packet.trendChart.yMax || next.trendChart?.yMax || 40,
+    };
+  }
+  if (Array.isArray(packet.chartBars) && packet.chartBars.length === 5) {
+    next.chartBars = packet.chartBars.map((bar) => ({
+      label: bar.label,
+      value: Number(bar.value) || 0,
+    }));
+  }
+  const pct = Number(packet.successPct ?? packet.routePrediction?.successPct);
+  if (Number.isFinite(pct) && pct > 0) {
+    next.successPct = pct;
+    next.routePrediction = { ...next.routePrediction, successPct: pct };
+  }
+  if (packet.analysisReadyTitle) next.analysisReadyTitle = packet.analysisReadyTitle;
+  if (packet.analysisReadyBody) next.analysisReadyBody = packet.analysisReadyBody;
+  if (packet.aiGuard) next.aiGuard = packet.aiGuard;
+  if (packet.source) next.source = packet.source;
+  next.sections = [
+    { title: next.statusSummary?.title, body: next.statusSummary?.body },
+    { title: next.customSolution?.title, body: next.customSolution?.body },
+    { title: next.routePrediction?.title, body: next.routePrediction?.body },
+  ];
+  return next;
+}
+
 export const ANALYZING_STEPS = [
   "محاسبه دقیق نرخ متابولیسم و تفکیک ماکروها انجام شد.",
   "متصل کردن متغیرهای شما به سیستم پایش لحظه‌ای هوش مصنوعی...",
   "تحلیل موانع غذایی و شخصی‌سازی منوی منعطف فیتینو...",
-  "ارسال گزارش اولیه به پنل کاربری مربی علی رشیدآبادی جهت تایید نهایی...",
+  "ارسال گزارش اولیه به پنل کاربری فیتینو جهت تایید نهایی...",
 ];
 
 export const ANALYZING_TITLE = "در حال تحلیل داده‌های ساختاری و طراحی استراتژی بدنی شما...";
@@ -787,10 +994,14 @@ export const GOAL_LABELS = {
 };
 
 export const ANSWER_LABELS = {
+  gender: GENDER_LABELS,
+  primaryGoal: GOAL_LABELS,
   activityLevel: ACTIVITY_LABELS,
-  trainingEnv: ENV_LABELS,
+  trainingFrequency: TRAINING_FREQ_LABELS,
   experience: EXPERIENCE_LABELS,
   nutritionChallenge: NUTRITION_LABELS,
+  sleepHours: SLEEP_LABELS,
+  stressLevel: STRESS_LABELS,
   mainObstacle: OBSTACLE_LABELS,
   commitment: COMMITMENT_LABELS,
 };

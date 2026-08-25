@@ -1,15 +1,8 @@
+import { QUIZ_KEYS } from "./funnelConfig";
+
 const STORAGE_KEY = "fitino:funnel:ali-rashidabadi:v1";
 const DRAFT_TTL_MS = 14 * 24 * 60 * 60 * 1000; // 14 days
-
-const QUIZ_KEYS = [
-  "primaryGoal",
-  "activityLevel",
-  "trainingEnv",
-  "experience",
-  "nutritionChallenge",
-  "mainObstacle",
-  "commitment",
-];
+const LAST_QUIZ_INDEX = QUIZ_KEYS.length - 1;
 
 export function allQuizAnswered(answers = {}) {
   return QUIZ_KEYS.every((k) => Boolean(answers[k]));
@@ -47,7 +40,7 @@ export function loadFunnelDraft() {
 export function normalizeDraft(data) {
   const answers = data.answers && typeof data.answers === "object" ? { ...data.answers } : {};
   let stage = data.stage || "hero";
-  let qIndex = Number.isFinite(data.qIndex) ? Math.max(0, Math.min(6, data.qIndex)) : 0;
+  let qIndex = Number.isFinite(data.qIndex) ? Math.max(0, Math.min(LAST_QUIZ_INDEX, data.qIndex)) : 0;
 
   const age = data.age ?? answers.age ?? "";
   const heightCm = data.heightCm ?? answers.heightCm ?? "";
@@ -61,7 +54,7 @@ export function normalizeDraft(data) {
       stage: "checkout",
       checkoutToken: String(data.checkoutToken),
       answers,
-      qIndex: 6,
+      qIndex: LAST_QUIZ_INDEX,
       age: String(age || ""),
       heightCm: String(heightCm || ""),
       weightKg: String(weightKg || ""),
@@ -90,7 +83,7 @@ export function normalizeDraft(data) {
     if (firstOpen >= 0) qIndex = firstOpen;
     else if (quizDone) {
       stage = hasMetrics ? "result" : "metrics";
-      qIndex = 6;
+      qIndex = LAST_QUIZ_INDEX;
     }
   }
 
@@ -111,6 +104,7 @@ export function normalizeDraft(data) {
     fullName: data.fullName || "",
     phone: data.phone || "",
     checkoutToken: data.checkoutToken || "",
+    aiPacket: data.aiPacket && typeof data.aiPacket === "object" ? data.aiPacket : null,
   };
 }
 

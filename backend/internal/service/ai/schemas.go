@@ -128,6 +128,33 @@ type WorkoutNoteSummarySchema struct {
 	Text string `json:"text"`
 }
 
+// FunnelChartBarSchema is one axis on the biomechanics radar chart (0–100).
+type FunnelChartBarSchema struct {
+	Label string `json:"label"`
+	Value int    `json:"value"`
+}
+
+// FunnelAnalysisSchema is the sales-funnel AI packet shown on the result
+// screen (warning, narrative blocks, 12-week trend, radar chart, payment copy).
+type FunnelAnalysisSchema struct {
+	AIWarning            string                 `json:"ai_warning"`
+	StatusSummaryTitle   string                 `json:"status_summary_title"`
+	StatusSummaryBody    string                 `json:"status_summary_body"`
+	CustomSolutionTitle  string                 `json:"custom_solution_title"`
+	CustomSolutionBody   string                 `json:"custom_solution_body"`
+	RoutePredictionTitle string                 `json:"route_prediction_title"`
+	RoutePredictionBody  string                 `json:"route_prediction_body"`
+	SuccessPct           int                    `json:"success_pct"`
+	TrendChartTitle      string                 `json:"trend_chart_title"`
+	TrendChartYLabel     string                 `json:"trend_chart_y_label"`
+	TrendChartValues     []int                  `json:"trend_chart_values"`
+	TrendChartYMax       int                    `json:"trend_chart_y_max"`
+	ChartBars            []FunnelChartBarSchema `json:"chart_bars"`
+	AnalysisReadyTitle   string                 `json:"analysis_ready_title"`
+	AnalysisReadyBody    string                 `json:"analysis_ready_body"`
+	AIGuard              string                 `json:"ai_guard"`
+}
+
 // ProgressAnalysisJSONSchema returns the OpenAI json_schema object for the
 // weekly/monthly deep-dive text summary (roadmap BE-4.3).
 func ProgressAnalysisJSONSchema() map[string]interface{} {
@@ -155,6 +182,71 @@ func SetLogJSONSchema() map[string]interface{} {
 			"is_pr":         map[string]string{"type": "boolean"},
 		},
 		"required":             []string{"exercise_name", "weight_kg", "reps", "is_pr"},
+		"additionalProperties": false,
+	}
+}
+
+// FunnelAnalysisJSONSchema returns the OpenAI json_schema object for the
+// public sales-funnel analysis packet.
+func FunnelAnalysisJSONSchema() map[string]interface{} {
+	str := map[string]string{"type": "string"}
+	chartBar := map[string]interface{}{
+		"type": "object",
+		"properties": map[string]interface{}{
+			"label": str,
+			"value": map[string]string{"type": "integer"},
+		},
+		"required":             []string{"label", "value"},
+		"additionalProperties": false,
+	}
+	return map[string]interface{}{
+		"type": "object",
+		"properties": map[string]interface{}{
+			"ai_warning":             str,
+			"status_summary_title":   str,
+			"status_summary_body":    str,
+			"custom_solution_title":  str,
+			"custom_solution_body":   str,
+			"route_prediction_title": str,
+			"route_prediction_body":  str,
+			"success_pct":            map[string]string{"type": "integer"},
+			"trend_chart_title":      str,
+			"trend_chart_y_label":    str,
+			"trend_chart_values": map[string]interface{}{
+				"type":     "array",
+				"items":    map[string]string{"type": "integer"},
+				"minItems": 12,
+				"maxItems": 12,
+			},
+			"trend_chart_y_max": map[string]string{"type": "integer"},
+			"chart_bars": map[string]interface{}{
+				"type":     "array",
+				"items":    chartBar,
+				"minItems": 5,
+				"maxItems": 5,
+			},
+			"analysis_ready_title": str,
+			"analysis_ready_body":  str,
+			"ai_guard":               str,
+		},
+		"required": []string{
+			"ai_warning",
+			"status_summary_title",
+			"status_summary_body",
+			"custom_solution_title",
+			"custom_solution_body",
+			"route_prediction_title",
+			"route_prediction_body",
+			"success_pct",
+			"trend_chart_title",
+			"trend_chart_y_label",
+			"trend_chart_values",
+			"trend_chart_y_max",
+			"chart_bars",
+			"analysis_ready_title",
+			"analysis_ready_body",
+			"ai_guard",
+		},
 		"additionalProperties": false,
 	}
 }

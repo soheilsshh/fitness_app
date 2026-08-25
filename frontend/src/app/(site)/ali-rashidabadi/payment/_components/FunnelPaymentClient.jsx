@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -18,10 +18,10 @@ import {
 import { api } from "@/lib/axios/client";
 import { toastError, toPersianDigits } from "@/app/(site)/auth/_components/helpers";
 import { persistAuthSession } from "@/lib/auth/session";
-import { PAYMENT_COPY } from "../../_lib/funnelConfig";
+import { PAYMENT_COPY, parseFunnelAnalysisPacket } from "../../_lib/funnelConfig";
 import { detectGenderFromName } from "../../_lib/persianGender";
-import { clearFunnelDraft, saveFunnelDraft } from "../../_lib/funnelDraft";
-import { formatToman } from "@/lib/funnel/offer";
+import { clearFunnelDraft, loadFunnelDraft, saveFunnelDraft } from "../../_lib/funnelDraft";
+import { formatToman, FUNNEL_PATH } from "@/lib/funnel/offer";
 import FunnelShell, {
   FunnelGlass,
   FunnelStickyBar,
@@ -54,6 +54,13 @@ export default function FunnelPaymentClient() {
   const [typedStep, setTypedStep] = useState(null);
   const typingDone = typedStep === step;
 
+  const aiCopy = useMemo(() => {
+    const fromCheckout = parseFunnelAnalysisPacket(checkout?.analysisJson);
+    if (fromCheckout) return fromCheckout;
+    const draft = loadFunnelDraft();
+    return draft?.aiPacket || null;
+  }, [checkout?.analysisJson]);
+
   useEffect(() => {
     if (!token) return;
     let cancelled = false;
@@ -82,7 +89,7 @@ export default function FunnelPaymentClient() {
     if (checkout?.status === "paid" && token) {
       clearFunnelDraft();
       router.replace(
-        `/ali-rashidabadi/success?token=${token}&code=${encodeURIComponent(checkout.trackingCode || "")}`
+        `${FUNNEL_PATH}/success?token=${token}&code=${encodeURIComponent(checkout.trackingCode || "")}`
       );
     }
   }, [checkout, token, router]);
@@ -213,7 +220,7 @@ export default function FunnelPaymentClient() {
     return (
       <FunnelShell centered>
         <p className="text-center text-white/55">لینک پرداخت نامعتبر است.</p>
-        <Link href="/ali-rashidabadi" className="mt-4 block text-center text-primary underline">
+        <Link href={FUNNEL_PATH} className="mt-4 block text-center text-primary underline">
           بازگشت به ارزیابی
         </Link>
       </FunnelShell>
@@ -235,7 +242,7 @@ export default function FunnelPaymentClient() {
     return (
       <FunnelShell centered>
         <p className="text-center text-white/55">اطلاعات پرداخت یافت نشد.</p>
-        <Link href="/ali-rashidabadi" className="mt-4 block text-center text-primary underline">
+        <Link href={FUNNEL_PATH} className="mt-4 block text-center text-primary underline">
           شروع مجدد
         </Link>
       </FunnelShell>
@@ -622,7 +629,12 @@ export default function FunnelPaymentClient() {
               </FunnelGlass>
             ) : null}
 
-            <PaymentConversionBlocks storageKey={token || "checkout"} />
+            <PaymentConversionBlocks
+              storageKey={token || "checkout"}
+              analysisReadyTitle={aiCopy?.analysisReadyTitle}
+              analysisReadyBody={aiCopy?.analysisReadyBody}
+              aiGuard={aiCopy?.aiGuard}
+            />
 
             <div className="space-y-3 rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-3">
               <p className="text-center text-[11px] leading-5 text-white/55">

@@ -18,6 +18,8 @@ export const RESERVED_PUBLIC_SLUGS = new Set([
   "register",
   "forgot",
   "ali-rashidabadi",
+  "tahlil",
+  "analiz",
   "leadfunnel",
 ]);
 

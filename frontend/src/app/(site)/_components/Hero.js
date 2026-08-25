@@ -125,7 +125,7 @@ export default function Hero() {
 
         <div className="flex flex-wrap items-center justify-center gap-3 md:justify-start">
           <Button asChild size="lg" className="rounded-full px-8 shadow-md">
-            <a href="/ali-rashidabadi" className="inline-flex items-center gap-2">
+            <a href="/analiz" className="inline-flex items-center gap-2">
               شروع آنالیز رایگان بدنی 🚀
               <ArrowLeft className="size-4" />
             </a>

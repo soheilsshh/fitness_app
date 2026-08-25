@@ -33,8 +33,10 @@ var (
 const FunnelOTPPurpose = "funnel"
 
 const (
-	// DefaultFunnelCoachSlug binds the /ali-rashidabadi funnel when config is empty.
+	// DefaultFunnelCoachSlug binds the sales funnel to one coach record when config is empty.
 	DefaultFunnelCoachSlug = "ali-rashidabadi"
+	// FunnelPublicCoachName is shown in funnel UI/API — never a personal coach name.
+	FunnelPublicCoachName = "ایجنت‌های فیتینو"
 )
 
 type FunnelPlanDTO struct {
@@ -70,17 +72,25 @@ type CreateFunnelLeadRequest struct {
 	OtpCode            string `json:"otpCode"`
 	PlanID             uint   `json:"planId"`
 	PackageKey         string `json:"packageKey"` // optional: stringified plan id
+	Gender             string `json:"gender"`
 	PrimaryGoal        string `json:"primaryGoal"`
 	ActivityLevel      string `json:"activityLevel"`
 	TrainingEnv        string `json:"trainingEnv"`
+	TrainingFrequency  string `json:"trainingFrequency"`
 	Experience         string `json:"experience"`
 	NutritionChallenge string `json:"nutritionChallenge"`
+	SleepHours         string `json:"sleepHours"`
+	StressLevel        string `json:"stressLevel"`
 	MainObstacle       string `json:"mainObstacle"`
 	Commitment         string `json:"commitment"`
 	Scenario           string `json:"scenario"`
 	AnalysisTitle      string `json:"analysisTitle"`
 	AnalysisBody       string `json:"analysisBody"`
-	UTMSource          string `json:"utmSource"`
+	AnalysisJSON       string `json:"analysisJson"`
+	Age                int     `json:"age"`
+	HeightCm           float64 `json:"heightCm"`
+	WeightKg           float64 `json:"weightKg"`
+	UTMSource          string  `json:"utmSource"`
 	UTMCampaign        string `json:"utmCampaign"`
 }
 
@@ -112,6 +122,7 @@ type FunnelCheckoutDTO struct {
 	Status        string          `json:"status"`
 	TrackingCode  string          `json:"trackingCode,omitempty"`
 	AnalysisTitle string          `json:"analysisTitle"`
+	AnalysisJSON  string          `json:"analysisJson,omitempty"`
 	PaidAt        *time.Time      `json:"paidAt,omitempty"`
 	Plans         []FunnelPlanDTO `json:"plans"`
 }
@@ -159,8 +170,12 @@ type AdminFunnelLeadDetail struct {
 	AdminFunnelLeadItem
 	AnalysisTitle string `json:"analysisTitle"`
 	AnalysisBody  string `json:"analysisBody"`
-	UTMSource     string `json:"utmSource"`
-	UTMCampaign   string `json:"utmCampaign"`
+	AnalysisJSON  string `json:"analysisJson,omitempty"`
+	Age           int     `json:"age,omitempty"`
+	HeightCm      float64 `json:"heightCm,omitempty"`
+	WeightKg      float64 `json:"weightKg,omitempty"`
+	UTMSource     string  `json:"utmSource"`
+	UTMCampaign   string  `json:"utmCampaign"`
 }
 
 type AdminFunnelLeadListResponse struct {
@@ -185,6 +200,7 @@ type FunnelService interface {
 	GetConfig(ctx context.Context) FunnelConfigDTO
 	RequestLeadOTP(ctx context.Context, phone string) error
 	CreateLead(ctx context.Context, req *CreateFunnelLeadRequest) (*CreateFunnelLeadResponse, error)
+	Analyze(ctx context.Context, req *AnalyzeFunnelRequest) (*FunnelAnalysisDTO, error)
 	GetCheckout(ctx context.Context, token string) (*FunnelCheckoutDTO, error)
 	SelectPlan(ctx context.Context, token string, req *SelectFunnelPlanRequest) (*FunnelCheckoutDTO, error)
 	StartPayment(ctx context.Context, token string) (*FunnelPayResponse, error)
@@ -198,17 +214,19 @@ type FunnelService interface {
 }
 
 type funnelService struct {
-	repo      repository.FunnelLeadRepository
-	coachRepo repository.CoachProfileRepository
-	planRepo  repository.ServicePlanRepository
-	userRepo  repository.UserRepository
-	orderRepo repository.OrderRepository
-	payment   PaymentService
-	auth      AuthService
+	repo       repository.FunnelLeadRepository
+	analysisRepo repository.FunnelAIAnalysisRepository
+	coachRepo  repository.CoachProfileRepository
+	planRepo   repository.ServicePlanRepository
+	userRepo   repository.UserRepository
+	orderRepo  repository.OrderRepository
+	payment    PaymentService
+	auth       AuthService
 }
 
 func NewFunnelService(
 	repo repository.FunnelLeadRepository,
+	analysisRepo repository.FunnelAIAnalysisRepository,
 	coachRepo repository.CoachProfileRepository,
 	planRepo repository.ServicePlanRepository,
 	userRepo repository.UserRepository,
@@ -217,13 +235,14 @@ func NewFunnelService(
 	auth AuthService,
 ) FunnelService {
 	return &funnelService{
-		repo:      repo,
-		coachRepo: coachRepo,
-		planRepo:  planRepo,
-		userRepo:  userRepo,
-		orderRepo: orderRepo,
-		payment:   payment,
-		auth:      auth,
+		repo:         repo,
+		analysisRepo: analysisRepo,
+		coachRepo:    coachRepo,
+		planRepo:     planRepo,
+		userRepo:     userRepo,
+		orderRepo:    orderRepo,
+		payment:      payment,
+		auth:         auth,
 	}
 }
 
@@ -338,7 +357,7 @@ func (s *funnelService) GetConfig(ctx context.Context) FunnelConfigDTO {
 	slugKey := funnelCoachSlug()
 	dto := FunnelConfigDTO{
 		FunnelKey:   "funnel_1",
-		FunnelLabel: "فانل ۱ — اختصاصی علی رشیدآبادی",
+		FunnelLabel: "فانل ارزیابی هوشمند بدن",
 		CoachSlug:   slugKey,
 		Plans:       []FunnelPlanDTO{},
 	}
@@ -347,10 +366,7 @@ func (s *funnelService) GetConfig(ctx context.Context) FunnelConfigDTO {
 		return dto
 	}
 	dto.CoachID = profile.UserID
-	dto.CoachName = strings.TrimSpace(profile.DisplayName)
-	if dto.CoachName == "" {
-		dto.CoachName = profile.Slug
-	}
+	dto.CoachName = FunnelPublicCoachName
 	plans, err := s.loadCoachPlans(ctx, profile.UserID)
 	if err != nil {
 		return dto
@@ -438,10 +454,7 @@ func (s *funnelService) CreateLead(ctx context.Context, req *CreateFunnelLeadReq
 	if profile == nil {
 		return nil, ErrFunnelInvalidInput
 	}
-	coachName := strings.TrimSpace(profile.DisplayName)
-	if coachName == "" {
-		coachName = profile.Slug
-	}
+	coachName := FunnelPublicCoachName
 
 	plan, err := s.resolveSelectedPlan(ctx, profile.UserID, req.PlanID, req.PackageKey)
 	if err != nil {
@@ -464,6 +477,7 @@ func (s *funnelService) CreateLead(ctx context.Context, req *CreateFunnelLeadReq
 		existing.Scenario = strings.TrimSpace(req.Scenario)
 		existing.AnalysisTitle = strings.TrimSpace(req.AnalysisTitle)
 		existing.AnalysisBody = strings.TrimSpace(req.AnalysisBody)
+		applyFunnelMetrics(existing, req)
 		applyPlanToLead(existing, plan)
 		if src := strings.TrimSpace(req.UTMSource); src != "" {
 			existing.UTMSource = src
@@ -477,9 +491,11 @@ func (s *funnelService) CreateLead(ctx context.Context, req *CreateFunnelLeadReq
 		if err := s.repo.Update(ctx, existing); err != nil {
 			return nil, err
 		}
+		_ = s.ensureLeadAnalysis(ctx, existing)
+		_ = s.persistFunnelAIAnalysis(ctx, existing, req)
 		return &CreateFunnelLeadResponse{
 			CheckoutToken: existing.CheckoutToken,
-			PaymentURL:    "/ali-rashidabadi/payment?token=" + existing.CheckoutToken,
+			PaymentURL:    funnelPaymentPath(existing.CheckoutToken),
 			Resumed:       true,
 		}, nil
 	} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
@@ -508,15 +524,18 @@ func (s *funnelService) CreateLead(ctx context.Context, req *CreateFunnelLeadReq
 		UTMSource:          strings.TrimSpace(req.UTMSource),
 		UTMCampaign:        strings.TrimSpace(req.UTMCampaign),
 	}
+	applyFunnelMetrics(lead, req)
 	applyPlanToLead(lead, plan)
 
 	if err := s.repo.Create(ctx, lead); err != nil {
 		return nil, err
 	}
+	_ = s.ensureLeadAnalysis(ctx, lead)
+	_ = s.persistFunnelAIAnalysis(ctx, lead, req)
 
 	return &CreateFunnelLeadResponse{
 		CheckoutToken: token,
-		PaymentURL:    "/ali-rashidabadi/payment?token=" + token,
+		PaymentURL:    funnelPaymentPath(token),
 		Resumed:       false,
 	}, nil
 }
@@ -770,8 +789,30 @@ func (s *funnelService) syncLeadProfileToUser(ctx context.Context, user *models.
 		user.PrimaryGoal = goal
 		changed = true
 	}
+	if lead.HeightCm > 0 && (user.HeightCm == nil || *user.HeightCm <= 0) {
+		h := lead.HeightCm
+		user.HeightCm = &h
+		changed = true
+	}
+	if lead.WeightKg > 0 && (user.WeightKg == nil || *user.WeightKg <= 0) {
+		w := lead.WeightKg
+		user.WeightKg = &w
+		changed = true
+	}
 	if changed {
 		_ = s.userRepo.Update(ctx, user)
+	}
+	if s.analysisRepo != nil && user.ID > 0 {
+		_ = s.analysisRepo.LinkUserIDByPhone(ctx, lead.Phone, user.ID)
+		if strings.TrimSpace(user.Gender) == "" {
+			if row, err := s.analysisRepo.FindLatestByPhone(ctx, lead.Phone); err == nil && row != nil {
+				g := strings.TrimSpace(row.Gender)
+				if g == "male" || g == "female" {
+					user.Gender = g
+					_ = s.userRepo.Update(ctx, user)
+				}
+			}
+		}
 	}
 }
 
@@ -845,6 +886,10 @@ func (s *funnelService) GetLeadByID(ctx context.Context, id uint) (*AdminFunnelL
 		AdminFunnelLeadItem: item,
 		AnalysisTitle:       lead.AnalysisTitle,
 		AnalysisBody:        lead.AnalysisBody,
+		AnalysisJSON:        lead.AnalysisJSON,
+		Age:                 lead.Age,
+		HeightCm:            lead.HeightCm,
+		WeightKg:            lead.WeightKg,
 		UTMSource:           lead.UTMSource,
 		UTMCampaign:         lead.UTMCampaign,
 	}, nil
@@ -932,7 +977,7 @@ func (s *funnelService) leadToCheckoutDTO(ctx context.Context, lead *models.Funn
 		FirstName:     lead.FirstName,
 		LastName:      lead.LastName,
 		Phone:         lead.Phone,
-		CoachName:     lead.CoachName,
+		CoachName:     FunnelPublicCoachName,
 		PlanID:        lead.ServicePlanID,
 		PackageKey:    key,
 		PackageTitle:  lead.PackageTitle,
@@ -940,6 +985,7 @@ func (s *funnelService) leadToCheckoutDTO(ctx context.Context, lead *models.Funn
 		Status:        lead.Status,
 		TrackingCode:  derefString(lead.TrackingCode),
 		AnalysisTitle: lead.AnalysisTitle,
+		AnalysisJSON:  lead.AnalysisJSON,
 		PaidAt:        lead.PaidAt,
 		Plans:         plans,
 	}, nil
@@ -1061,7 +1107,7 @@ func isValidExperience(v string) bool {
 
 func isValidNutritionChallenge(v string) bool {
 	switch v {
-	case "", "sweets", "low_appetite", "no_time":
+	case "", "irregular", "partly_controlled", "controlled", "sweets", "low_appetite", "no_time":
 		return true
 	default:
 		return false
@@ -1070,7 +1116,7 @@ func isValidNutritionChallenge(v string) bool {
 
 func isValidCommitment(v string) bool {
 	switch v {
-	case "", "flexible", "max_results":
+	case "", "flexible", "steady", "max_results":
 		return true
 	default:
 		return false

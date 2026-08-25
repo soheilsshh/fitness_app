@@ -12,6 +12,7 @@ import { getDashboardPath } from "@/lib/auth/roles";
 import { Logo } from "@/components/Logo";
 import { api } from "@/lib/axios/client";
 import { cn } from "@/lib/utils";
+import { FUNNEL_PATH } from "@/lib/funnel/offer";
 
 const NAV_ITEMS = [
   { id: "programs", label: "برنامه‌ها", type: "section" },
@@ -114,7 +115,12 @@ export default function Navbar() {
     : NAV_ITEMS.filter((item) => item.id !== "programs");
 
   // The sales funnel renders inside its own phone frame — no site chrome.
-  if (pathname?.startsWith("/ali-rashidabadi")) return null;
+  if (
+    pathname?.startsWith(FUNNEL_PATH) ||
+    pathname?.startsWith("/ali-rashidabadi") ||
+    pathname?.startsWith("/tahlil")
+  )
+    return null;
 
   return (
     <>

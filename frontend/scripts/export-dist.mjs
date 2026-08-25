@@ -45,6 +45,7 @@ function assertExportReady(exportRoot) {
     "index.html",
     "admin/index.html",
     "ali-rashidabadi/index.html",
+    "analiz/index.html",
     "auth/login/index.html",
     "780027.txt",
   ];
@@ -63,6 +64,7 @@ function assertExportReady(exportRoot) {
     "_not-found",
     "admin",
     "ali-rashidabadi",
+    "analiz",
     "auth",
     "coach",
     "coaches",

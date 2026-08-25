@@ -25,7 +25,7 @@ export default function FunnelShell({
       </div>
       <div
         className={cn(
-          "relative z-10 mx-auto w-full max-w-3xl px-4 py-8 md:py-10 lg:px-8 lg:max-w-4xl",
+          "relative z-10 mx-auto w-full max-w-3xl px-4 py-8 sm:px-5 md:max-w-none md:px-8 md:py-10 lg:px-10 xl:px-12",
           centered && "funnel-screen flex flex-col justify-center",
           contentClassName
         )}
@@ -57,19 +57,25 @@ export function FunnelGlass({ children, className, glow = "teal" }) {
   );
 }
 
-export function FunnelProgressBar({ value, label }) {
+export function FunnelProgressBar({ value, label, hint, compact = false, showPercent = true }) {
   const pct = Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
   return (
-    <div className="mb-8 space-y-2">
+    <div className={cn("space-y-2", compact ? "mb-5" : "mb-8")}>
       <div className="flex items-center justify-between gap-3 text-xs text-white/55">
-        <span className="min-w-0 truncate">
-          {label || "پردازش پردازنده هوشمند"}
-        </span>
-        <span className="shrink-0 tabular-nums text-primary transition-all duration-700 ease-out">
-          {pct}٪
-        </span>
+        <span className="min-w-0 truncate">{label || "پردازش پردازنده هوشمند"}</span>
+        {showPercent ? (
+          <span className="shrink-0 tabular-nums text-primary transition-all duration-700 ease-out">
+            {pct}٪
+          </span>
+        ) : null}
       </div>
-      <div className="h-2 overflow-hidden rounded-full border border-white/10 bg-white/5">
+      {hint ? <p className="text-[11px] text-white/35">{hint}</p> : null}
+      <div
+        className={cn(
+          "overflow-hidden rounded-full border border-white/10 bg-white/5",
+          compact ? "h-1.5" : "h-2"
+        )}
+      >
         <div
           className="h-full rounded-full gradient-bg transition-[width] duration-700 ease-out motion-reduce:transition-none"
           style={{ width: `${pct}%` }}
@@ -95,7 +101,7 @@ export function FunnelCta({ children, className, type = "button", ...props }) {
   );
 }
 
-/** Bottom CTA bar — sticky so it stays inside the phone frame on desktop. */
+/** Bottom CTA bar — sticky at viewport bottom while the page scrolls. */
 export function FunnelStickyBar({ children, className, spacerClassName }) {
   return (
     <>
@@ -106,7 +112,7 @@ export function FunnelStickyBar({ children, className, spacerClassName }) {
           className
         )}
       >
-        <div className="mx-auto w-full max-w-3xl lg:max-w-4xl">{children}</div>
+        <div className="mx-auto w-full max-w-3xl md:max-w-none">{children}</div>
       </div>
     </>
   );

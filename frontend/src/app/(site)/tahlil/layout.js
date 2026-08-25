@@ -1,4 +1,4 @@
-import { FunnelLogoLayer } from "./_components/FunnelLogoLayer";
+import { FunnelLogoLayer } from "../ali-rashidabadi/_components/FunnelLogoLayer";
 
 /** Legacy route — same funnel chrome as /analiz (redirect). */
 export default function LeadFunnelLayout({ children }) {

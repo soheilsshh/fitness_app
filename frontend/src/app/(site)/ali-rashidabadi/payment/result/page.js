@@ -1,19 +1,10 @@
 import { Suspense } from "react";
-import { lazyPage } from "@/lib/lazy-page";
+import LegacyFunnelRedirect from "@/lib/funnel/LegacyFunnelRedirect";
 
-const FunnelPaymentResultClient = lazyPage(() =>
-  import("./_components/FunnelPaymentResultClient")
-);
-
-export const metadata = {
-  title: "نتیجه پرداخت | قیف فروش",
-  robots: { index: false, follow: false },
-};
-
-export default function FunnelPaymentResultPage() {
+export default function LegacyFunnelPaymentResultPage() {
   return (
-    <Suspense fallback={<div className="py-20 text-center text-muted-foreground">...</div>}>
-      <FunnelPaymentResultClient />
+    <Suspense fallback={null}>
+      <LegacyFunnelRedirect />
     </Suspense>
   );
 }
