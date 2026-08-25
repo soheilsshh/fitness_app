@@ -110,7 +110,7 @@ export default function AboutSection() {
 
         <div className="mt-10 flex justify-center">
           <Link
-            href="/analiz"
+            href="/analysis"
             className="inline-flex items-center gap-2 rounded-full bg-surface-tint px-8 py-4 font-bold text-on-primary shadow-2xl transition-transform hover:scale-105"
           >
             ورود به آنالیز هوشمند و شروع دوره 🚀

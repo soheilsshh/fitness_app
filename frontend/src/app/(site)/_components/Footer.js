@@ -10,7 +10,7 @@ const TAGLINE =
 
 const QUICK_LINKS = [
   { href: "/#home", label: "صفحه نخست" },
-  { href: "/analiz", label: "آغاز ارزیابی و برنامه‌ها" },
+  { href: "/analysis", label: "آغاز ارزیابی و برنامه‌ها" },
   { href: "/#about", label: "درباره فیتینو" },
 ];
 

@@ -218,7 +218,7 @@ export const FUNNEL_META = {
   label: "فانل ۱",
   coachName: "فیتینو",
   description: "ارزیابی هوشمند بدن با ایجنت‌های هوش مصنوعی فیتینو",
-  path: "/analiz",
+  path: "/analysis",
 };
 
 export const HERO_COPY = {

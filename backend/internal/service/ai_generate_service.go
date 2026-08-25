@@ -963,7 +963,7 @@ func buildAIUserContext(profile *MeProfileDTO) string {
 	return b.String()
 }
 
-// loadFunnelAIContext appends the latest /analiz funnel AI packet for this
+// loadFunnelAIContext appends the latest /analysis funnel AI packet for this
 // phone/user so nutrition & workout generators stay aligned with the sales-funnel analysis.
 func (s *AIGenerateService) loadFunnelAIContext(ctx context.Context, profile *MeProfileDTO) string {
 	if s == nil || s.funnelAIRepo == nil || profile == nil {
@@ -982,7 +982,7 @@ func (s *AIGenerateService) loadFunnelAIContext(ctx context.Context, profile *Me
 	}
 
 	var b strings.Builder
-	b.WriteString("\n\nتحلیل اختصاصی فانل /analiz فیتینو (منبع حقیقت — برنامه را با این هم‌راستا کن):\n")
+	b.WriteString("\n\nتحلیل اختصاصی فانل /analysis فیتینو (منبع حقیقت — برنامه را با این هم‌راستا کن):\n")
 	if row.Gender != "" {
 		b.WriteString("- جنسیت فانل: " + row.Gender + "\n")
 	}

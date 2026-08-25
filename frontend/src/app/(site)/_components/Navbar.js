@@ -117,6 +117,7 @@ export default function Navbar() {
   // The sales funnel renders inside its own phone frame — no site chrome.
   if (
     pathname?.startsWith(FUNNEL_PATH) ||
+    pathname?.startsWith("/analiz") ||
     pathname?.startsWith("/ali-rashidabadi") ||
     pathname?.startsWith("/tahlil")
   )

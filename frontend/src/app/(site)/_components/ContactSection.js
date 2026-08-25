@@ -4,6 +4,7 @@ import { useId, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Mail, MapPin, Phone, Send } from "lucide-react";
 import InlineSocialIcons from "./InlineSocialIcons";
+import ContactAiRegisterPopup from "./ContactAiRegisterPopup";
 import { api } from "@/lib/axios/client";
 import { toastError, toastSuccess } from "@/app/(site)/auth/_components/helpers";
 import { Button } from "@/components/ui/button";
@@ -293,6 +294,8 @@ export default function ContactSection({ contactInfo }) {
           </form>
         </motion.div>
       </div>
+
+      <ContactAiRegisterPopup sectionId="contact" />
     </section>
   );
 }

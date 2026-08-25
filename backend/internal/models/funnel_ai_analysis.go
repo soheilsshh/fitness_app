@@ -6,7 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// FunnelAIAnalysis stores the AI body-analysis packet from the public /analiz
+// FunnelAIAnalysis stores the AI body-analysis packet from the public /analysis
 // funnel, keyed by phone so later nutrition/workout AI can reuse it.
 type FunnelAIAnalysis struct {
 	gorm.Model

@@ -12,7 +12,7 @@ import (
 )
 
 // FunnelPublicBasePath is the public Next.js route for the sales funnel.
-const FunnelPublicBasePath = "/analiz"
+const FunnelPublicBasePath = "/analysis"
 
 func funnelPaymentPath(token string) string {
 	return FunnelPublicBasePath + "/payment?token=" + token

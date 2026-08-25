@@ -25,7 +25,7 @@ export default async function sitemap() {
       priority: 0.8,
     },
     {
-      url: absoluteUrl("/analiz/"),
+      url: absoluteUrl("/analysis/"),
       lastModified: now,
       changeFrequency: "weekly",
       priority: 0.6,

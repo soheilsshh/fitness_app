@@ -20,6 +20,7 @@ export const RESERVED_PUBLIC_SLUGS = new Set([
   "ali-rashidabadi",
   "tahlil",
   "analiz",
+  "analysis",
   "leadfunnel",
 ]);
 

@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { FUNNEL_PATH } from "@/lib/funnel/offer";
 
-/** Keeps old /ali-rashidabadi and /tahlil links working after the public path moved to /analiz. */
+/** Keeps old /ali-rashidabadi, /tahlil and /analiz links working after the public path moved to /analysis. */
 export default function LegacyFunnelRedirect() {
   const router = useRouter();
   const pathname = usePathname() || "";
@@ -12,8 +12,10 @@ export default function LegacyFunnelRedirect() {
 
   useEffect(() => {
     const nextPath =
-      pathname.replace(/^\/ali-rashidabadi/, FUNNEL_PATH).replace(/^\/tahlil/, FUNNEL_PATH) ||
-      FUNNEL_PATH;
+      pathname
+        .replace(/^\/ali-rashidabadi/, FUNNEL_PATH)
+        .replace(/^\/tahlil/, FUNNEL_PATH)
+        .replace(/^\/analiz/, FUNNEL_PATH) || FUNNEL_PATH;
     const qs = params?.toString();
     router.replace(qs ? `${nextPath}?${qs}` : nextPath);
   }, [pathname, params, router]);
