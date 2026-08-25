@@ -1,50 +1,50 @@
-# Graph Report - fitness_app  (2026-08-24)
+# Graph Report - fitness_app  (2026-08-26)
 
 ## Corpus Check
-- 1330 files · ~12,893,066 words
+- 1067 files · ~12,484,632 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 11998 nodes · 22930 edges · 740 communities (499 shown, 241 thin omitted)
-- Extraction: 96% EXTRACTED · 4% INFERRED · 0% AMBIGUOUS · INFERRED: 991 edges (avg confidence: 0.8)
+- 8978 nodes · 18131 edges · 570 communities (388 shown, 182 thin omitted)
+- Extraction: 96% EXTRACTED · 4% INFERRED · 0% AMBIGUOUS · INFERRED: 679 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `c24f3ff7`
+- Built from commit: `d879cbdd`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
-- card.jsx
+- client.js
 - cn
-- utils.js
-- cn
-- package:flutter_riverpod/flutter_riverpod.dart
+- toastError
 - WorkoutEditorClient.jsx
-- AffiliatesManager.tsx
+- package:flutter_riverpod/flutter_riverpod.dart
+- FoodDiaryClient.jsx
+- sidebar.jsx
 - StatelessWidget
-- apiAssetUrl
-- input.jsx
-- ApiService
-- PaymentsList.tsx
+- (landing)/[slug]/_components/CoachLandingClient.jsx
+- label.jsx
+- serving_picker_sheet.dart
+- funnelConfig.js
 - api_paths.dart
 - MobileDeviceRepository
 - ProfileClient.js
 - unified_auth_screen.dart
 - fitino_student_header.dart
 - catalog_pickers.dart
-- ProgramDetailsPanel.js
+- card.jsx
 - program_models.dart
 - funnel_service.go
 - onboarding_screen.dart
 - food_diary_screen.dart
 - AdminUserService
-- TelegramBotHandler
-- HasPermission
+- funnel_analyze.go
+- app_text_field.dart
 - nutrition_targets.dart
-- main
-- getApiErrorMessage
-- AIGenerateService
+- FunnelService
+- button.jsx
+- string
 - 21day/src/lib/utils.ts
 - ../../../core/network/api_exception.dart
 - profile_edit_screen.dart
@@ -52,143 +52,143 @@
 - coach_students_repository.dart
 - coach_tools_screens.dart
 - coach_shell.dart
-- StartScheduler
+- ai_generate_service.go
 - MeService
-- LIve/src/App.tsx
-- daily_plan_screen.dart
+- UserPanelShell.jsx
+- postAuthRedirect.js
 - CoachProgramService
-- ToPersian
+- MyProgramsListClient.js
 - weekly_plan_controller.dart
 - CommunityPostService
-- AdminUsersController
+- me_service.go
 - dashboard_bundle.dart
 - cn
 - EventRepository
-- string
+- food_diary_controller.dart
 - tracking_screen.dart
 - CoachAchievementsEditor.jsx
 - recognizer.py
 - GamificationRepository
 - TicketService
-- StringArray
+- schemas.go
 - coach_tickets_repository.dart
 - WorkoutExerciseCards.jsx
 - 21day/src/components/ui/sidebar.tsx
 - media_downloader.py
-- LIve/src/components/ui/sidebar.tsx
+- single_meal_screen.dart
 - coach_profile_repository.dart
-- List
-- public_coach_screens.dart
+- academy_media_player_screen.dart
+- profile_screen.dart
 - app_colors.dart
-- HLS Single-Bitrate Profile Tuning for Mobile/Webinar
+- nutritionHelpers.js
 - تسک‌های Jira — موارد پیاده‌سازی‌نشده پنل مربی
-- schemas.go
+- generator.go
 - nutrition_scale.dart
 - RecipeService
 - TrackingService
-- NormalizePhoneNumber
-- سیستم گردش‌کار (Workflow Automation) وبینار
+- LeadFunnelWizard.jsx
+- CoachStudentProgramsResponse
 - Videos.tsx
 - CoachPanelLayout.jsx
-- 📚 راهنمای کامل پیاده‌سازی پرداخت آنلاین با زرین‌پال
-- Telegram Bot Architecture Documentation
+- BmiCalculatorClient.jsx
+- ReminderService
 - ai_nutrition_models.dart
 - coach_workout_editor_screen.dart
 - MotivationalQuoteRepository
 - coach_profile_screen.dart
-- AppointmentSchedulingManager.tsx
+- foodLog.js
 - mysql.go
 - backend/config/config.go
 - PoseBankService
-- server.go
+- FunnelHero.jsx
 - app_router.dart
 - مدیریت پلن‌ها (Plans)
 - UserDashboardClient.jsx
 - MeDayPlanDTO
 - CoachProfileService
-- LIve/src/pages/AdminDashboard.tsx
+- FunnelLogoLayer.jsx
 - devDependencies
 - CoachDashboardClient.jsx
-- پنل مدیریتی وبینار - راهنمای استفاده
-- 📋 توضیح کامل سیستم مدیریت تنظیمات
-- 21day/src/pages/AdminDashboard.tsx
+- OrderDetailsPanel.js
+- AuthController
+- AdminDashboard.tsx
 - auth_controller.go
 - admin_template_service.go
-- landing.c
+- add_food_sheet.dart
 - coach_dashboard_repository.dart
 - coach_nutrition_editor_screen.dart
-- processSmartYesterdayCampaignsInternal
+- FromUser
 - dependencies
 - .Chat
 - GetUserID
 - TemplateRepository
 - site_settings_service.go
-- SetupRoutes
-- dependencies
-- devDependencies
+- FunnelAIAnalysisRepository
+- PostWorkoutSurveyModal.jsx
+- PrepareDatabase
 - tools_math.dart
 - orders_screen.dart
 - .Get
 - coach_plan_form_screen.dart
 - ۳) کارهایی که کاربر در اپ می‌تواند انجام دهد
-- app_text_field.dart
+- List
 - فیتینو (Fitino) — فایل بک‌آنالیز پروژه
 - ProgramRepository
 - AuthService
-- .CreateLog
+- daily_food_log_service.go
 - [slug]/page.js
-- 📋 مراحل تست (حتماً انجام دهید)
+- FunnelSuccessClient.jsx
 - subscription_models.dart
 - مستند UI و فلوهای چالش ۲۱ روزه فیتینو
-- 21day/src/hooks/use-toast.ts
+- hooks/use-toast.ts
 - usda.go
 - FeedbackService
 - coach_dashboard_models.dart
-- راهنمای رفع مشکل لگ و پرش استریم
-- بهینه‌سازی HLS برای موبایل - مستندات تغییرات
+- AdminPanelLayout.jsx
+- selectedDiaryDateProvider
 - single_meal_controller.dart
 - contact_screen.dart
 - AchievementService
 - WorkoutHistoryService
-- ConfigController
-- خلاصه تغییرات سیستم مدیریت کاربران ادمین
-- AdvancedWorkflowExecutor
-- Streaming Mobile Optimization Results
-- Streaming Runtime Issues and Solutions
+- DailyFoodLogRepository
+- runEnrichment
+- AnalyzeBodyPhoto
+- NewAuthService
+- CoachAchievementsSection.jsx
 - student_shell.dart
 - AdminPlanService
-- BotAPIClient
+- Persona
 - lazy-page.jsx
 - lazyPage
 - profile_models.dart
 - ۳) فازبندی اجرایی (Backlog قابل اجرا)
 - ۳) فازبندی اجرایی فیچرهای جدید — فاز ۱ تا ۱۰ (Backend تکمیل، UI باقی مانده)
 - my_application.cc
-- PaymentTransaction
-- Frontend Components
-- معماری مدیریت لیدها (Lead Management Architecture)
-- RegisterPage.tsx
+- jalali.js
+- TranscribeAudio
+- analysis/payment/page.js
+- analysis/payment/result/page.js
 - auth_models.dart
 - templates.go
-- TriggeredSMSMessageController
-- PaymentSMSMessageController
+- analysis/success/page.js
+- date-fns
 - dashboard_models.dart
-- مراحل Deploy
-- 🔧 رفع مشکل زمان شروع استریم و شروع از وسط ویدیو
+- @radix-ui/react-avatar
+- @radix-ui/react-context-menu
 - coach_plans_repository.dart
 - compilerOptions
 - @riverpod
 - NewServer
 - AdminExerciseService
-- 📅 پیاده‌سازی سیستم تقویم شمسی کامل
-- CommentScheduler
-- compilerOptions
-- ✅ تضمین شروع روزانه استریم از ابتدا
+- @radix-ui/react-dialog
+- @radix-ui/react-dropdown-menu
+- @radix-ui/react-popover
+- @radix-ui/react-progress
 - tracking_models.dart
 - سایت عمومی (`(site)`)
-- Android Low-End Device Fix and Play() Interrupted Error Resolution
-- راهنمای دیباگ مشکل دسترسی‌ها
-- 🔄 سیستم حلقه‌ای و دوره‌ای وبینار
+- @radix-ui/react-separator
+- @radix-ui/react-tooltip
+- react-hook-form
 - coach_catalog_repository.dart
 - Win32Window
 - مستندات API بکند — Morabiyar Multi-Coach
@@ -197,23 +197,22 @@
 - CheckInService
 - PaymentService
 - package:dio/dio.dart
-- VisualWorkflowExecutor
+- react-resizable-panels
 - FunnelLead
 - ProgressReportService
 - RunDev
 - profile_repository.dart
-- SMSMessageController
+- sonner
 - frontend/components.json
 - providers.js
-- Webinar
+- tailwindcss-animate
 - auth_repository.dart
-- CoachSessionRepository
+- CoachSessionService
 - ExerciseRepository
 - foods.go
 - enrichWorkoutPlan
-- GuaranteeService
-- AdminWorkflowController
-- Telegram Bot API - cURL Examples
+- radix-ui
+- fitino/challenge21
 - Morabiyar — مستندات پروژه
 - Pagination Audit Report
 - AIGenerateController
@@ -224,17 +223,10 @@
 - سیستم امتیازدهی، سطح، اعتبار و لیدربورد فیتینو — مستند پیاده‌سازی
 - راهنمای تست فاز ۰ — چطور مطمئن بشم درست پیاده‌سازی شده؟
 - frontend-pages-user-panel.md
-- 🔄 مسیر استریم از ورودی تا خروجی
-- گزارش بهینه‌سازی فاز 3: Frontend Optimization
-- MonetizeAI Webinar Platform
-- گزارش بررسی کامل - Update Payment Config Endpoint
 - ai/validate.go
 - student_controller.go
-- LIve/components.json
-- AdminWorkflows.tsx
 - راهنمای استفاده از Shenava ASR — تبدیل صوت به متن فارسی
 - coach_tracking_repository.dart
-- 21day/src/App.tsx
 - 21day/src/components/ui/command.tsx
 - compilerOptions
 - GeneratedPluginRegistrant.swift
@@ -246,48 +238,33 @@
 - token_store.dart
 - راهنمای کامل اجرای فاز ۰ — زیرساخت هوش مصنوعی ساختاریافته
 - HomeClient.jsx
-- AdaptiveCommentEngine.ts
-- compilerOptions
-- 📋 مراحل باقی‌مانده:
 - flavor_config.dart
 - win32_window.cpp
 - API Integration Documentation
 - 21day/components.json
 - dependencies
 - AchievementRepository
-- food_enricher.go
+- .CreateLog
 - ServicePlanRepository
 - SubscriptionRepository
 - AdminStudentService
 - CoachAchievementService
-- CoachSessionService
 - MeDashboardService
 - تسک‌های فرانت‌اند — Morabiyar Multi-Coach
-- visual_workflow.go
-- 🔴 نقاط کندی با اولویت بالا
 - SiteSettingsController
 - AdminProgramController
 - coach_food_service.go
 - NewCheckoutService
-- AvanakMessageController
-- TelegramQueue
-- گزارش بهینه‌سازی فاز 2: Batch Operations برای Logs
-- راهنمای آپدیت سرور برای تقویم شمسی
-- 📋 مراحل باقی‌مانده:
 - 21day/src/components/ui/form.tsx
-- AffiliateController
 - main
 - فلاتر ↔ وب — نقشه پاریتی
 - CoachDashboardController
-- CoachSessionController
 - CommunityPostController
-- GuaranteeRepository
 - NotificationRepository
 - OtpRepository
-- Streaming Startup Profile
 - workout_history_screen.dart
 - admin_controller.go
-- 21day/src/components/ui/carousel.tsx
+- button.tsx
 - AppDelegate
 - app_config.dart
 - AdminTemplateController
@@ -295,29 +272,18 @@
 - CoachStudentService
 - StudentService
 - food_repository.dart
-- groq_chat.go
 - plansStore.js
-- راهنمای راه‌اندازی پنل مدیریتی
-- workflow.go
-- راهنمای کامل دیپلوی پروژه وبینار روی سرور اوبونتو
-- Frontend-Backend Connection
-- مشکل: فیلدهای instagram_link، telegram_id، whatsapp_link و status_notes در سیستم مدیریت افیلیت‌ها ذخیره نمی‌شوند
-- PersianDatePicker.tsx
 - coach_notifications_repository.dart
-- 21day/src/components/FitinoPageShell.tsx
+- FitinoPageShell.tsx
 - RefreshTokenRepository
 - CoachAchievementRepository
 - FoodRepository
 - UserRepository
-- session.dart
 - dashboard_repository.dart
 - programs_repository.dart
 - CRUL Data Pipelines
 - ios/RunnerTests/RunnerTests.swift
 - AnalysisVisuals.jsx
-- راهنمای Build و Deploy تغییرات Frontend
-- گزارش بهینه‌سازی فاز 1: SystemConfig Caching
-- چرخه‌های زمانی وبینار
 - 21day/src/components/ui/menubar.tsx
 - compilerOptions
 - Context
@@ -325,10 +291,7 @@
 - Context
 - AIRequestLogRepository
 - src/core/flavor/flavor_config.dart
-- int?
 - Footer.js
-- AdaptiveCommentEngine
-- compilerOptions
 - 21day/package.json
 - 21day/src/components/ui/card.tsx
 - 21day/src/components/ui/chart.tsx
@@ -337,20 +300,12 @@
 - UserPhoto
 - CheckInReminderService
 - CalculateNutritionTargets
-- ContentLicenseController
 - payment_deep_link_handler.dart
 - فاز ۶ — سوپرادمین + پولیش ✅
-- FunnelLeadsClient
 - BorderGlow.jsx
 - wWinMain
-- TelegramMonitor
-- LIve/package.json
-- process-comments.js
-- LIve/src/components/ui/chart.tsx
 - web/manifest.json
-- SessionQuiz.tsx
 - 21day/src/components/ui/context-menu.tsx
-- 21day/src/components/ui/dropdown-menu.tsx
 - فاز ۱ — زیرساخت نقش Coach + دیتابیس ✅
 - AdminExerciseController
 - CoachExerciseController
@@ -360,7 +315,6 @@
 - deriveServingUnits
 - NotificationService
 - backend/run.sh
-- timed_comments.go
 - فیتینو — خلاصه گفتگوهای توسعه (وب + بک‌اند)
 - فاز ۳ — پلن مربی + خرید دمو ✅
 - frontend/package.json
@@ -371,12 +325,6 @@
 - CoachAchievementController
 - ImportExercisesJSON
 - فاز ۵ — اتصال پنل دانشجو + امنیت ✅
-- ProgressReportCards.jsx
-- حل مشکل جدول admin_users
-- Migration: Add affiliate_percentage to admin_users
-- process-comments-simple.js
-- 📋 TODO: پیامک‌های ساده
-- WooCommerce Webhook Test
 - 21day/src/components/ui/select.tsx
 - To-Do List — جدا کردن «دستیار هوشمند AI» از «برنامه‌های من»
 - @freezed
@@ -386,21 +334,13 @@
 - CoachTicketController
 - NotificationController
 - Allowed
-- NewProgressReportService
-- LicenseSMSMessageController
 - diet/normalize_media_paths.py
 - exercise/normalize_media_paths.py
 - فاز ۱ — زیرساخت نقش Coach + ریدایرکت ✅
 - فاز ۴ — دانشجویان مربی + تخصیص برنامه ✅
 - calorieCalculator.js
 - login/page.js
-- BotAPIAuthMiddleware
-- sms_log.go
-- Webinar Configuration
-- webinarStorage.ts
-- 📚 راهنمای کامل سیستم وبینار زنده - از دید کاربر
 - Welcome to your Lovable project
-- ApiService
 - AdminCoachController
 - AdminStudentController
 - DailyFoodLogController
@@ -409,45 +349,30 @@
 - middleware/jwt.go
 - FillMissingExerciseMedia
 - AuthorizationService
-- VideoController
 - validators.dart
 - فازبندی اجرایی فاز ۰ — ۱۰ فاز قابل‌اجرا
 - Frontend Overview
 - app/manifest.json
-- models/sms_message.go
-- MonetizeAI Webinar Backend
-- SmsService
-- VoiceService
-- ScreenOrientation
 - مدل داده — تغییرات نسبت به وضعیت فعلی
 - IncomeCalculator.tsx
 - main
 - Development Data Seeding & Datasets Guide
-- CheckoutController
 - CoachStudentController
 - ProgressReportController
 - coach_achievement.go
 - NutritionPlanJSONSchema
 - storage.js
 - persianGender.js
-- Affiliate
 - MessageHandler
 - Fitino seed data — one folder per dataset (no shared filenames)
 - NewAchievementController
 - Food
 - User
-- woocommerce_webhook.go
 - فاز ۶ — مدل `AIRequestLog` + AutoMigrate (BE-0.4 مدل)
 - فاز ۱۰ — تست سرتاسری E2E + آماده‌باش فاز ۱ رودمپ
 - FeedbackDetailsModal.jsx
-- AuthShell.js
 - AboutSection.js
-- (site)/layout.js
-- PaymentResultClient.jsx
-- AvanakMessage
-- TaskMessage
-- fix-timeoffsets.js
-- ⚠️ پیام‌های هشدار و اطلاع‌رسانی
+- Navbar.js
 - Shenava ASR (Fitino)
 - وضعیت فعلی پروژه
 - response.go
@@ -468,20 +393,10 @@
 - frontend/README.md
 - funnel-leads/page.js
 - ProgramCard.js
-- ali-rashidabadi/payment/page.js
-- ali-rashidabadi/payment/result/page.js
-- success/page.js
+- LegacyFunnelRedirect.jsx
 - landingEffects.js
 - bank/page.js
 - (site)/payment/page.js
-- RegisterUser
-- AppointmentSlot
-- SystemConfig
-- ContentLicense
-- 🎥 پخش ویدیو
-- 💬 سیستم کامنت و چت
-- 🛠️ عیب‌یابی (Troubleshooting)
-- 🔄 چرخه کامل کاربر از ورود تا پایان وبینار
 - RegisterPlugins
 - AdminSession
 - Progress
@@ -509,7 +424,6 @@
 - students/page.js
 - admin/students/workout/page.jsx
 - admin/templates/page.jsx
-- ImageLightboxModal.jsx
 - users/detail/page.js
 - coach/dashboard/page.jsx
 - coach/nutrition-templates/detail/page.jsx
@@ -544,18 +458,9 @@
 - sessions/page.js
 - tracking/page.js
 - PixelCanvas.jsx
-- ChatMessage
-- WebinarActivity
-- 🎨 رابط کاربری (UI)
-- 👥 نمایش تعداد بینندگان (Viewer Counter)
-- 🔐 امنیت و حریم خصوصی
-- 🔔 پیامک‌های خودکار
-- 📱 رفتار سیستم بر اساس نوع دستگاه
 - mobile
 - models/video.go
-- clsx
 - cmdk
-- embla-carousel-react
 - framer-motion
 - @hookform/resolvers
 - input-otp
@@ -563,41 +468,27 @@
 - next-themes
 - @radix-ui/react-accordion
 - @radix-ui/react-alert-dialog
-- @radix-ui/react-aspect-ratio
-- @radix-ui/react-checkbox
 - @radix-ui/react-collapsible
 - @radix-ui/react-hover-card
 - @radix-ui/react-label
 - @radix-ui/react-navigation-menu
-- @radix-ui/react-radio-group
 - @radix-ui/react-scroll-area
 - @radix-ui/react-select
 - @radix-ui/react-slider
-- @radix-ui/react-slot
 - @radix-ui/react-switch
-- @radix-ui/react-tabs
-- @radix-ui/react-toast
 - @radix-ui/react-toggle
 - @radix-ui/react-toggle-group
 - react
 - react-day-picker
-- react-router-dom
-- recharts
-- tailwind-merge
 - @tanstack/react-query
-- vaul
-- zod
 - seed_peyman_yazdani_paste.sh
 - config.py
-- date-fns-tz
-- dayjs
 - @dnd-kit/core
 - @dnd-kit/sortable
 - @dnd-kit/utilities
 - eslint.config.mjs
 - next.config.mjs
 - class-variance-authority
-- clsx
 - jalaali-js
 - next
 - react
@@ -614,58 +505,13 @@
 - zod
 - postcss.config.mjs
 - frontend/run.sh
+- FunnelPaymentClient.jsx
 - install
 - post-checkout
 - post-merge
-- gsap
-- deploy.sh
-- deploy_fix.sh
-- class-variance-authority
-- cmdk
-- embla-carousel-react
-- framer-motion
-- @hookform/resolvers
-- input-otp
-- lucide-react
-- next-themes
-- node-media-server
-- @radix-ui/react-accordion
-- @radix-ui/react-alert-dialog
-- @radix-ui/react-aspect-ratio
-- @radix-ui/react-avatar
-- @radix-ui/react-checkbox
-- @radix-ui/react-collapsible
-- @radix-ui/react-context-menu
-- @radix-ui/react-dialog
-- @radix-ui/react-hover-card
-- @radix-ui/react-label
-- @radix-ui/react-menubar
-- @radix-ui/react-popover
-- @radix-ui/react-radio-group
-- @radix-ui/react-scroll-area
-- @radix-ui/react-select
-- @radix-ui/react-slider
-- @radix-ui/react-slot
-- @radix-ui/react-switch
-- @radix-ui/react-tabs
-- @radix-ui/react-toast
-- @radix-ui/react-toggle
-- react
-- react-day-picker
-- react-dom
-- react-resizable-panels
-- sonner
-- tailwindcss-animate
-- @tanstack/react-query
-- vaul
-- quick_deploy.sh
-- update-server.sh
 - LaunchImage.imageset/README.md
-- monetizeai-backend
 - Time
 - ANALYZING_MESSAGES
-- monetizeai-backend
-- Time
 - build
 - fromJson
 - fromJson
@@ -713,165 +559,165 @@
 - shenava-asr
 
 ## God Nodes (most connected - your core abstractions)
-1. `cn()` - 341 edges
-2. `NewServer()` - 153 edges
+1. `cn()` - 348 edges
+2. `NewServer()` - 154 edges
 3. `GetUserID()` - 117 edges
-4. `Card()` - 112 edges
-5. `Button()` - 111 edges
-6. `CardContent()` - 110 edges
+4. `Card()` - 114 edges
+5. `Button()` - 113 edges
+6. `CardContent()` - 112 edges
 7. `api` - 106 edges
-8. `cn()` - 95 edges
-9. `Skeleton()` - 76 edges
-10. `Badge()` - 74 edges
+8. `Skeleton()` - 76 edges
+9. `Badge()` - 75 edges
+10. `CardHeader()` - 74 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `sortMealsBySlot()` --calls--> `mealSlotRank()`  [INFERRED]
-  backend/internal/service/template_mapper.go → backend/internal/service/meal_slots.go
-- `planByDayToNutritionItems()` --calls--> `IsValidMealSlot()`  [INFERRED]
-  backend/internal/service/program_mapper.go → backend/internal/service/meal_slots.go
-- `main()` --calls--> `LoadConfig()`  [INFERRED]
-  21day/backend/main.go → 21day/backend/config/config.go
-- `CompleteVideo()` --calls--> `CancelScheduledSMS()`  [INFERRED]
-  21day/backend/controllers/video_controller.go → 21day/backend/database/mysql.go
-- `startSMSScheduler()` --calls--> `MarkSMSSent()`  [INFERRED]
-  21day/backend/main.go → 21day/backend/database/mysql.go
+- `GenerateWeeklyNutritionPlan()` --calls--> `NutritionWeekJSONSchema()`  [INFERRED]
+  backend/internal/service/ai/generator.go → backend/internal/service/ai/schemas.go
+- `GenerateWorkoutPlan()` --calls--> `WorkoutPlanJSONSchema()`  [INFERRED]
+  backend/internal/service/ai/generator.go → backend/internal/service/ai/schemas.go
+- `GenerateMealReplacement()` --calls--> `MealJSONSchema()`  [INFERRED]
+  backend/internal/service/ai/generator.go → backend/internal/service/ai/schemas.go
+- `GenerateIngredientSuggestion()` --calls--> `IngredientSuggestionJSONSchema()`  [INFERRED]
+  backend/internal/service/ai/generator.go → backend/internal/service/ai/schemas.go
+- `GenerateFoodLog()` --calls--> `FoodLogJSONSchema()`  [INFERRED]
+  backend/internal/service/ai/generator.go → backend/internal/service/ai/schemas.go
 
 ## Import Cycles
 - None detected.
 
-## Communities (740 total, 241 thin omitted)
+## Communities (570 total, 182 thin omitted)
 
-### Community 0 - "card.jsx"
-Cohesion: 0.04
-Nodes (106): cn(), ToggleButton(), REQUEST_TYPE_LABELS, faNum(), FeedbackClient(), FeedbackDetails(), formatDateTimeFa(), FeedbackList() (+98 more)
+### Community 0 - "client.js"
+Cohesion: 0.06
+Nodes (76): CoachRegistrationRequestsClient(), cn(), ExercisesClient(), faNum(), faNum(), FeedbackClient(), FeedbackList(), formatDateFa() (+68 more)
 
 ### Community 1 - "cn"
 Cohesion: 0.03
-Nodes (145): CoachesClient(), ACHIEVEMENT_TYPE_META, AchievementThumb(), CoachReviewDetailsSheet(), DetailItem(), getTypeMeta(), KpiCard(), Meta() (+137 more)
+Nodes (115): CoachesClient(), ACHIEVEMENT_TYPE_META, AchievementThumb(), CoachReviewDetailsSheet(), DetailItem(), getTypeMeta(), KpiCard(), Meta() (+107 more)
 
-### Community 2 - "utils.js"
-Cohesion: 0.03
-Nodes (121): formatNumber(), PlanForm(), buildEmptyPlan(), PlanDetailsClient(), NewPlanClient(), CoachPlanDetailsClient(), NewCoachPlanClient(), ProgramOffer() (+113 more)
+### Community 2 - "toastError"
+Cohesion: 0.10
+Nodes (32): formatNumber(), formatWithSeparator(), PlanForm(), PriceField(), removeSeparator(), buildEmptyPlan(), PlanDetailsClient(), NewPlanClient() (+24 more)
 
-### Community 3 - "cn"
-Cohesion: 0.02
-Nodes (113): AIChat(), ProgressRing(), ProgressRingProps, TaskChatPage(), AccordionContent, AccordionItem, AccordionTrigger, AlertDialogAction (+105 more)
+### Community 3 - "WorkoutEditorClient.jsx"
+Cohesion: 0.10
+Nodes (28): DAY_KEYS, DAY_LABELS, emptyPlanByDay(), formatDateFa(), SavedProgramsApprovalCard(), CoachStudentDetailsClient(), NutritionProgramPreview(), WorkoutProgramPreview() (+20 more)
 
 ### Community 4 - "package:flutter_riverpod/flutter_riverpod.dart"
-Cohesion: 0.02
-Nodes (113): academy_media_player_screen.dart, ../application/programs_controller.dart, change_password_dialog.dart, ../../coach_notifications/presentation/coach_notifications_screen.dart, CoachStudentDetail, ../../../core/theme/app_colors.dart, ../../../core/widgets/async_value_widget.dart, ../../../core/widgets/fitino_ui.dart (+105 more)
+Cohesion: 0.03
+Nodes (100): academy_media_player_screen.dart, ../application/programs_controller.dart, ../../coach_notifications/presentation/coach_notifications_screen.dart, CoachStudentDetail, ../../../core/theme/app_colors.dart, ../../../core/widgets/async_value_widget.dart, ../../../core/widgets/fitino_ui.dart, ../../../core/widgets/state_views.dart (+92 more)
 
-### Community 5 - "WorkoutEditorClient.jsx"
-Cohesion: 0.04
-Nodes (93): FaqEditor(), computeMultiplier(), formatFoodDetail(), mealFromCatalogFood(), mealFromManualEntry(), mealMultiplier(), mealToApiPayload(), mealUid() (+85 more)
+### Community 5 - "FoodDiaryClient.jsx"
+Cohesion: 0.07
+Nodes (38): ContentAdminClient(), FaqEditor(), SaveBar(), MacroChip(), FoodPickerModal(), FaqClient(), DailyProgressCard(), MacroBadge() (+30 more)
 
-### Community 6 - "AffiliatesManager.tsx"
-Cohesion: 0.05
-Nodes (84): COLORS, DashboardStats, FilterType, PaginationInfo, SettingsPanelProps, SystemConfig, UserWithActivity, AdminPermission (+76 more)
+### Community 6 - "sidebar.jsx"
+Cohesion: 0.10
+Nodes (34): RoleSidebar(), TableCellViewer(), isNavItemActive(), NavRoleMain(), NavUser(), Sidebar(), SidebarContent(), SidebarContext (+26 more)
 
 ### Community 7 - "StatelessWidget"
 Cohesion: 0.02
-Nodes (111): ../application/dashboard_bundle.dart, ../application/single_meal_controller.dart, AsyncValue, EdgeInsetsGeometry, IconData, AsyncValueWidget, build, onRetry (+103 more)
+Nodes (141): ../application/daily_plan_controller.dart, ../application/dashboard_bundle.dart, ../application/weekly_plan_controller.dart, AsyncValue, EdgeInsetsGeometry, IconData, AsyncValueWidget, build (+133 more)
 
-### Community 8 - "apiAssetUrl"
-Cohesion: 0.04
-Nodes (75): DashboardRedirectPage(), CoachLandingClient(), formatToman(), HERO_PIXEL_COLORS, cn(), ExercisesClient(), faNum(), emptyForm() (+67 more)
+### Community 8 - "(landing)/[slug]/_components/CoachLandingClient.jsx"
+Cohesion: 0.13
+Nodes (26): CoachLandingClient(), formatToman(), HERO_PIXEL_COLORS, CoachLandingClient(), formatToman(), HERO_PIXEL_COLORS, CartButton(), formatToman() (+18 more)
 
-### Community 9 - "input.jsx"
-Cohesion: 0.04
-Nodes (72): AcademyEditor(), typeMeta, arrayToLines(), buildEmptyExercise(), ExerciseForm(), exerciseToForm(), formToPayload(), linesToArray() (+64 more)
+### Community 9 - "label.jsx"
+Cohesion: 0.08
+Nodes (37): AcademyEditor(), typeMeta, arrayToLines(), exerciseToForm(), linesToArray(), EMPTY_RELEASE, formatDate(), formatFa() (+29 more)
 
-### Community 10 - "ApiService"
-Cohesion: 0.03
-Nodes (57): CountdownTimerProps, EndWebinarModal(), EndWebinarModalProps, FullscreenVideoProps, deviceInfo, LiveChat(), LiveChatProps, Message (+49 more)
-
-### Community 11 - "PaymentsList.tsx"
+### Community 10 - "serving_picker_sheet.dart"
 Cohesion: 0.05
-Nodes (79): AdminDashboard(), SettingsPanel(), AdminUsersManager(), AffiliateCard(), AffiliatesManager(), AppointmentSchedulingManager(), AutoCycleInfoModal(), AvanakMessageManager() (+71 more)
+Nodes (36): ../application/nutrition_scale.dart, double?, double get, build, display, emoji, facts, _formatValue (+28 more)
+
+### Community 11 - "funnelConfig.js"
+Cohesion: 0.07
+Nodes (35): ACTIVITY_LABELS, ANALYZING_STEPS, ANSWER_LABELS, buildAnalysis(), buildMacroSplit(), buildPersonalizedAiWarning(), buildTrendChart(), calculateBmi() (+27 more)
 
 ### Community 12 - "api_paths.dart"
 Cohesion: 0.02
 Nodes (82): _, academy, ApiPaths, authMe, bodyPhotos, changePassword, checkPhone, coachAchievement (+74 more)
 
 ### Community 13 - "MobileDeviceRepository"
-Cohesion: 0.05
-Nodes (37): Context, NewMobileAppController(), Time, Context, DB, Time, NewMobileDeviceRepository(), NewMobileReleaseRepository() (+29 more)
+Cohesion: 0.07
+Nodes (25): Context, NewMobileAppController(), Time, Context, DB, Time, NewMobileDeviceRepository(), NewMobileReleaseRepository() (+17 more)
 
 ### Community 14 - "ProfileClient.js"
-Cohesion: 0.06
-Nodes (48): GRAM_FALLBACK_UNIT, FreeTextInput(), emitProfileUpdated(), itemToMeal(), VoiceFoodLogModal(), DURATION_OPTIONS, EFFORT_OPTIONS, FEELING_OPTIONS (+40 more)
+Cohesion: 0.10
+Nodes (20): emitProfileUpdated(), ChangePasswordModal(), AlertBanner(), BODY_CONDITIONS, EMPTY_JALALI, emptyProfile(), GOAL_OPTIONS, hasMedicalDetail() (+12 more)
 
 ### Community 15 - "unified_auth_screen.dart"
 Cohesion: 0.03
 Nodes (72): ../application/auth_controller.dart, ../../../core/utils/validators.dart, ../../../core/widgets/app_text_field.dart, ../data/auth_repository.dart, ../data/profile_repository.dart, FormState, build, _busy (+64 more)
 
 ### Community 16 - "fitino_student_header.dart"
-Cohesion: 0.03
-Nodes (69): AnimationController, dart:math, dart:ui, ../../features/profile/data/profile_models.dart, ../../features/profile/data/profile_repository.dart, fitino_ui.dart, _breathe, build (+61 more)
+Cohesion: 0.07
+Nodes (28): CustomPainter, ../../features/profile/data/profile_models.dart, ../../features/profile/data/profile_repository.dart, active, _assetUrl, base, _Chip, clamp (+20 more)
 
 ### Community 17 - "catalog_pickers.dart"
-Cohesion: 0.04
-Nodes (70): _Body, ConsumerState, ConsumerStatefulWidget, dart:async, ../data/coach_catalog_repository.dart, build, child, createState (+62 more)
+Cohesion: 0.03
+Nodes (92): _Body, ConsumerState, ConsumerStatefulWidget, ../data/coach_catalog_repository.dart, ../data/subscription_models.dart, ../data/subscription_repository.dart, coachCatalogRepositoryProvider, _assetUrl (+84 more)
 
-### Community 18 - "ProgramDetailsPanel.js"
-Cohesion: 0.06
-Nodes (53): ContentAdminClient(), SaveBar(), AchievementsClient(), TINT_CLASSES, LeaderboardClient(), CategoryBadge(), FeedTab(), FilterTabs() (+45 more)
+### Community 18 - "card.jsx"
+Cohesion: 0.04
+Nodes (88): cn(), ToggleButton(), CURRENT_YEAR, AiUsageCard(), REQUEST_TYPE_LABELS, buildEmptyExercise(), ExerciseForm(), formToPayload() (+80 more)
 
 ### Community 19 - "program_models.dart"
 Cohesion: 0.04
 Nodes (66): @JsonSerializable, DayPlan, _, caloriesTarget, class, DayPlanPatterns, _exercises, hashCode (+58 more)
 
 ### Community 20 - "funnel_service.go"
-Cohesion: 0.08
-Nodes (40): applyPlanToLead(), derefString(), funnelCoachSlug(), funnelStage(), generateFunnelToken(), CoachProfile, CoachProfileRepository, Context (+32 more)
+Cohesion: 0.10
+Nodes (29): applyFunnelMetrics(), funnelPaymentPath(), applyPlanToLead(), derefString(), funnelStage(), generateFunnelToken(), generateFunnelTrackingCode(), Time (+21 more)
 
 ### Community 21 - "onboarding_screen.dart"
 Cohesion: 0.03
 Nodes (60): _assetUrl, _birthDateIso, _birthDay, _birthMonth, _birthYear, _bodyCondition, _bodyConditions, _bodyFatPercent (+52 more)
 
 ### Community 22 - "food_diary_screen.dart"
-Cohesion: 0.04
-Nodes (58): _, add_food_sheet.dart, ../application/nutrition_targets.dart, class DailyDiaryProvider, class FoodSearchProvider, ../../../core/utils/jalali.dart, ../data/food_repository.dart, DateTime (+50 more)
+Cohesion: 0.08
+Nodes (24): add_food_sheet.dart, ../application/nutrition_targets.dart, ../../../core/utils/jalali.dart, DateTime, nutritionTargetsProvider, build, current, date (+16 more)
 
 ### Community 23 - "AdminUserService"
 Cohesion: 0.06
 Nodes (34): Context, NewAdminDashboardController(), Context, NewAdminUserController(), Context, DB, NewTransactionRepository(), CoachProfileRepository (+26 more)
 
-### Community 24 - "TelegramBotHandler"
-Cohesion: 0.08
-Nodes (19): ContentTask, IP, downloadWithRetry(), getTelegramFileClient(), AdminUser, Client, DB, RWMutex (+11 more)
+### Community 24 - "funnel_analyze.go"
+Cohesion: 0.16
+Nodes (30): analyzeReqFromLead(), buildFunnelAnalysisPrompt(), buildPersonalizedChartBars(), buildPersonalizedFunnelDTO(), buildPersonalizedTrendChart(), fillAnalysisNarrativeFields(), fillAnalyzeFromLead(), fillMissingCharts() (+22 more)
 
-### Community 25 - "HasPermission"
-Cohesion: 0.07
-Nodes (28): AdminAnalyticsController, AdminTaskMessagesController, behaviorFunnelRow, smartSMSBehaviorItem, SmartSMSController, smartSMSEligibleUserRow, smartSMSSentUserRow, smartSMSTodayItem (+20 more)
+### Community 25 - "app_text_field.dart"
+Cohesion: 0.06
+Nodes (30): dart:async, build, child, createState, dispose, _handleInitialLink, _handleUri, initState (+22 more)
 
 ### Community 26 - "nutrition_targets.dart"
-Cohesion: 0.04
-Nodes (56): ../application/food_diary_controller.dart, ../data/food_models.dart, double get, buf, caloriesTarget, candidates, date, dateToDayKey (+48 more)
+Cohesion: 0.09
+Nodes (22): buf, caloriesTarget, candidates, date, dateToDayKey, dayKey, extractNutritionTargets, hasAny (+14 more)
 
-### Community 27 - "main"
+### Community 27 - "FunnelService"
+Cohesion: 0.16
+Nodes (11): funnelCoachSlug(), CoachProfile, Context, FunnelService, User, planSellPrice(), splitPlanFeatures(), toFunnelPlanDTO() (+3 more)
+
+### Community 28 - "button.jsx"
 Cohesion: 0.06
-Nodes (42): cacheEntry, configCache, GroqConfig, PaymentConfig, TelegramConfig, TestModeConfig, WebinarConfig, DB (+34 more)
+Nodes (46): MealCard(), DAILY_GOAL_OPTIONS, mealTotals(), REGENERATE_REASONS, RegenerateMealDialog(), DailyPlanClient(), DailySummaryBar(), COMMON_INGREDIENTS (+38 more)
 
-### Community 28 - "getApiErrorMessage"
-Cohesion: 0.06
-Nodes (44): CoachDetailsClient(), CoachRegistrationRequestsClient(), MealCard(), DAILY_GOAL_OPTIONS, mealTotals(), REGENERATE_REASONS, RegenerateMealDialog(), DailyPlanClient() (+36 more)
-
-### Community 29 - "AIGenerateService"
-Cohesion: 0.10
-Nodes (38): FoodItem, FoodLogSchema, IngredientSuggestionSchema, MealSchema, NutritionPlanSchema, NutritionWeekDaySchema, NutritionWeekSchema, WorkoutPlanSchema (+30 more)
+### Community 29 - "string"
+Cohesion: 0.22
+Nodes (13): buildAIUserContext(), derefFloat(), Context, DB, FoodRepository, Mutex, SubscriptionRepository, mapAIGenErr() (+5 more)
 
 ### Community 30 - "21day/src/lib/utils.ts"
 Cohesion: 0.04
 Nodes (38): Alert, AlertDescription, AlertTitle, alertVariants, Avatar, AvatarFallback, AvatarImage, Checkbox (+30 more)
 
 ### Community 31 - "../../../core/network/api_exception.dart"
-Cohesion: 0.04
-Nodes (49): ai_nutrition_models.dart, auth_interceptor.dart, ../config/app_config.dart, content_models.dart, ../../../core/config/api_paths.dart, ../../../core/network/api_exception.dart, ../../../core/network/dio_provider.dart, Dio (+41 more)
+Cohesion: 0.06
+Nodes (41): ai_nutrition_models.dart, content_models.dart, ../../../core/config/api_paths.dart, ../../../core/network/api_exception.dart, ../../../core/network/dio_provider.dart, Dio, AiChatMessage, AiChatRepository (+33 more)
 
 ### Community 32 - "profile_edit_screen.dart"
-Cohesion: 0.04
-Nodes (53): ConsumerWidget, ../core/payment/payment_deep_link_listener.dart, ../core/router/app_router.dart, ../../../core/theme/app_theme.dart, ../../../core/theme/theme_mode_provider.dart, ../../../core/widgets/jalali_date_field.dart, build, FitnessApp (+45 more)
+Cohesion: 0.07
+Nodes (29): ../../../core/widgets/jalali_date_field.dart, _bodyCondition, _bodyConditions, _bodyFat, createState, dispose, _email, _firstName (+21 more)
 
 ### Community 33 - "food_models.dart"
 Cohesion: 0.04
@@ -879,75 +725,75 @@ Nodes (54): _, class, DailyFoodLogPatterns, date, FoodListResponsePatterns, Food
 
 ### Community 34 - "coach_students_repository.dart"
 Cohesion: 0.04
-Nodes (54): assignNutritionTemplate, assignWorkoutTemplate, build, CoachStudentDetail, CoachStudentItem, CoachStudentPrograms, coachStudentsFilterProvider, coachStudentsProvider (+46 more)
+Nodes (58): assignNutritionTemplate, assignWorkoutTemplate, build, CoachStudentDetail, coachStudentDetailProvider, CoachStudentItem, CoachStudentPrograms, coachStudentProgramsProvider (+50 more)
 
 ### Community 35 - "coach_tools_screens.dart"
 Cohesion: 0.04
-Nodes (52): academy_screen.dart, ../../coach_students/data/coach_students_repository.dart, FitinoAiFab, _FitinoAiFabState, _DockSheen, _DockSheenState, _RegenerateMealSheet, _RegenerateMealSheetState (+44 more)
+Nodes (49): ../../coach_students/data/coach_students_repository.dart, dart:math, _breathe, _clamp, createState, dispose, _dragging, _dragStart (+41 more)
 
 ### Community 36 - "coach_shell.dart"
 Cohesion: 0.04
 Nodes (50): ../auth/application/auth_controller.dart, ../coach_dashboard/presentation/coach_dashboard_screen.dart, ../coach_students/presentation/coach_students_screen.dart, ../coach_tickets/presentation/coach_tickets_screen.dart, ../coach_tracking/presentation/coach_tracking_screen.dart, ../../../core/flavor/flavor_config.dart, ../../core/widgets/fitino_bottom_dock.dart, ../../core/widgets/fitino_coach_header.dart (+42 more)
 
-### Community 37 - "StartScheduler"
-Cohesion: 0.10
-Nodes (40): AppointmentSlot, AvanakConfig, MelipayamakConfig, WebinarController, LoadConfigFromDB(), Config, Context, RegisterRequest (+32 more)
+### Community 37 - "ai_generate_service.go"
+Cohesion: 0.11
+Nodes (23): NutritionPlanSchema, NutritionWeekSchema, WorkoutPlanSchema, NewAIGenerateController(), buildIngredientUserContext(), buildMealRegenerateContext(), buildWorkoutConstraintsContext(), NutritionTargets (+15 more)
 
 ### Community 38 - "MeService"
-Cohesion: 0.10
-Nodes (28): Time, containsMeString(), Context, DB, FoodRepository, Reader, SubscriptionRepository, Time (+20 more)
+Cohesion: 0.20
+Nodes (7): Context, DB, FoodRepository, SubscriptionRepository, User, NewMeService(), MeService
 
-### Community 39 - "LIve/src/App.tsx"
-Cohesion: 0.05
-Nodes (40): AdminDashboard, AdminLogin, AdminWorkflows, AIPage, Index, PaymentFailed, PaymentSuccess, queryClient (+32 more)
+### Community 39 - "UserPanelShell.jsx"
+Cohesion: 0.15
+Nodes (21): getInitials(), usePanelUser(), userFromSession(), findActiveUserNavGroup(), findActiveUserNavItem(), isNavPathActive(), userBrand, userHeader (+13 more)
 
-### Community 40 - "daily_plan_screen.dart"
-Cohesion: 0.04
-Nodes (48): ../application/daily_plan_controller.dart, ../application/weekly_plan_controller.dart, dailyPlanControllerProvider, weeklyPlanControllerProvider, build, createState, _customController, DailyPlanScreen (+40 more)
+### Community 40 - "postAuthRedirect.js"
+Cohesion: 0.17
+Nodes (17): DashboardRedirectPage(), PanelAuthGate(), StudentOnboardingGate(), UserPanelLayout(), metadata, buildAuthUrl(), getSafeRedirectPath(), isAuthLoopPath() (+9 more)
 
 ### Community 41 - "CoachProgramService"
-Cohesion: 0.12
-Nodes (20): Context, SubscriptionRepository, NewAdminProgramService(), Context, DB, FoodRepository, SubscriptionRepository, NewCoachProgramService() (+12 more)
+Cohesion: 0.20
+Nodes (10): Context, DB, FoodRepository, SubscriptionRepository, Time, NewCoachProgramService(), applyNutritionProgramTargets(), extractNutritionTargetsFromPlan() (+2 more)
 
-### Community 42 - "ToPersian"
-Cohesion: 0.08
-Nodes (21): AdminStatsController, AppointmentSlotController, DailyRegistrationStats, DashboardStats, UserWithActivity, getDateRangeFromFilter(), Context, DB (+13 more)
+### Community 42 - "MyProgramsListClient.js"
+Cohesion: 0.13
+Nodes (14): ProgramOffer(), TRUST_ICONS, MetaBadge(), ContactClient(), faNum(), TicketCreateForm(), FILTER_ITEMS, FilterChips() (+6 more)
 
 ### Community 43 - "weekly_plan_controller.dart"
-Cohesion: 0.05
-Nodes (48): daily_plan_controller.dart, ../data/ai_nutrition_models.dart, ../data/ai_nutrition_repository.dart, Iterable, build, confirmed, confirming, confirmPlan (+40 more)
+Cohesion: 0.04
+Nodes (53): daily_plan_controller.dart, ../data/ai_nutrition_models.dart, ../data/ai_nutrition_repository.dart, Iterable, ThemeModeNotifier, build, confirmed, confirming (+45 more)
 
 ### Community 44 - "CommunityPostService"
 Cohesion: 0.09
 Nodes (26): Model, Context, DB, NewCommunityPostRepository(), Context, DB, Reader, marshalPostMetadata() (+18 more)
 
-### Community 45 - "AdminUsersController"
-Cohesion: 0.07
-Nodes (29): AdminClaims, AdminLoginRequest, AdminLoginResponse, AdminUsersController, AdminLogin(), AuthMiddleware(), CheckPasswordHash(), CreateDefaultAdmin() (+21 more)
+### Community 45 - "me_service.go"
+Cohesion: 0.16
+Nodes (19): containsMeString(), Reader, Time, meGetUploadDir(), mePhotosToDTO(), meRemovePhotoFile(), meSplitName(), MeNutritionDTO (+11 more)
 
 ### Community 46 - "dashboard_bundle.dart"
-Cohesion: 0.04
-Nodes (48): active, body, completedAt, dayLabel, dayNumber, dio, durationDays, durationMin (+40 more)
+Cohesion: 0.03
+Nodes (59): class DashboardDataProvider, ../data/dashboard_models.dart, ../data/dashboard_repository.dart, create, DashboardDataProvider, debugGetCreateSourceHash, extends, active (+51 more)
 
 ### Community 47 - "cn"
-Cohesion: 0.06
-Nodes (39): AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter(), AlertDialogHeader(), AlertDialogOverlay, AlertDialogTitle (+31 more)
+Cohesion: 0.05
+Nodes (47): AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter(), AlertDialogHeader(), AlertDialogOverlay, AlertDialogTitle (+39 more)
 
 ### Community 48 - "EventRepository"
 Cohesion: 0.09
 Nodes (21): Context, NewAdminEventController(), NewEventController(), Model, Time, Context, DB, NewEventRepository() (+13 more)
 
-### Community 49 - "string"
-Cohesion: 0.07
-Nodes (25): TelegramWebhookController, Context, DB, NewTelegramWebhookController(), Time, DB, intPtr(), jsonPtr() (+17 more)
+### Community 49 - "food_diary_controller.dart"
+Cohesion: 0.08
+Nodes (23): class DailyDiaryProvider, class FoodSearchProvider, ../data/food_repository.dart, _, call, create, DailyDiaryProvider, debugGetCreateSourceHash (+15 more)
 
 ### Community 50 - "tracking_screen.dart"
 Cohesion: 0.05
-Nodes (46): ../../../core/config/app_config.dart, CustomPainter, ../data/coach_tracking_repository.dart, ../data/tracking_models.dart, ../data/tracking_repository.dart, _RingPainter, CoachTrackingDetail, coachTrackingDetailProvider (+38 more)
+Nodes (43): ../../../core/config/app_config.dart, ../data/coach_tracking_repository.dart, ../data/tracking_models.dart, ../data/tracking_repository.dart, CoachTrackingDetail, coachTrackingDetailProvider, coachTrackingListProvider, _assetUrl (+35 more)
 
 ### Community 51 - "CoachAchievementsEditor.jsx"
-Cohesion: 0.08
-Nodes (38): ACHIEVEMENT_TYPES, AchievementImageUpload(), CoachAchievementsEditor(), EMPTY_FORM, getTypeMeta(), isGrade3Certificate(), normalizePersian(), FormField() (+30 more)
+Cohesion: 0.06
+Nodes (46): CoachDetailsClient(), emptyForm(), emptyItem(), TemplateEditorClient(), ACHIEVEMENT_TYPES, AchievementImageUpload(), CoachAchievementsEditor(), EMPTY_FORM (+38 more)
 
 ### Community 52 - "recognizer.py"
 Cohesion: 0.09
@@ -961,17 +807,17 @@ Nodes (25): Context, NewGamificationController(), Model, Model, Context, DB, Tim
 Cohesion: 0.10
 Nodes (25): Model, Time, Context, DB, NewTicketRepository(), Context, Time, isValidTicketStatus() (+17 more)
 
-### Community 55 - "StringArray"
-Cohesion: 0.07
-Nodes (25): AdminContentTasksController, AdminTasksController, Context, DB, NewAdminContentTasksController(), Context, DB, NewAdminTasksController() (+17 more)
+### Community 55 - "schemas.go"
+Cohesion: 0.11
+Nodes (22): ExerciseSchema, FoodItem, FoodLogSchema, IngredientSuggestionSchema, MealSchema, NutritionWeekDaySchema, WorkoutDaySchema, WorkoutNoteSummarySchema (+14 more)
 
 ### Community 56 - "coach_tickets_repository.dart"
 Cohesion: 0.05
 Nodes (43): ../data/coach_tickets_repository.dart, answer, answered, answeredAt, build, CoachTicketDetail, coachTicketDetailProvider, CoachTicketItem (+35 more)
 
 ### Community 57 - "WorkoutExerciseCards.jsx"
-Cohesion: 0.11
-Nodes (39): createSetsDetails(), dayExercisesToPlanByDay(), emptyDayExercises(), exerciseEntryFromApi(), formatExerciseEntry(), generateSupersetId(), getWorkoutSystemLabel(), groupExercisesForDisplay() (+31 more)
+Cohesion: 0.13
+Nodes (35): createSetsDetails(), dayExercisesToPlanByDay(), emptyDayExercises(), exerciseEntryFromApi(), formatExerciseEntry(), generateSupersetId(), getWorkoutSystemLabel(), groupExercisesForDisplay() (+27 more)
 
 ### Community 58 - "21day/src/components/ui/sidebar.tsx"
 Cohesion: 0.05
@@ -981,41 +827,41 @@ Nodes (37): Separator, SheetContent, SheetContentProps, SheetDescription, SheetF
 Cohesion: 0.09
 Nodes (38): main(), parse_fields(), Download diet-template images into output/food/images (deduplicated, flat).  R, build_session(), fetch_page(), load_output(), main(), Fetch all diet templates from admin-morabiha API into output/food.  Each reque (+30 more)
 
-### Community 60 - "LIve/src/components/ui/sidebar.tsx"
-Cohesion: 0.05
-Nodes (37): Separator, SheetContent, SheetContentProps, SheetDescription, SheetFooter(), SheetHeader(), SheetOverlay, SheetTitle (+29 more)
+### Community 60 - "single_meal_screen.dart"
+Cohesion: 0.10
+Nodes (21): ../application/single_meal_controller.dart, singleMealControllerProvider, SuggestedFoodItem, build, createState, dispose, _FoodItemTile, _freeTextController (+13 more)
 
 ### Community 61 - "coach_profile_repository.dart"
 Cohesion: 0.05
 Nodes (43): aboutCoach, achievements, avatarUrl, bio, checkSlug, city, CoachAchievement, CoachProfile (+35 more)
 
-### Community 62 - "List"
-Cohesion: 0.05
-Nodes (41): coach_dashboard_repository.dart, ../../coach_tracking/data/coach_tracking_repository.dart, List, build, all, attention, CoachDashboardExtras, coachDashboardExtrasProvider (+33 more)
-
-### Community 63 - "public_coach_screens.dart"
+### Community 62 - "academy_media_player_screen.dart"
 Cohesion: 0.06
-Nodes (41): ../data/subscription_models.dart, ../data/subscription_repository.dart, PublicCoachItem, PublicCoachProfile, subscriptionRepositoryProvider, _asset, base, build (+33 more)
+Nodes (34): academy_screen.dart, a, AcademyItem, body, category, cover, description, duration (+26 more)
+
+### Community 63 - "profile_screen.dart"
+Cohesion: 0.04
+Nodes (56): change_password_dialog.dart, ConsumerWidget, ../core/payment/payment_deep_link_listener.dart, ../core/router/app_router.dart, ../../../core/theme/app_theme.dart, ../../../core/theme/theme_mode_provider.dart, ../data/profile_models.dart, MaterialPageRoute (+48 more)
 
 ### Community 64 - "app_colors.dart"
 Cohesion: 0.05
 Nodes (42): _, accentBar, AppColors, background, backgroundDark, border, borderDark, brandAqua (+34 more)
 
-### Community 65 - "HLS Single-Bitrate Profile Tuning for Mobile/Webinar"
-Cohesion: 0.05
-Nodes (42): 10. Scaling: lanczos, 1. Video Bitrate: 1500k, 1. کاهش Resolution (720p → 540p):, 2. Maxrate: 2160k (1.2x bitrate), 2. کاهش Video Bitrate (2000k → 1500k):, 3. Bufsize: 3600k (2x bitrate), 3. کاهش Audio Bitrate (128k → 48k):, 4. Tuning: zerolatency (+34 more)
+### Community 65 - "nutritionHelpers.js"
+Cohesion: 0.20
+Nodes (21): computeMultiplier(), formatFoodDetail(), mealFromCatalogFood(), mealFromManualEntry(), mealMultiplier(), mealToApiPayload(), mealUid(), mealWithServingAmount() (+13 more)
 
 ### Community 66 - "تسک‌های Jira — موارد پیاده‌سازی‌نشده پنل مربی"
 Cohesion: 0.05
 Nodes (41): Epic 1 — مدیریت حساب, Epic 2 — پایش دوره و شاگردان, Epic 3 — لیست سفارشات و برنامه‌ها, Epic 4 — ابزارها, Epic 5 — تنظیمات, Epic 6 — آمار و گزارش‌ها, Epic 7 — زیرساخت منو (پیش‌نیاز کلی), TASK-CP-01 — ساخت بخش منوی «مدیریت حساب» (+33 more)
 
-### Community 67 - "schemas.go"
-Cohesion: 0.11
-Nodes (39): apiResponse, ExerciseSchema, GenerateResult, jsonSchema, message, ProgressAnalysisSchema, responseFormat, SetLogSchema (+31 more)
+### Community 67 - "generator.go"
+Cohesion: 0.21
+Nodes (24): apiResponse, GenerateResult, jsonSchema, message, responseFormat, structuredRequest, usageInfo, callWithSchema() (+16 more)
 
 ### Community 68 - "nutrition_scale.dart"
-Cohesion: 0.05
-Nodes (39): ../application/nutrition_scale.dart, double?, calcium, calories, carbs, cholesterol, factor, fat (+31 more)
+Cohesion: 0.08
+Nodes (23): calcium, calories, carbs, cholesterol, factor, fat, fiber, grams (+15 more)
 
 ### Community 69 - "RecipeService"
 Cohesion: 0.10
@@ -1025,29 +871,29 @@ Nodes (20): Context, NewAdminRecipeController(), Context, NewRecipeController(),
 Cohesion: 0.14
 Nodes (23): Model, Time, coachAlertsFromStudent(), daysBetween(), Context, DB, Reader, SubscriptionRepository (+15 more)
 
-### Community 71 - "NormalizePhoneNumber"
-Cohesion: 0.09
-Nodes (30): TrackClickRequest, TrackViewRequest, convertToPaymentSMSTriggerType(), getPaymentSMSMessageController(), getSystemConfigString(), GetUserLandingActivities(), Context, DB (+22 more)
+### Community 71 - "LeadFunnelWizard.jsx"
+Cohesion: 0.20
+Nodes (18): AnalysisNarrative(), analysisSourceLabel(), buildAnalyzePayload(), fetchFunnelAnalysis(), LeadFunnelWizard(), splitFullName(), OtpSixSlots(), formatMmSs() (+10 more)
 
-### Community 72 - "سیستم گردش‌کار (Workflow Automation) وبینار"
-Cohesion: 0.05
-Nodes (40): 1. Migration دیتابیس, 1. Scheduler, 1. تاخیر (Delay), 2. Seed داده‌های نمونه (اختیاری), 2. Workflow Executor, 2. نوع اکشن (Action Type), 3. Idempotency, 3. دسترسی به پنل (+32 more)
+### Community 72 - "CoachStudentProgramsResponse"
+Cohesion: 0.24
+Nodes (9): Context, SubscriptionRepository, NewAdminProgramService(), AdminProgramService, CoachStudentProgramsResponse, NutritionTemplateSummary, ProgramAssignRequest, TemplateListResponse (+1 more)
 
 ### Community 73 - "Videos.tsx"
-Cohesion: 0.08
-Nodes (25): FAQSection(), LoadingSpinner(), LoadingSpinnerProps, AccordionContent, AccordionItem, AccordionTrigger, Button, pad() (+17 more)
+Cohesion: 0.07
+Nodes (25): FAQSection(), LoadingSpinner(), LoadingSpinnerProps, AccordionContent, AccordionItem, AccordionTrigger, pad(), TimeLeft (+17 more)
 
 ### Community 74 - "CoachPanelLayout.jsx"
-Cohesion: 0.08
-Nodes (28): AdminPanelLayout(), AdminSidebarNav(), metadata, COACH_PANEL_SEGMENTS, CoachPanelLayout(), CoachPanelShell(), filterNavForApproval(), isCoachPanelPath() (+20 more)
+Cohesion: 0.13
+Nodes (20): COACH_PANEL_SEGMENTS, CoachPanelLayout(), CoachPanelShell(), filterNavForApproval(), isCoachPanelPath(), CoachSidebarNav(), CoachProfileContext, CoachProfileProvider() (+12 more)
 
-### Community 75 - "📚 راهنمای کامل پیاده‌سازی پرداخت آنلاین با زرین‌پال"
-Cohesion: 0.05
-Nodes (39): 1.1 چرخه پرداخت زرین‌پال, 1.2 اجزای اصلی سیستم, 1. معرفی و معماری, 2.1 موارد مورد نیاز, 2.2 ثبت‌نام در ZarinPal, 2. پیش‌نیازها, 3.1 مدل PaymentTransaction, 3.2 فیلدهای User برای پرداخت (+31 more)
+### Community 75 - "BmiCalculatorClient.jsx"
+Cohesion: 0.18
+Nodes (16): BADGE_CLASSES, BmiCalculatorClient(), BmiScaleBar(), SEGMENT_COLORS, segmentOffset(), segmentWidth(), BmiStatusBadge(), HealthStatusCard() (+8 more)
 
-### Community 76 - "Telegram Bot Architecture Documentation"
-Cohesion: 0.05
-Nodes (39): API authentication fails, API Client Usage, 🔌 API Endpoints, API Key Setup, 🏗️ Architecture, 🔐 Authentication, Authentication Flow, Bot API Routes (API Key Auth) (+31 more)
+### Community 76 - "ReminderService"
+Cohesion: 0.18
+Nodes (12): Client, Context, NewPushNotificationService(), firstNameOf(), Context, Time, NewReminderService(), StartReminderScheduler() (+4 more)
 
 ### Community 77 - "ai_nutrition_models.dart"
 Cohesion: 0.05
@@ -1063,11 +909,11 @@ Nodes (18): Context, NewAdminMotivationalQuoteController(), NewMotivationalQuote
 
 ### Community 80 - "coach_profile_screen.dart"
 Cohesion: 0.06
-Nodes (38): ../data/coach_profile_repository.dart, routerProvider, router, coachAchievementsProvider, coachProfileProvider, coachProfileRepositoryProvider, _about, _addAchievement (+30 more)
+Nodes (36): ../data/coach_profile_repository.dart, coachAchievementsProvider, coachProfileProvider, coachProfileRepositoryProvider, _about, _addAchievement, _assetUrl, base (+28 more)
 
-### Community 81 - "AppointmentSchedulingManager.tsx"
-Cohesion: 0.08
-Nodes (30): AppointmentSchedulingManagerProps, AppointmentSlot, MinutePresenceData, SlotPresenceResponse, SlotStats, SlotStatsResponse, SlotUser, LandingContactModal() (+22 more)
+### Community 81 - "foodLog.js"
+Cohesion: 0.18
+Nodes (15): FoodDiaryClient(), dateToDayKey(), DAY_KEYS, extractNutritionTargets(), formatDateFaLong(), formatDateISO(), isSameDay(), isToday() (+7 more)
 
 ### Community 82 - "mysql.go"
 Cohesion: 0.08
@@ -1081,9 +927,9 @@ Nodes (35): Claims, applyExplicitEnvOverrides(), applyLegacyOverrides(), bindEnv
 Cohesion: 0.11
 Nodes (19): Context, NewAdminPoseBankController(), NewPoseBankController(), Model, Context, DB, NewPoseBankRepository(), Context (+11 more)
 
-### Community 85 - "server.go"
-Cohesion: 0.11
-Nodes (25): Cmd, Flusher, cleanupHLSSegments(), DefaultHLSEncodingConfig(), GetGlobalStreamServer(), GetHLSGenerationProgress(), getProgressFromSegments(), RWMutex (+17 more)
+### Community 85 - "FunnelHero.jsx"
+Cohesion: 0.20
+Nodes (11): DelayedFunnelCta(), FunnelHero(), HEADLINE_SEGMENTS, TRUST, TypedSegments(), Typewriter(), HERO_COPY, humanTypingDelay() (+3 more)
 
 ### Community 86 - "app_router.dart"
 Cohesion: 0.05
@@ -1094,8 +940,8 @@ Cohesion: 0.05
 Nodes (36): تنظیمات سایت (Site Settings), جزئیات شاگرد, جزئیات پلن, جزئیات کاربر, داده فعلی (mock), داشبورد ادمین, رفتار UI, رفتار UI (+28 more)
 
 ### Community 88 - "UserDashboardClient.jsx"
-Cohesion: 0.09
-Nodes (32): BADGE_CLASSES, BmiCalculatorClient(), BmiScaleBar(), SEGMENT_COLORS, segmentOffset(), segmentWidth(), BMI_BADGE_CLASS, chartConfig (+24 more)
+Cohesion: 0.05
+Nodes (55): BMI_BADGE_CLASS, chartConfig, CheckinTasksCard(), DASHBOARD_SLEEP_OPTIONS, DAY_LABELS, dueLabel(), formatFa(), jalaliLong() (+47 more)
 
 ### Community 89 - "MeDayPlanDTO"
 Cohesion: 0.13
@@ -1105,61 +951,61 @@ Nodes (32): Model, Model, buildFullPlanByDay(), dayKeyToNum(), exerciseDTOToProg
 Cohesion: 0.12
 Nodes (25): IsValidIranNationalID(), Fallback(), Normalize(), coachProfileSubmissionMissingFields(), CoachAchievement, CoachProfile, CoachProfileRepository, Context (+17 more)
 
-### Community 91 - "LIve/src/pages/AdminDashboard.tsx"
-Cohesion: 0.07
-Nodes (27): PillNav(), Progress, BehaviorFunnelResponse, COLORS, DashboardStats, DATE_FILTER_OPTIONS, DayChangeBadge(), FilterType (+19 more)
+### Community 91 - "FunnelLogoLayer.jsx"
+Cohesion: 0.15
+Nodes (8): faNumber, FinalAnalyzeLoader(), stepState(), FunnelLogo(), FunnelLogoLayer(), LogoCtx, SPRING, FunnelProgressRing()
 
 ### Community 92 - "devDependencies"
 Cohesion: 0.06
 Nodes (35): devDependencies, autoprefixer, eslint, @eslint/js, eslint-plugin-react-hooks, eslint-plugin-react-refresh, globals, lovable-tagger (+27 more)
 
 ### Community 93 - "CoachDashboardClient.jsx"
-Cohesion: 0.09
-Nodes (28): CURRENT_YEAR, AiUsageCard(), AttentionCard(), chartConfig, CoachDashboardClient(), deltaBadge(), formatFa(), formatToman() (+20 more)
+Cohesion: 0.17
+Nodes (17): AttentionCard(), chartConfig, CoachDashboardClient(), deltaBadge(), formatFa(), formatToman(), jalaliLong(), jalaliShort() (+9 more)
 
-### Community 94 - "پنل مدیریتی وبینار - راهنمای استفاده"
-Cohesion: 0.06
-Nodes (34): 1. دسترسی به پنل, 2. مشاهده آمار, 3. دریافت خروجی اکسل, 📡 API Endpoints, JWT Token, Protected Endpoints (نیاز به Authentication), Public Endpoints, ✅ آمار کلی (+26 more)
+### Community 94 - "OrderDetailsPanel.js"
+Cohesion: 0.26
+Nodes (8): calcTotals(), formatDateTimeFa(), formatToman(), statusMeta(), OrderCardLink(), paymentStatusBadgeClass(), OrderDetailsPanel(), paymentStatusBadgeClass()
 
-### Community 95 - "📋 توضیح کامل سیستم مدیریت تنظیمات"
-Cohesion: 0.06
-Nodes (34): 1. **Authentication**, 1. **Restart لازم است**, 1. **تغییر تنظیمات (Admin Panel)**, 1. **ذخیره‌سازی (Storage)**, 1. **زمان‌بندی وبینار (Webinar Schedule)**, 2. **Fallback به Config File**, 2. **Melipayamak (SMS Service)**, 2. **Restart سرور** (+26 more)
+### Community 95 - "AuthController"
+Cohesion: 0.28
+Nodes (3): Context, User, AuthController
 
-### Community 96 - "21day/src/pages/AdminDashboard.tsx"
-Cohesion: 0.10
-Nodes (26): FitinoBrandMark(), FitinoBrandMarkProps, Input, Table, TableBody, TableCaption, TableCell, TableFooter (+18 more)
+### Community 96 - "AdminDashboard.tsx"
+Cohesion: 0.08
+Nodes (30): queryClient, FitinoBrandMark(), FitinoBrandMarkProps, Input, Toaster(), ToasterProps, Table, TableBody (+22 more)
 
 ### Community 97 - "auth_controller.go"
-Cohesion: 0.10
-Nodes (20): Context, registerRequest, Time, User, NewAuthController(), AuthController, authResponse, authUserResponse (+12 more)
+Cohesion: 0.12
+Nodes (17): Time, NewAuthController(), authResponse, authUserResponse, changePasswordRequest, checkPhoneRequest, checkPhoneResponse, forgotSendOTPRequest (+9 more)
 
 ### Community 98 - "admin_template_service.go"
 Cohesion: 0.15
 Nodes (20): Context, DB, mapNutritionMeals(), maxDayFromItems(), NewAdminTemplateService(), nutritionTemplateToDetail(), workoutTemplateToDetail(), AdminNutritionMealDTO (+12 more)
 
-### Community 99 - "landing.c"
-Cohesion: 0.12
-Nodes (33): button, cardNumber, function, keyframes, a(), blink(), calculateNextInstallmentDate(), changeSlide() (+25 more)
+### Community 99 - "add_food_sheet.dart"
+Cohesion: 0.14
+Nodes (14): ../application/food_diary_controller.dart, ../data/food_models.dart, _addFood, AddFoodSheet, _AddFoodSheetState, _addManual, build, _busy (+6 more)
 
 ### Community 100 - "coach_dashboard_repository.dart"
-Cohesion: 0.06
-Nodes (32): class CoachDashboardDataProvider, class CoachDashboardRepositoryProvider, class DashboardDataProvider, coach_dashboard_models.dart, coachDashboardRepositoryProvider, ../data/dashboard_models.dart, ../data/dashboard_repository.dart, CoachDashboardDataProvider (+24 more)
+Cohesion: 0.10
+Nodes (20): class CoachDashboardDataProvider, class CoachDashboardRepositoryProvider, coach_dashboard_models.dart, coachDashboardRepositoryProvider, CoachDashboardDataProvider, CoachDashboardRepositoryProvider, create, debugGetCreateSourceHash (+12 more)
 
 ### Community 101 - "coach_nutrition_editor_screen.dart"
 Cohesion: 0.06
 Nodes (33): ../../coach_catalog/presentation/catalog_pickers.dart, coachStudentsRepositoryProvider, ProgramTemplate, build, _busy, _calories, CoachNutritionEditorScreen, _CoachNutritionEditorScreenState (+25 more)
 
-### Community 102 - "processSmartYesterdayCampaignsInternal"
-Cohesion: 0.13
-Nodes (30): FarazSMSConfig, DB, Location, processPaymentSMSMessages(), alreadySent(), ensureIdentityForUser(), getDefaultScheduledMessages(), getSystemConfigValue() (+22 more)
+### Community 102 - "FromUser"
+Cohesion: 0.25
+Nodes (13): AgeFromBirthDate(), BMI(), BMIStatusFromValue(), BMIStatusFromValues(), FromUser(), Time, User, T (+5 more)
 
 ### Community 103 - "dependencies"
 Cohesion: 0.06
-Nodes (33): dependencies, class-variance-authority, date-fns, @radix-ui/react-avatar, @radix-ui/react-context-menu, @radix-ui/react-dialog, @radix-ui/react-dropdown-menu, @radix-ui/react-menubar (+25 more)
+Nodes (33): dependencies, class-variance-authority, clsx, embla-carousel-react, @radix-ui/react-aspect-ratio, @radix-ui/react-checkbox, @radix-ui/react-menubar, @radix-ui/react-radio-group (+25 more)
 
 ### Community 104 - ".Chat"
-Cohesion: 0.10
-Nodes (24): Persona, Context, NewAIChatController(), aiDevMockReply(), buildFitinoSystemPrompt(), Client, Config, Context (+16 more)
+Cohesion: 0.13
+Nodes (20): Context, NewAIChatController(), aiDevMockReply(), buildFitinoSystemPrompt(), Client, Context, Mutex, Time (+12 more)
 
 ### Community 105 - "GetUserID"
 Cohesion: 0.15
@@ -1173,17 +1019,17 @@ Nodes (12): Model, Model, Context, DB, NewTemplateRepository(), NutritionTemplat
 Cohesion: 0.13
 Nodes (21): Model, RawMessage, Context, DB, NewSiteSettingsRepository(), Context, NewSiteSettingsService(), rowToDTO() (+13 more)
 
-### Community 108 - "SetupRoutes"
-Cohesion: 0.14
-Nodes (28): ChatRequest, DebugController, GetChatMessages(), Context, DB, PostChatMessage(), ResetChatMessages(), Context (+20 more)
+### Community 108 - "FunnelAIAnalysisRepository"
+Cohesion: 0.23
+Nodes (7): Model, Time, Context, DB, NewFunnelAIAnalysisRepository(), FunnelAIAnalysis, FunnelAIAnalysisRepository
 
-### Community 109 - "dependencies"
-Cohesion: 0.06
-Nodes (33): date-fns-jalali, jalali-moment, jalaliday, dependencies, clsx, date-fns, date-fns-jalali, jalali-moment (+25 more)
+### Community 109 - "PostWorkoutSurveyModal.jsx"
+Cohesion: 0.22
+Nodes (11): FreeTextInput(), itemToMeal(), VoiceFoodLogModal(), DURATION_OPTIONS, EFFORT_OPTIONS, FEELING_OPTIONS, PAIN_OPTIONS, PostWorkoutSurveyModal() (+3 more)
 
-### Community 110 - "devDependencies"
-Cohesion: 0.06
-Nodes (33): devDependencies, autoprefixer, eslint, @eslint/js, eslint-plugin-react-hooks, eslint-plugin-react-refresh, globals, postcss (+25 more)
+### Community 110 - "PrepareDatabase"
+Cohesion: 0.26
+Nodes (10): DB, MaybeSeedDevData(), PrepareDatabase(), RunMigrations(), SeedCatalogs(), SeedDefaultAdmin(), AllModels(), EnsureSiteContact() (+2 more)
 
 ### Community 111 - "tools_math.dart"
 Cohesion: 0.06
@@ -1191,11 +1037,11 @@ Nodes (32): ActivityLevel, activityLevels, adjustment, base, bmi, bmiCategories,
 
 ### Community 112 - "orders_screen.dart"
 Cohesion: 0.07
-Nodes (32): build, coachName, createdAt, detail, _dio, discountPercent, fromJson, id (+24 more)
+Nodes (31): build, coachName, createdAt, detail, _dio, discountPercent, fromJson, id (+23 more)
 
 ### Community 113 - ".Get"
-Cohesion: 0.12
-Nodes (27): DB, MaybeSeedDevData(), PrepareDatabase(), RunMigrations(), SeedCatalogs(), SeedDefaultAdmin(), Context, transcribeWithShenava() (+19 more)
+Cohesion: 0.19
+Nodes (17): Context, transcribeWithShenava(), containsPersian(), escapeAPIKeyForPath(), normalizeKavenegarAPIKey(), persianKavenegarError(), sanitizeLookupName(), SendInactivityReminderSMS() (+9 more)
 
 ### Community 114 - "coach_plan_form_screen.dart"
 Cohesion: 0.07
@@ -1205,9 +1051,9 @@ Nodes (31): coach_plans_screen.dart, coachPlanDetailProvider, coachPlansReposito
 Cohesion: 0.06
 Nodes (31): فاز A — قلاب‌های عادت روزانه (بیشترین اثر), فاز B — تکمیل هویت و کیفیت داده, فاز C — پایش فیزیکی, فاز D — تعامل عمیق, مقیاس سختی پیشنهادی (۱–۵), موجودی فعالیت‌ها و پروفایل برای سیستم مدال‌دهی فیتینو, ۱) تکمیل پروفایل دانشجو, ۱.۱ گیت دسترسی پنل (حداقل اجباری) (+23 more)
 
-### Community 116 - "app_text_field.dart"
-Cohesion: 0.06
-Nodes (30): AppTextField, build, controller, enabled, hint, keyboardType, label, obscure (+22 more)
+### Community 116 - "List"
+Cohesion: 0.04
+Nodes (48): AnimationController, coach_dashboard_repository.dart, ../../coach_tracking/data/coach_tracking_repository.dart, dart:ui, List, active, build, _c (+40 more)
 
 ### Community 117 - "فیتینو (Fitino) — فایل بک‌آنالیز پروژه"
 Cohesion: 0.06
@@ -1218,20 +1064,20 @@ Cohesion: 0.12
 Nodes (10): Model, Time, Model, Time, Context, DB, NewProgramRepository(), NutritionProgram (+2 more)
 
 ### Community 119 - "AuthService"
-Cohesion: 0.18
-Nodes (11): NormalizePhone(), ToEnglish(), generateOTPCode(), CoachProfileRepository, Context, Duration, User, NewAuthService() (+3 more)
+Cohesion: 0.26
+Nodes (6): NormalizePhone(), ToEnglish(), Context, User, AuthResult, AuthService
 
-### Community 120 - ".CreateLog"
-Cohesion: 0.13
-Nodes (22): Context, DailyFoodLog, DB, Time, NewDailyFoodLogRepository(), dailyFoodLogToDTO(), formatFoodLogDate(), Context (+14 more)
+### Community 120 - "daily_food_log_service.go"
+Cohesion: 0.19
+Nodes (16): dailyFoodLogToDTO(), formatFoodLogDate(), Context, DailyFoodLog, Food, FoodRepository, Time, NewDailyFoodLogService() (+8 more)
 
 ### Community 121 - "[slug]/page.js"
 Cohesion: 0.12
 Nodes (19): CoachLandingJsonLd(), generateMetadata(), generateStaticParams(), PublicCoachLandingPage(), LeadFunnelWizard, metadata, API_BASE, CoachesPage() (+11 more)
 
-### Community 122 - "📋 مراحل تست (حتماً انجام دهید)"
-Cohesion: 0.06
-Nodes (30): 1. Backend Model (`backend/models/admin_user.go`), 2. Debug Endpoint (`backend/controllers/debug_permissions.go`), 3. Routes (`backend/routes/routes.go`), 📊 SQL Queries مفید, اضافه کردن دسترسی به یک کاربر, 🎯 انتظار نهایی, 🐛 اگر مشکل ادامه داشت, بررسی تمام کاربران و دسترسی‌هایشان (+22 more)
+### Community 122 - "FunnelSuccessClient.jsx"
+Cohesion: 0.28
+Nodes (10): LogoAnchor(), FunnelCta(), FunnelGlass(), FunnelProgressBar(), FunnelShell(), FunnelStickyBar(), PAY_RESULT_COPY, SUCCESS_COPY (+2 more)
 
 ### Community 123 - "subscription_models.dart"
 Cohesion: 0.06
@@ -1241,13 +1087,13 @@ Nodes (30): aboutCoach, achievements, avatarUrl, bio, coachId, coverImageUrl, di
 Cohesion: 0.07
 Nodes (29): تب‌ها, جدول کاربران, فلو A — بازدیدکننده → ثبت‌نام, فلو B — کاربر برگشتی (قبلاً ثبت‌نام کرده), فلو C — تماشا و پیشرفت در آکادمی, فلو D — باز کردن جلسه بعدی با آزمون, فلو E — خروج کاربر, فلو F — اتمام پنجره ۷۲ ساعته (+21 more)
 
-### Community 125 - "21day/src/hooks/use-toast.ts"
+### Community 125 - "hooks/use-toast.ts"
 Cohesion: 0.11
-Nodes (25): NEXT_STEPS, RegistrationForm(), Toast, ToastAction, ToastActionElement, ToastClose, ToastDescription, ToastProps (+17 more)
+Nodes (26): NEXT_STEPS, RegistrationForm(), Toast, ToastAction, ToastActionElement, ToastClose, ToastDescription, ToastProps (+18 more)
 
 ### Community 126 - "usda.go"
-Cohesion: 0.15
-Nodes (26): applyMatch(), Context, DB, markUnmatched(), runEnrichment(), main(), csvHeaderIndex(), downloadFile() (+18 more)
+Cohesion: 0.22
+Nodes (19): csvHeaderIndex(), downloadFile(), ensureExtracted(), extractZipFile(), firstWord(), introducesUnwantedForm(), isDenylistedCategory(), loadFoodDescriptions() (+11 more)
 
 ### Community 127 - "FeedbackService"
 Cohesion: 0.10
@@ -1257,17 +1103,17 @@ Nodes (19): Context, NewAdminFeedbackController(), Context, NewFeedbackControlle
 Cohesion: 0.08
 Nodes (29): CoachRecentStudent, CoachStats, _, class, CoachRecentStudentPatterns, CoachStatsPatterns, hashCode, identical (+21 more)
 
-### Community 129 - "راهنمای رفع مشکل لگ و پرش استریم"
-Cohesion: 0.07
-Nodes (29): 1. بهبود تنظیمات HLS.js در Frontend, 1. تغییر در `src/components/VideoPlayer.tsx`:, 2. بهبود Error Recovery:, 2. بهبود Error Recovery در HLS.js, 3. اضافه کردن Buffer Monitor:, 3. بهبود Buffer Monitoring, 4. بهبود Stalled Recovery:, 4. بهبود تنظیمات FFmpeg در Backend (+21 more)
+### Community 129 - "AdminPanelLayout.jsx"
+Cohesion: 0.26
+Nodes (7): AdminPanelLayout(), AdminSidebarNav(), metadata, adminBrand, adminHeader, adminNav, adminNavGroups
 
-### Community 130 - "بهینه‌سازی HLS برای موبایل - مستندات تغییرات"
-Cohesion: 0.07
-Nodes (29): 1. CPU Usage در Server, 1. زمان شروع استریم, 1. قبل از بهینه‌سازی, 2. بعد از بهینه‌سازی, 2. روانی پخش روی موبایل‌های ضعیف, 2. کیفیت ویدیو, 3. حالت "فقط صدا بدون تصویر", 3. سازگاری (+21 more)
+### Community 130 - "selectedDiaryDateProvider"
+Cohesion: 0.20
+Nodes (11): _, addFromFood, addFromFoodByGrams, dailyDiary, dailyDiaryProvider, foodDiaryActionsProvider, FoodDiaryActions, SelectedDiaryDate (+3 more)
 
 ### Community 131 - "single_meal_controller.dart"
-Cohesion: 0.07
-Nodes (29): ThemeModeNotifier, appendFreeText, backToInput, build, canContinue, copyWith, error, freeText (+21 more)
+Cohesion: 0.08
+Nodes (24): appendFreeText, backToInput, build, canContinue, copyWith, error, freeText, goal (+16 more)
 
 ### Community 132 - "contact_screen.dart"
 Cohesion: 0.08
@@ -1278,28 +1124,28 @@ Cohesion: 0.19
 Nodes (7): defaultAchievementRules(), Context, DB, NewAchievementService(), AchievementDTO, AchievementService, AchievementSummaryDTO
 
 ### Community 134 - "WorkoutHistoryService"
-Cohesion: 0.15
-Nodes (19): buildPersonalRecords(), buildSetLogs(), Context, DB, PersonalRecord, SubscriptionRepository, Time, NewWorkoutHistoryService() (+11 more)
+Cohesion: 0.13
+Nodes (22): Model, Time, buildPersonalRecords(), buildSetLogs(), Context, DB, PersonalRecord, SubscriptionRepository (+14 more)
 
-### Community 135 - "ConfigController"
-Cohesion: 0.17
-Nodes (8): ConfigController, H, GetWebinarConfigFromDB(), Config, Context, DB, NewConfigController(), WebinarConfig
+### Community 135 - "DailyFoodLogRepository"
+Cohesion: 0.31
+Nodes (6): Context, DailyFoodLog, DB, Time, NewDailyFoodLogRepository(), DailyFoodLogRepository
 
-### Community 136 - "خلاصه تغییرات سیستم مدیریت کاربران ادمین"
-Cohesion: 0.07
-Nodes (28): 1. صفحه پروفایل کاربری, 1. ❌ مشکل: Fallback نادرست در `usePermissions`, 2. بهبود سیستم دسترسی‌ها, 2. ❌ مشکل: نبود صفحه پروفایل کاربری, 3. امنیت بهبود یافته, 3. ❌ مشکل: دسترسی‌ها ذخیره نمی‌شدند, `src/components/UserProfile.tsx` (جدید), `src/hooks/usePermissions.ts` (+20 more)
+### Community 136 - "runEnrichment"
+Cohesion: 0.42
+Nodes (7): applyMatch(), Context, DB, markUnmatched(), runEnrichment(), main(), enrichOptions
 
-### Community 137 - "AdvancedWorkflowExecutor"
-Cohesion: 0.18
-Nodes (9): ConditionRule, DB, Time, User, Workflow, WorkflowStep, NewAdvancedWorkflowExecutor(), stringPtr() (+1 more)
+### Community 137 - "AnalyzeBodyPhoto"
+Cohesion: 0.48
+Nodes (6): BodyPhotoAnalysisSchema, ValidateBodyPhotoAnalysis(), AnalyzeBodyPhoto(), BodyPhotoAnalysisJSONSchema(), Context, mockBodyPhotoAnalysis()
 
-### Community 138 - "Streaming Mobile Optimization Results"
-Cohesion: 0.07
-Nodes (28): 1. Bitrate Control (2000k target, 2400k max), 2. Resolution Scaling (max 1280x720), 3. HLS Segment Duration (2 seconds), 4. GOP Size (50 frames = 2 seconds), 5. Profile/Level (main@3.1), 6. Event Handlers (stalled, waiting), Android (قدیمی / ضعیف):, Backend Logs: (+20 more)
+### Community 138 - "NewAuthService"
+Cohesion: 0.29
+Nodes (5): generateOTPCode(), CoachProfileRepository, Duration, NewAuthService(), OTPCooldownError
 
-### Community 139 - "Streaming Runtime Issues and Solutions"
-Cohesion: 0.07
-Nodes (28): 1. Multi-bitrate HLS:, 1. Multi-bitrate HLS (ABR), 1. Pause ناگهانی بعد از چند ثانیه, 2. hls.js برای Android:, 2. hls.js برای Android با ABR, 2. صفحه سیاه, 3. Recovery Mechanisms, 3. حالت "فقط صدا" (+20 more)
+### Community 139 - "CoachAchievementsSection.jsx"
+Cohesion: 0.38
+Nodes (6): ACHIEVEMENT_TYPE_META, AchievementCard(), CoachAchievementsSection(), getTypeMeta(), sortAchievements(), TYPE_ORDER
 
 ### Community 140 - "student_shell.dart"
 Cohesion: 0.07
@@ -1309,9 +1155,9 @@ Nodes (27): ../ai_nutrition/presentation/daily_plan_screen.dart, ../ai_nutrition
 Cohesion: 0.17
 Nodes (15): CoachProfileRepository, Context, Time, NewAdminPlanService(), planToDetail(), planToItem(), Context, NewCoachPlanService() (+7 more)
 
-### Community 142 - "BotAPIClient"
-Cohesion: 0.12
-Nodes (16): TelegramWebhookControllerV2, Context, DB, NewTelegramWebhookControllerV2(), SetTelegramWebhookControllerV2(), TelegramWebhookHandlerV2(), Client, NewBotAPIClient() (+8 more)
+### Community 142 - "Persona"
+Cohesion: 0.40
+Nodes (3): Persona, IsValidPersona(), ParsePersona()
 
 ### Community 143 - "lazy-page.jsx"
 Cohesion: 0.07
@@ -1337,21 +1183,13 @@ Nodes (26): دسته‌بندی منبع فیچرها (از یادداشت‌ه�
 Cohesion: 0.09
 Nodes (22): FlPluginRegistry, FlView, GApplication, gboolean, gchar, GObject, GtkApplication, fl_register_plugins() (+14 more)
 
-### Community 149 - "PaymentTransaction"
-Cohesion: 0.10
-Nodes (16): DeletedAt, Time, User, AdminUser, DeletedAt, LandingActivity, Time, User (+8 more)
+### Community 149 - "jalali.js"
+Cohesion: 0.67
+Nodes (4): JalaliDateField(), getJalaliMonthLength(), getJalaliYearOptions(), JALALI_MONTHS
 
-### Community 150 - "Frontend Components"
-Cohesion: 0.07
-Nodes (26): 10. ✅ admin_stats.go, 1. ✅ PaymentsList.tsx, 2. ✅ AdminPanel.tsx, 3. ✅ AdminDashboard.tsx, 4. ✅ SMSMessageManager.tsx, 5. ✅ AvanakMessageManager.tsx, 6. ✅ AffiliatesManager.tsx, 7. ✅ LicenseManager.tsx (+18 more)
-
-### Community 151 - "معماری مدیریت لیدها (Lead Management Architecture)"
-Cohesion: 0.07
-Nodes (26): 1. Lead (لید), 1. LeadManagement.tsx, 1. ایجاد خودکار لید, 2. CallLog (لاگ تماس), 2. MyLeads.tsx, 2. تماس با لید, 3. CallLogModal.tsx, 3. LeadAssignmentRule (قوانین تخصیص خودکار) (+18 more)
-
-### Community 152 - "RegisterPage.tsx"
-Cohesion: 0.09
-Nodes (18): ActionDock(), ActionDockProps, FitinoBrandMark(), FitinoBrandMarkProps, FitinoPageShellProps, FormControl, FormDescription, FormFieldContext (+10 more)
+### Community 150 - "TranscribeAudio"
+Cohesion: 0.60
+Nodes (4): Context, isShenavaUnavailable(), mockTranscript(), TranscribeAudio()
 
 ### Community 153 - "auth_models.dart"
 Cohesion: 0.09
@@ -1361,25 +1199,9 @@ Nodes (25): AuthResponse, AuthUser, AuthUser get, _, AuthResponsePatterns, AuthU
 Cohesion: 0.18
 Nodes (25): buildNutritionTemplateMeals(), buildWorkoutTemplateItems(), Context, DB, FoodRepository, isAMRAPSetType(), mapCreatorID(), mapExerciseSystemType() (+17 more)
 
-### Community 155 - "TriggeredSMSMessageController"
-Cohesion: 0.14
-Nodes (11): LicenseController, TriggeredSMSMessageController, Context, DB, isValidLicenseFormat(), NewLicenseController(), extractValueFromPath(), Context (+3 more)
-
-### Community 156 - "PaymentSMSMessageController"
-Cohesion: 0.14
-Nodes (12): PaymentSMSMessageController, Context, DB, NewPaymentSMSMessageController(), DeletedAt, LandingActivity, Time, LicenseSMSMessage (+4 more)
-
 ### Community 157 - "dashboard_models.dart"
 Cohesion: 0.08
 Nodes (25): DashboardSummary, _, class, DashboardSummaryPatterns, date, exerciseName, hashCode, identical (+17 more)
-
-### Community 158 - "مراحل Deploy"
-Cohesion: 0.08
-Nodes (25): 10. بررسی لاگ‌ها, 1. اتصال به سرور, 2. رفتن به دایرکتوری Backend, 3. Pull کردن کد جدید (اگر از Git استفاده می‌کنید), 4. Build کردن Application, 5. بررسی موفقیت Build, 6. Backup گرفتن از Binary قدیمی, 7. متوقف کردن Service فعلی (+17 more)
-
-### Community 159 - "🔧 رفع مشکل زمان شروع استریم و شروع از وسط ویدیو"
-Cohesion: 0.08
-Nodes (25): `backend/cmd/main.go`, `backend/streaming/server.go`, 🔍 بررسی فنی, بعد از رفع مشکل:, 🧪 تست, تست ۱: زمان شروع دقیق, تست ۲: شروع از ابتدا, تست ۳: جلوگیری از تداخل (+17 more)
 
 ### Community 160 - "coach_plans_repository.dart"
 Cohesion: 0.08
@@ -1390,48 +1212,24 @@ Cohesion: 0.08
 Nodes (24): compilerOptions, allowImportingTsExtensions, baseUrl, isolatedModules, jsx, lib, module, moduleDetection (+16 more)
 
 ### Community 162 - "@riverpod"
-Cohesion: 0.08
-Nodes (24): @riverpod, class MyProgramsProvider, class ProgramDetailProvider, dashboardDataProvider, ../data/programs_repository.dart, call, create, debugGetCreateSourceHash (+16 more)
+Cohesion: 0.07
+Nodes (30): @riverpod, class MyProgramsProvider, class ProgramDetailProvider, dashboardDataProvider, ../data/programs_repository.dart, call, create, debugGetCreateSourceHash (+22 more)
 
 ### Community 163 - "NewServer"
-Cohesion: 0.12
-Nodes (19): Server, DB, Engine, main(), maybeSeedDevData(), NewServer(), runMigrations(), seedDefaultAdmin() (+11 more)
+Cohesion: 0.15
+Nodes (16): Server, DB, Engine, main(), maybeSeedDevData(), NewServer(), runMigrations(), seedDefaultAdmin() (+8 more)
 
 ### Community 164 - "AdminExerciseService"
 Cohesion: 0.21
 Nodes (13): coachCanAccessExercise(), coachExerciseFilter(), decodeStringSlice(), encodeStringSlice(), exerciseToItem(), Context, NewAdminExerciseService(), AdminExerciseCreateRequest (+5 more)
 
-### Community 165 - "📅 پیاده‌سازی سیستم تقویم شمسی کامل"
-Cohesion: 0.08
-Nodes (24): 1. PaymentsList.tsx, 1. استفاده در فرم:, 1. ماژول Utility, 2. AvanakMessageManager.tsx, 2. نمایش در جدول:, 2. کامپوننت PersianDatePicker, 3. ترکیب DatePicker + TimePicker:, 3. کامپوننت PersianTimePicker (+16 more)
-
-### Community 167 - "compilerOptions"
-Cohesion: 0.08
-Nodes (24): compilerOptions, allowImportingTsExtensions, baseUrl, isolatedModules, jsx, lib, module, moduleDetection (+16 more)
-
-### Community 168 - "✅ تضمین شروع روزانه استریم از ابتدا"
-Cohesion: 0.08
-Nodes (24): 🔍 بررسی فنی, ✅ تضمین شروع روزانه استریم از ابتدا, 📝 خلاصه تضمین‌ها, روز ۱ (دوشنبه):, روز ۲ (سه‌شنبه):, روز ۳ (چهارشنبه):, سناریو ۱: استریم دیروز تمام شد ✅, سناریو ۲: استریم دیروز هنوز در حال اجرا است (غیرعادی) ✅ (+16 more)
-
 ### Community 169 - "tracking_models.dart"
-Cohesion: 0.08
-Nodes (24): alerts, date, days, frequencyDays, fromJson, id, label, lastWeightKg (+16 more)
+Cohesion: 0.06
+Nodes (35): Exception, int?, Map, ApiException, fromDio, key, message, _messages (+27 more)
 
 ### Community 170 - "سایت عمومی (`(site)`)"
 Cohesion: 0.08
 Nodes (23): رفتار کلی, سایت عمومی (`(site)`), سبد خرید (Redux + UI), سکشن برنامه‌ها (ProgramsSection), سکشن درباره و تماس (AboutSection, ContactSection, Footer, Navbar, Hero), سکشن رکوردها و آمار (RecordsSection), صفحات احراز هویت (`/auth/*`), صفحه ثبت‌نام (+15 more)
-
-### Community 171 - "Android Low-End Device Fix and Play() Interrupted Error Resolution"
-Cohesion: 0.08
-Nodes (23): 1. Player State Machine, 1. خطای "The play() request was interrupted by a new load request", 2. safePlayVideo() Function, 2. مشکل روی Android ضعیف: قطع و وصل بعد از چند دقیقه, 3. Low-End Android Detection, 4. Low-End Android hls.js Config, 5. بهبود Recovery Mechanisms, 6. جلوگیری از Double-Init (+15 more)
-
-### Community 172 - "راهنمای دیباگ مشکل دسترسی‌ها"
-Cohesion: 0.08
-Nodes (23): 1. Backend (`backend/cmd/main.go`), 2. Backend (`backend/controllers/admin_users.go`), 3. Frontend (`src/hooks/usePermissions.ts`), اضافه کردن دسترسی به کاربر, بررسی تمام دسترسی‌های یک کاربر, تغییرات اعمال شده, تماس با پشتیبانی, دستورات مفید (+15 more)
-
-### Community 173 - "🔄 سیستم حلقه‌ای و دوره‌ای وبینار"
-Cohesion: 0.08
-Nodes (23): `startStreamingForToday(db, cfg)`, `updateWebinarSchedule(db, cfg)`, ✅ تغییرات اعمال شده, ⚙️ تنظیمات در config.yaml, 🔧 توابع جدید اضافه شده, 📝 خلاصه, 🚀 راه‌اندازی, 🔄 سیستم حلقه‌ای و دوره‌ای وبینار (+15 more)
 
 ### Community 174 - "coach_catalog_repository.dart"
 Cohesion: 0.08
@@ -1458,36 +1256,28 @@ Cohesion: 0.18
 Nodes (15): Model, Time, Context, DB, SubscriptionRepository, Time, NewCheckInService(), startOfDay() (+7 more)
 
 ### Community 180 - "PaymentService"
-Cohesion: 0.21
-Nodes (9): generateFunnelTrackingCode(), Context, DB, SubscriptionRepository, NewPaymentService(), NewPaymentServiceWithFunnel(), PaymentService, preparedOrder (+1 more)
+Cohesion: 0.23
+Nodes (8): Context, DB, SubscriptionRepository, NewPaymentService(), NewPaymentServiceWithFunnel(), PaymentService, preparedOrder, ZarinpalPaymentResponse
 
 ### Community 181 - "package:dio/dio.dart"
 Cohesion: 0.09
 Nodes (21): dart:developer, ../../features/auth/application/auth_controller.dart, Interceptor, AuthInterceptor, _handlingExpiry, onError, onRequest, _ref (+13 more)
-
-### Community 182 - "VisualWorkflowExecutor"
-Cohesion: 0.24
-Nodes (7): DB, Time, User, NewVisualWorkflowExecutor(), NodeExecution, WorkflowNode, VisualWorkflowExecutor
 
 ### Community 183 - "FunnelLead"
 Cohesion: 0.17
 Nodes (8): Model, Time, Context, DB, NewFunnelLeadRepository(), FunnelLead, FunnelLeadRepository, FunnelStats
 
 ### Community 184 - "ProgressReportService"
-Cohesion: 0.21
-Nodes (11): Model, Time, Model, Time, computeMostImprovedExercise(), Context, Time, StartScheduler() (+3 more)
+Cohesion: 0.19
+Nodes (14): Model, Time, computeMostImprovedExercise(), Context, DB, SubscriptionRepository, Time, NewProgressReportService() (+6 more)
 
 ### Community 185 - "RunDev"
-Cohesion: 0.13
-Nodes (18): AllModels(), fixtureFileName(), FixtureNamesForAllModels(), fixturesSubFS(), DB, registerDevSpecs(), Context, DB (+10 more)
+Cohesion: 0.15
+Nodes (17): fixtureFileName(), FixtureNamesForAllModels(), fixturesSubFS(), DB, registerDevSpecs(), Context, DB, logSeedResult() (+9 more)
 
 ### Community 186 - "profile_repository.dart"
 Cohesion: 0.10
 Nodes (21): class MyProfileProvider, class ProfileRepositoryProvider, create, debugGetCreateSourceHash, extends, MyProfileProvider, overrideWithValue, ProfileRepositoryProvider (+13 more)
-
-### Community 187 - "SMSMessageController"
-Cohesion: 0.16
-Nodes (7): SMSMessageController, getDateRangeFromRegistrationRange(), Context, DB, Location, Time, NewSMSMessageController()
 
 ### Community 188 - "frontend/components.json"
 Cohesion: 0.09
@@ -1495,19 +1285,15 @@ Nodes (21): aliases, components, hooks, lib, ui, utils, iconLibrary, menuAccent 
 
 ### Community 189 - "providers.js"
 Cohesion: 0.12
-Nodes (11): metadata, Providers(), COACH_PANEL_SEGMENTS, CoachLegacyUrlRedirect(), ThemeProvider(), DirectionProvider(), Toaster(), TooltipProvider() (+3 more)
-
-### Community 190 - "Webinar"
-Cohesion: 0.24
-Nodes (9): Time, DB, Time, User, Workflow, WorkflowStep, NewWorkflowExecutor(), Webinar (+1 more)
+Nodes (10): metadata, Providers(), COACH_PANEL_SEGMENTS, CoachLegacyUrlRedirect(), ThemeProvider(), DirectionProvider(), Toaster(), exampleSlice (+2 more)
 
 ### Community 191 - "auth_repository.dart"
-Cohesion: 0.10
-Nodes (20): auth_models.dart, AuthRepositoryProvider, create, debugGetCreateSourceHash, overrideWithValue, AuthRepository, checkPhone, authRepositoryProvider (+12 more)
+Cohesion: 0.11
+Nodes (18): auth_models.dart, AuthRepositoryProvider, create, debugGetCreateSourceHash, overrideWithValue, checkPhone, _dio, forgotSendOtp (+10 more)
 
-### Community 192 - "CoachSessionRepository"
-Cohesion: 0.19
-Nodes (9): Model, Time, Context, DB, Time, NewCoachSessionRepository(), CoachReview, CoachSession (+1 more)
+### Community 192 - "CoachSessionService"
+Cohesion: 0.05
+Nodes (43): Context, NewCoachSessionController(), NewMeSessionController(), writeSessionError(), Model, Time, Model, Context (+35 more)
 
 ### Community 193 - "ExerciseRepository"
 Cohesion: 0.22
@@ -1521,18 +1307,6 @@ Nodes (19): foodExternalID(), Context, DB, Food, ImportFoodsCSV(), mapCSVFoodHea
 Cohesion: 0.15
 Nodes (16): decodeInstructionStepsJSON(), enrichWorkoutPlan(), exerciseMediaURL(), exerciseModelToWorkoutDTO(), Context, lookupMediaDonor(), warmMediaDonorCache(), IsValidMealSlot() (+8 more)
 
-### Community 196 - "GuaranteeService"
-Cohesion: 0.24
-Nodes (13): Context, DB, SubscriptionRepository, guaranteeToDTO(), NewGuaranteeService(), percentOf(), toGuaranteeListResponse(), ComplianceSnapshotDTO (+5 more)
-
-### Community 197 - "AdminWorkflowController"
-Cohesion: 0.19
-Nodes (7): AdminWorkflowController, Context, DB, Time, User, WorkflowStep, NewAdminWorkflowController()
-
-### Community 198 - "Telegram Bot API - cURL Examples"
-Cohesion: 0.10
-Nodes (20): 🔐 Authentication, Bad Request (400), Content Task Statuses, 📋 Content Tasks API, Create Content Task, ⚠️ Error Responses, Forbidden (403), Get Single Content Task (+12 more)
-
 ### Community 199 - "Morabiyar — مستندات پروژه"
 Cohesion: 0.10
 Nodes (21): API — نقشه endpointها (هدف نهایی), Auth, Backend, Frontend, Morabiyar — مستندات پروژه, استک فنی, تصمیمات معماری (تأییدشده), جریان کلیدی: خرید پلن و زیرمجموعه شدن (+13 more)
@@ -1542,11 +1316,11 @@ Cohesion: 0.10
 Nodes (19): Concerns, Conclusion, Current State, Current State, Fully Implemented, `GET /admin/users`, `GET /subscriptions`, Needs Improvement (+11 more)
 
 ### Community 201 - "AIGenerateController"
-Cohesion: 0.19
-Nodes (10): Context, NewAIGenerateController(), writeAIGenerateError(), AIGenerateController, generateNutritionRequest, generateWeeklyNutritionRequest, generateWorkoutRequest, regenerateMealRequest (+2 more)
+Cohesion: 0.41
+Nodes (3): Context, writeAIGenerateError(), AIGenerateController
 
 ### Community 202 - "Context"
-Cohesion: 0.19
+Cohesion: 0.18
 Nodes (6): Context, NewAdminFunnelController(), NewFunnelController(), writeFunnelAuthSession(), AdminFunnelController, FunnelController
 
 ### Community 203 - "CoachProfileRepository"
@@ -1573,37 +1347,13 @@ Nodes (19): اگه همه‌چیز خراب بود و نمی‌دونی از ک�
 Cohesion: 0.10
 Nodes (19): برنامه‌های من (لیست), جزئیات برنامه کاربر, جزئیات سفارش, رفتار UI (کلی), رفتار UI (کلی), رفتار UI (کلی), رفتار UI (کلی), رفتار UI (کلی) (+11 more)
 
-### Community 209 - "🔄 مسیر استریم از ورودی تا خروجی"
-Cohesion: 0.10
-Nodes (19): 1. HLS با `-c:v copy`, 1. ورودی استریم, 2. Startup Latency بالا, 2. تبدیل به RTMP, 3. تبدیل RTMP به HLS (برای موبایل), 3. حالت "فقط صدا بدون تصویر", 4. تبدیل RTMP به HTTP-FLV (برای دسکتاپ), 5. سرویس دهی HLS (+11 more)
-
-### Community 210 - "گزارش بهینه‌سازی فاز 3: Frontend Optimization"
-Cohesion: 0.10
-Nodes (19): 1. بهینه‌سازی QueryClient Configuration, 1. بهینه‌سازی بیشتر Bundle Size:, 2. بهینه‌سازی رندرینگ:, Bundle Analysis (Post-Optimization):, QueryClient Cache Configuration, بعد از بهینه‌سازی:, 📊 بهبود عملکرد مورد انتظار, 🔧 بهینه‌سازی‌های انجام شده (+11 more)
-
-### Community 211 - "MonetizeAI Webinar Platform"
-Cohesion: 0.10
-Nodes (19): API Endpoints, Backend, Customization, Directory Structure, Features, Frontend, Getting Started, MonetizeAI Webinar Platform (+11 more)
-
-### Community 212 - "گزارش بررسی کامل - Update Payment Config Endpoint"
-Cohesion: 0.10
-Nodes (19): 1. API URL Construction, 1. Route Registration, 2. Controller Implementation, 2. Function Implementation, 3. Database Function, 3. Request Details, 4. Component Integration, 4. Middleware (+11 more)
-
 ### Community 213 - "ai/validate.go"
-Cohesion: 0.18
-Nodes (16): BodyPhotoAnalysisSchema, T, TestParsePersona(), TestValidateNutritionPlan_AcceptsValid(), TestValidateNutritionPlan_RejectsBadCalories(), TestValidateNutritionPlan_RejectsEmptyMeals(), TestValidateWorkoutPlan_AcceptsValid(), TestValidateWorkoutPlan_RejectsEmptyDays() (+8 more)
+Cohesion: 0.15
+Nodes (20): FunnelAnalysisSchema, FunnelChartBarSchema, ProgressAnalysisSchema, SetLogSchema, SanitizeFunnelAnalysis(), sanitizeFunnelText(), T, TestParsePersona() (+12 more)
 
 ### Community 214 - "student_controller.go"
 Cohesion: 0.19
 Nodes (14): Context, Time, NewStudentController(), currentProgramsResponse, currentSubscriptionResponse, nutritionItemResponse, nutritionProgramResponse, planSummary (+6 more)
-
-### Community 215 - "LIve/components.json"
-Cohesion: 0.11
-Nodes (18): aliases, components, hooks, lib, ui, utils, registries, @react-bits (+10 more)
-
-### Community 216 - "AdminWorkflows.tsx"
-Cohesion: 0.11
-Nodes (11): ConditionRule, ConditionsBuilderProps, StepConditions, Workflow, WorkflowFormProps, WorkflowLog, WorkflowLogsProps, WorkflowPreviewProps (+3 more)
 
 ### Community 217 - "راهنمای استفاده از Shenava ASR — تبدیل صوت به متن فارسی"
 Cohesion: 0.11
@@ -1612,10 +1362,6 @@ Nodes (18): راهنمای استفاده از Shenava ASR — تبدیل صوت
 ### Community 218 - "coach_tracking_repository.dart"
 Cohesion: 0.11
 Nodes (18): alerts, CoachTrackingRepository, coachTrackingRepositoryProvider, CoachTrackingStudentItem, detail, _dio, fromJson, fullName (+10 more)
-
-### Community 219 - "21day/src/App.tsx"
-Cohesion: 0.13
-Nodes (8): queryClient, ErrorBoundary, Props, State, Toaster(), ToasterProps, Toaster(), NotFound()
 
 ### Community 220 - "21day/src/components/ui/command.tsx"
 Cohesion: 0.12
@@ -1661,21 +1407,9 @@ Nodes (17): حالا در کنترلر صداش بزن:, راهنمای کامل
 Cohesion: 0.13
 Nodes (15): Hero(), AboutSection, ContactSection, Footer, HomeClient(), MotionConfig, ProgramsSection, RecordsSection (+7 more)
 
-### Community 231 - "AdaptiveCommentEngine.ts"
-Cohesion: 0.16
-Nodes (13): TimedCommentsManager(), TimedComment, timedComments, TimeRange, DisplayComment, mapCommentsToAbsoluteTime(), mapUserMessageToDisplayComment(), parseTimecodeToSeconds() (+5 more)
-
-### Community 232 - "compilerOptions"
-Cohesion: 0.11
-Nodes (17): compilerOptions, allowImportingTsExtensions, isolatedModules, lib, module, moduleDetection, moduleResolution, noEmit (+9 more)
-
-### Community 233 - "📋 مراحل باقی‌مانده:"
-Cohesion: 0.11
-Nodes (17): 1. Backend Models (✅ کامل), 2. Execution Engine (✅ کامل), 📊 Monitoring:, 🎨 Visual Workflow Builder - Implementation Guide, ✅ آنچه تا کنون پیاده‌سازی شده:, 🚀 دستورات اجرا:, 🎯 مثال Workflow برای تست:, 📋 مراحل باقی‌مانده: (+9 more)
-
 ### Community 234 - "flavor_config.dart"
-Cohesion: 0.11
-Nodes (17): appstore, AppStoreFlavor, flavor, FlavorConfig, id, init, initFromEnvironment, _instance (+9 more)
+Cohesion: 0.06
+Nodes (28): bool get, appstore, AppStoreFlavor, flavor, FlavorConfig, id, init, initFromEnvironment (+20 more)
 
 ### Community 235 - "win32_window.cpp"
 Cohesion: 0.18
@@ -1691,15 +1425,15 @@ Nodes (16): aliases, components, hooks, lib, ui, utils, rsc, $schema (+8 more)
 
 ### Community 238 - "dependencies"
 Cohesion: 0.12
-Nodes (17): axios, @dnd-kit/modifiers, dependencies, axios, @dnd-kit/modifiers, framer-motion, lucide-react, next-themes (+9 more)
+Nodes (17): axios, @dnd-kit/modifiers, dependencies, axios, clsx, @dnd-kit/modifiers, framer-motion, lucide-react (+9 more)
 
 ### Community 239 - "AchievementRepository"
 Cohesion: 0.19
 Nodes (8): Model, Model, Context, DB, NewAchievementRepository(), AchievementRule, UserAchievement, AchievementRepository
 
-### Community 240 - "food_enricher.go"
-Cohesion: 0.24
-Nodes (15): Model, foodModelToMealDTO(), foodModelToMealDTOByGrams(), formatFoodQuantity(), Food, mealMultiplier(), mealSlotFromLegacyNumber(), mealSlotToNumber() (+7 more)
+### Community 240 - ".CreateLog"
+Cohesion: 0.19
+Nodes (18): Model, enrichNutritionPlan(), foodModelToMealDTO(), foodModelToMealDTOByGrams(), formatFoodQuantity(), Context, Food, FoodRepository (+10 more)
 
 ### Community 241 - "ServicePlanRepository"
 Cohesion: 0.24
@@ -1717,10 +1451,6 @@ Nodes (12): CoachProfileRepository, Context, DB, SubscriptionRepository, Time, U
 Cohesion: 0.26
 Nodes (11): CoachAchievement, Context, NewCoachAchievementService(), toCoachAchievementDTO(), toPublicAchievementDTO(), CoachAchievementCreateRequest, CoachAchievementDTO, CoachAchievementListResponse (+3 more)
 
-### Community 245 - "CoachSessionService"
-Cohesion: 0.31
-Nodes (8): Context, sessionToDTO(), toSessionListResponse(), CoachSessionDTO, CoachSessionService, ReviewStatusDTO, SessionListResponse, SessionUpsertRequest
-
 ### Community 246 - "MeDashboardService"
 Cohesion: 0.24
 Nodes (12): epley(), Context, DB, ProgressPoint, SubscriptionRepository, Time, isoKey(), NewMeDashboardService() (+4 more)
@@ -1728,14 +1458,6 @@ Nodes (12): epley(), Context, DB, ProgressPoint, SubscriptionRepository, Time, i
 ### Community 247 - "تسک‌های فرانت‌اند — Morabiyar Multi-Coach"
 Cohesion: 0.12
 Nodes (16): TASK-F0-01: ساختار پوشه پنل مربی, TASK-F0-02: ثابت‌های نقش و مسیرها, TASK-F0-03: به‌روزرسانی مستندات فرانت, TASK-F2-01: صفحه ویرایش پروفایل مربی, TASK-F2-02: آپلود آواتار و کاور, TASK-F2-03: بررسی یکتا بودن Slug, TASK-F2-04: لندینگ عمومی مربی, TASK-F2-05: کامپوننت‌های لندینگ مربی (+8 more)
-
-### Community 248 - "visual_workflow.go"
-Cohesion: 0.14
-Nodes (14): Time, Value, ConditionConfig, DelayConfig, NodeConfig, SMSActionConfig, StopWorkflowConfig, TagActionConfig (+6 more)
-
-### Community 249 - "🔴 نقاط کندی با اولویت بالا"
-Cohesion: 0.12
-Nodes (16): 1. Backend: فراخوانی مکرر `LoadConfigFromDB` در Scheduler, 2. Backend: کوئری‌های متعدد در حلقه‌های SMS/Avanak, 3. Backend: کوئری‌های Stats در Admin Dashboard, 4. Frontend: حجم بالای Bundle, 5. Frontend: رندرینگ‌های غیرضروری, Backend, Frontend, 📋 برنامه بهینه‌سازی (مرحله‌ای) (+8 more)
 
 ### Community 250 - "SiteSettingsController"
 Cohesion: 0.23
@@ -1750,36 +1472,12 @@ Cohesion: 0.20
 Nodes (12): Context, NewCoachFoodController(), foodModelToCoachItem(), Context, Food, FoodRepository, NewCoachFoodService(), CoachFoodController (+4 more)
 
 ### Community 253 - "NewCheckoutService"
-Cohesion: 0.22
-Nodes (12): generateTrackingCode(), CoachProfileRepository, Context, DB, PaymentService, SubscriptionRepository, NewCheckoutService(), orderItemsToDTO() (+4 more)
-
-### Community 254 - "AvanakMessageController"
-Cohesion: 0.23
-Nodes (4): AvanakMessageController, Context, DB, NewAvanakMessageController()
-
-### Community 255 - "TelegramQueue"
-Cohesion: 0.22
-Nodes (9): GetTelegramQueue(), File, Mutex, Time, Values, WaitGroup, InitTelegramQueue(), QueueJob (+1 more)
-
-### Community 256 - "گزارش بهینه‌سازی فاز 2: Batch Operations برای Logs"
-Cohesion: 0.12
-Nodes (15): 1. بهینه‌سازی Batch Insert برای SMS/Avanak Logs, الگوی استفاده شده:, بعد از بهینه‌سازی:, 📊 بهبود عملکرد مورد انتظار, 🧪 تست توصیه شده, ✅ تغییرات اعمال شده, توابع بهینه‌سازی شده:, 🔧 جزئیات پیاده‌سازی (+7 more)
-
-### Community 257 - "راهنمای آپدیت سرور برای تقویم شمسی"
-Cohesion: 0.12
-Nodes (15): 1. بررسی کنید که node_modules وجود دارد:, 2. اگر وجود ندارد، پاک کنید و دوباره نصب کنید:, 3. بررسی نسخه Node.js:, اگر npm install خطا داد:, بررسی نهایی, خلاصه دستورات (Copy-Paste):, راه حل, راهنمای آپدیت سرور برای تقویم شمسی (+7 more)
-
-### Community 258 - "📋 مراحل باقی‌مانده:"
-Cohesion: 0.12
-Nodes (15): 1. **Updated Models** (`backend/models/workflow.go`):, 2. **Advanced Execution Engine** (`backend/services/workflow/advanced_executor.go`):, 🚀 Workflow Engine Upgrade - Complete Implementation Guide, ✅ آنچه تا کنون پیاده‌سازی شده:, 📋 مراحل باقی‌مانده:, مرحله 1: Migration در main.go, مرحله 2: به‌روزرسانی Scheduler, مرحله 3: ایجاد Preview API (+7 more)
+Cohesion: 0.16
+Nodes (14): Context, NewCheckoutController(), generateTrackingCode(), CoachProfileRepository, Context, DB, SubscriptionRepository, NewCheckoutService() (+6 more)
 
 ### Community 259 - "21day/src/components/ui/form.tsx"
 Cohesion: 0.14
 Nodes (11): FormControl, FormDescription, FormFieldContext, FormFieldContextValue, FormItem, FormItemContext, FormItemContextValue, FormLabel (+3 more)
-
-### Community 260 - "AffiliateController"
-Cohesion: 0.24
-Nodes (9): AffiliateStatus, AffiliateController, CreateAffiliateRequest, UpdateAffiliateRequest, contains(), ensureAffiliateColumns(), Context, DB (+1 more)
 
 ### Community 261 - "main"
 Cohesion: 0.31
@@ -1793,29 +1491,17 @@ Nodes (10): عمداً فقط وب (به‌جز گزارش موبایل), فلا
 Cohesion: 0.23
 Nodes (7): Context, NewCoachDashboardController(), parseIntQuery(), Context, NewMeDashboardController(), CoachDashboardController, MeDashboardController
 
-### Community 264 - "CoachSessionController"
-Cohesion: 0.33
-Nodes (6): Context, NewCoachSessionController(), NewMeSessionController(), writeSessionError(), CoachSessionController, MeSessionController
-
 ### Community 265 - "CommunityPostController"
 Cohesion: 0.24
 Nodes (5): Context, NewAdminCommunityPostController(), NewCommunityPostController(), AdminCommunityPostController, CommunityPostController
 
-### Community 266 - "GuaranteeRepository"
-Cohesion: 0.27
-Nodes (6): Model, Context, DB, NewGuaranteeRepository(), GuaranteeCase, GuaranteeRepository
-
 ### Community 267 - "NotificationRepository"
-Cohesion: 0.19
-Nodes (9): Model, Time, Context, DB, Time, NewNotificationRepository(), NewCoachSessionService(), Notification (+1 more)
+Cohesion: 0.21
+Nodes (8): Model, Time, Context, DB, Time, NewNotificationRepository(), Notification, NotificationRepository
 
 ### Community 268 - "OtpRepository"
 Cohesion: 0.23
 Nodes (8): Model, Time, Context, DB, Time, NewOtpRepository(), OtpCode, OtpRepository
-
-### Community 269 - "Streaming Startup Profile"
-Cohesion: 0.13
-Nodes (14): Backend Logs (Always Active), Backend Timeline, Bottleneck Analysis, Expected Timings (Mobile):, FFmpeg Command (Current), Frontend Logs (Development Mode Only), Frontend Timeline, Key Optimizations Applied (+6 more)
 
 ### Community 270 - "workout_history_screen.dart"
 Cohesion: 0.15
@@ -1825,9 +1511,9 @@ Nodes (14): build, date, _dio, durationMinutes, fromJson, id, list, title (+6 mo
 Cohesion: 0.27
 Nodes (13): AdminAuthMiddleware(), AdminLogin(), AdminLogout(), extractBearerToken(), generateAdminToken(), GetAdminStats(), GetAdminUsersList(), Context (+5 more)
 
-### Community 272 - "21day/src/components/ui/carousel.tsx"
-Cohesion: 0.14
-Nodes (12): Carousel, CarouselApi, CarouselContent, CarouselContext, CarouselContextProps, CarouselItem, CarouselNext, CarouselOptions (+4 more)
+### Community 272 - "button.tsx"
+Cohesion: 0.07
+Nodes (24): ErrorBoundary, Props, State, Phase, SessionQuiz(), SessionQuizProps, Button, ButtonProps (+16 more)
 
 ### Community 273 - "AppDelegate"
 Cohesion: 0.16
@@ -1846,8 +1532,8 @@ Cohesion: 0.22
 Nodes (10): Context, NewStreakController(), computeStreak(), Context, DB, NewStreakService(), normalizeStreakDate(), StreakController (+2 more)
 
 ### Community 277 - "CoachStudentService"
-Cohesion: 0.31
-Nodes (8): Context, DB, SubscriptionRepository, Time, User, NewCoachStudentService(), CoachStudentDetail, CoachStudentService
+Cohesion: 0.28
+Nodes (9): Context, DB, SubscriptionRepository, Time, User, NewCoachStudentService(), CoachStudentListItem, CoachStudentDetail (+1 more)
 
 ### Community 278 - "StudentService"
 Cohesion: 0.25
@@ -1857,45 +1543,17 @@ Nodes (9): Context, SubscriptionRepository, User, NewStudentService(), Nutrition
 Cohesion: 0.14
 Nodes (13): class, create, debugGetCreateSourceHash, FoodRepositoryProvider, overrideWithValue, food_models.dart, createLog, foodRepositoryProvider (+5 more)
 
-### Community 280 - "groq_chat.go"
-Cohesion: 0.20
-Nodes (12): Choice, GroqChatController, GroqChatRequest, GroqChatResponse, GroqMessage, Message, Usage, Client (+4 more)
-
 ### Community 281 - "plansStore.js"
 Cohesion: 0.23
 Nodes (12): cachedSnapshot, defaultPlans, ensureSeeded(), listeners, listPlansSnapshot(), notifyPlansChanged(), NOTE: keep legacy key prefix `fitpro_*` (do NOT rename to fitino)., safeParse() (+4 more)
-
-### Community 282 - "راهنمای راه‌اندازی پنل مدیریتی"
-Cohesion: 0.14
-Nodes (13): MySQL Query:, 🔍 Troubleshooting, 🔐 اطلاعات ورود پیش‌فرض, 🔧 ایجاد Admin User دستی (در صورت نیاز), 📝 بررسی Admin User در پایگاه داده, بررسی لاگ‌های Backend, 🔒 تغییر Password, 📞 دسترسی به پنل (+5 more)
-
-### Community 283 - "workflow.go"
-Cohesion: 0.20
-Nodes (12): ConditionRule, Time, WorkflowStep, ConditionRule, SegmentParams, StepConditions, WebinarParticipant, Workflow (+4 more)
-
-### Community 284 - "راهنمای کامل دیپلوی پروژه وبینار روی سرور اوبونتو"
-Cohesion: 0.14
-Nodes (13): راهنمای کامل دیپلوی پروژه وبینار روی سرور اوبونتو, مرحله ۱: آماده‌سازی سرور, مرحله ۲: نصب و تنظیم بک‌اند (Go), مرحله ۳: نصب و تنظیم فرانت‌اند (React + Vite), مرحله ۴: نصب و تنظیم Nginx, مرحله ۵: نصب گواهی SSL با Certbot, پایان!, پیش‌نیازها (+5 more)
-
-### Community 285 - "Frontend-Backend Connection"
-Cohesion: 0.14
-Nodes (13): API Endpoints, Components Updated, Configuration, CORS Configuration, Environment Variables, Error Handling, Frontend-Backend Connection, Live Streaming Setup (+5 more)
-
-### Community 286 - "مشکل: فیلدهای instagram_link، telegram_id، whatsapp_link و status_notes در سیستم مدیریت افیلیت‌ها ذخیره نمی‌شوند"
-Cohesion: 0.14
-Nodes (13): Backend (Go + Gin + GORM), Frontend (React + TypeScript), Response JSON فعلی, آنچه که انتظار می‌رود, آنچه که کار می‌کند, درخواست, دیتابیس, راه‌حل مورد نیاز (+5 more)
-
-### Community 287 - "PersianDatePicker.tsx"
-Cohesion: 0.26
-Nodes (12): PERSIAN_DAYS, PERSIAN_MONTHS, PersianDatePicker(), PersianDatePickerProps, formatPersianDate(), getFirstDayOfPersianMonth(), getLastDayOfPersianMonth(), getPersianDayName() (+4 more)
 
 ### Community 288 - "coach_notifications_repository.dart"
 Cohesion: 0.14
 Nodes (13): CoachNotification, CoachNotificationsRepository, coachNotificationsRepositoryProvider, createdAt, _dio, fromJson, id, isRead (+5 more)
 
-### Community 289 - "21day/src/components/FitinoPageShell.tsx"
-Cohesion: 0.27
-Nodes (8): CountdownSection(), FitinoPageShellProps, HeaderCountdown(), JourneyRail(), JourneyRailProps, JourneyStep, padCountdown(), REGISTRATION_COUNTDOWN
+### Community 289 - "FitinoPageShell.tsx"
+Cohesion: 0.43
+Nodes (5): FitinoPageShell(), FitinoPageShellProps, JourneyRail(), JourneyRailProps, JourneyStep
 
 ### Community 290 - "RefreshTokenRepository"
 Cohesion: 0.22
@@ -1910,16 +1568,12 @@ Cohesion: 0.29
 Nodes (6): Context, DB, Food, FoodServingUnit, NewFoodRepository(), FoodRepository
 
 ### Community 293 - "UserRepository"
-Cohesion: 0.33
-Nodes (5): Context, DB, User, NewUserRepository(), UserRepository
-
-### Community 294 - "session.dart"
-Cohesion: 0.15
-Nodes (11): bool get, AppRole, fromString, postLoginPath, value, isCoach, isProfileComplete, isStudent (+3 more)
+Cohesion: 0.27
+Nodes (7): Context, DB, User, NewUserRepository(), CoachProfileRepository, NewFunnelService(), UserRepository
 
 ### Community 295 - "dashboard_repository.dart"
-Cohesion: 0.15
-Nodes (12): class DashboardRepositoryProvider, dashboard_models.dart, create, DashboardRepositoryProvider, debugGetCreateSourceHash, extends, overrideWithValue, dashboardRepositoryProvider (+4 more)
+Cohesion: 0.10
+Nodes (19): auth_interceptor.dart, class DashboardRepositoryProvider, ../config/app_config.dart, dashboard_models.dart, create, debugGetCreateSourceHash, DioProvider, overrideWithValue (+11 more)
 
 ### Community 296 - "programs_repository.dart"
 Cohesion: 0.15
@@ -1934,20 +1588,8 @@ Cohesion: 0.18
 Nodes (8): Flutter, FlutterSceneDelegate, SceneDelegate, RunnerTests, RunnerTests, UIKit, XCTest, XCTestCase
 
 ### Community 299 - "AnalysisVisuals.jsx"
-Cohesion: 0.17
-Nodes (9): AnalysisVisuals(), BODY_TYPES, BodyFigure(), BodyTypeShowcase(), faNum, METRIC_ICONS, MetricCards(), resolveBodyTypeKey() (+1 more)
-
-### Community 300 - "راهنمای Build و Deploy تغییرات Frontend"
-Cohesion: 0.15
-Nodes (12): اگر بعد از build هنوز مشکل دارید:, بررسی اینکه Build موفق بوده, دستور سریع (یک خط), راهنمای Build و Deploy تغییرات Frontend, عیب‌یابی, مراحل Build و Deploy, مرحله 1: Build کردن Frontend (محلی), مرحله 2: آپلود فایل‌های Build شده به سرور (+4 more)
-
-### Community 301 - "گزارش بهینه‌سازی فاز 1: SystemConfig Caching"
-Cohesion: 0.15
-Nodes (12): 1. اضافه کردن سیستم کش برای SystemConfig, 🔒 Thread Safety, بعد از بهینه‌سازی:, 📊 بهبود عملکرد مورد انتظار, 🧪 تست توصیه شده, تغییرات:, ✅ تغییرات اعمال شده, قبل از بهینه‌سازی: (+4 more)
-
-### Community 302 - "چرخه‌های زمانی وبینار"
-Cohesion: 0.15
-Nodes (13): ⏰ زمان‌بندی وبینار, زمان شروع و پایان, چرخه‌های زمانی وبینار, ۱. قبل از شروع (قبل از ۲۰:۰۰), ۱۰. ۱۴۳ دقیقه بعد از شروع (۲ ساعت و ۲۳ دقیقه) - پایان کامل وبینار, ۲. ۱۵ دقیقه قبل از شروع (۱۹:۴۵ تا ۲۰:۰۰), ۳. شروع وبینار (۲۰:۰۰), ۴. ۰ تا ۱۵ دقیقه بعد از شروع (+5 more)
+Cohesion: 0.16
+Nodes (11): AnalysisVisuals(), BODY_TYPES, BodyFigure(), BodyTypeShowcase(), buildTrendTicks(), faNum, METRIC_ICONS, MetricCards() (+3 more)
 
 ### Community 303 - "21day/src/components/ui/menubar.tsx"
 Cohesion: 0.17
@@ -1962,12 +1604,12 @@ Cohesion: 0.30
 Nodes (6): Context, NewAdminGuaranteeController(), NewGuaranteeController(), writeGuaranteeError(), AdminGuaranteeController, GuaranteeController
 
 ### Community 306 - "PaymentController"
-Cohesion: 0.29
-Nodes (7): Context, PaymentService, NewPaymentController(), webResultButton(), BuildMobilePaymentDeepLink(), PaymentController, zarinpalRequestBody
+Cohesion: 0.31
+Nodes (6): Context, NewPaymentController(), webResultButton(), BuildMobilePaymentDeepLink(), PaymentController, zarinpalRequestBody
 
 ### Community 307 - "Context"
 Cohesion: 0.27
-Nodes (5): Context, TrackingController, NewCoachTrackingController(), NewTrackingController(), CoachTrackingController
+Nodes (5): Context, NewCoachTrackingController(), NewTrackingController(), CoachTrackingController, TrackingController
 
 ### Community 308 - "AIRequestLogRepository"
 Cohesion: 0.23
@@ -1977,17 +1619,9 @@ Nodes (8): Model, Context, DB, Time, NewAIRequestLogRepository(), AIRequestLog, 
 Cohesion: 0.23
 Nodes (7): bootstrap.dart, main, main, main, main, main, src/core/flavor/flavor_config.dart
 
-### Community 310 - "int?"
-Cohesion: 0.17
-Nodes (11): Exception, int?, Map, ApiException, fromDio, key, message, _messages (+3 more)
-
 ### Community 311 - "Footer.js"
-Cohesion: 0.21
-Nodes (7): metadata, Footer(), LEGAL_LINKS, QUICK_LINKS, SOCIALS, NotFoundView(), metadata
-
-### Community 313 - "compilerOptions"
-Cohesion: 0.17
-Nodes (11): compilerOptions, allowJs, baseUrl, noImplicitAny, noUnusedLocals, noUnusedParameters, paths, skipLibCheck (+3 more)
+Cohesion: 0.12
+Nodes (11): AuthShell(), metadata, Footer(), LEGAL_LINKS, QUICK_LINKS, SOCIALS, NotFoundView(), metadata (+3 more)
 
 ### Community 314 - "21day/package.json"
 Cohesion: 0.18
@@ -2021,10 +1655,6 @@ Nodes (7): Context, DB, SubscriptionRepository, Time, NewCheckInReminderService(
 Cohesion: 0.35
 Nodes (9): ageFromBirthDate(), CalculateNutritionTargets(), T, TestCalculateNutritionTargets_BodyFatUsesKatchMcArdle(), TestCalculateNutritionTargets_CutIsLowerThanBulk(), TestCalculateNutritionTargets_DefaultsWhenMissing(), TestCalculateNutritionTargets_MaintainMale(), NutritionCalcInput (+1 more)
 
-### Community 322 - "ContentLicenseController"
-Cohesion: 0.31
-Nodes (5): ContentLicenseController, generateContentLicenseCode(), Context, DB, NewContentLicenseController()
-
 ### Community 323 - "payment_deep_link_handler.dart"
 Cohesion: 0.18
 Nodes (10): ../../features/subscription/data/subscription_models.dart, _appLinks, getInitialUri, navigate, parse, PaymentDeepLinkHandler, uriStream, package:app_links/app_links.dart (+2 more)
@@ -2032,10 +1662,6 @@ Nodes (10): ../../features/subscription/data/subscription_models.dart, _appLinks
 ### Community 324 - "فاز ۶ — سوپرادمین + پولیش ✅"
 Cohesion: 0.18
 Nodes (11): TASK-F6-01: صفحه مدیریت مربی‌ها (ادمین), TASK-F6-02: جزئیات مربی در ادمین, TASK-F6-03: Sidebar ادمین — مربی‌ها, TASK-F6-04: Admin Dashboard — API, TASK-F6-05: Admin Plans — فقط مشاهده, TASK-F6-06: Admin Site Settings — API, TASK-F6-07: Admin Feedback — API, TASK-F6-08: رفع Navbar دوبل در لندینگ (+3 more)
-
-### Community 325 - "FunnelLeadsClient"
-Cohesion: 0.20
-Nodes (11): answerLabel(), fa(), formatDate(), formatToman(), FunnelLeadsClient(), JourneySteps(), parseMetricsLine(), PipelineBar() (+3 more)
 
 ### Community 326 - "BorderGlow.jsx"
 Cohesion: 0.29
@@ -2045,37 +1671,13 @@ Nodes (10): animateValue(), BorderGlow(), buildGlowVars(), buildGradientVars(), 
 Cohesion: 0.25
 Nodes (8): _In_, _In_opt_, wWinMain(), wchar_t, CreateAndAttachConsole(), GetCommandLineArguments(), Utf8FromUtf16(), vector
 
-### Community 328 - "TelegramMonitor"
-Cohesion: 0.29
-Nodes (6): NewTelegramBotService(), GetTelegramMonitor(), Mutex, WaitGroup, InitTelegramMonitor(), TelegramMonitor
-
-### Community 329 - "LIve/package.json"
-Cohesion: 0.18
-Nodes (10): name, private, scripts, build, build:dev, dev, lint, preview (+2 more)
-
-### Community 330 - "process-comments.js"
-Cohesion: 0.27
-Nodes (10): __dirname, __filename, INPUT_FILE, main(), OUTPUT_FILE, parseArrayString(), parseTimedCommentsFile(), processComments() (+2 more)
-
-### Community 331 - "LIve/src/components/ui/chart.tsx"
-Cohesion: 0.18
-Nodes (7): ChartConfig, ChartContainer, ChartContext, ChartContextProps, ChartLegendContent, ChartTooltipContent, THEMES
-
 ### Community 332 - "web/manifest.json"
 Cohesion: 0.18
 Nodes (10): background_color, description, display, icons, name, orientation, prefer_related_applications, short_name (+2 more)
 
-### Community 333 - "SessionQuiz.tsx"
-Cohesion: 0.27
-Nodes (7): Phase, SessionQuiz(), SessionQuizProps, getSessionQuiz(), QuizOption, QuizQuestion, SESSION_QUIZZES
-
 ### Community 334 - "21day/src/components/ui/context-menu.tsx"
 Cohesion: 0.20
 Nodes (9): ContextMenuCheckboxItem, ContextMenuContent, ContextMenuItem, ContextMenuLabel, ContextMenuRadioItem, ContextMenuSeparator, ContextMenuShortcut(), ContextMenuSubContent (+1 more)
-
-### Community 335 - "21day/src/components/ui/dropdown-menu.tsx"
-Cohesion: 0.20
-Nodes (9): DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuShortcut(), DropdownMenuSubContent (+1 more)
 
 ### Community 336 - "فاز ۱ — زیرساخت نقش Coach + دیتابیس ✅"
 Cohesion: 0.20
@@ -2112,10 +1714,6 @@ Nodes (5): Context, NewNotificationService(), NotificationDTO, NotificationServi
 ### Community 344 - "backend/run.sh"
 Cohesion: 0.36
 Nodes (8): check_tcp_port(), die(), fail(), ok(), run.sh script, step(), version_ge(), warn()
-
-### Community 345 - "timed_comments.go"
-Cohesion: 0.38
-Nodes (9): TimedComment, TimedCommentsData, TimeRange, escapeString(), generateTypeScriptFile(), GetTimedComments(), GetTimedCommentsFilePath(), Context (+1 more)
 
 ### Community 346 - "فیتینو — خلاصه گفتگوهای توسعه (وب + بک‌اند)"
 Cohesion: 0.20
@@ -2157,30 +1755,6 @@ Nodes (8): extractInstructionSteps(), extractInstructionText(), Context, DB, Raw
 Cohesion: 0.22
 Nodes (9): TASK-F5-01: My Programs — API واقعی, TASK-F5-02: Program Details — API واقعی, TASK-F5-03: Orders — API واقعی, TASK-F5-04: Profile — API واقعی, TASK-F5-05: Navbar هوشمند, TASK-F5-06: جلوگیری از خرید مجدد, TASK-F5-07: Site Settings — API (لندینگ برند), TASK-F5-08: Contact Form — API (+1 more)
 
-### Community 356 - "ProgressReportCards.jsx"
-Cohesion: 0.31
-Nodes (8): BodyChangesCard(), CardShell(), fa(), Metric(), PAIN_AREA_LABEL, RecoveryCard(), TREND_LABEL, WorkoutPerformanceCard()
-
-### Community 357 - "حل مشکل جدول admin_users"
-Cohesion: 0.22
-Nodes (8): 🔐 اطلاعات ورود, 🔍 بررسی, حل مشکل جدول admin_users, ✅ راه حل, روش 1: Restart Backend (توصیه می‌شود), روش 2: اجرای Migration دستی با Script, روش 3: ایجاد دستی با SQL, 🔴 مشکل
-
-### Community 358 - "Migration: Add affiliate_percentage to admin_users"
-Cohesion: 0.22
-Nodes (8): Database Migrations, Migration: Add affiliate_percentage to admin_users, Rollback (در صورت نیاز):, بررسی:, روش 1: اجرای مستقیم SQL (توصیه می‌شود), روش 2: Restart Backend (GORM AutoMigrate), فایل: `add_affiliate_percentage_to_admin_users.sql`, نحوه اجرا:
-
-### Community 359 - "process-comments-simple.js"
-Cohesion: 0.33
-Nodes (8): __dirname, __filename, main(), OUTPUT_FILE, processComments(), processCommentsFromModule(), saveOutput(), timeStringToSeconds()
-
-### Community 360 - "📋 TODO: پیامک‌های ساده"
-Cohesion: 0.22
-Nodes (8): TODO List, 📋 TODO: پیامک‌های ساده, ✅ تکمیل شده, سایر TODO ها, مستندات API:, موارد لازم:, نکات مهم:, پیاده‌سازی سرویس‌های پیامکی
-
-### Community 361 - "WooCommerce Webhook Test"
-Cohesion: 0.22
-Nodes (8): Basic Test, Endpoint, Expected Response, Local Testing (if running locally), Server Logs, Test with cURL, WooCommerce Configuration, WooCommerce Webhook Test
-
 ### Community 362 - "21day/src/components/ui/select.tsx"
 Cohesion: 0.25
 Nodes (7): SelectContent, SelectItem, SelectLabel, SelectScrollDownButton, SelectScrollUpButton, SelectSeparator, SelectTrigger
@@ -2217,14 +1791,6 @@ Nodes (3): Context, NewNotificationController(), NotificationController
 Cohesion: 0.36
 Nodes (6): Allowed(), isProductionEnv(), isTruthy(), T, TestAllowedBlocksProduction(), TestDevFixturePasswordHash()
 
-### Community 371 - "NewProgressReportService"
-Cohesion: 0.36
-Nodes (6): DB, SubscriptionRepository, NewProgressReportService(), progressReportToDTO(), ProgressReportDTO, ProgressReportListResponse
-
-### Community 372 - "LicenseSMSMessageController"
-Cohesion: 0.39
-Nodes (4): LicenseSMSMessageController, Context, DB, NewLicenseSMSMessageController()
-
 ### Community 373 - "diet/normalize_media_paths.py"
 Cohesion: 0.43
 Nodes (7): extract_filename(), iter_nested_dicts(), main(), normalize_json_paths(), parse_fields(), Path, Normalize media paths inside diet template JSON.  Typical rewrite:   food_ima
@@ -2242,28 +1808,12 @@ Cohesion: 0.25
 Nodes (8): TASK-F4-01: لیست دانشجویان مربی, TASK-F4-02: جزئیات دانشجو, TASK-F4-03: ویرایشگر برنامه تمرین, TASK-F4-04: ویرایشگر برنامه غذایی, TASK-F4-05: Sidebar مربی — دانشجویان, TASK-F4-06: داشبورد مربی, TASK-F4-07: انتقال «شاگردهای من» از ادمین, فاز ۴ — دانشجویان مربی + تخصیص برنامه ✅
 
 ### Community 377 - "calorieCalculator.js"
-Cohesion: 0.50
-Nodes (7): CalorieCalculatorClient(), ACTIVITY_LEVELS, calculateBMR(), calculateCaloriePlan(), calculateRecommendedCalories(), calculateTDEE(), CALORIE_GOALS
+Cohesion: 0.47
+Nodes (8): CalorieCalculatorClient(), CalorieAnalyzerCard(), ACTIVITY_LEVELS, calculateBMR(), calculateCaloriePlan(), calculateRecommendedCalories(), calculateTDEE(), CALORIE_GOALS
 
 ### Community 378 - "login/page.js"
 Cohesion: 0.32
 Nodes (3): AuthAliasRedirect(), metadata, metadata
-
-### Community 379 - "BotAPIAuthMiddleware"
-Cohesion: 0.25
-Nodes (6): SecureStringCompare(), BotAPIAuthMiddleware(), DB, HandlerFunc, DB, MapTelegramUserToAdminUser()
-
-### Community 380 - "sms_log.go"
-Cohesion: 0.32
-Nodes (4): Time, SmartSMSLog, SmartSMSScheduledMessage, SmartSMSScheduleRun
-
-### Community 381 - "Webinar Configuration"
-Cohesion: 0.25
-Nodes (7): Default Values, Environment Variables, Files, Functions, Important Notes, Webinar Configuration, `webinar.ts`
-
-### Community 383 - "📚 راهنمای کامل سیستم وبینار زنده - از دید کاربر"
-Cohesion: 0.25
-Nodes (7): 📝 خلاصه نکات مهم, داده‌های ردیابی شده, 📚 راهنمای کامل سیستم وبینار زنده - از دید کاربر, 📊 ردیابی فعالیت کاربر (Tracking), 🎯 مقدمه, نحوه ردیابی, 📞 پشتیبانی
 
 ### Community 384 - "Welcome to your Lovable project"
 Cohesion: 0.29
@@ -2301,10 +1851,6 @@ Nodes (6): dirHasMediaFiles(), exerciseMediaUsable(), FillMissingExerciseMedia()
 Cohesion: 0.43
 Nodes (4): Context, DB, NewAuthorizationService(), AuthorizationService
 
-### Community 394 - "VideoController"
-Cohesion: 0.48
-Nodes (3): VideoController, Context, NewVideoController()
-
 ### Community 395 - "validators.dart"
 Cohesion: 0.29
 Nodes (6): _, email, password, phone, required, Validators
@@ -2321,29 +1867,13 @@ Nodes (6): Auth Helpers, Backend Integration Notes, Data Models Summary (برا�
 Cohesion: 0.29
 Nodes (6): background_color, display, icons, name, short_name, theme_color
 
-### Community 399 - "models/sms_message.go"
-Cohesion: 0.62
-Nodes (6): Time, SMSMessage, SMSMessageCycleLog, SMSMessageLog, TriggeredSMSMessage, TriggeredSMSMessageLog
-
-### Community 400 - "MonetizeAI Webinar Backend"
-Cohesion: 0.29
-Nodes (6): API Endpoints, Directory Structure, Features, MonetizeAI Webinar Backend, Setup, Tech Stack
-
-### Community 401 - "SmsService"
-Cohesion: 0.48
-Nodes (4): NewSmsService(), MeliPayamakSmsProvider, SmsProvider, SmsService
-
-### Community 402 - "VoiceService"
-Cohesion: 0.48
-Nodes (4): NewVoiceService(), AvanakVoiceProvider, VoiceProvider, VoiceService
-
 ### Community 404 - "مدل داده — تغییرات نسبت به وضعیت فعلی"
 Cohesion: 0.29
 Nodes (7): CoachProfile (گسترش), Order (تغییر اختیاری), ServicePlan (تغییر), Subscription (تغییر), User (تغییر), مدل داده — تغییرات نسبت به وضعیت فعلی, مدل‌های بدون تغییر اساسی
 
 ### Community 405 - "IncomeCalculator.tsx"
-Cohesion: 0.47
-Nodes (5): formatTrainingTime(), IncomeCalculator(), LevelId, LEVELS, TIME_STEPS
+Cohesion: 0.25
+Nodes (8): CountdownSection(), formatTrainingTime(), IncomeCalculator(), LevelId, LEVELS, TIME_STEPS, padCountdown(), REGISTRATION_COUNTDOWN
 
 ### Community 406 - "main"
 Cohesion: 0.53
@@ -2352,10 +1882,6 @@ Nodes (5): ensureSub(), DB, User, main(), upsertStudent()
 ### Community 407 - "Development Data Seeding & Datasets Guide"
 Cohesion: 0.33
 Nodes (5): CLI, Development Data Seeding & Datasets Guide, Folder layout (one dataset = one folder), Media (do not mix folders), Startup auto-seed
-
-### Community 408 - "CheckoutController"
-Cohesion: 0.47
-Nodes (3): Context, NewCheckoutController(), CheckoutController
 
 ### Community 409 - "CoachStudentController"
 Cohesion: 0.47
@@ -2381,10 +1907,6 @@ Nodes (5): loadAllPlans(), loadStudentPlan(), NOTE: keep legacy key prefix `fitp
 Cohesion: 0.60
 Nodes (5): detectGenderFromName(), FEMALE, firstToken(), isFemaleName(), MALE
 
-### Community 415 - "Affiliate"
-Cohesion: 0.40
-Nodes (4): AdminUser, Time, Affiliate, AffiliateStatus
-
 ### Community 416 - "MessageHandler"
 Cohesion: 0.33
 Nodes (6): HWND, LPARAM, LRESULT, UINT, WPARAM, MessageHandler
@@ -2405,10 +1927,6 @@ Nodes (4): FoodServingUnit, Model, Food, FoodServingUnit
 Cohesion: 0.40
 Nodes (3): DB, Model, User
 
-### Community 422 - "woocommerce_webhook.go"
-Cohesion: 0.50
-Nodes (4): WooCommerceOrder, Context, WooWebhookHandler(), WooWebhookHandler_Get()
-
 ### Community 423 - "فاز ۶ — مدل `AIRequestLog` + AutoMigrate (BE-0.4 مدل)"
 Cohesion: 0.40
 Nodes (5): Definition of Done, فاز ۶ — مدل `AIRequestLog` + AutoMigrate (BE-0.4 مدل), فیلدهای مدل, 🧪 پرامپت تست فاز قبلی (قبل از شروع فاز ۶), کارها
@@ -2425,21 +1943,9 @@ Nodes (3): cn(), FeedbackDetailsModal(), formatDateTimeFa()
 Cohesion: 0.40
 Nodes (3): PILLAR_ICONS, PILLARS, STEPS
 
-### Community 430 - "AvanakMessage"
-Cohesion: 0.80
-Nodes (4): Time, AvanakMessage, AvanakMessageCycleLog, AvanakMessageLog
-
-### Community 431 - "TaskMessage"
-Cohesion: 0.40
-Nodes (4): AdminUser, Time, TaskMessage, Task
-
-### Community 432 - "fix-timeoffsets.js"
-Cohesion: 0.40
-Nodes (3): content, fs, ranges
-
-### Community 433 - "⚠️ پیام‌های هشدار و اطلاع‌رسانی"
-Cohesion: 0.40
-Nodes (5): ⚠️ پیام‌های هشدار و اطلاع‌رسانی, ۱. هشدار سینک (۱۰ دقیقه اول), ۲. هشدار دسکتاپ, ۳. پیام پایان استریم, ۴. پیام پایان وبینار
+### Community 428 - "Navbar.js"
+Cohesion: 0.13
+Nodes (12): metadata, easeOut, itemKey(), MobileDrawer(), NAV_ITEMS, Navbar(), ScrollToTop(), clearAuthSession() (+4 more)
 
 ### Community 434 - "Shenava ASR (Fitino)"
 Cohesion: 0.40
@@ -2513,73 +2019,33 @@ Nodes (4): Endpoint مرجع فاز ۰ (همگام با راهنمای تست), 
 Cohesion: 0.50
 Nodes (3): Deploy on Vercel, Getting Started, Learn More
 
-### Community 460 - "RegisterUser"
-Cohesion: 0.50
-Nodes (3): Context, DB, RegisterUser()
-
-### Community 463 - "ContentLicense"
-Cohesion: 0.50
-Nodes (3): AdminUser, Time, ContentLicense
-
-### Community 464 - "🎥 پخش ویدیو"
-Cohesion: 0.50
-Nodes (4): تکنولوژی پخش, حالت‌های ویدیو, 🎥 پخش ویدیو, کنترل‌های ویدیو
-
-### Community 465 - "💬 سیستم کامنت و چت"
-Cohesion: 0.50
-Nodes (4): 💬 سیستم کامنت و چت, پیام پین شده (Pinned Message), کامنت‌های زمان‌بندی شده (Timed Comments), کامنت‌های کاربران واقعی
-
-### Community 466 - "🛠️ عیب‌یابی (Troubleshooting)"
-Cohesion: 0.50
-Nodes (4): 🛠️ عیب‌یابی (Troubleshooting), مشکل: تعداد بینندگان نمایش داده نمی‌شود, مشکل: ویدیو پخش نمی‌شود, مشکل: کامنت‌ها نمایش داده نمی‌شوند
-
-### Community 467 - "🔄 چرخه کامل کاربر از ورود تا پایان وبینار"
-Cohesion: 0.50
-Nodes (4): مرحله ۱: ثبت‌نام (Registration), مرحله ۲: دریافت پیامک یادآوری, مرحله ۳: ورود به وبینار, 🔄 چرخه کامل کاربر از ورود تا پایان وبینار
-
 ### Community 476 - "فاز ۱ — پیش‌نیاز و اسکلت پوشه"
 Cohesion: 0.67
 Nodes (3): Definition of Done, فاز ۱ — پیش‌نیاز و اسکلت پوشه, کارها
 
-### Community 532 - "🎨 رابط کاربری (UI)"
-Cohesion: 0.67
-Nodes (3): المان‌های بصری, 🎨 رابط کاربری (UI), رنگ‌بندی
-
-### Community 533 - "👥 نمایش تعداد بینندگان (Viewer Counter)"
-Cohesion: 0.67
-Nodes (3): الگوی افزایش/کاهش, نحوه محاسبه, 👥 نمایش تعداد بینندگان (Viewer Counter)
-
-### Community 534 - "🔐 امنیت و حریم خصوصی"
-Cohesion: 0.67
-Nodes (3): 🔐 امنیت و حریم خصوصی, داده‌های ذخیره شده, پاک شدن داده‌ها
-
-### Community 535 - "🔔 پیامک‌های خودکار"
-Cohesion: 0.67
-Nodes (3): انواع پیامک, سرویس پیامک, 🔔 پیامک‌های خودکار
-
-### Community 536 - "📱 رفتار سیستم بر اساس نوع دستگاه"
-Cohesion: 0.67
-Nodes (3): ❌ دسکتاپ (Windows/Mac) - محدودیت, 📱 رفتار سیستم بر اساس نوع دستگاه, ✅ موبایل (iOS و Android) - پشتیبانی کامل
+### Community 609 - "FunnelPaymentClient.jsx"
+Cohesion: 0.19
+Nodes (15): FEATURE_ICONS, FeatureCarousel3D(), parseFunnelAnalysisPacket(), PAYMENT_COPY, QUIZ_KEYS, allQuizAnswered(), clearFunnelDraft(), loadFunnelDraft() (+7 more)
 
 ## Knowledge Gaps
-- **4260 isolated node(s):** `monetizeai-backend`, `Video`, `ippanelPatternRequest`, `$schema`, `style` (+4255 more)
+- **3007 isolated node(s):** `fitino/challenge21`, `Video`, `ippanelPatternRequest`, `$schema`, `style` (+3002 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **241 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **182 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `NewServer()` connect `NewServer` to `MobileDeviceRepository`, `funnel_service.go`, `AdminUserService`, `AIGenerateService`, `MeService`, `CoachProgramService`, `CommunityPostService`, `EventRepository`, `GamificationRepository`, `TicketService`, `RecipeService`, `TrackingService`, `MotivationalQuoteRepository`, `backend/config/config.go`, `PoseBankService`, `CoachProfileService`, `auth_controller.go`, `admin_template_service.go`, `.Chat`, `GetUserID`, `TemplateRepository`, `site_settings_service.go`, `ProgramRepository`, `AuthService`, `.CreateLog`, `FeedbackService`, `AchievementService`, `WorkoutHistoryService`, `AdminPlanService`, `AdminExerciseService`, `CoachProgramController`, `CheckInService`, `PaymentService`, `FunnelLead`, `ProgressReportService`, `CoachSessionRepository`, `ExerciseRepository`, `GuaranteeService`, `AIGenerateController`, `Context`, `CoachProfileRepository`, `CoachDashboardService`, `student_controller.go`, `OrderRepository`, `DataFile`, `AdminCoachService`, `AchievementRepository`, `ServicePlanRepository`, `SubscriptionRepository`, `AdminStudentService`, `CoachAchievementService`, `MeDashboardService`, `SiteSettingsController`, `AdminProgramController`, `coach_food_service.go`, `NewCheckoutService`, `CoachDashboardController`, `CoachSessionController`, `CommunityPostController`, `GuaranteeRepository`, `NotificationRepository`, `OtpRepository`, `AdminTemplateController`, `StreakService`, `CoachStudentService`, `StudentService`, `RefreshTokenRepository`, `CoachAchievementRepository`, `FoodRepository`, `UserRepository`, `Context`, `PaymentController`, `Context`, `AIRequestLogRepository`, `CoachProfileController`, `CheckInReminderService`, `AdminExerciseController`, `CoachExerciseController`, `CoachPlanController`, `ProgressReportRepository`, `NotificationService`, `AdminPlanController`, `CoachAchievementController`, `CheckInController`, `CoachTicketController`, `NotificationController`, `NewProgressReportService`, `AdminCoachController`, `AdminStudentController`, `DailyFoodLogController`, `MeTicketController`, `PublicCoachController`, `AuthorizationService`, `CheckoutController`, `CoachStudentController`, `ProgressReportController`, `NewAchievementController`?**
-  _High betweenness centrality (0.035) - this node is a cross-community bridge._
-- **Why does `RefreshTokenRepository` connect `RefreshTokenRepository` to `AuthService`?**
+- **Why does `NewServer()` connect `NewServer` to `MobileDeviceRepository`, `AdminUserService`, `string`, `ai_generate_service.go`, `MeService`, `CoachProgramService`, `CommunityPostService`, `EventRepository`, `GamificationRepository`, `TicketService`, `RecipeService`, `TrackingService`, `CoachStudentProgramsResponse`, `ReminderService`, `MotivationalQuoteRepository`, `backend/config/config.go`, `PoseBankService`, `CoachProfileService`, `auth_controller.go`, `admin_template_service.go`, `.Chat`, `GetUserID`, `TemplateRepository`, `site_settings_service.go`, `FunnelAIAnalysisRepository`, `ProgramRepository`, `daily_food_log_service.go`, `FeedbackService`, `AchievementService`, `WorkoutHistoryService`, `DailyFoodLogRepository`, `NewAuthService`, `AdminPlanService`, `AdminExerciseService`, `CoachProgramController`, `CheckInService`, `PaymentService`, `FunnelLead`, `ProgressReportService`, `CoachSessionService`, `ExerciseRepository`, `Context`, `CoachProfileRepository`, `CoachDashboardService`, `student_controller.go`, `OrderRepository`, `DataFile`, `AdminCoachService`, `AchievementRepository`, `ServicePlanRepository`, `SubscriptionRepository`, `AdminStudentService`, `CoachAchievementService`, `MeDashboardService`, `SiteSettingsController`, `AdminProgramController`, `coach_food_service.go`, `NewCheckoutService`, `CoachDashboardController`, `CommunityPostController`, `NotificationRepository`, `OtpRepository`, `AdminTemplateController`, `StreakService`, `CoachStudentService`, `StudentService`, `RefreshTokenRepository`, `CoachAchievementRepository`, `FoodRepository`, `UserRepository`, `Context`, `PaymentController`, `Context`, `AIRequestLogRepository`, `CoachProfileController`, `CheckInReminderService`, `AdminExerciseController`, `CoachExerciseController`, `CoachPlanController`, `ProgressReportRepository`, `NotificationService`, `AdminPlanController`, `CoachAchievementController`, `CheckInController`, `CoachTicketController`, `NotificationController`, `AdminCoachController`, `AdminStudentController`, `DailyFoodLogController`, `MeTicketController`, `PublicCoachController`, `AuthorizationService`, `CoachStudentController`, `ProgressReportController`, `NewAchievementController`?**
+  _High betweenness centrality (0.053) - this node is a cross-community bridge._
+- **Why does `cn()` connect `cn` to `client.js`, `toastError`, `WorkoutEditorClient.jsx`, `FoodDiaryClient.jsx`, `sidebar.jsx`, `label.jsx`, `CoachAchievementsSection.jsx`, `ProfileClient.js`, `card.jsx`, `button.jsx`, `UserPanelShell.jsx`, `MyProgramsListClient.js`, `AnalysisVisuals.jsx`, `Navbar.js`, `CoachAchievementsEditor.jsx`, `WorkoutExerciseCards.jsx`, `LeadFunnelWizard.jsx`, `BmiCalculatorClient.jsx`, `FunnelHero.jsx`, `UserDashboardClient.jsx`, `FunnelLogoLayer.jsx`, `CoachDashboardClient.jsx`, `OrderDetailsPanel.js`, `FitinoAIChatClient.jsx`, `FunnelPaymentClient.jsx`, `HomeClient.jsx`, `PostWorkoutSurveyModal.jsx`, `FunnelSuccessClient.jsx`?**
+  _High betweenness centrality (0.018) - this node is a cross-community bridge._
+- **Why does `GetCommandLineArguments()` connect `wWinMain` to `string`?**
   _High betweenness centrality (0.009) - this node is a cross-community bridge._
-- **Why does `AuthService` connect `AuthService` to `auth_controller.go`, `RefreshTokenRepository`, `UserRepository`, `OtpRepository`, `funnel_service.go`?**
-  _High betweenness centrality (0.007) - this node is a cross-community bridge._
-- **Are the 149 inferred relationships involving `NewServer()` (e.g. with `CORSAllowCredentials()` and `IsOriginAllowed()`) actually correct?**
-  _`NewServer()` has 149 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 150 inferred relationships involving `NewServer()` (e.g. with `CORSAllowCredentials()` and `IsOriginAllowed()`) actually correct?**
+  _`NewServer()` has 150 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 115 inferred relationships involving `GetUserID()` (e.g. with `ApprovedCoachOnly()` and `.GetMyAchievements()`) actually correct?**
   _`GetUserID()` has 115 INFERRED edges - model-reasoned connections that need verification._
-- **What connects `monetizeai-backend`, `Video`, `ippanelPatternRequest` to the rest of the system?**
-  _4260 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `card.jsx` be split into smaller, more focused modules?**
-  _Cohesion score 0.04409588635691033 - nodes in this community are weakly interconnected._
+- **What connects `fitino/challenge21`, `Video`, `ippanelPatternRequest` to the rest of the system?**
+  _3007 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `client.js` be split into smaller, more focused modules?**
+  _Cohesion score 0.06490322580645161 - nodes in this community are weakly interconnected._

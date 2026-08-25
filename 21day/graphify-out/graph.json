@@ -433,17 +433,17 @@
       "norm_label": "cancel15hourfollowup()"
     },
     {
-      "label": "monetizeai-backend",
+      "label": "fitino/challenge21",
       "file_type": "code",
       "type": "package",
       "ecosystem": "go",
       "source_file": "backend/go.mod",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "pkg_monetizeai_backend",
-      "community": 93,
-      "community_name": "monetizeai-backend",
-      "norm_label": "monetizeai-backend"
+      "id": "pkg_fitino_challenge21",
+      "community": 46,
+      "community_name": "fitino/challenge21",
+      "norm_label": "fitino/challenge21"
     },
     {
       "label": "main.go",
@@ -1343,8 +1343,8 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "package_dependencies_radix_ui_react_label",
-      "community": 65,
-      "community_name": "@radix-ui/react-label",
+      "community": 16,
+      "community_name": "dependencies",
       "norm_label": "@radix-ui/react-label"
     },
     {
@@ -1354,8 +1354,8 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "radix_ui_react_label",
-      "community": 65,
-      "community_name": "@radix-ui/react-label",
+      "community": 16,
+      "community_name": "dependencies",
       "norm_label": "@radix-ui/react-label"
     },
     {
@@ -1739,8 +1739,8 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "package_dependencies_class_variance_authority",
-      "community": 16,
-      "community_name": "dependencies",
+      "community": 40,
+      "community_name": "class-variance-authority",
       "norm_label": "class-variance-authority"
     },
     {
@@ -1750,8 +1750,8 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "class_variance_authority",
-      "community": 16,
-      "community_name": "dependencies",
+      "community": 40,
+      "community_name": "class-variance-authority",
       "norm_label": "class-variance-authority"
     },
     {
@@ -19910,5 +19910,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "2f7e40334815fb83abdfe08efdbbcaa22008d5bd"
+  "built_at_commit": "d879cbdd9632c42553092152c1e1d456fc18bb19"
 }

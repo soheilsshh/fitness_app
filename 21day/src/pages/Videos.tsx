@@ -23,7 +23,7 @@ interface VideoWithProgress extends Video {
   completed: boolean;
 }
 
-const DEFAULT_VIDEO_URL = 'https://sianacademy.com/wp-content/uploads/2025/06/help.mp4';
+const DEFAULT_VIDEO_URL = '';
 const getVideoUrl = (_videoId: number) => DEFAULT_VIDEO_URL;
 
 const padDay = (id: number) => String(id).padStart(2, '0');

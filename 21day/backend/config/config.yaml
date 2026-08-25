@@ -1,11 +1,11 @@
 server_port: "8081"
 
 db:
-  user: monetizeai_free_user
-  password: mgstudio884
+  user: fitino_21day_user
+  password: change_me
   host: 127.0.0.1
   port: 3306
-  name: monetizeai_free_farsi
+  name: fitino_21day
 
 admin:
   username: admin

@@ -1,4 +1,4 @@
-# Graph Report - 21day  (2026-08-24)
+# Graph Report - 21day  (2026-08-26)
 
 ## Corpus Check
 - 115 files · ~66,032 words
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `2f7e4033`
+- Built from commit: `d879cbdd`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -55,11 +55,13 @@
 - radio-group.tsx
 - response.go
 - avatar.tsx
+- class-variance-authority
 - AdminSession
 - Progress
 - User
 - CountdownTimer.tsx
 - TopCountdownTimer.tsx
+- fitino/challenge21
 - video.go
 - clsx
 - cmdk
@@ -78,7 +80,6 @@
 - @radix-ui/react-context-menu
 - @radix-ui/react-dropdown-menu
 - @radix-ui/react-hover-card
-- @radix-ui/react-label
 - @radix-ui/react-menubar
 - @radix-ui/react-progress
 - @radix-ui/react-radio-group
@@ -104,7 +105,6 @@
 - @tanstack/react-query
 - vaul
 - zod
-- monetizeai-backend
 
 ## God Nodes (most connected - your core abstractions)
 1. `cn()` - 71 edges
@@ -201,7 +201,7 @@ Nodes (13): AdminAuthMiddleware(), AdminLogin(), AdminLogout(), extractBearerTok
 
 ### Community 16 - "dependencies"
 Cohesion: 0.15
-Nodes (13): class-variance-authority, dependencies, class-variance-authority, @radix-ui/react-accordion, @radix-ui/react-dialog, @radix-ui/react-navigation-menu, @radix-ui/react-popover, @radix-ui/react-tabs (+5 more)
+Nodes (13): dependencies, @radix-ui/react-accordion, @radix-ui/react-dialog, @radix-ui/react-label, @radix-ui/react-navigation-menu, @radix-ui/react-popover, @radix-ui/react-tabs, @radix-ui/react-accordion (+5 more)
 
 ### Community 17 - "input-otp.tsx"
 Cohesion: 0.40
@@ -292,20 +292,20 @@ Cohesion: 0.50
 Nodes (3): Avatar, AvatarFallback, AvatarImage
 
 ## Knowledge Gaps
-- **384 isolated node(s):** `monetizeai-backend`, `Video`, `ippanelPatternRequest`, `$schema`, `style` (+379 more)
+- **384 isolated node(s):** `fitino/challenge21`, `Video`, `ippanelPatternRequest`, `$schema`, `style` (+379 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **51 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `dependencies` connect `dependencies` to `devDependencies`, `sidebar.tsx`, `clsx`, `cmdk`, `date-fns`, `embla-carousel-react`, `framer-motion`, `@hookform/resolvers`, `input-otp`, `lucide-react`, `next-themes`, `@radix-ui/react-alert-dialog`, `@radix-ui/react-aspect-ratio`, `@radix-ui/react-avatar`, `@radix-ui/react-checkbox`, `@radix-ui/react-collapsible`, `@radix-ui/react-context-menu`, `@radix-ui/react-dropdown-menu`, `@radix-ui/react-hover-card`, `@radix-ui/react-label`, `@radix-ui/react-menubar`, `@radix-ui/react-progress`, `@radix-ui/react-radio-group`, `@radix-ui/react-scroll-area`, `@radix-ui/react-select`, `@radix-ui/react-separator`, `@radix-ui/react-slider`, `@radix-ui/react-slot`, `@radix-ui/react-switch`, `@radix-ui/react-toast`, `@radix-ui/react-toggle`, `@radix-ui/react-toggle-group`, `@radix-ui/react-tooltip`, `react-day-picker`, `react-dom`, `react-hook-form`, `react-resizable-panels`, `react-router-dom`, `recharts`, `sonner`, `tailwind-merge`, `tailwindcss-animate`, `@tanstack/react-query`, `vaul`, `zod`?**
+- **Why does `dependencies` connect `dependencies` to `devDependencies`, `sidebar.tsx`, `class-variance-authority`, `clsx`, `cmdk`, `date-fns`, `embla-carousel-react`, `framer-motion`, `@hookform/resolvers`, `input-otp`, `lucide-react`, `next-themes`, `@radix-ui/react-alert-dialog`, `@radix-ui/react-aspect-ratio`, `@radix-ui/react-avatar`, `@radix-ui/react-checkbox`, `@radix-ui/react-collapsible`, `@radix-ui/react-context-menu`, `@radix-ui/react-dropdown-menu`, `@radix-ui/react-hover-card`, `@radix-ui/react-menubar`, `@radix-ui/react-progress`, `@radix-ui/react-radio-group`, `@radix-ui/react-scroll-area`, `@radix-ui/react-select`, `@radix-ui/react-separator`, `@radix-ui/react-slider`, `@radix-ui/react-slot`, `@radix-ui/react-switch`, `@radix-ui/react-toast`, `@radix-ui/react-toggle`, `@radix-ui/react-toggle-group`, `@radix-ui/react-tooltip`, `react-day-picker`, `react-dom`, `react-hook-form`, `react-resizable-panels`, `react-router-dom`, `recharts`, `sonner`, `tailwind-merge`, `tailwindcss-animate`, `@tanstack/react-query`, `vaul`, `zod`?**
   _High betweenness centrality (0.235) - this node is a cross-community bridge._
 - **Why does `react` connect `sidebar.tsx` to `dependencies`, `hooks/use-toast.ts`?**
   _High betweenness centrality (0.207) - this node is a cross-community bridge._
 - **Why does `cn()` connect `cn` to `sidebar.tsx`, `carousel.tsx`, `AdminDashboard.tsx`, `hooks/use-toast.ts`, `button.tsx`, `utils.ts`, `command.tsx`, `Index.tsx`, `input-otp.tsx`, `form.tsx`, `menubar.tsx`, `context-menu.tsx`, `dropdown-menu.tsx`, `card.tsx`, `alert-dialog.tsx`, `breadcrumb.tsx`, `navigation-menu.tsx`, `select.tsx`, `chart.tsx`, `badge.tsx`, `tabs.tsx`, `toggle-group.tsx`, `alert.tsx`, `radio-group.tsx`, `avatar.tsx`?**
   _High betweenness centrality (0.168) - this node is a cross-community bridge._
-- **What connects `monetizeai-backend`, `Video`, `ippanelPatternRequest` to the rest of the system?**
+- **What connects `fitino/challenge21`, `Video`, `ippanelPatternRequest` to the rest of the system?**
   _384 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `devDependencies` be split into smaller, more focused modules?**
   _Cohesion score 0.043478260869565216 - nodes in this community are weakly interconnected._

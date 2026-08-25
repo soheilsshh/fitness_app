@@ -1,4 +1,4 @@
-module monetizeai-backend
+module fitino/challenge21
 
 go 1.23.0
 

@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"log"
-	"monetizeai-backend/config"
+	"fitino/challenge21/config"
 	"net/http"
 )
 

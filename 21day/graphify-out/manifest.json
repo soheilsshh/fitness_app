@@ -10,38 +10,38 @@
     "semantic_hash": ""
   },
   "backend/config/config.sql": {
-    "mtime": 1787248908.4270403,
-    "ast_hash": "fe88e82ac20690a227a9a397ba61da62",
+    "mtime": 1787692676.1055338,
+    "ast_hash": "859f166de910893766a3b6eb8e48fcc6",
     "semantic_hash": ""
   },
   "backend/controllers/admin_controller.go": {
-    "mtime": 1787525676.9603043,
-    "ast_hash": "abd9e102745a3a1239dc244dd85dcc0a",
+    "mtime": 1787692665.550324,
+    "ast_hash": "23acaa2644e6a2fd81cc14859a90b107",
     "semantic_hash": ""
   },
   "backend/controllers/user_controller.go": {
-    "mtime": 1787391482.514586,
-    "ast_hash": "cdc5b8f71a843b521c127cfe0c904149",
+    "mtime": 1787692666.4188066,
+    "ast_hash": "4adedbde967fe921048ea2a765fdf9f0",
     "semantic_hash": ""
   },
   "backend/controllers/video_controller.go": {
-    "mtime": 1787525184.0646713,
-    "ast_hash": "59b88b62e576350a20b07a144badbb3a",
+    "mtime": 1787692666.5125377,
+    "ast_hash": "a241f7cb8ea70d91b6bcf2df67765a82",
     "semantic_hash": ""
   },
   "backend/database/mysql.go": {
-    "mtime": 1787524786.5036595,
-    "ast_hash": "2b22b487a9b94c33fb8d9acf32e25b8a",
+    "mtime": 1787692666.5248933,
+    "ast_hash": "247a2e82c1416ed4d25128d718421c28",
     "semantic_hash": ""
   },
   "backend/go.mod": {
-    "mtime": 1787248908.4280415,
-    "ast_hash": "d4cb45d5d76694cd532dcdbcfc8408f8",
+    "mtime": 1787693243.9321322,
+    "ast_hash": "1ca7df8f85e965a3b04bfddd2b7c090a",
     "semantic_hash": ""
   },
   "backend/main.go": {
-    "mtime": 1787389685.9191763,
-    "ast_hash": "0183851565dd86338f91c38ae72748b5",
+    "mtime": 1787692676.1055338,
+    "ast_hash": "503c95547930eba913da82823aabdbe2",
     "semantic_hash": ""
   },
   "backend/models/admin_session.go": {
@@ -70,18 +70,18 @@
     "semantic_hash": ""
   },
   "backend/postman_collection.json": {
-    "mtime": 1787248908.4300473,
-    "ast_hash": "cab0242c13c58205ef49ea99dca5630a",
+    "mtime": 1787692688.539232,
+    "ast_hash": "e3edd08c37483559ea276b8af8fb8bf2",
     "semantic_hash": ""
   },
   "backend/routes/routes.go": {
-    "mtime": 1787391493.8340564,
-    "ast_hash": "5d12af87d5c7e3b2725fbc6e363eb41d",
+    "mtime": 1787692665.550324,
+    "ast_hash": "32d628e0e1952cac53b101df332d4b45",
     "semantic_hash": ""
   },
   "backend/services/sms_service.go": {
-    "mtime": 1787248908.4310505,
-    "ast_hash": "f07eb22e0adc1a1f52c3cffa580ea1ab",
+    "mtime": 1787692666.549157,
+    "ast_hash": "b651b9f39ce239080c202d143f917c74",
     "semantic_hash": ""
   },
   "backend/services/user_service.go": {
@@ -160,8 +160,8 @@
     "semantic_hash": ""
   },
   "src/components/HowItWorksSection.tsx": {
-    "mtime": 1787349196.0319993,
-    "ast_hash": "7c78cbe4a5c6905c079ffd91371128ad",
+    "mtime": 1787692689.1338768,
+    "ast_hash": "166205c7a1b9d0eb11c217f1def4715e",
     "semantic_hash": ""
   },
   "src/components/IncomeCalculator.tsx": {
@@ -525,8 +525,8 @@
     "semantic_hash": ""
   },
   "src/pages/Videos.tsx": {
-    "mtime": 1787525207.1227355,
-    "ast_hash": "3bee713cde20a89d8905b0d5fa3ae8ed",
+    "mtime": 1787692676.3360255,
+    "ast_hash": "5fa5a20cb2b886d6da0913ffc8af4f2f",
     "semantic_hash": ""
   },
   "src/vite-env.d.ts": {
@@ -555,8 +555,8 @@
     "semantic_hash": ""
   },
   "vite.config.ts": {
-    "mtime": 1787248908.4689665,
-    "ast_hash": "937b918dc1537ddc2f18bf1039377429",
+    "mtime": 1787692676.1620889,
+    "ast_hash": "a424d1acce114e4fd4a591979263f384",
     "semantic_hash": ""
   },
   "API_INTEGRATION.md": {
@@ -570,8 +570,8 @@
     "semantic_hash": ""
   },
   "backend/config/config.yaml": {
-    "mtime": 1787526820.5300698,
-    "ast_hash": "044b25f2401c88758695b1d88cecaea5",
+    "mtime": 1787692647.731733,
+    "ast_hash": "2ace3b411bc7af2d3a8ba6461c147938",
     "semantic_hash": ""
   },
   "docs/ADMIN_UI_AND_FLOWS.md": {

@@ -22,7 +22,7 @@ const HowItWorksSection = () => {
     },
     {
       icon: <MessageSquare className="w-8 h-8 text-yellow-400" />,
-      title: "دیدن پیام تبریک و معرفی ربات MonetizeAI",
+      title: "دیدن پیام تبریک و معرفی هوش مصنوعی فیتینو",
       description: "دسترسی به ابزارهای پیشرفته‌تر"
     },
     {
