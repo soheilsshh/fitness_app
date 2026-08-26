@@ -23,7 +23,7 @@ func Connect() {
 	}
 	DB = db
 
-	db.AutoMigrate(&models.User{}, &models.Video{}, &models.Progress{}, &models.ScheduledSMS{}, &models.AdminSession{})
+	db.AutoMigrate(&models.User{}, &models.Video{}, &models.Progress{}, &models.ScheduledSMS{}, &models.AdminSession{}, &models.Payment{})
 
 	seedFakeVideos()
 }

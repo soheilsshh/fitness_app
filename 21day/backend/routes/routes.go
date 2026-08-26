@@ -15,6 +15,9 @@ func RegisterRoutes(r *gin.Engine) {
 		api.POST("/videos/:id/unlock", controllers.UnlockVideo)
 		api.GET("/progress", controllers.GetUserProgress)
 
+		api.POST("/payment/request", controllers.CreatePayment)
+		api.GET("/payment/callback", controllers.PaymentCallback)
+
 		api.POST("/admin/login", controllers.AdminLogin)
 
 		admin := api.Group("/admin")

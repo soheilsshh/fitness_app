@@ -11,21 +11,30 @@ admin:
   username: admin
   password: admin123
 
-smsapikey: "OWYzZmNmNGYtZjEzMi00YjIyLWJhMzgtYmFjZjQ3NWFmMjIxMDcwZGE0ZWMwZDcyYzAxNjcxZDlkMjU0MzAzZmJhMGY="
-from_number: "+983000505"
-sms_base_url: "https://api2.ippanel.com/api/v1"
+# Kavenegar Verify Lookup — the values below are TEMPLATE NAMES you create
+# in the Kavenegar panel, not the old ippanel pattern codes. See the chat
+# for the exact draft copy to register for each one.
+kavenegar_api_key: "SET-ME-REAL-KAVENEGAR-API-KEY"
 
 patterns:
-  registration: "kii5iwrowp477q4"
-  followup1_3h: "1yo9593h6o21sqo"
-  followup1_15h: "v9pabpsmuqedhoy"
-  followup2_3h: "xi3bzfnfynxv39a"
-  followup2_15h: "ul85jpbp0rgaqvu"
-  followup3_3h: "xkkvxumbg6v03ri"
-  followup3_15h: "vhqv9dqp78hbhvg"
-  followup4_3h: "0n1i9hintimj168"
-  followup4_15h: "lutb9s469yk546f"
-  complete1: "8zbli5m2ey9ppg4"
-  complete2: "saxojb1e5ey93ro"
-  complete3: "an762f2qh77ncie"
-  complete4: "iuwoc9d0bu5axy8"
+  registration: "fitino-challenge-welcome"
+  followup1_3h: "fitino-challenge-f1-3h"
+  followup1_15h: "fitino-challenge-f1-15h"
+  followup2_3h: "fitino-challenge-f2-3h"
+  followup2_15h: "fitino-challenge-f2-15h"
+  followup3_3h: "fitino-challenge-f3-3h"
+  followup3_15h: "fitino-challenge-f3-15h"
+  followup4_3h: "fitino-challenge-f4-3h"
+  followup4_15h: "fitino-challenge-f4-15h"
+  complete1: "fitino-challenge-complete1"
+  complete2: "fitino-challenge-complete2"
+  complete3: "fitino-challenge-complete3"
+  complete4: "fitino-challenge-complete4"
+
+# Zarinpal — same merchant Fitinoo/Joftinoo already use in production.
+zarinpal:
+  merchant_id: "fcbfe898-c7bf-4bee-9ac4-e37e79f730f5"
+  sandbox: false
+  callback_url: "https://challenge.rapexa.ir/api/payment/callback"
+  frontend_url: "https://challenge.fitinoo.ir"
+  price: 990000  # placeholder — 990,000 Toman, change to the real price

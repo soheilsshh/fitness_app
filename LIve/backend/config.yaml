@@ -67,8 +67,8 @@ test_mode:
 # Payment Configuration (ZarinPal) — callback lives on a rapexa.ir subdomain,
 # same pattern as Fitinoo/Joftinoo's payment callbacks on this server.
 payment:
-  merchant_id: ""  # Merchant ID شما از ZarinPal
-  sandbox: true  # true تا merchant_id واقعی ست بشه
+  merchant_id: "fcbfe898-c7bf-4bee-9ac4-e37e79f730f5"  # همون مرچنت فیتینو/جفتینو
+  sandbox: false
   callback_url: "https://live.rapexa.ir/payment/callback"  # URL callback
   frontend_url: "https://live.fitinoo.ir"  # Frontend base URL برای redirect
   subscription_price: 4900000   # 4,900,000 تومان
