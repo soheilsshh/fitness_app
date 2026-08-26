@@ -31,7 +31,7 @@ faraz_sms:
 # replacement is sourced (see TODO.md).
 avanak:
   token: "23568A4E750C3C8849CDCABFC2A5B4AB9241C864"
-  message_id: 40494229  # کد فایل صوتی
+  message_id: 49170751  # کد فایل صوتی
   base_url: "https://portal.avanak.ir/Rest/QuickSend"  # Official QuickSend API endpoint
   enabled: true
 
