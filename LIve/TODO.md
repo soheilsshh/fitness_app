@@ -1,66 +1,54 @@
 # TODO — multi-webinar support
 
-Current system is single-webinar: one schedule (`webinar.start_hour` /
-`end_hour` in config), one stream, one buy-button/countdown state, shared
-across every visitor. Needs to become N webinars (e.g. 6), each with its own
-schedule, its own stream, its own comments/marketing copy, its own "golden
-time" buy-button window, and its own on/off switch for whether it sells
-anything at all.
+**Status: backend + admin panel done and deployed (2026-08-26). Public
+landing-page wiring is what's left — see "Still needed" below.**
 
-**This is a real feature, not a config tweak — scoped here, not started.**
-Don't attempt it as a side effect of another change; it touches the DB
-schema, the admin panel, the scheduler, and the public frontend all at once.
+Was single-webinar: one schedule (`webinar.start_hour`/`end_hour` in
+config), one stream, one buy-button/countdown state, shared across every
+visitor. Now N `webinar_programs` rows exist, each with its own schedule,
+stream, selling flag, "golden time" buy-button reveal, price, and comments.
 
-## 1. Data model
-New `webinars` table:
-- `id`, `slug` (used in URLs), `title`, `is_active`
-- `start_at` / schedule fields (today's `webinar.start_hour/minute`,
-  `end_hour`, `duration_minutes` — per-row instead of global config)
-- `is_selling_enabled` (bool) — some webinars sell nothing at all
-- `buy_button_reveal_at` — the "golden time"; before this, no buy button
-  regardless of `is_selling_enabled`
-- `price`, `merchant_id` override (or inherit the shared one)
-- `stream_source` (which video file / RTMP source this webinar plays)
-- `comment_script` / `marketing_copy` — per-webinar canned comments and copy
-  (today's comment system is presumably global — needs an FK to webinar)
+## Done
+- **Data model**: `models.WebinarProgram` (slug, title, video_url, start_at,
+  end_at, is_selling_enabled, buy_button_reveal_at, price, comments_json,
+  is_active). `PaymentTransaction.WebinarProgramID` links a purchase to
+  which program it was for.
+- **Scheduler**: `scheduler/webinar_programs.go` is a fully independent
+  1-minute ticker — finds whichever program's window contains now and
+  starts/stops/switches the RTMP→HLS stream to match. Does not touch or
+  share state with the legacy single-webinar scheduler. Three guards
+  (`HasActiveWebinarPrograms`) added to the legacy path so the two can't
+  fight over starting/stopping the stream; when no programs exist, every
+  guard is a no-op and old behavior is untouched (verified on deploy).
+- **API**: `GET /api/webinar-programs/current` (active/next/last program +
+  computed `show_buy_button`), `GET /api/webinar-programs/current/comments`
+  (serves `comments_json` live — no rebuild needed to change comments,
+  unlike the old static-imported `timedComments.ts`). Admin CRUD at
+  `/api/admin/webinar-programs`.
+- **Admin panel**: new "چند وبیناره" tab (`WebinarProgramsManager.tsx`) —
+  create/edit/delete programs, set video path, schedule, selling + golden
+  time + price, and comments as JSON (same `TimeRange[]` shape the old file
+  used, so existing scripts are copy-paste portable).
 
-Existing single-webinar tables/config that currently assume "the one
-webinar" need an added `webinar_id` FK: whatever drives the live comment
-feed, `payment_transactions` (already has `type` — add which webinar it
-was for), landing activity tracking.
-
-## 2. Scheduler
-`scheduler/scheduler.go` currently reads one `webinar.start_hour` etc. from
-config and drives one stream (RTMP → HLS, `./videos/video1.mp4`). Needs to
-loop over active `webinars` rows and run N independent instances of
-whatever that scheduling logic does — stream start/stop, per-webinar
-reminder timing. Check for shared global state (single "is streaming" flag,
-single HLS output path — `hls_media/stream.m3u8` is presumably hardcoded to
-one filename) that would collide if two webinars' windows ever overlap.
-
-## 3. Admin panel
-CRUD for the `webinars` table: create/edit/delete, set schedule, set
-`is_selling_enabled` and `buy_button_reveal_at` per row, upload/assign the
-video source, edit the comment script. This is the actual day-to-day
-interface the account owner will use, so it needs to be usable, not just
-functional — probably the single biggest chunk of this task.
-
-## 4. Public frontend
-- Webinar picker/router: which `/webinar/:slug` (or however routed) shows
-  which stream + comments + buy button.
-- Buy button visibility: `now >= buy_button_reveal_at AND is_selling_enabled`
-  — currently this logic is presumably a single global timer; needs to
-  become per-webinar-instance state, re-evaluated per page load / socket
-  update.
-- Comments: per-webinar feed, not the global one.
-
-## 5. Payment
-`payment.rapexa.ir` → `live.rapexa.ir` callback already correctly identifies
-which product these payments are for (LIve), but not which *webinar* within
-LIve. Add webinar identification to the payment request (so verify/callback
-knows which webinar's access to grant) — probably a webinar_id in the
-Zarinpal `metadata` or encoded in the order description, then read back on
-verify.
+## Still needed — public landing page
+`src/data/landing-html.txt` (~3000 lines) is the actual page visitors see —
+raw legacy HTML/CSS/vanilla-JS from the pre-rebrand business, not a React
+component, with its own `openPaymentModal()`/modal-visibility JS and (per
+`LiveChat.tsx`) a *separate* React comment feed that statically imports
+`timedComments.ts`. To finish this feature:
+1. Read `landing-html.txt`'s existing payment-modal trigger logic — is
+   there already a timer/reveal condition to replace, or is the button just
+   always clickable today (no "golden time" gating exists yet at all)?
+2. Wire whatever's there to call `GET /api/webinar-programs/current` and
+   show/hide the buy button per `show_buy_button`, and point the actual
+   purchase action at the right program (so `POST /api/payment/create` /
+   whatever it calls knows which `webinar_program_id` is being bought).
+3. Change `LiveChat.tsx` from `import { timedComments } from "@/data/timedComments"`
+   to fetching `GET /api/webinar-programs/current/comments` at runtime —
+   otherwise switching which program is "current" won't change what
+   comments play without a rebuild.
+Deliberately not attempted in the same pass as the backend — didn't want to
+edit 3000 lines of unfamiliar legacy JS without reading it properly first.
 
 ## Separately blocked / needs input before or alongside this
 - **No real webinar video content exists yet.** The stream scheduler is
