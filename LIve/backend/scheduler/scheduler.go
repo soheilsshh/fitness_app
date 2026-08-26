@@ -295,6 +295,10 @@ func StartScheduler(db *gorm.DB, avanakService *services.AvanakService, melipaya
 	// This job ALWAYS reads config from database or appointment slots, so it picks up admin panel changes immediately
 	// NEW: Supports both manual and appointment-based scheduling
 	s.Every(5).Seconds().Do(func() {
+		if HasActiveWebinarPrograms(db) {
+			return // multi-webinar mode: webinar_programs.go's ticker owns this
+		}
+
 		now := time.Now().In(loc)
 
 		// Check scheduling mode
@@ -450,6 +454,13 @@ func StartScheduler(db *gorm.DB, avanakService *services.AvanakService, melipaya
 	// For appointment mode: Stop after 1 hour 42 minutes (102 minutes = 6120 seconds)
 	// For manual mode: Use existing video duration (1:43:36 = 6216 seconds)
 	s.Every(10).Seconds().Do(func() {
+		if HasActiveWebinarPrograms(db) {
+			// Multi-webinar mode: webinar_programs.go's own 1-minute tick
+			// stops the stream based on the active program's real end_at,
+			// not the hardcoded durations this job assumes below.
+			return
+		}
+
 		now := time.Now().In(loc)
 
 		// Check if stream is running
@@ -614,6 +625,12 @@ func getTodayAppointmentSlot(db *gorm.DB) (*models.AppointmentSlot, error) {
 // IMPORTANT: Only updates if webinar is NOT currently active (to preserve current session)
 // NEW: Supports both manual and appointment-based scheduling
 func updateWebinarSchedule(db *gorm.DB, cfg *config.Config) {
+	if HasActiveWebinarPrograms(db) {
+		// Multi-webinar mode: webinar_programs.go's own scheduler drives
+		// streaming, this legacy single-webinar path steps aside entirely.
+		return
+	}
+
 	loc, err := time.LoadLocation("Asia/Tehran")
 	if err != nil {
 		log.Printf("❌ Failed to load timezone: %v", err)
@@ -722,6 +739,12 @@ func updateWebinarSchedule(db *gorm.DB, cfg *config.Config) {
 // startStreamingForToday starts the streaming for today's webinar
 // NEW: Supports both manual and appointment-based scheduling
 func startStreamingForToday(db *gorm.DB, cfg *config.Config) {
+	if HasActiveWebinarPrograms(db) {
+		// Multi-webinar mode: webinar_programs.go's own scheduler drives
+		// streaming, this legacy single-webinar path steps aside entirely.
+		return
+	}
+
 	loc, err := time.LoadLocation("Asia/Tehran")
 	if err != nil {
 		log.Printf("❌ Failed to load timezone: %v", err)

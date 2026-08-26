@@ -68,6 +68,7 @@ func main() {
 		&models.ChatMessage{},
 		&models.Webinar{},
 		&models.WebinarActivity{},
+		&models.WebinarProgram{},
 		&models.AdminUser{},       // Must be before AdminUserPermission
 		&models.AdminPermission{}, // Must be before AdminUserPermission
 		&models.SystemConfig{},
@@ -383,6 +384,7 @@ func main() {
 		}()
 		utils.LogInfo("Starting scheduler...")
 		scheduler.StartScheduler(db, avanakService, melipayamakService, farazSMSService, &mergedConfig.TestMode, mergedConfig)
+		scheduler.StartWebinarProgramScheduler(db)
 		utils.LogSuccess("Scheduler started successfully")
 	}()
 

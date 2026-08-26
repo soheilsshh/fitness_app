@@ -14,6 +14,7 @@ import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Toolti
 import SMSMessageManager from "@/components/SMSMessageManager";
 import AvanakMessageManager from "@/components/AvanakMessageManager";
 import TimedCommentsManager from "@/components/TimedCommentsManager";
+import WebinarProgramsManager from "@/components/WebinarProgramsManager";
 import AdminUsersManager from "@/components/AdminUsersManager";
 import UserProfile from "@/components/UserProfile";
 import PaymentsList from "@/components/PaymentsList";
@@ -4579,7 +4580,7 @@ interface SettingsPanelProps {
   avanakTestLoading?: boolean;
 }
 
-type SettingsTab = "profile" | "webinar" | "hls" | "melipayamak" | "avanak" | "comments" | "admin_users" | "licenses";
+type SettingsTab = "profile" | "webinar" | "webinar_programs" | "hls" | "melipayamak" | "avanak" | "comments" | "admin_users" | "licenses";
 
 const SettingsPanel = ({ config: systemConfig, apiUrl, onClose, onUpdateWebinar, onUpdatePayment, onUpdateMelipayamak, onUpdateAvanak, onStopStream, saving, permissionsContext, onAvanakTest, avanakTestLoading: externalAvanakTestLoading }: SettingsPanelProps) => {
   const { hasPermission } = permissionsContext;
@@ -5024,9 +5025,11 @@ const SettingsPanel = ({ config: systemConfig, apiUrl, onClose, onUpdateWebinar,
   const canViewAdminUsers = hasPermission("admin_users.view");
   const canViewLicenses = hasPermission("licenses.view");
   const canManageHLSTab = hasPermission("settings.webinar") || hasPermission("settings.edit"); // Same permission as webinar
+  const canManageWebinarProgramsTab = hasPermission("settings.webinar") || hasPermission("settings.edit"); // Same permission as webinar
 
   const allowedTabs: SettingsTab[] = ["profile"];
   if (canManageWebinarTab) allowedTabs.push("webinar");
+  if (canManageWebinarProgramsTab) allowedTabs.push("webinar_programs");
   if (canManageHLSTab) allowedTabs.push("hls");
   if (canManageSMSTab) allowedTabs.push("melipayamak");
   if (canViewAvanak) allowedTabs.push("avanak");
@@ -5176,6 +5179,20 @@ const SettingsPanel = ({ config: systemConfig, apiUrl, onClose, onUpdateWebinar,
                       <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
                       <span className="hidden sm:inline">زمان‌بندی کارگاه</span>
                       <span className="sm:hidden">کارگاه</span>
+                    </button>
+                    )}
+                    {canManageWebinarProgramsTab && (
+                    <button
+                      onClick={() => setActiveTab("webinar_programs")}
+                      className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 lg:px-5 py-2 sm:py-2.5 lg:py-3 rounded-lg sm:rounded-xl font-semibold transition-all duration-300 whitespace-nowrap text-xs sm:text-sm ${
+                        activeTab === "webinar_programs"
+                          ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg"
+                          : "bg-white/5 text-gray-400 hover:bg-white/10 hover:text-gray-300 border border-white/10"
+                      }`}
+                    >
+                      <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                      <span className="hidden sm:inline">چند وبیناره</span>
+                      <span className="sm:hidden">وبینارها</span>
                     </button>
                     )}
                     {canManageHLSTab && (
@@ -5914,6 +5931,13 @@ const SettingsPanel = ({ config: systemConfig, apiUrl, onClose, onUpdateWebinar,
           {activeTab === "comments" && canManageCommentsTab && (
             <div className="space-y-4">
               <TimedCommentsManager token={localStorage.getItem("admin_token") || ""} />
+            </div>
+          )}
+
+          {/* Multi-webinar Program Management */}
+          {activeTab === "webinar_programs" && canManageWebinarProgramsTab && (
+            <div className="space-y-4">
+              <WebinarProgramsManager token={localStorage.getItem("admin_token") || ""} />
             </div>
           )}
 

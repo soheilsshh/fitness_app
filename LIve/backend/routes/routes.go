@@ -40,6 +40,7 @@ func SetupRoutes(r *gin.Engine, db *gorm.DB, melipayamakService *services.Melipa
 	analyticsController := controllers.NewAdminAnalyticsController(db)
 	smartSMSController := controllers.NewSmartSMSController(db, avanakService, melipayamakService, farazSMSService)
 	groqChatController := controllers.NewGroqChatController(fileConfig)
+	webinarProgramController := controllers.NewWebinarProgramController(db)
 
 	api := r.Group("/api")
 	log.Println("[ROUTES] Group registered at /api")
@@ -48,6 +49,8 @@ func SetupRoutes(r *gin.Engine, db *gorm.DB, melipayamakService *services.Melipa
 		api.POST("/find-user", webinarController.FindUserByPhone) // Find user by phone (for login without registration)
 		api.GET("/webinar", func(c *gin.Context) { webinarController.GetWebinarInfo(c, db) })
 		api.GET("/webinar/active", func(c *gin.Context) { webinarController.GetActiveWebinar(c, db) })
+		api.GET("/webinar-programs/current", webinarProgramController.GetCurrent)
+		api.GET("/webinar-programs/current/comments", webinarProgramController.GetCurrentComments)
 		api.GET("/chat", func(c *gin.Context) { controllers.GetChatMessages(c, db) })
 		api.POST("/chat", func(c *gin.Context) { controllers.PostChatMessage(c, db) })
 
@@ -328,6 +331,13 @@ func SetupRoutes(r *gin.Engine, db *gorm.DB, melipayamakService *services.Melipa
 			adminProtected.GET("/license-sms-message", licenseSMSMessageController.GetLicenseSMSMessage)
 			adminProtected.PUT("/license-sms-message", licenseSMSMessageController.UpdateLicenseSMSMessage)
 			adminProtected.GET("/license-sms-message/logs", licenseSMSMessageController.GetLicenseSMSMessageLogs)
+
+			// Webinar program management (multi-webinar support)
+			adminProtected.GET("/webinar-programs", webinarProgramController.List)
+			adminProtected.GET("/webinar-programs/:id", webinarProgramController.Get)
+			adminProtected.POST("/webinar-programs", webinarProgramController.Create)
+			adminProtected.PUT("/webinar-programs/:id", webinarProgramController.Update)
+			adminProtected.DELETE("/webinar-programs/:id", webinarProgramController.Delete)
 		}
 	}
 
