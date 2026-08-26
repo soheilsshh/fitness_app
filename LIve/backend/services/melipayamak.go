@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"monetizeai-backend/config"
+	"fitino-live-backend/config"
 )
 
 const meliPayamakBaseURL = "https://rest.payamak-panel.com/api/SendSMS/BaseServiceNumber"

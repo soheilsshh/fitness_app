@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"monetizeai-backend/models"
+	"fitino-live-backend/models"
 	"strings"
 	"time"
 

@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"monetizeai-backend/models"
-	"monetizeai-backend/utils"
+	"fitino-live-backend/models"
+	"fitino-live-backend/utils"
 	"net/http"
 	"time"
 

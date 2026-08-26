@@ -1,11 +1,11 @@
-# Backend configuration for MonetizeAI Webinar
+# Backend configuration for Fitino Live Webinar
 
 db_host: localhost
 db_port: 3306
-db_user: fitini
-db_password: aramezani82A@
-db_name: monetizeai
-server_port: "8081"
+db_user: fitino_live
+db_password: L1ve-Fitino-Webinar-2026
+db_name: fitino_live
+server_port: "8096"
 
 melipayamak:
   username: "989103946748"
@@ -29,7 +29,7 @@ faraz_sms:
 
 telegram:
   bot_token: ""  # Telegram Bot Token
-  webhook_url: "https://webinar.sianacademy.com/webhook/telegram"  # Webhook URL (optional - can be set via API)
+  webhook_url: "https://live.fitinoo.ir/webhook/telegram"  # Webhook URL (optional - can be set via API)
   api_key: "0741a71b70336bf3d956cac3ac7f1582bbdc7a2fa661420a8e86c620c50f3e46"  # API Key for bot to authenticate with backend
   enabled: true  # Enable/disable Telegram Bot
 
@@ -38,18 +38,19 @@ groq:
   model: "llama-3.3-70b-versatile"  # Groq model name
   enabled: true  # Enable/disable Groq AI
 
-# HTTPS Configuration (for production)
+# HTTPS Configuration — nginx terminates TLS in front of this app, same as
+# every other Fitino/Quantino site on this server, so this stays false.
 enable_https: false
-ssl_cert_file: "/etc/letsencrypt/live/sianmarketing.com/fullchain.pem"
-ssl_key_file: "/etc/letsencrypt/live/sianmarketing.com/privkey.pem"
+ssl_cert_file: "/var/www/live/fullchain.pem"
+ssl_key_file: "/var/www/live/privateKey.pem"
 
 # CORS Configuration
 allowed_origins:
   - "http://localhost:5173"
-  - "https://webinar.sianacademy.com"
+  - "https://live.fitinoo.ir"
   - "http://localhost:8080"
   - "http://localhost:3000"
-  - "http://localhost:8081"
+  - "http://localhost:8096"
 
 # Webinar Schedule Configuration (Iran/Tehran timezone)
 webinar:
@@ -63,10 +64,11 @@ test_mode:
   enabled: false  # فعال/غیرفعال کردن حالت تست
   test_phone: "09155520952"  # شماره تست - فقط برای این شماره reminder یک دقیقه بعد از ثبت‌نام ارسال می‌شود
 
-# Payment Configuration (ZarinPal)
+# Payment Configuration (ZarinPal) — callback lives on a rapexa.ir subdomain,
+# same pattern as Fitinoo/Joftinoo's payment callbacks on this server.
 payment:
   merchant_id: ""  # Merchant ID شما از ZarinPal
-  sandbox: false  # false برای محیط واقعی، true برای تست
-  callback_url: "https://webinar.sianacademy.com/payment/callback"  # URL callback
-  frontend_url: "https://webinar.sianacademy.com"  # Frontend base URL برای redirect
+  sandbox: true  # true تا merchant_id واقعی ست بشه
+  callback_url: "https://live.rapexa.ir/payment/callback"  # URL callback
+  frontend_url: "https://live.fitinoo.ir"  # Frontend base URL برای redirect
   subscription_price: 4900000   # 4,900,000 تومان

@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"monetizeai-backend/config"
-	"monetizeai-backend/models"
-	"monetizeai-backend/utils"
+	"fitino-live-backend/config"
+	"fitino-live-backend/models"
+	"fitino-live-backend/utils"
 	"net/http"
 	"time"
 

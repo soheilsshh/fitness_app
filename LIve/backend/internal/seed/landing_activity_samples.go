@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"monetizeai-backend/models"
+	"fitino-live-backend/models"
 
 	"gorm.io/gorm"
 )

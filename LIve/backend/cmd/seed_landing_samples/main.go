@@ -3,9 +3,9 @@ package main
 import (
 	"log"
 
-	"monetizeai-backend/config"
-	"monetizeai-backend/internal/seed"
-	"monetizeai-backend/utils"
+	"fitino-live-backend/config"
+	"fitino-live-backend/internal/seed"
+	"fitino-live-backend/utils"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"

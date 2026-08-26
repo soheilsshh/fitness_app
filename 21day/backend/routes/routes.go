@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"monetizeai-backend/controllers"
+	"fitino-challenge-backend/controllers"
 
 	"github.com/gin-gonic/gin"
 )

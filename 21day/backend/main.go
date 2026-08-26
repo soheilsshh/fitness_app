@@ -1,11 +1,11 @@
 package main
 
 import (
-	"monetizeai-backend/config"
-	"monetizeai-backend/database"
-	"monetizeai-backend/models"
-	"monetizeai-backend/routes"
-	"monetizeai-backend/services"
+	"fitino-challenge-backend/config"
+	"fitino-challenge-backend/database"
+	"fitino-challenge-backend/models"
+	"fitino-challenge-backend/routes"
+	"fitino-challenge-backend/services"
 	"strconv"
 	"strings"
 	"time"
@@ -55,7 +55,7 @@ func main() {
 
 	// Add CORS middleware for frontend integration
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"https://sianmarketing.com", "https://sianmarketing.com:8080", "http://localhost:3000", "http://localhost:8080", "http://localhost:5183"},
+		AllowOrigins:     []string{"https://challenge.fitinoo.ir", "http://localhost:3000", "http://localhost:8080", "http://localhost:5183"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		AllowCredentials: true,

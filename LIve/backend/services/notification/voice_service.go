@@ -3,8 +3,8 @@ package notification
 import (
 	"fmt"
 	"log"
-	"monetizeai-backend/config"
-	"monetizeai-backend/services"
+	"fitino-live-backend/config"
+	"fitino-live-backend/services"
 	"strconv"
 )
 

@@ -1,4 +1,4 @@
-module monetizeai-backend
+module fitino-live-backend
 
 go 1.24.0
 

@@ -3,7 +3,7 @@ package seed
 import (
 	"encoding/json"
 	"log"
-	"monetizeai-backend/models"
+	"fitino-live-backend/models"
 
 	"gorm.io/gorm"
 )

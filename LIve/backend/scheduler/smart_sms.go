@@ -3,10 +3,10 @@ package scheduler
 import (
 	"fmt"
 	"log"
-	"monetizeai-backend/config"
-	"monetizeai-backend/models"
-	"monetizeai-backend/services"
-	"monetizeai-backend/utils"
+	"fitino-live-backend/config"
+	"fitino-live-backend/models"
+	"fitino-live-backend/services"
+	"fitino-live-backend/utils"
 	"strconv"
 	"time"
 

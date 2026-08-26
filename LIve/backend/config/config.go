@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"monetizeai-backend/models"
+	"fitino-live-backend/models"
 
 	"github.com/spf13/viper"
 	"gorm.io/gorm"

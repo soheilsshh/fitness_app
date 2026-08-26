@@ -2,8 +2,8 @@ package scheduler
 
 import (
 	"log"
-	"monetizeai-backend/models"
-	"monetizeai-backend/services"
+	"fitino-live-backend/models"
+	"fitino-live-backend/services"
 	"time"
 
 	"gorm.io/gorm"

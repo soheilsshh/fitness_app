@@ -1,11 +1,11 @@
-server_port: "8081"
+server_port: "8095"
 
 db:
-  user: monetizeai_free_user
-  password: mgstudio884
+  user: fitino_challenge
+  password: Ch4llenge21-Fitino-2026
   host: 127.0.0.1
   port: 3306
-  name: monetizeai_free_farsi
+  name: fitino_challenge
 
 admin:
   username: admin

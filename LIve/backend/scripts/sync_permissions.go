@@ -7,8 +7,8 @@ package main
 
 import (
 	"log"
-	"monetizeai-backend/config"
-	"monetizeai-backend/models"
+	"fitino-live-backend/config"
+	"fitino-live-backend/models"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"

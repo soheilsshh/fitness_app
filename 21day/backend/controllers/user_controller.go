@@ -2,9 +2,9 @@ package controllers
 
 import (
 	"encoding/csv"
-	"monetizeai-backend/database"
-	"monetizeai-backend/models"
-	"monetizeai-backend/services"
+	"fitino-challenge-backend/database"
+	"fitino-challenge-backend/models"
+	"fitino-challenge-backend/services"
 	"net/http"
 	"strconv"
 	"time"

@@ -2,14 +2,14 @@ package main
 
 import (
 	"log"
-	"monetizeai-backend/config"
-	"monetizeai-backend/controllers"
-	"monetizeai-backend/models"
-	"monetizeai-backend/routes"
-	"monetizeai-backend/scheduler"
-	"monetizeai-backend/services"
-	"monetizeai-backend/streaming"
-	"monetizeai-backend/utils"
+	"fitino-live-backend/config"
+	"fitino-live-backend/controllers"
+	"fitino-live-backend/models"
+	"fitino-live-backend/routes"
+	"fitino-live-backend/scheduler"
+	"fitino-live-backend/services"
+	"fitino-live-backend/streaming"
+	"fitino-live-backend/utils"
 	"os"
 	"time"
 

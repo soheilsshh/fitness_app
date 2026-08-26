@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"monetizeai-backend/models"
+	"fitino-live-backend/models"
 	"net/http"
 	"sort"
 	"strconv"

@@ -99,7 +99,7 @@ const FullscreenVideo = ({ onClose, onVideoEnd, videoUrl }: FullscreenVideoProps
             {!isPortrait && (
               <div className="hidden md:flex items-center gap-2 text-white text-sm font-bold">
                 <span className="h-1 w-1 rounded-full bg-white/40" aria-hidden />
-                <span>MonetizeAI Workshop</span>
+                <span>Fitino Live Workshop</span>
               </div>
             )}
           </div>
@@ -193,7 +193,7 @@ const FullscreenVideo = ({ onClose, onVideoEnd, videoUrl }: FullscreenVideoProps
           <div className="flex items-center justify-between gap-3">
             <div className="fp-spine bg-black/30 px-3 py-1.5 text-white backdrop-blur-sm" style={{ borderInlineStartColor: 'rgba(168, 85, 247, 0.7)' }}>
               <h3 className="font-bold text-sm mb-0.5">راز کسب درآمد دلاری با هوش مصنوعی</h3>
-              <p className="text-gray-300 text-xs">توسط تیم متخصص MonetizeAI</p>
+              <p className="text-gray-300 text-xs">توسط تیم متخصص Fitino Live</p>
             </div>
 
             <span className="fp-notch-btn bg-gradient-to-r from-[#187272]/80 to-[#26fce3]/80 text-white px-3 py-1 font-semibold text-xs">

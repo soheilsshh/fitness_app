@@ -3,8 +3,8 @@ package database
 import (
 	"fmt"
 	"log"
-	"monetizeai-backend/config"
-	"monetizeai-backend/models"
+	"fitino-challenge-backend/config"
+	"fitino-challenge-backend/models"
 	"time"
 
 	"gorm.io/driver/mysql"

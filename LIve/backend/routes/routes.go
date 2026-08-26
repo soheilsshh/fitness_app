@@ -2,9 +2,9 @@ package routes
 
 import (
 	"log"
-	"monetizeai-backend/config"
-	"monetizeai-backend/controllers"
-	"monetizeai-backend/services"
+	"fitino-live-backend/config"
+	"fitino-live-backend/controllers"
+	"fitino-live-backend/services"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"

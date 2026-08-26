@@ -2,8 +2,8 @@ package controllers
 
 import (
 	"log"
-	"monetizeai-backend/models"
-	"monetizeai-backend/services"
+	"fitino-live-backend/models"
+	"fitino-live-backend/services"
 	"net/http"
 	"strconv"
 	"time"

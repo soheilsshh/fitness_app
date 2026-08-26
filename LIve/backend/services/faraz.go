@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"monetizeai-backend/config"
+	"fitino-live-backend/config"
 )
 
 const farazSMSBaseURL = "http://edge.ippanel.com/v1"

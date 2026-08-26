@@ -3,7 +3,7 @@ package controllers
 import (
 	"context"
 	"log"
-	"monetizeai-backend/config"
+	"fitino-live-backend/config"
 	"net/http"
 	"time"
 

@@ -4101,7 +4101,7 @@ const AIPage = () => {
         lastName = nameParts.slice(1).join(' ') || '';
         
         // Get API base URL from window
-        const apiBaseUrl = window.API_BASE_URL || 'https://webinar.sianacademy.com/api';
+        const apiBaseUrl = window.API_BASE_URL || 'https://live.fitinoo.ir/api';
         
         // Create payment request
         const response = await fetch(apiBaseUrl + '/payment/create', {

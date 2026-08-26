@@ -1,4 +1,4 @@
-module monetizeai-backend
+module fitino-challenge-backend
 
 go 1.23.0
 
