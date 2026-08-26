@@ -21,7 +21,7 @@ import {
 } from "@/lib/api/coach";
 import { apiAssetUrl } from "@/lib/api/assets";
 import { getApiErrorMessage } from "@/lib/api/translateError";
-import { toastError, toastSuccess } from "@/app/(site)/auth/_components/helpers";
+import { toastError, toastSuccess, toEnglishDigits } from "@/app/(site)/auth/_components/helpers";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -97,22 +97,26 @@ const EMPTY_FORM = {
 export const GRADE3_CERTIFICATE_TITLE = "مدرک مربی‌گری درجه سه";
 
 function normalizePersian(s) {
-  return String(s || "")
+  return toEnglishDigits(String(s || ""))
     .replace(/ي/g, "ی")
     .replace(/ك/g, "ک")
     .replace(/‌/g, "")
-    .replace(/\s+/g, "");
+    .replace(/\s+/g, "")
+    .replace(/درجه3/g, "درجهسه");
+}
+
+export function isGrade3CertificateTitle(title) {
+  const normalized = normalizePersian(title);
+  const needle = normalizePersian(GRADE3_CERTIFICATE_TITLE);
+  return (
+    normalized.includes(needle) ||
+    (normalized.includes("مربی") && normalized.includes("درجهسه"))
+  );
 }
 
 export function isGrade3Certificate(item) {
-  if (!item?.imageUrl) return false;
-  if (item.type !== "qualification" && item.type !== "certificate") return false;
-  const title = normalizePersian(item.title);
-  const needle = normalizePersian(GRADE3_CERTIFICATE_TITLE);
-  return (
-    title.includes(needle) ||
-    (title.includes("مربی") && title.includes("درجهسه"))
-  );
+  if (!String(item?.imageUrl || "").trim()) return false;
+  return isGrade3CertificateTitle(item.title);
 }
 
 function getTypeMeta(type) {
@@ -121,10 +125,17 @@ function getTypeMeta(type) {
   );
 }
 
-function AchievementImageUpload({ imageUrl, uploading, disabled, onUpload, onClear }) {
+function AchievementImageUpload({ imageUrl, uploading, disabled, onUpload, onClear, required }) {
   return (
     <div className="space-y-2">
-      <Label>تصویر (اختیاری)</Label>
+      <Label className="inline-flex items-center gap-1">
+        {required ? "تصویر مدرک" : "تصویر (اختیاری)"}
+        {required ? (
+          <span className="text-destructive" aria-hidden="true">
+            *
+          </span>
+        ) : null}
+      </Label>
       <div className="overflow-hidden rounded-lg border bg-muted/30">
         {imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -185,6 +196,8 @@ function AchievementImageUpload({ imageUrl, uploading, disabled, onUpload, onCle
 }
 
 function AchievementFormFields({ form, onChange, uploadingImage, onImageUpload, onImageClear }) {
+  const grade3ImageRequired = isGrade3CertificateTitle(form.title);
+
   return (
     <div className="grid gap-4">
       <div className="space-y-2">
@@ -204,7 +217,14 @@ function AchievementFormFields({ form, onChange, uploadingImage, onImageUpload, 
       </div>
 
       <div className="space-y-2">
-        <Label>عنوان</Label>
+        <Label className="inline-flex items-center gap-1">
+          عنوان
+          {grade3ImageRequired ? (
+            <span className="text-destructive" aria-hidden="true">
+              *
+            </span>
+          ) : null}
+        </Label>
         <Input
           value={form.title}
           onChange={(e) => onChange("title", e.target.value)}
@@ -249,6 +269,7 @@ function AchievementFormFields({ form, onChange, uploadingImage, onImageUpload, 
         uploading={uploadingImage}
         onUpload={onImageUpload}
         onClear={onImageClear}
+        required={grade3ImageRequired && !form.imageUrl}
       />
 
       <div className="flex items-start gap-3 rounded-lg border bg-muted/20 p-3">
@@ -272,6 +293,7 @@ function AchievementFormFields({ form, onChange, uploadingImage, onImageUpload, 
 
 export default function CoachAchievementsEditor({
   readOnly = false,
+  requiredMissing = false,
   onGrade3Change,
 }) {
   const [items, setItems] = useState([]);
@@ -397,12 +419,9 @@ export default function CoachAchievementsEditor({
       return;
     }
 
-    const draft = {
-      type: form.type,
-      title: form.title.trim(),
-      imageUrl: form.imageUrl.trim(),
-    };
-    if (isGrade3Certificate(draft) && !draft.imageUrl) {
+    const imageUrl = form.imageUrl.trim();
+    const grade3NeedsImage = isGrade3CertificateTitle(form.title) && !imageUrl;
+    if (grade3NeedsImage) {
       toastError("خطا", "برای مدرک مربی‌گری درجه سه، تصویر مدرک الزامی است.");
       return;
     }
@@ -446,10 +465,20 @@ export default function CoachAchievementsEditor({
   };
 
   return (
-    <Card>
+    <Card
+      id="coach-profile-grade3"
+      className={cn(requiredMissing && "ring-destructive/45")}
+    >
       <CardHeader className="gap-3 border-b sm:flex-row sm:items-center sm:justify-between">
         <div className="text-start">
-          <CardTitle className="text-base">مدارک، گواهی‌نامه‌ها و افتخارات</CardTitle>
+          <CardTitle className="inline-flex items-center gap-1 text-base">
+            مدارک، گواهی‌نامه‌ها و افتخارات
+            {requiredMissing ? (
+              <span className="text-destructive" aria-hidden="true">
+                *
+              </span>
+            ) : null}
+          </CardTitle>
           <CardDescription className="mt-1">
             مدارک آپلودشده در صفحه عمومی شما جهت جلب اعتماد شاگردان نمایش داده می‌شوند.
           </CardDescription>
@@ -471,7 +500,14 @@ export default function CoachAchievementsEditor({
       <CardContent className="space-y-4 pt-6">
         {!hasGrade3 ? (
           <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-100">
-            <p className="font-medium">مدرک مربی‌گری درجه ۳ (الزامی)</p>
+            <p className="inline-flex items-center gap-1 font-medium">
+              مدرک مربی‌گری درجه ۳ (الزامی)
+              {requiredMissing ? (
+                <span className="text-destructive" aria-hidden="true">
+                  *
+                </span>
+              ) : null}
+            </p>
             <p className="mt-1 text-amber-800/90 dark:text-amber-100/80">
               ارائه تصویر واضح یا اسکن مدرک مربی‌گری درجه ۳ برای تایید نهایی حساب الزامی است.
             </p>

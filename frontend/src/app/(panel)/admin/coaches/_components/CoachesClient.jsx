@@ -109,7 +109,8 @@ export default function CoachesClient() {
                   <TableHead>مربی</TableHead>
                   <TableHead className="text-center">دانشجو</TableHead>
                   <TableHead>انتشار</TableHead>
-                  <TableHead>وضعیت</TableHead>
+                  <TableHead>تأیید</TableHead>
+                  <TableHead>حساب</TableHead>
                   <TableHead className="text-end">عملیات</TableHead>
                 </TableRow>
               </TableHeader>
@@ -137,6 +138,15 @@ export default function CoachesClient() {
                         )}
                       >
                         {coach.isPublished ? "منتشر شده" : "پیش‌نویس"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">
+                        {coach.status === "approved"
+                          ? "تأیید شده"
+                          : coach.status === "reviewing"
+                            ? "در انتظار تأیید"
+                            : "در انتظار ارسال"}
                       </Badge>
                     </TableCell>
                     <TableCell>

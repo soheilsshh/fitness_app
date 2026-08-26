@@ -3,10 +3,14 @@
 import { usePathname } from "next/navigation";
 import { RoleSidebar } from "@/app/(panel)/_shared/RoleSidebar";
 import { usePanelUser } from "@/app/(panel)/_shared/hooks/usePanelUser";
-import { userBrand } from "@/app/(panel)/_shared/nav-config/user";
+import {
+  findActiveUserNavGroup,
+  userBrand,
+} from "@/app/(panel)/_shared/nav-config/user";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import FitinoAIAssistant from "./FitinoAIAssistant";
+import UserAccountLogout from "./UserAccountLogout";
 import UserBottomNav from "./UserBottomNav";
 import UserPanelHeader from "./UserPanelHeader";
 import { UserSidebarNav } from "./UserSidebarNav";
@@ -23,6 +27,8 @@ export default function UserPanelShell({ children, gate: Gate }) {
   const pathname = usePathname();
   const isOnboarding = pathname?.startsWith("/user/onboarding");
   const isAiChat = pathname?.startsWith("/user/ai");
+  const isAccountSection =
+    findActiveUserNavGroup(pathname)?.id === "account";
   const pageContent = Gate ? <Gate>{children}</Gate> : children;
 
   return (
@@ -51,7 +57,11 @@ export default function UserPanelShell({ children, gate: Gate }) {
               className={cn(
                 "flex flex-1 flex-col gap-4 p-4 md:gap-6 md:p-6",
                 !isOnboarding &&
+                  !isAccountSection &&
                   "pb-[calc(7rem+env(safe-area-inset-bottom))] md:pb-6",
+                !isOnboarding &&
+                  isAccountSection &&
+                  "pb-[calc(10.75rem+env(safe-area-inset-bottom))] md:pb-6",
                 isAiChat && "pt-3 md:pt-4"
               )}
             >
@@ -61,6 +71,7 @@ export default function UserPanelShell({ children, gate: Gate }) {
         </div>
       </SidebarInset>
 
+      <UserAccountLogout />
       <UserBottomNav />
       {!isOnboarding ? <FitinoAIAssistant /> : null}
     </SidebarProvider>

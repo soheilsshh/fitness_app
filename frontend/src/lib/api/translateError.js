@@ -49,7 +49,8 @@ const EXACT = {
   "grade-3 coaching certificate is required":
     "ثبت «مدرک مربی‌گری درجه سه» همراه با تصویر الزامی است.",
   "coach profile is already under review": "پروفایل شما در حال بررسی است.",
-  "coach profile is already approved": "پروفایل شما قبلاً تأیید شده است.",
+  "coach must be approved before publishing":
+    "ابتدا پروفایل مربی را تأیید کنید، سپس می‌توانید لندینگ را منتشر کنید.",
   "invalid national id": "کد ملی وارد شده معتبر نیست.",
   "Profile is under review or incomplete":
     "پروفایل شما در حال بررسی است یا هنوز تکمیل نشده است.",

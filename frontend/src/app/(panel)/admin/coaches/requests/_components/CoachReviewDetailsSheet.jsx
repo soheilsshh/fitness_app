@@ -304,7 +304,12 @@ export default function CoachReviewDetailsSheet({
               size="lg"
               className="w-full"
               onClick={handleApprove}
-              disabled={loading || approving || !coach || coach.status !== "reviewing"}
+              disabled={
+                loading ||
+                approving ||
+                !coach ||
+                (coach.status !== "reviewing" && coach.status !== "pending")
+              }
             >
               {approving ? (
                 <Loader2 className="size-4 animate-spin" data-icon="inline-start" />

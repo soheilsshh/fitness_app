@@ -34,14 +34,27 @@ import { api } from "@/lib/axios/client";
 
 /** @returns {Promise<{ items: AdminCoachReview[]; total: number; page: number; pageSize: number }>} */
 export async function getPendingCoaches(params = {}) {
-  const res = await api.get("/admin/coaches", {
-    params: {
-      status: "reviewing",
-      pageSize: 100,
-      ...params,
-    },
-  });
-  return res.data;
+  const [reviewing, pending] = await Promise.all([
+    api.get("/admin/coaches", {
+      params: { status: "reviewing", pageSize: 100, ...params },
+    }),
+    api.get("/admin/coaches", {
+      params: { status: "pending", pageSize: 100, ...params },
+    }),
+  ]);
+  const seen = new Set();
+  const items = [];
+  for (const row of [...(reviewing.data?.items || []), ...(pending.data?.items || [])]) {
+    if (!row?.id || seen.has(row.id)) continue;
+    seen.add(row.id);
+    items.push(row);
+  }
+  return {
+    items,
+    total: items.length,
+    page: 1,
+    pageSize: items.length,
+  };
 }
 
 /** @returns {Promise<AdminCoachReview>} */

@@ -9,6 +9,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/yourusername/fitness-management/internal/models"
+	"github.com/yourusername/fitness-management/internal/pkg/digits"
 	"github.com/yourusername/fitness-management/internal/pkg/slug"
 	"github.com/yourusername/fitness-management/internal/repository"
 )
@@ -202,7 +203,7 @@ func (s *coachProfileService) UpdateProfile(ctx context.Context, coachUserID uin
 		profile.Specialty = *req.Specialty
 	}
 	if req.NationalID != nil {
-		nid := strings.TrimSpace(*req.NationalID)
+		nid := digits.ToEnglish(strings.TrimSpace(*req.NationalID))
 		if nid != "" && !models.IsValidIranNationalID(nid) {
 			return nil, ErrInvalidCoachNationalID
 		}
@@ -226,11 +227,8 @@ func (s *coachProfileService) UpdateProfile(ctx context.Context, coachUserID uin
 	if req.Website != nil {
 		profile.Website = *req.Website
 	}
-	if req.IsPublished != nil {
-		if profile.Status != models.CoachProfileStatusApproved {
-			return nil, ErrCoachProfileIncomplete
-		}
-		profile.IsPublished = *req.IsPublished
+	if err := applyCoachPublishFlag(profile, req.IsPublished); err != nil {
+		return nil, err
 	}
 
 	if err := s.coachRepo.Update(ctx, profile); err != nil {
@@ -278,6 +276,19 @@ func (s *coachProfileService) SubmitProfileRequest(ctx context.Context, coachUse
 	}, nil
 }
 
+// applyCoachPublishFlag ignores isPublished:false on a pending draft.
+// Only an approved coach may set isPublished to true.
+func applyCoachPublishFlag(profile *models.CoachProfile, want *bool) error {
+	if want == nil {
+		return nil
+	}
+	if *want && profile.Status != models.CoachProfileStatusApproved {
+		return ErrCoachProfileIncomplete
+	}
+	profile.IsPublished = *want
+	return nil
+}
+
 func coachProfileSubmissionMissingFields(p *models.CoachProfile) []string {
 	missing := make([]string, 0, 5)
 	if strings.TrimSpace(p.DisplayName) == "" {
@@ -301,26 +312,33 @@ func coachProfileSubmissionMissingFields(p *models.CoachProfile) []string {
 
 func normalizePersianText(s string) string {
 	s = strings.TrimSpace(s)
+	s = digits.ToEnglish(s)
 	s = strings.ReplaceAll(s, "ي", "ی")
 	s = strings.ReplaceAll(s, "ك", "ک")
 	s = strings.ReplaceAll(s, "‌", "") // zero-width non-joiner
 	s = strings.ReplaceAll(s, " ", "")
+	s = strings.ReplaceAll(s, "درجه3", "درجهسه")
 	return s
 }
 
-func hasGrade3CoachingCertificate(achievements []models.CoachAchievement) bool {
+func isGrade3CertificateTitle(title string) bool {
+	t := normalizePersianText(title)
 	needle := normalizePersianText(Grade3CoachingCertificateTitle)
+	if strings.Contains(t, needle) {
+		return true
+	}
+	hasCoachWord := strings.Contains(t, "مربی") || strings.Contains(t, "مدرک")
+	hasGrade3 := strings.Contains(t, "درجهسه") || strings.Contains(t, "درجه3")
+	return hasCoachWord && hasGrade3
+}
+
+func hasGrade3CoachingCertificate(achievements []models.CoachAchievement) bool {
 	for i := range achievements {
 		a := &achievements[i]
 		if strings.TrimSpace(a.ImageURL) == "" {
 			continue
 		}
-		if a.Type != "qualification" && a.Type != "certificate" {
-			continue
-		}
-		title := normalizePersianText(a.Title)
-		if strings.Contains(title, needle) ||
-			(strings.Contains(title, "مربی") && strings.Contains(title, "درجهسه")) {
+		if isGrade3CertificateTitle(a.Title) {
 			return true
 		}
 	}

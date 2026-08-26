@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import Swal from "sweetalert2";
-import { ChevronLeft, ExternalLink } from "lucide-react";
+import { CheckCircle2, ChevronLeft, ExternalLink } from "lucide-react";
 import { api } from "@/lib/axios/client";
 import { getApiErrorMessage } from "@/lib/api/translateError";
 import { getCoachPublicPath } from "@/lib/routes/coach-public";
@@ -20,6 +20,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+
+const PROFILE_STATUS_LABEL = {
+  pending: "در انتظار تکمیل / ارسال",
+  reviewing: "در انتظار تأیید ادمین",
+  approved: "تأیید شده",
+};
 
 function cn(...xs) {
   return xs.filter(Boolean).join(" ");
@@ -75,6 +81,45 @@ export default function CoachDetailsClient() {
       return false;
     } finally {
       setSaving(false);
+    }
+  };
+
+  const isApproved = coach?.status === "approved";
+
+  const togglePublished = async () => {
+    if (coach.isPublished) {
+      await patch({ isPublished: false });
+      return;
+    }
+    if (isApproved) {
+      await patch({ isPublished: true });
+      return;
+    }
+    const confirm = await Swal.fire({
+      icon: "question",
+      title: "تأیید و انتشار لندینگ؟",
+      text: "این پروفایل هنوز تأیید نشده. با ادامه، مربی تأیید می‌شود و صفحه عمومی منتشر می‌گردد.",
+      showCancelButton: true,
+      confirmButtonText: "تأیید و انتشار",
+      cancelButtonText: "انصراف",
+      background: "#0a0a0a",
+      color: "#fff",
+    });
+    if (!confirm.isConfirmed) return;
+    await patch({ status: "approved", isPublished: true });
+  };
+
+  const approveProfile = async () => {
+    const ok = await patch({ status: "approved" });
+    if (ok) {
+      await Swal.fire({
+        icon: "success",
+        title: "تأیید شد",
+        text: "پروفایل مربی تأیید شد. حالا می‌توانید لندینگ را منتشر کنید.",
+        confirmButtonText: "باشه",
+        timer: 2000,
+        showConfirmButton: false,
+      });
     }
   };
 
@@ -209,6 +254,10 @@ export default function CoachDetailsClient() {
               label="اسلاگ فعلی"
               value={coach.slug ? `/${coach.slug}` : "—"}
             />
+            <InfoItem
+              label="وضعیت تأیید"
+              value={PROFILE_STATUS_LABEL[coach.status] || coach.status || "—"}
+            />
             <InfoItem label="تخصص" value={coach.specialty || "—"} />
             <InfoItem label="تعداد دانشجویان" value={coach.studentCount} />
           </div>
@@ -230,17 +279,35 @@ export default function CoachDetailsClient() {
             </Badge>
           </div>
 
+          {!isApproved ? (
+            <p className="mt-4 text-sm text-amber-700 dark:text-amber-300">
+              لندینگ تا وقتی پروفایل تأیید نشده باشد در حالت پیش‌نویس می‌ماند.
+              از دکمهٔ «تأیید پروفایل» یا «انتشار» استفاده کنید.
+            </p>
+          ) : null}
+
           <div className="mt-3 flex flex-wrap gap-3">
+            {!isApproved ? (
+              <Button
+                type="button"
+                disabled={saving}
+                onClick={approveProfile}
+                className="h-auto px-4 py-3"
+              >
+                <CheckCircle2 data-icon="inline-start" />
+                تأیید پروفایل
+              </Button>
+            ) : null}
             <ToggleButton
               label="انتشار"
               active={coach.isPublished}
               disabled={saving}
-              onToggle={() => patch({ isPublished: !coach.isPublished })}
+              onToggle={togglePublished}
               activeText="منتشر شده"
               inactiveText="پیش‌نویس"
             />
             <ToggleButton
-              label="وضعیت"
+              label="حساب"
               active={coach.isActive}
               disabled={saving}
               onToggle={() => patch({ isActive: !coach.isActive })}

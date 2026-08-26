@@ -37,6 +37,20 @@ export function isValidOtp(otp) {
   return /^\d{4,6}$/.test(toEnglishDigits(otp).trim());
 }
 
+/** Iranian national ID checksum (کد ملی), matching backend IsValidIranNationalID. */
+export function isValidIranNationalID(id) {
+  const digits = normalizeNumericInput(id);
+  if (digits.length !== 10) return false;
+  if (digits === "0000000000") return false;
+  const check = Number(digits[9]);
+  let sum = 0;
+  for (let i = 0; i < 9; i += 1) {
+    sum += Number(digits[i]) * (10 - i);
+  }
+  const rem = sum % 11;
+  return rem < 2 ? check === rem : check === 11 - rem;
+}
+
 export function toastSuccess(title, text) {
   if (text) {
     return toast.success(title, { description: text });

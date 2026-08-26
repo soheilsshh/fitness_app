@@ -24,7 +24,12 @@ import {
 import { getApiErrorMessage } from "@/lib/api/translateError";
 import { getCoachPublicPath } from "@/lib/routes/coach-public";
 import { useCoachProfile } from "@/app/(panel)/coach/_context/CoachProfileContext";
-import { toastError, toastSuccess } from "@/app/(site)/auth/_components/helpers";
+import {
+  isValidIranNationalID,
+  normalizeNumericInput,
+  toastError,
+  toastSuccess,
+} from "@/app/(site)/auth/_components/helpers";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -45,6 +50,46 @@ import CoachAchievementsEditor from "./CoachAchievementsEditor";
 
 const BIO_MAX = 150;
 
+const REQUIRED_FIELDS = [
+  { key: "coverImageUrl", label: "کاور لندینگ" },
+  { key: "avatarUrl", label: "عکس آواتار" },
+  { key: "displayName", label: "نام نمایشی" },
+  { key: "title", label: "عنوان / تخصص اصلی" },
+  { key: "nationalId", label: "کد ملی" },
+  { key: "city", label: "شهر محل سکونت" },
+  { key: "contactPhone", label: "شماره تماس پشتیبانی" },
+  { key: "grade3", label: "مدرک مربی‌گری درجه سه (با تصویر)" },
+];
+
+function filled(value) {
+  return Boolean(String(value || "").trim());
+}
+
+function fieldAnchorId(key) {
+  return `coach-profile-${key}`;
+}
+
+function getMissingFieldKeys(form, hasGrade3) {
+  const missing = [];
+  if (!filled(form.coverImageUrl)) missing.push("coverImageUrl");
+  if (!filled(form.avatarUrl)) missing.push("avatarUrl");
+  if (!filled(form.displayName)) missing.push("displayName");
+  if (!filled(form.title)) missing.push("title");
+  if (!isValidIranNationalID(form.nationalId)) missing.push("nationalId");
+  if (!filled(form.city)) missing.push("city");
+  if (!filled(form.contactPhone)) missing.push("contactPhone");
+  if (!hasGrade3) missing.push("grade3");
+  return missing;
+}
+
+function RequiredStar() {
+  return (
+    <span className="text-destructive" aria-hidden="true">
+      *
+    </span>
+  );
+}
+
 function splitSpecialties(value) {
   return String(value || "")
     .split(/[،,]/)
@@ -62,15 +107,37 @@ function publicPathLabel(slug, publicUrl) {
   return `fitino.app${path.startsWith("/") ? path : `/${path}`}`;
 }
 
-function ImageUploadBox({ label, hint, url, onUpload, uploading, disabled, icon: Icon }) {
+function ImageUploadBox({
+  id,
+  label,
+  hint,
+  url,
+  onUpload,
+  uploading,
+  disabled,
+  icon: Icon,
+  required,
+}) {
   return (
-    <Card size="sm" className={cn(disabled && "opacity-70")}>
+    <Card
+      id={id}
+      size="sm"
+      className={cn(disabled && "opacity-70", required && "ring-destructive/45")}
+    >
       <CardHeader className="pb-3">
-        <CardTitle className="text-sm">{label}</CardTitle>
+        <CardTitle className="inline-flex items-center gap-1 text-sm">
+          {label}
+          {required ? <RequiredStar /> : null}
+        </CardTitle>
         {hint ? <CardDescription>{hint}</CardDescription> : null}
       </CardHeader>
       <CardContent className="space-y-3">
-        <div className="overflow-hidden rounded-xl border border-dashed border-border/80 bg-muted/30">
+        <div
+          className={cn(
+            "overflow-hidden rounded-xl border border-dashed bg-muted/30",
+            required ? "border-destructive/70" : "border-border/80",
+          )}
+        >
           {url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -181,14 +248,18 @@ function SpecialtyPills({ value, onChange, disabled }) {
   );
 }
 
-function PrefixedField({ label, prefix, value, onChange, placeholder, disabled }) {
+function PrefixedField({ label, prefix, value, onChange, placeholder, disabled, required, invalid }) {
   return (
     <div className="space-y-2">
-      <Label>{label}</Label>
+      <Label className="inline-flex items-center gap-1">
+        {label}
+        {required ? <RequiredStar /> : null}
+      </Label>
       <div
         className={cn(
           "flex overflow-hidden rounded-lg border border-input bg-transparent shadow-xs",
           "focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50",
+          invalid && "border-destructive ring-3 ring-destructive/20",
           disabled && "opacity-60",
         )}
         dir="ltr"
@@ -201,6 +272,8 @@ function PrefixedField({ label, prefix, value, onChange, placeholder, disabled }
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           disabled={disabled}
+          aria-invalid={invalid || undefined}
+          aria-required={required || undefined}
           className="border-0 shadow-none focus-visible:ring-0"
           dir="ltr"
         />
@@ -301,17 +374,21 @@ export default function ProfileClient() {
   const isApproved = form.status === "approved";
   const readOnly = isReviewing;
 
-  const basicsComplete = Boolean(
-    form.displayName &&
-      form.nationalId?.length === 10 &&
-      form.city &&
-      form.contactPhone &&
-      form.avatarUrl &&
-      form.coverImageUrl &&
-      form.title,
+  const missingKeys = useMemo(
+    () => getMissingFieldKeys(form, hasGrade3),
+    [form, hasGrade3],
   );
-
-  const profileReady = basicsComplete && hasGrade3;
+  const missingSet = useMemo(() => new Set(missingKeys), [missingKeys]);
+  const missingLabels = useMemo(
+    () =>
+      REQUIRED_FIELDS.filter((field) => missingSet.has(field.key)).map(
+        (field) => field.label,
+      ),
+    [missingSet],
+  );
+  const showMissingMarks = isPending && missingKeys.length > 0;
+  const isMissing = (key) => showMissingMarks && missingSet.has(key);
+  const profileReady = missingKeys.length === 0;
 
   const stickyStatusText = useMemo(() => {
     if (isReviewing) return "وضعیت: درخواست شما در حال بررسی است";
@@ -328,7 +405,7 @@ export default function ProfileClient() {
       bio: p.bio || "",
       aboutCoach: p.aboutCoach || "",
       specialty: p.specialty || "",
-      nationalId: p.nationalId || "",
+      nationalId: normalizeNumericInput(p.nationalId || ""),
       city: p.city || "",
       contactPhone: p.social?.phone || "",
       instagram: p.social?.instagram || "",
@@ -385,20 +462,25 @@ export default function ProfileClient() {
     }
   };
 
-  const buildPayload = () => ({
-    title: form.title,
-    bio: form.bio,
-    aboutCoach: form.aboutCoach,
-    specialty: form.specialty,
-    nationalId: form.nationalId,
-    city: form.city,
-    contactPhone: form.contactPhone,
-    instagram: form.instagram,
-    telegram: form.telegram,
-    whatsapp: form.whatsapp,
-    website: form.website,
-    isPublished: form.isPublished,
-  });
+  const buildPayload = () => {
+    const payload = {
+      title: form.title,
+      bio: form.bio,
+      aboutCoach: form.aboutCoach,
+      specialty: form.specialty,
+      nationalId: normalizeNumericInput(form.nationalId),
+      city: form.city,
+      contactPhone: form.contactPhone,
+      instagram: form.instagram,
+      telegram: form.telegram,
+      whatsapp: form.whatsapp,
+      website: form.website,
+    };
+    if (isApproved) {
+      payload.isPublished = form.isPublished;
+    }
+    return payload;
+  };
 
   const onSave = async () => {
     setSaving(true);
@@ -415,6 +497,18 @@ export default function ProfileClient() {
   };
 
   const onSubmitRequest = async () => {
+    if (missingKeys.length > 0) {
+      const first = missingKeys[0];
+      document
+        .getElementById(fieldAnchorId(first))
+        ?.scrollIntoView({ behavior: "smooth", block: "center" });
+      toastError(
+        "اطلاعات ناقص",
+        `این موارد را تکمیل کنید: ${missingLabels.join("، ")}`,
+      );
+      return;
+    }
+
     setSubmitting(true);
     try {
       await updateCoachProfile(buildPayload());
@@ -428,13 +522,14 @@ export default function ProfileClient() {
       );
     } catch (error) {
       const msg = getApiErrorMessage(error, "ثبت درخواست ناموفق بود");
-      const raw = error?.response?.data?.error || "";
-      if (
+      const raw = String(error?.response?.data?.error || "");
+      const isGrade3Error =
         raw.includes("grade-3") ||
         raw.includes("Grade3") ||
+        raw.includes("مدرک مربی‌گری درجه سه") ||
         msg.includes("grade-3") ||
-        msg.includes("مدرک")
-      ) {
+        msg.includes("مدرک مربی‌گری درجه سه");
+      if (isGrade3Error) {
         toastError(
           "مدرک الزامی",
           "برای ارسال درخواست باید «مدرک مربی‌گری درجه سه» را با تصویر در بخش افتخارات ثبت کنید.",
@@ -481,23 +576,27 @@ export default function ProfileClient() {
           <CardContent className="space-y-4 pt-6">
             <div className="grid gap-4 md:grid-cols-2">
               <ImageUploadBox
+                id={fieldAnchorId("coverImageUrl")}
                 label="کاور لندینگ"
                 hint="پیشنهادی: ۱۲۰۰×۴۰۰"
                 icon={ImagePlus}
                 url={form.coverImageUrl}
                 uploading={uploadingCover}
                 disabled={readOnly}
+                required={isMissing("coverImageUrl")}
                 onUpload={(file) =>
                   uploadImage(file, "/coach/profile/cover", setUploadingCover, "coverImageUrl")
                 }
               />
               <ImageUploadBox
+                id={fieldAnchorId("avatarUrl")}
                 label="عکس آواتار"
                 hint="پرتره / تصویر پروفایل"
                 icon={Camera}
                 url={form.avatarUrl}
                 uploading={uploadingAvatar}
                 disabled={readOnly}
+                required={isMissing("avatarUrl")}
                 onUpload={(file) =>
                   uploadImage(file, "/coach/profile/avatar", setUploadingAvatar, "avatarUrl")
                 }
@@ -505,12 +604,18 @@ export default function ProfileClient() {
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
+              <div className="space-y-2" id={fieldAnchorId("displayName")}>
                 <Label className="inline-flex items-center gap-1.5">
                   نام نمایشی
+                  {isMissing("displayName") ? <RequiredStar /> : null}
                   <Lock className="size-3.5 text-muted-foreground" />
                 </Label>
-                <Input value={form.displayName} disabled dir="rtl" />
+                <Input
+                  value={form.displayName}
+                  disabled
+                  dir="rtl"
+                  aria-invalid={isMissing("displayName") || undefined}
+                />
                 <p className="text-xs text-muted-foreground">
                   تنظیم‌شده توسط پشتیبانی — برای تغییر با پشتیبانی تماس بگیرید.
                 </p>
@@ -544,27 +649,43 @@ export default function ProfileClient() {
           </CardHeader>
           <CardContent className="grid gap-4 pt-6 md:grid-cols-2">
             <FormField
+              id={fieldAnchorId("title")}
               label="عنوان / تخصص اصلی"
               value={form.title}
               onChange={(v) => updateField("title", v)}
               placeholder="مثال: مربی رسمی فدراسیون بدنسازی | متخصص اصلاح توده بدنی"
               className="md:col-span-2"
               disabled={readOnly}
+              required={isMissing("title")}
+              invalid={isMissing("title")}
             />
             <FormField
+              id={fieldAnchorId("nationalId")}
               label="کد ملی"
               value={form.nationalId}
-              onChange={(v) => updateField("nationalId", v.replace(/\D/g, "").slice(0, 10))}
+              onChange={(v) =>
+                updateField("nationalId", normalizeNumericInput(v).slice(0, 10))
+              }
               placeholder="۱۰ رقم"
               dir="ltr"
               disabled={readOnly}
+              required={isMissing("nationalId")}
+              invalid={isMissing("nationalId")}
+              hint={
+                form.nationalId && !isValidIranNationalID(form.nationalId)
+                  ? "کد ملی باید ۱۰ رقم معتبر باشد."
+                  : null
+              }
             />
             <FormField
+              id={fieldAnchorId("city")}
               label="شهر محل سکونت"
               value={form.city}
               onChange={(v) => updateField("city", v)}
               placeholder="مثلاً تهران"
               disabled={readOnly}
+              required={isMissing("city")}
+              invalid={isMissing("city")}
             />
             <SpecialtyPills
               value={form.specialty}
@@ -630,12 +751,15 @@ export default function ProfileClient() {
           </CardHeader>
           <CardContent className="grid gap-4 pt-6 md:grid-cols-2">
             <FormField
+              id={fieldAnchorId("contactPhone")}
               label="شماره تماس پشتیبانی"
               value={form.contactPhone}
               onChange={(v) => updateField("contactPhone", v)}
               placeholder="09026531451"
               dir="ltr"
               disabled={readOnly}
+              required={isMissing("contactPhone")}
+              invalid={isMissing("contactPhone")}
             />
             <PrefixedField
               label="آیدی اینستاگرام"
@@ -675,6 +799,7 @@ export default function ProfileClient() {
 
       <CoachAchievementsEditor
         readOnly={readOnly}
+        requiredMissing={isMissing("grade3")}
         onGrade3Change={setHasGrade3}
       />
 
@@ -703,13 +828,19 @@ export default function ProfileClient() {
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between md:px-6">
           <div className="text-start">
             <p className="text-sm font-medium">{stickyStatusText}</p>
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              {isPending
-                ? "پس از تکمیل، درخواست را برای بررسی و فعال‌سازی ارسال کنید."
-                : isReviewing
-                  ? "تا پایان بررسی، امکان ویرایش وجود ندارد."
-                  : "می‌توانید پیش‌نویس را ذخیره کنید یا لندینگ را پیش‌نمایش کنید."}
-            </p>
+            {showMissingMarks ? (
+              <p className="mt-0.5 text-xs text-destructive">
+                موارد ناقص: {missingLabels.join("، ")}
+              </p>
+            ) : (
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                {isPending
+                  ? "پس از تکمیل، درخواست را برای بررسی و فعال‌سازی ارسال کنید."
+                  : isReviewing
+                    ? "تا پایان بررسی، امکان ویرایش وجود ندارد."
+                    : "می‌توانید پیش‌نویس را ذخیره کنید یا لندینگ را پیش‌نمایش کنید."}
+              </p>
+            )}
           </div>
           <div className="flex flex-wrap gap-2">
             <Button
@@ -768,17 +899,35 @@ export default function ProfileClient() {
   );
 }
 
-function FormField({ label, value, onChange, placeholder, dir, className, disabled }) {
+function FormField({
+  id,
+  label,
+  value,
+  onChange,
+  placeholder,
+  dir,
+  className,
+  disabled,
+  required,
+  invalid,
+  hint,
+}) {
   return (
-    <div className={cn("space-y-2", className)}>
-      <Label>{label}</Label>
+    <div className={cn("space-y-2", className)} id={id}>
+      <Label className="inline-flex items-center gap-1">
+        {label}
+        {required ? <RequiredStar /> : null}
+      </Label>
       <Input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         dir={dir}
         disabled={disabled}
+        aria-invalid={invalid || undefined}
+        aria-required={required || undefined}
       />
+      {hint ? <p className="text-xs text-destructive">{hint}</p> : null}
     </div>
   );
 }

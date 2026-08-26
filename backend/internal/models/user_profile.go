@@ -3,6 +3,8 @@ package models
 import (
 	"encoding/json"
 	"strings"
+
+	"github.com/yourusername/fitness-management/internal/pkg/digits"
 )
 
 const (
@@ -150,7 +152,7 @@ func containsString(list []string, value string) bool {
 
 // IsValidIranNationalID validates a 10-digit Iranian national ID (کد ملی).
 func IsValidIranNationalID(id string) bool {
-	id = strings.TrimSpace(id)
+	id = digits.ToEnglish(strings.TrimSpace(id))
 	if len(id) != 10 {
 		return false
 	}

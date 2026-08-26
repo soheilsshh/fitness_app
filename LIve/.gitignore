@@ -40,5 +40,6 @@ backend/*.pem
 backend/videos/
 public/*.mp4
 public/*.png
+!public/fitino-logo.png
 public/*.JPG
 src/services/video-player/
