@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
+import { toast } from "sonner";
 import {
   Activity,
   ArrowLeft,
@@ -15,6 +16,7 @@ import {
   CreditCard,
   Dumbbell,
   Flame,
+  Moon,
   Plus,
   Scale,
   Target,
@@ -29,6 +31,7 @@ import WeightChart from "@/components/tracking/WeightChart";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   ChartContainer,
@@ -267,6 +270,8 @@ export default function UserDashboardClient() {
         <GoalCard loading={loading} profile={profile} tracking={tracking} />
         <CheckinTasksCard loading={loading} tracking={tracking} />
       </div>
+
+      <QuickDailyCheckInCard />
 
       {/* today plan + records */}
       <div className="grid gap-4 md:gap-6 lg:grid-cols-2">
@@ -756,6 +761,117 @@ function GoalCard({ loading, profile, tracking }) {
                 ) : null}
               </span>
             </div>
+          ) : null}
+        </div>
+      )}
+    </SectionPanel>
+  );
+}
+
+const DASHBOARD_SLEEP_OPTIONS = [1, 2, 3, 4, 5];
+
+// Quick-entry duplicate of the two DailyCheckIn fields worth a shortcut right
+// on the dashboard (morning weight, sleep quality) — the full form (plus
+// protein) lives on the Tracking page.
+function QuickDailyCheckInCard() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [weight, setWeight] = useState("");
+  const [sleep, setSleep] = useState(null);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      try {
+        const res = await api.get("/me/daily-checkin/today");
+        if (cancelled) return;
+        const d = res.data || {};
+        setData(d);
+        setWeight(d.morningWeightKg != null ? String(d.morningWeightKg) : "");
+        setSleep(d.sleepQuality ?? null);
+      } catch {
+        if (!cancelled) setData(null);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function handleSave() {
+    const payload = {};
+    const w = Number(weight);
+    if (weight && w >= 20 && w <= 300) payload.morningWeightKg = w;
+    if (sleep) payload.sleepQuality = sleep;
+    if (Object.keys(payload).length === 0) return;
+    setSaving(true);
+    try {
+      const res = await api.post("/me/daily-checkin", payload);
+      setData(res.data);
+      toast.success("پایش امروز ثبت شد");
+    } catch (err) {
+      toast.error(err?.response?.data?.error || "ثبت ناموفق بود");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <SectionPanel icon={Scale} iconClass="text-sky-500" title="پایش سریع امروز">
+      {loading ? (
+        <Skeleton className="h-20 w-full" />
+      ) : (
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="min-w-[120px] flex-1 space-y-1.5">
+              <label htmlFor="quick-weight" className="text-xs text-muted-foreground">
+                وزن صبح (کیلوگرم)
+              </label>
+              <Input
+                id="quick-weight"
+                type="number"
+                step="0.1"
+                min="20"
+                max="300"
+                value={weight}
+                onChange={(e) => setWeight(e.target.value)}
+                placeholder="مثلاً ۷۵"
+                className="h-9"
+              />
+            </div>
+            <div className="flex flex-1 flex-col gap-1.5">
+              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Moon className="size-3" />
+                کیفیت خواب
+              </span>
+              <div className="flex gap-1">
+                {DASHBOARD_SLEEP_OPTIONS.map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => setSleep(v)}
+                    className={cn(
+                      "flex size-9 items-center justify-center rounded-md border text-sm tabular-nums transition",
+                      sleep === v
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border bg-card text-muted-foreground"
+                    )}
+                  >
+                    {v.toLocaleString("fa-IR")}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+          <Button type="button" size="sm" onClick={handleSave} disabled={saving} className="self-start">
+            {saving ? "در حال ثبت..." : "ثبت"}
+          </Button>
+          {data?.morningWeightKg != null || data?.sleepQuality != null ? (
+            <p className="text-xs text-emerald-600 dark:text-emerald-400">پایش امروز ثبت شده است.</p>
           ) : null}
         </div>
       )}

@@ -15,7 +15,7 @@ import UserSubNav from "./UserSubNav";
 /**
  * Student panel chrome:
  * - Mobile: bottom navigation only (no hamburger / no sheet sidebar)
- * - Desktop: grouped sidebar with five categories + subsections
+ * - Desktop: grouped sidebar (see `userNavGroups`) with subsections
  * - Scoped `.user-panel-theme` light/dark tokens (style guide)
  */
 export default function UserPanelShell({ children, gate: Gate }) {

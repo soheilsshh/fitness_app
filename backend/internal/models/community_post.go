@@ -16,6 +16,9 @@ type CommunityPost struct {
 	// progress, record, question, tip) — empty means a free-form general post.
 	// Drives the feed filter tabs (roadmap F1 UX pass).
 	Category     string `gorm:"size:20;index"`
+	// Metadata is optional JSON for structured share cards (e.g. exercise names
+	// on a progress post). Empty for free-form posts.
+	Metadata     string `gorm:"type:text"`
 	LikeCount    int    `gorm:"not null;default:0"`
 	CommentCount int    `gorm:"not null;default:0"`
 	// IsHidden lets admins moderate without a hard delete.

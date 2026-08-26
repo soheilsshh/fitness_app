@@ -9,7 +9,7 @@ import MetaBadge from "../../_components/ui/MetaBadge";
 import PageHeader from "../../_components/ui/PageHeader";
 import PanelEmptyState from "../../_components/ui/PanelEmptyState";
 import OrdersFilterChips from "./OrdersFilterChips";
-import Pagination from "../../_components/Pagination";
+import Pagination from "@/app/(panel)/_shared/Pagination";
 import OrderCardLink from "./OrderCardLink";
 
 const PAGE_SIZE = 6;

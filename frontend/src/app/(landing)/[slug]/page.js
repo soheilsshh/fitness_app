@@ -1,9 +1,11 @@
 import { notFound } from "next/navigation";
 import { isReservedPublicSlug } from "@/lib/routes/reserved-slugs";
-import { API_BASE_URL } from "@/lib/api/baseUrl";
+import { fetchPublishedCoaches } from "@/lib/api/publishedCoaches";
+import { fetchCoachLanding } from "@/lib/api/coachLanding";
+import { absoluteUrl } from "@/lib/seo/siteUrl";
+import { apiAssetUrl } from "@/lib/api/assets";
 import CoachLandingClient from "./_components/CoachLandingClient";
-
-const API_BASE = API_BASE_URL.replace(/\/$/, "");
+import CoachLandingJsonLd from "./_components/CoachLandingJsonLd";
 
 /**
  * Enumerate every published coach slug at build time so `output: export`
@@ -15,45 +17,59 @@ const API_BASE = API_BASE_URL.replace(/\/$/, "");
  * New coaches require a rebuild/deploy after they are published in the API.
  */
 export async function generateStaticParams() {
-  const pageSize = 100;
-  const slugs = new Set();
+  const coaches = await fetchPublishedCoaches();
 
-  try {
-    let page = 1;
-    for (let guard = 0; guard < 100; guard += 1) {
-      const res = await fetch(
-        `${API_BASE}/coaches?page=${page}&pageSize=${pageSize}`,
-        { headers: { Accept: "application/json" } }
-      );
-      if (!res.ok) {
-        console.warn(`[coach-slugs] GET /coaches failed: HTTP ${res.status}`);
-        break;
-      }
-
-      const data = await res.json();
-      const items = Array.isArray(data?.items) ? data.items : [];
-      for (const coach of items) {
-        const slug = typeof coach?.slug === "string" ? coach.slug.trim() : "";
-        if (slug && !isReservedPublicSlug(slug)) slugs.add(slug);
-      }
-
-      const total = Number(data?.total) || 0;
-      if (items.length === 0 || page * pageSize >= total) break;
-      page += 1;
-    }
-  } catch (error) {
-    console.warn(
-      `[coach-slugs] could not fetch ${API_BASE}/coaches (${error?.message || error}); building fallback shell only.`
-    );
-  }
-
-  if (slugs.size === 0) {
+  if (coaches.length === 0) {
     console.warn("[coach-slugs] no published coaches — emitting placeholder only");
     return [{ slug: "placeholder" }];
   }
 
-  console.log(`[coach-slugs] emitting ${slugs.size} landing page(s): ${[...slugs].join(", ")}`);
-  return [...slugs].map((slug) => ({ slug }));
+  const slugs = coaches.map((c) => c.slug);
+  console.log(`[coach-slugs] emitting ${slugs.length} landing page(s): ${slugs.join(", ")}`);
+  return slugs.map((slug) => ({ slug }));
+}
+
+export async function generateMetadata({ params }) {
+  const { slug } = await params;
+  if (isReservedPublicSlug(slug)) return {};
+
+  const { coach } = await fetchCoachLanding(slug);
+  if (!coach) {
+    return {
+      title: "مربی یافت نشد | فیتینو",
+      robots: { index: false, follow: false },
+    };
+  }
+
+  const title = coach.title
+    ? `${coach.displayName} — ${coach.title} | فیتینو`
+    : `${coach.displayName} | مربی فیتینو`;
+  const description = (coach.specialty || coach.bio || coach.aboutCoach || "")
+    .slice(0, 155)
+    .trim() || `صفحه اختصاصی مربی ${coach.displayName} در فیتینو — مشاهده برنامه‌های تمرینی و تغذیه و خرید آنلاین.`;
+  const image = apiAssetUrl(coach.coverImageUrl || coach.avatarUrl) || undefined;
+  const url = absoluteUrl(`/${slug}/`);
+
+  return {
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      title,
+      description,
+      url,
+      siteName: "فیتینو",
+      locale: "fa_IR",
+      type: "profile",
+      images: image ? [{ url: image }] : undefined,
+    },
+    twitter: {
+      card: image ? "summary_large_image" : "summary",
+      title,
+      description,
+      images: image ? [image] : undefined,
+    },
+  };
 }
 
 export default async function PublicCoachLandingPage({ params }) {
@@ -63,5 +79,12 @@ export default async function PublicCoachLandingPage({ params }) {
     notFound();
   }
 
-  return <CoachLandingClient slug={slug} />;
+  const { coach, plans } = await fetchCoachLanding(slug);
+
+  return (
+    <>
+      {coach ? <CoachLandingJsonLd slug={slug} coach={coach} /> : null}
+      <CoachLandingClient slug={slug} initialCoach={coach} initialPlans={plans} />
+    </>
+  );
 }

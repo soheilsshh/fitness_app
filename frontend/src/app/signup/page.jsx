@@ -1,11 +1,10 @@
-import { SignupForm } from "@/components/signup-form"
+import { redirect } from "next/navigation";
 
-export default function Page() {
-  return (
-    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
-      <div className="w-full max-w-sm">
-        <SignupForm />
-      </div>
-    </div>
-  );
+/**
+ * Legacy/shadcn demo route — duplicated `(site)/auth/register`. Real signup
+ * lives at /auth. Keep this redirect so bookmarks and mistaken /signup links
+ * still work, and to avoid duplicate-content pages.
+ */
+export default function SignupAliasPage() {
+  redirect("/auth");
 }

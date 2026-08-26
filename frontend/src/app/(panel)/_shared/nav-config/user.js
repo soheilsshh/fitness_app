@@ -10,9 +10,9 @@ import {
   Home,
   LineChartIcon,
   PencilLineIcon,
+  SaladIcon,
   ShieldCheck,
   ShoppingBagIcon,
-  SparklesIcon,
   UserIcon,
   Users,
   WandSparklesIcon,
@@ -28,6 +28,11 @@ export const userBrand = {
  * Five primary IA groups for student panel.
  * - Bottom nav (mobile): one tab per group → group.href
  * - Sidebar (desktop): group label + child items
+ *
+ * AI-assisted workout/nutrition builders live as sub-items inside "training"
+ * and "nutrition" (not their own top-level groups), and community/social
+ * features live inside "account" — this keeps the bottom dock at exactly
+ * five tabs, which is the mobile navigation best-practice ceiling.
  */
 export const userNavGroups = [
   {
@@ -62,25 +67,17 @@ export const userNavGroups = [
         icon: HistoryIcon,
         description: "رکورد تمرین‌های انجام‌شده",
       },
-    ],
-  },
-  {
-    id: "ai",
-    label: "دستیار هوشمند",
-    href: "/user/ai-programs/new",
-    icon: SparklesIcon,
-    items: [
       {
         href: "/user/ai-programs/new",
-        label: "ساخت برنامه با AI",
+        label: "ساخت برنامه تمرینی با AI",
         icon: WandSparklesIcon,
-        description: "ساخت برنامه تمرینی یا تغذیه‌ای جدید با هوش مصنوعی",
+        description: "ساخت برنامه تمرینی جدید با هوش مصنوعی",
       },
       {
         href: "/user/ai-programs/edit",
-        label: "ویرایش برنامه با AI",
+        label: "ویرایش برنامه تمرینی با AI",
         icon: PencilLineIcon,
-        description: "درخواست ویرایش هوشمند برای برنامه‌ای که دارید",
+        description: "درخواست ویرایش هوشمند برای برنامه تمرینی‌ای که دارید",
       },
     ],
   },
@@ -95,6 +92,24 @@ export const userNavGroups = [
         label: "کالری‌شمار من",
         icon: Apple,
         description: "ثبت وعده‌ها و کالری روزانه",
+      },
+      {
+        href: "/user/ai-nutrition/single",
+        label: "تک‌غذا با AI",
+        icon: SaladIcon,
+        description: "یک پیشنهاد غذا از مواد موجودت بساز",
+      },
+      {
+        href: "/user/ai-nutrition/daily",
+        label: "برنامه روزانه با AI",
+        icon: WandSparklesIcon,
+        description: "برنامه کامل غذایی امروز",
+      },
+      {
+        href: "/user/ai-nutrition/weekly",
+        label: "برنامه هفتگی با AI",
+        icon: CalendarClock,
+        description: "برنامه غذایی ۷ روز آینده",
       },
     ],
   },
@@ -113,11 +128,23 @@ export const userNavGroups = [
     ],
   },
   {
-    id: "community",
-    label: "اجتماع",
-    href: "/user/community",
-    icon: Users,
+    id: "account",
+    label: "حساب من",
+    href: "/user/profile",
+    icon: UserIcon,
     items: [
+      {
+        href: "/user/profile",
+        label: "پروفایل",
+        icon: UserIcon,
+        description: "اطلاعات و تکمیل پروفایل",
+      },
+      {
+        href: "/user/achievements",
+        label: "دستاوردها و امتیاز",
+        icon: Award,
+        description: "مدال‌ها و امتیاز کسب‌شده",
+      },
       {
         href: "/user/community",
         label: "فید و رویدادها",
@@ -135,26 +162,6 @@ export const userNavGroups = [
         label: "وضعیت تضمین من",
         icon: ShieldCheck,
         description: "درصد پایبندی و درخواست‌های تضمین",
-      },
-      {
-        href: "/user/achievements",
-        label: "دستاوردها و امتیاز",
-        icon: Award,
-        description: "مدال‌ها و امتیاز کسب‌شده",
-      },
-    ],
-  },
-  {
-    id: "account",
-    label: "حساب من",
-    href: "/user/profile",
-    icon: UserIcon,
-    items: [
-      {
-        href: "/user/profile",
-        label: "پروفایل",
-        icon: UserIcon,
-        description: "اطلاعات و تکمیل پروفایل",
       },
       {
         href: "/user/orders",

@@ -1,0 +1,31 @@
+server_port: "8081"
+
+db:
+  user: monetizeai_free_user
+  password: mgstudio884
+  host: 127.0.0.1
+  port: 3306
+  name: monetizeai_free_farsi
+
+admin:
+  username: admin
+  password: admin123
+
+smsapikey: "OWYzZmNmNGYtZjEzMi00YjIyLWJhMzgtYmFjZjQ3NWFmMjIxMDcwZGE0ZWMwZDcyYzAxNjcxZDlkMjU0MzAzZmJhMGY="
+from_number: "+983000505"
+sms_base_url: "https://api2.ippanel.com/api/v1"
+
+patterns:
+  registration: "kii5iwrowp477q4"
+  followup1_3h: "1yo9593h6o21sqo"
+  followup1_15h: "v9pabpsmuqedhoy"
+  followup2_3h: "xi3bzfnfynxv39a"
+  followup2_15h: "ul85jpbp0rgaqvu"
+  followup3_3h: "xkkvxumbg6v03ri"
+  followup3_15h: "vhqv9dqp78hbhvg"
+  followup4_3h: "0n1i9hintimj168"
+  followup4_15h: "lutb9s469yk546f"
+  complete1: "8zbli5m2ey9ppg4"
+  complete2: "saxojb1e5ey93ro"
+  complete3: "an762f2qh77ncie"
+  complete4: "iuwoc9d0bu5axy8"

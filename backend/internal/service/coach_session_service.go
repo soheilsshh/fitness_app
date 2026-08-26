@@ -72,14 +72,16 @@ type coachSessionService struct {
 	sessions        repository.CoachSessionRepository
 	notifications   repository.NotificationRepository
 	coachStudentSvc CoachStudentService
+	achievementSvc  AchievementService
 }
 
 func NewCoachSessionService(
 	sessions repository.CoachSessionRepository,
 	notifications repository.NotificationRepository,
 	coachStudentSvc CoachStudentService,
+	achievementSvc AchievementService,
 ) CoachSessionService {
-	return &coachSessionService{sessions: sessions, notifications: notifications, coachStudentSvc: coachStudentSvc}
+	return &coachSessionService{sessions: sessions, notifications: notifications, coachStudentSvc: coachStudentSvc, achievementSvc: achievementSvc}
 }
 
 func (s *coachSessionService) Schedule(ctx context.Context, coachID, studentID uint, req *SessionUpsertRequest) (*CoachSessionDTO, error) {
@@ -135,12 +137,18 @@ func (s *coachSessionService) Update(ctx context.Context, coachID, sessionID uin
 	if req.Notes != "" {
 		session.Notes = strings.TrimSpace(req.Notes)
 	}
+	newlyCompleted := false
 	switch strings.ToLower(strings.TrimSpace(req.Status)) {
 	case models.CoachSessionStatusScheduled, models.CoachSessionStatusCompleted, models.CoachSessionStatusCancelled:
-		session.Status = strings.ToLower(strings.TrimSpace(req.Status))
+		next := strings.ToLower(strings.TrimSpace(req.Status))
+		newlyCompleted = next == models.CoachSessionStatusCompleted && session.Status != models.CoachSessionStatusCompleted
+		session.Status = next
 	}
 	if err := s.sessions.Update(ctx, session); err != nil {
 		return nil, err
+	}
+	if newlyCompleted && s.achievementSvc != nil {
+		s.achievementSvc.HandleCoachSessionCompleted(ctx, session.StudentID)
 	}
 	dto := sessionToDTO(*session)
 	return &dto, nil

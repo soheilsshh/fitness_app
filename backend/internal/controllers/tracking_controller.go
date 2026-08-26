@@ -37,34 +37,6 @@ func (h *TrackingController) GetMyTracking(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-func (h *TrackingController) SubmitWeight(c *gin.Context) {
-	userID, err := middleware.GetUserID(c)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
-		return
-	}
-	var req struct {
-		Weight float64 `json:"weight"`
-	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	resp, err := h.trackingService.SubmitWeight(c.Request.Context(), userID, req.Weight)
-	if err != nil {
-		switch {
-		case errors.Is(err, service.ErrInvalidWeight):
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		case errors.Is(err, service.ErrTrackingNoSubscription):
-			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-		default:
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		}
-		return
-	}
-	c.JSON(http.StatusOK, resp)
-}
-
 func (h *TrackingController) UploadTrackingPhoto(c *gin.Context) {
 	userID, err := middleware.GetUserID(c)
 	if err != nil {

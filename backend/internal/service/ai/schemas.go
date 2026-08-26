@@ -34,10 +34,34 @@ type MealSchema struct {
 type FoodItem struct {
 	FoodName string  `json:"food_name"`
 	AmountG  float64 `json:"amount_g"`
-	Calories int     `json:"calories"`
-	ProteinG float64 `json:"protein_g"`
-	CarbsG   float64 `json:"carbs_g"`
-	FatG     float64 `json:"fat_g"`
+	// ServingLabel is the household-measure equivalent of AmountG (e.g. "۱ لیوان
+	// برنج پخته", "۲ قاشق غذاخوری روغن") so the UI can show grams alongside a
+	// measure users actually reach for at home.
+	ServingLabel string  `json:"serving_label"`
+	Calories     int     `json:"calories"`
+	ProteinG     float64 `json:"protein_g"`
+	CarbsG       float64 `json:"carbs_g"`
+	FatG         float64 `json:"fat_g"`
+}
+
+// NutritionWeekDaySchema is one day inside a weekly nutrition plan. DayName
+// must be one of شنبه..جمعه, in that order, seven entries — mirrors the
+// existing coach day-of-week convention (DayNumber 1..7 = sat..fri, see
+// dayNumberToKey in backend/internal/service/program_mapper.go) so a weekly
+// AI plan can be reviewed/edited with the coach's existing per-day editor.
+type NutritionWeekDaySchema struct {
+	DayName string       `json:"day_name"`
+	Meals   []MealSchema `json:"meals"`
+}
+
+// NutritionWeekSchema is the structured AI output for a 7-day nutrition plan.
+type NutritionWeekSchema struct {
+	GoalType      string                   `json:"goal_type"`
+	TotalCalories int                      `json:"total_calories"`
+	ProteinG      int                      `json:"protein_g"`
+	CarbsG        int                      `json:"carbs_g"`
+	FatG          int                      `json:"fat_g"`
+	Days          []NutritionWeekDaySchema `json:"days"`
 }
 
 // WorkoutPlanSchema is the structured AI output for a workout plan.
@@ -75,12 +99,18 @@ type IngredientSuggestionSchema struct {
 type ProgressAnalysisSchema struct {
 	SummaryText string `json:"summary_text"`
 	Highlight   string `json:"highlight"`
+	// PainSeverity is empty unless the prompt included pain-note text to
+	// assess — one of "خفیف"|"متوسط"|"شدید" when a discomfort area was reported.
+	PainSeverity string `json:"pain_severity"`
 }
 
 // FoodLogSchema is used later for voice food logging (phase 2 roadmap).
 type FoodLogSchema struct {
 	Items []FoodItem `json:"items"`
 	Notes string     `json:"notes"`
+	// Transcript is the raw STT text (Shenava/Whisper). Set by the server after
+	// transcription — not produced by the structured LLM schema.
+	Transcript string `json:"transcript,omitempty"`
 }
 
 // SetLogSchema is used later for voice set logging (phase 3 roadmap).
@@ -91,16 +121,24 @@ type SetLogSchema struct {
 	IsPR         bool    `json:"is_pr"`
 }
 
+// WorkoutNoteSummarySchema cleans up a raw voice-transcribed note from the
+// post-workout survey into a tidy Persian paragraph — no data extraction,
+// just structuring/cleanup of what the user said.
+type WorkoutNoteSummarySchema struct {
+	Text string `json:"text"`
+}
+
 // ProgressAnalysisJSONSchema returns the OpenAI json_schema object for the
 // weekly/monthly deep-dive text summary (roadmap BE-4.3).
 func ProgressAnalysisJSONSchema() map[string]interface{} {
 	return map[string]interface{}{
 		"type": "object",
 		"properties": map[string]interface{}{
-			"summary_text": map[string]string{"type": "string"},
-			"highlight":    map[string]string{"type": "string"},
+			"summary_text":  map[string]string{"type": "string"},
+			"highlight":     map[string]string{"type": "string"},
+			"pain_severity": map[string]string{"type": "string"},
 		},
-		"required":             []string{"summary_text", "highlight"},
+		"required":             []string{"summary_text", "highlight", "pain_severity"},
 		"additionalProperties": false,
 	}
 }
@@ -121,19 +159,33 @@ func SetLogJSONSchema() map[string]interface{} {
 	}
 }
 
+// WorkoutNoteSummaryJSONSchema returns the OpenAI json_schema object for
+// cleaning up a raw voice-transcribed post-workout note.
+func WorkoutNoteSummaryJSONSchema() map[string]interface{} {
+	return map[string]interface{}{
+		"type": "object",
+		"properties": map[string]interface{}{
+			"text": map[string]string{"type": "string"},
+		},
+		"required":             []string{"text"},
+		"additionalProperties": false,
+	}
+}
+
 // NutritionPlanJSONSchema returns the OpenAI json_schema object for nutrition plans.
 func NutritionPlanJSONSchema() map[string]interface{} {
 	foodItem := map[string]interface{}{
 		"type": "object",
 		"properties": map[string]interface{}{
-			"food_name": map[string]string{"type": "string"},
-			"amount_g":  map[string]string{"type": "number"},
-			"calories":  map[string]string{"type": "integer"},
-			"protein_g": map[string]string{"type": "number"},
-			"carbs_g":   map[string]string{"type": "number"},
-			"fat_g":     map[string]string{"type": "number"},
+			"food_name":     map[string]string{"type": "string"},
+			"amount_g":      map[string]string{"type": "number"},
+			"serving_label": map[string]string{"type": "string"},
+			"calories":      map[string]string{"type": "integer"},
+			"protein_g":     map[string]string{"type": "number"},
+			"carbs_g":       map[string]string{"type": "number"},
+			"fat_g":         map[string]string{"type": "number"},
 		},
-		"required":             []string{"food_name", "amount_g", "calories", "protein_g", "carbs_g", "fat_g"},
+		"required":             []string{"food_name", "amount_g", "serving_label", "calories", "protein_g", "carbs_g", "fat_g"},
 		"additionalProperties": false,
 	}
 	meal := map[string]interface{}{
@@ -166,20 +218,112 @@ func NutritionPlanJSONSchema() map[string]interface{} {
 	}
 }
 
+// NutritionWeekJSONSchema returns the OpenAI json_schema object for a 7-day
+// nutrition plan (roadmap Phase 3: برنامه هفتگی).
+func NutritionWeekJSONSchema() map[string]interface{} {
+	foodItem := map[string]interface{}{
+		"type": "object",
+		"properties": map[string]interface{}{
+			"food_name":     map[string]string{"type": "string"},
+			"amount_g":      map[string]string{"type": "number"},
+			"serving_label": map[string]string{"type": "string"},
+			"calories":      map[string]string{"type": "integer"},
+			"protein_g":     map[string]string{"type": "number"},
+			"carbs_g":       map[string]string{"type": "number"},
+			"fat_g":         map[string]string{"type": "number"},
+		},
+		"required":             []string{"food_name", "amount_g", "serving_label", "calories", "protein_g", "carbs_g", "fat_g"},
+		"additionalProperties": false,
+	}
+	meal := map[string]interface{}{
+		"type": "object",
+		"properties": map[string]interface{}{
+			"name": map[string]string{"type": "string"},
+			"items": map[string]interface{}{
+				"type":  "array",
+				"items": foodItem,
+			},
+		},
+		"required":             []string{"name", "items"},
+		"additionalProperties": false,
+	}
+	day := map[string]interface{}{
+		"type": "object",
+		"properties": map[string]interface{}{
+			"day_name": map[string]string{"type": "string"},
+			"meals": map[string]interface{}{
+				"type":  "array",
+				"items": meal,
+			},
+		},
+		"required":             []string{"day_name", "meals"},
+		"additionalProperties": false,
+	}
+	return map[string]interface{}{
+		"type": "object",
+		"properties": map[string]interface{}{
+			"goal_type":      map[string]interface{}{"type": "string", "enum": []string{GoalCut, GoalBulk, GoalMaintain}},
+			"total_calories": map[string]string{"type": "integer"},
+			"protein_g":      map[string]string{"type": "integer"},
+			"carbs_g":        map[string]string{"type": "integer"},
+			"fat_g":          map[string]string{"type": "integer"},
+			"days": map[string]interface{}{
+				"type":  "array",
+				"items": day,
+			},
+		},
+		"required":             []string{"goal_type", "total_calories", "protein_g", "carbs_g", "fat_g", "days"},
+		"additionalProperties": false,
+	}
+}
+
+// MealJSONSchema returns the OpenAI json_schema object for a single replacement
+// meal (used by "تغییر این وعده" — regenerating one meal of a daily/weekly plan
+// without regenerating the whole plan).
+func MealJSONSchema() map[string]interface{} {
+	foodItem := map[string]interface{}{
+		"type": "object",
+		"properties": map[string]interface{}{
+			"food_name":     map[string]string{"type": "string"},
+			"amount_g":      map[string]string{"type": "number"},
+			"serving_label": map[string]string{"type": "string"},
+			"calories":      map[string]string{"type": "integer"},
+			"protein_g":     map[string]string{"type": "number"},
+			"carbs_g":       map[string]string{"type": "number"},
+			"fat_g":         map[string]string{"type": "number"},
+		},
+		"required":             []string{"food_name", "amount_g", "serving_label", "calories", "protein_g", "carbs_g", "fat_g"},
+		"additionalProperties": false,
+	}
+	return map[string]interface{}{
+		"type": "object",
+		"properties": map[string]interface{}{
+			"name": map[string]string{"type": "string"},
+			"items": map[string]interface{}{
+				"type":  "array",
+				"items": foodItem,
+			},
+		},
+		"required":             []string{"name", "items"},
+		"additionalProperties": false,
+	}
+}
+
 // IngredientSuggestionJSONSchema returns the OpenAI json_schema object for
 // improvised ingredient-based recipe suggestions (roadmap BE-1.9).
 func IngredientSuggestionJSONSchema() map[string]interface{} {
 	foodItem := map[string]interface{}{
 		"type": "object",
 		"properties": map[string]interface{}{
-			"food_name": map[string]string{"type": "string"},
-			"amount_g":  map[string]string{"type": "number"},
-			"calories":  map[string]string{"type": "integer"},
-			"protein_g": map[string]string{"type": "number"},
-			"carbs_g":   map[string]string{"type": "number"},
-			"fat_g":     map[string]string{"type": "number"},
+			"food_name":     map[string]string{"type": "string"},
+			"amount_g":      map[string]string{"type": "number"},
+			"serving_label": map[string]string{"type": "string"},
+			"calories":      map[string]string{"type": "integer"},
+			"protein_g":     map[string]string{"type": "number"},
+			"carbs_g":       map[string]string{"type": "number"},
+			"fat_g":         map[string]string{"type": "number"},
 		},
-		"required":             []string{"food_name", "amount_g", "calories", "protein_g", "carbs_g", "fat_g"},
+		"required":             []string{"food_name", "amount_g", "serving_label", "calories", "protein_g", "carbs_g", "fat_g"},
 		"additionalProperties": false,
 	}
 	return map[string]interface{}{

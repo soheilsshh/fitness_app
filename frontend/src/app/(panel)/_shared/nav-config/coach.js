@@ -60,6 +60,26 @@ export const coachNav = [
   },
 ];
 
+/**
+ * Sections the sidebar into labeled groups, referenced by href so the
+ * approval-gated filter (pending coaches only see "پروفایل") still works —
+ * groups end up empty and are simply skipped when items are filtered out.
+ */
+export const coachNavGroups = [
+  { id: "overview", label: "نمای کلی", hrefs: ["/coach/dashboard"] },
+  {
+    id: "students",
+    label: "دانشجویان",
+    hrefs: ["/coach/students", "/coach/tracking", "/coach/tickets"],
+  },
+  {
+    id: "content",
+    label: "محتوا",
+    hrefs: ["/coach/plans", "/coach/templates", "/coach/nutrition-templates"],
+  },
+  { id: "profile", label: "پروفایل", hrefs: ["/coach/profile"] },
+];
+
 export const coachToolsNav = [
   {
     href: "/coach/tools/calorie-calculator",

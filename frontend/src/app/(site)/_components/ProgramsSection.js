@@ -13,11 +13,14 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import coachStatue from "@/assets/landing-page/coach_section_statue.png";
 
-export default function ProgramsSection() {
-  const [coaches, setCoaches] = useState([]);
-  const [loading, setLoading] = useState(true);
+export default function ProgramsSection({ initialCoaches = [] }) {
+  const [coaches, setCoaches] = useState(initialCoaches);
+  const [loading, setLoading] = useState(initialCoaches.length === 0);
 
   useEffect(() => {
+    // Already seeded from server-rendered HTML — skip the redundant refetch.
+    if (initialCoaches.length > 0) return;
+
     let cancelled = false;
     async function load() {
       try {
@@ -33,6 +36,7 @@ export default function ProgramsSection() {
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

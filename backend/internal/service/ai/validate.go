@@ -30,19 +30,10 @@ func ValidateNutritionPlan(plan *NutritionPlanSchema) error {
 	}
 	itemCalSum := 0
 	for _, meal := range plan.Meals {
-		if strings.TrimSpace(meal.Name) == "" {
-			return fmt.Errorf("%w: نام وعده خالی است", ErrInvalidPlan)
-		}
-		if len(meal.Items) == 0 {
-			return fmt.Errorf("%w: وعده %s آیتم غذایی ندارد", ErrInvalidPlan, meal.Name)
+		if err := ValidateMeal(&meal); err != nil {
+			return err
 		}
 		for _, item := range meal.Items {
-			if strings.TrimSpace(item.FoodName) == "" {
-				return fmt.Errorf("%w: نام غذا خالی است", ErrInvalidPlan)
-			}
-			if item.Calories < 0 || item.ProteinG < 0 || item.CarbsG < 0 || item.FatG < 0 || item.AmountG < 0 {
-				return fmt.Errorf("%w: مقادیر آیتم غذایی نامعتبر است", ErrInvalidPlan)
-			}
 			itemCalSum += item.Calories
 		}
 	}
@@ -54,6 +45,65 @@ func ValidateNutritionPlan(plan *NutritionPlanSchema) error {
 		}
 		if diff > plan.TotalCalories/2 && diff > 400 {
 			return fmt.Errorf("%w: مجموع کالری آیتم‌ها با total_calories هم‌خوانی ندارد", ErrInvalidPlan)
+		}
+	}
+	return nil
+}
+
+// ValidateWeeklyPlan rejects unrealistic or empty weekly nutrition plans
+// (roadmap Phase 3: برنامه هفتگی).
+func ValidateWeeklyPlan(plan *NutritionWeekSchema) error {
+	if plan == nil {
+		return fmt.Errorf("%w: plan is nil", ErrInvalidPlan)
+	}
+	if plan.TotalCalories < 800 || plan.TotalCalories > 6000 {
+		return fmt.Errorf("%w: کالری کل خارج از محدوده منطقی است", ErrInvalidPlan)
+	}
+	if plan.ProteinG < 0 || plan.CarbsG < 0 || plan.FatG < 0 {
+		return fmt.Errorf("%w: مقادیر ماکرو نمی‌تواند منفی باشد", ErrInvalidPlan)
+	}
+	goal := strings.ToLower(strings.TrimSpace(plan.GoalType))
+	if goal != GoalCut && goal != GoalBulk && goal != GoalMaintain {
+		return fmt.Errorf("%w: goal_type نامعتبر است", ErrInvalidPlan)
+	}
+	if len(plan.Days) == 0 {
+		return fmt.Errorf("%w: هیچ روزی در برنامه هفتگی وجود ندارد", ErrInvalidPlan)
+	}
+	for _, day := range plan.Days {
+		if strings.TrimSpace(day.DayName) == "" {
+			return fmt.Errorf("%w: نام روز خالی است", ErrInvalidPlan)
+		}
+		if len(day.Meals) == 0 {
+			return fmt.Errorf("%w: روز %s وعده‌ای ندارد", ErrInvalidPlan, day.DayName)
+		}
+		for _, meal := range day.Meals {
+			if err := ValidateMeal(&meal); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+// ValidateMeal rejects an empty or nonsensical single meal — shared by
+// ValidateNutritionPlan (per-meal check inside a full plan) and the standalone
+// "تغییر این وعده" regenerate-single-meal flow.
+func ValidateMeal(meal *MealSchema) error {
+	if meal == nil {
+		return fmt.Errorf("%w: meal is nil", ErrInvalidPlan)
+	}
+	if strings.TrimSpace(meal.Name) == "" {
+		return fmt.Errorf("%w: نام وعده خالی است", ErrInvalidPlan)
+	}
+	if len(meal.Items) == 0 {
+		return fmt.Errorf("%w: وعده %s آیتم غذایی ندارد", ErrInvalidPlan, meal.Name)
+	}
+	for _, item := range meal.Items {
+		if strings.TrimSpace(item.FoodName) == "" {
+			return fmt.Errorf("%w: نام غذا خالی است", ErrInvalidPlan)
+		}
+		if item.Calories < 0 || item.ProteinG < 0 || item.CarbsG < 0 || item.FatG < 0 || item.AmountG < 0 {
+			return fmt.Errorf("%w: مقادیر آیتم غذایی نامعتبر است", ErrInvalidPlan)
 		}
 	}
 	return nil
@@ -172,6 +222,14 @@ func ValidateSetLog(log *SetLogSchema) error {
 	}
 	if log.Reps <= 0 {
 		return fmt.Errorf("%w: تعداد تکرار نامعتبر است", ErrInvalidPlan)
+	}
+	return nil
+}
+
+// ValidateWorkoutNoteSummary rejects an empty voice-note cleanup result.
+func ValidateWorkoutNoteSummary(s *WorkoutNoteSummarySchema) error {
+	if s == nil || strings.TrimSpace(s.Text) == "" {
+		return fmt.Errorf("%w: متن خالی است", ErrInvalidPlan)
 	}
 	return nil
 }

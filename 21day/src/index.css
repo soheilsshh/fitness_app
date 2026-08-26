@@ -1,0 +1,442 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* IranianSans — Fitino brand face (local woff2) */
+@font-face {
+  font-family: "IranianSans";
+  font-display: swap;
+  font-weight: 400;
+  src: url("./assets/fonts/IRANSansXFaNum-Regular.woff2") format("woff2");
+}
+@font-face {
+  font-family: "IranianSans";
+  font-display: swap;
+  font-weight: 500;
+  src: url("./assets/fonts/IRANSansXFaNum-Medium.woff2") format("woff2");
+}
+@font-face {
+  font-family: "IranianSans";
+  font-display: swap;
+  font-weight: 600;
+  src: url("./assets/fonts/IRANSansXFaNum-DemiBold.woff2") format("woff2");
+}
+@font-face {
+  font-family: "IranianSans";
+  font-display: swap;
+  font-weight: 700;
+  src: url("./assets/fonts/IRANSansXFaNum-DemiBold.woff2") format("woff2");
+}
+@font-face {
+  font-family: "IranianSans";
+  font-display: swap;
+  font-weight: 800;
+  src: url("./assets/fonts/IRANSansXFaNum-Black.woff2") format("woff2");
+}
+@font-face {
+  font-family: "IranianSans";
+  font-display: swap;
+  font-weight: 900;
+  src: url("./assets/fonts/IRANSansXFaNum-Black.woff2") format("woff2");
+}
+
+@layer base {
+  :root {
+    /* Fitino dark cinema — electric aqua, not purple */
+    --background: 0 0% 5.5%;
+    --foreground: 0 0% 96%;
+
+    --card: 0 0% 12%;
+    --card-foreground: 0 0% 96%;
+
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 96%;
+
+    --primary: 177 57% 39%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 180 8% 14%;
+    --secondary-foreground: 0 0% 96%;
+
+    --muted: 180 8% 14%;
+    --muted-foreground: 180 6% 68%;
+
+    --accent: 174 40% 16%;
+    --accent-foreground: 174 90% 88%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 180 10% 18%;
+    --input: 180 10% 18%;
+    --ring: 174 97% 57%;
+
+    --radius: 1rem;
+
+    --sidebar-background: 180 8% 8%;
+    --sidebar-foreground: 0 0% 96%;
+    --sidebar-primary: 177 57% 39%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 180 8% 14%;
+    --sidebar-accent-foreground: 0 0% 96%;
+    --sidebar-border: 180 10% 18%;
+    --sidebar-ring: 174 97% 57%;
+
+    --emerald-cyan: linear-gradient(135deg, #187272 0%, #2a9c96 40%, #58cac0 70%, #26fce3 100%);
+    --fitino-glow: #26fce3;
+    --fitino-mid: #58cac0;
+    --fitino-brand: #2a9c96;
+    --fitino-deep: #187272;
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+    --space-2xl: 48px;
+    --space-3xl: 64px;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    direction: rtl;
+    background: #0e0e0e;
+    scrollbar-gutter: stable;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: "IranianSans", ui-sans-serif, system-ui, sans-serif;
+    font-weight: 500;
+    direction: rtl;
+    background: #0e0e0e;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: "IranianSans", ui-sans-serif, system-ui, sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer components {
+  .hero-gradient {
+    background: var(--emerald-cyan);
+  }
+
+  .gradient-text {
+    background: var(--emerald-cyan);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+
+  .gradient-bg {
+    background: var(--emerald-cyan);
+  }
+
+  .ai-glow {
+    box-shadow:
+      0 0 22px rgba(42, 156, 150, 0.28),
+      0 0 44px rgba(38, 252, 227, 0.14);
+  }
+
+  .card-hover {
+    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s ease;
+  }
+
+  .card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(24, 114, 114, 0.22);
+  }
+
+  .glow-card {
+    position: relative;
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
+  }
+
+  .glow-card::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    padding: 1px;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #187272, #2a9c96, #58cac0, #26fce3, #187272);
+    background-size: 200% auto;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+  }
+
+  .glow-card:hover::before {
+    opacity: 1;
+    animation: shimmer 3s linear infinite;
+  }
+
+  .glow-card:hover {
+    box-shadow: 0 0 25px rgba(38, 252, 227, 0.22);
+  }
+
+  .section-rule {
+    width: 6rem;
+    height: 4px;
+    margin-inline: auto;
+    border-radius: 999px;
+    background: var(--emerald-cyan);
+  }
+
+  .fitino-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.45rem 0.9rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #f0f0f0;
+  }
+
+  .btn-cta {
+    display: inline-flex;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-weight: 900;
+    color: #fff;
+    padding: 16px 1.5rem;
+    border-radius: 9999px;
+    font-size: 17px;
+    line-height: 1.25;
+    background-color: #000 !important;
+    border: 2px solid transparent;
+    background-image:
+      linear-gradient(#000, #000),
+      linear-gradient(90deg, #187272 0%, #2a9c96 42%, #26fce3 100%) !important;
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    box-shadow:
+      0 0 22px rgba(42, 156, 150, 0.28),
+      0 0 44px rgba(38, 252, 227, 0.14);
+    transition:
+      box-shadow 0.22s ease,
+      transform 0.15s cubic-bezier(0.16, 1, 0.3, 1),
+      opacity 0.2s ease;
+  }
+
+  .btn-cta:hover:not(:disabled) {
+    box-shadow:
+      0 0 28px rgba(42, 156, 150, 0.4),
+      0 0 56px rgba(38, 252, 227, 0.22);
+  }
+
+  .btn-cta:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+
+  .btn-cta:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  .site-input {
+    width: 100%;
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.04);
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    color: #f5f5f5;
+    outline: none;
+  }
+
+  .site-input::placeholder {
+    color: rgba(240, 240, 240, 0.45);
+  }
+
+  .site-input:focus {
+    border-color: color-mix(in srgb, #26fce3 55%, transparent);
+    box-shadow: 0 0 0 3px rgba(38, 252, 227, 0.16);
+  }
+}
+
+#scroll-progress {
+  position: fixed;
+  top: 0;
+  inset-inline-end: 0;
+  height: 4px;
+  background: var(--emerald-cyan);
+  z-index: 200;
+  width: 0%;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes aurora-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(4%, -6%) scale(1.06); }
+}
+
+.aurora-blob {
+  animation: aurora-drift 14s ease-in-out infinite;
+}
+
+.aurora-blob-delay {
+  animation-delay: -6s;
+}
+
+@keyframes fitino-logo-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.035); }
+}
+
+.fitino-logo-breathe {
+  animation: fitino-logo-breathe 3.4s ease-in-out infinite;
+}
+
+/* ---- Redesign primitives (structure only — palette untouched) ---- */
+
+.ghost-number {
+  -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.16);
+  color: transparent;
+  font-weight: 900;
+}
+
+.rail-line {
+  width: 2px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.03));
+}
+
+.rail-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.rail-dot.is-active {
+  background: #26fce3;
+  transform: scale(1.35);
+  box-shadow: 0 0 0 4px rgba(38, 252, 227, 0.14), 0 0 16px rgba(38, 252, 227, 0.6);
+}
+
+.ring-donut {
+  --pct: 0%;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: conic-gradient(#26fce3 var(--pct), rgba(255, 255, 255, 0.08) 0);
+  transition: background 0.6s ease;
+}
+
+.ring-donut::before {
+  content: "";
+  position: absolute;
+  inset: 9%;
+  border-radius: 999px;
+  background: #101211;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.ring-donut > * {
+  position: relative;
+  z-index: 1;
+}
+
+.bento-tile {
+  position: relative;
+  border-radius: 1.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  overflow: hidden;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, background 0.3s ease;
+}
+
+.bento-tile:hover {
+  transform: translateY(-3px);
+  border-color: rgba(38, 252, 227, 0.3);
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.floating-nav {
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(14, 14, 14, 0.6);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.mock-scanline {
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.02) 0px,
+    rgba(255, 255, 255, 0.02) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid #26fce3;
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora-blob,
+  .aurora-blob-delay,
+  .fitino-logo-breathe,
+  .glow-card:hover::before {
+    animation: none !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

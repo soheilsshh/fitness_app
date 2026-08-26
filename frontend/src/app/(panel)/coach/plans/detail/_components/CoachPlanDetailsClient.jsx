@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronLeft, SparklesIcon, Trash2 } from "lucide-react";
+import { ChevronLeft, Trash2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import PlanForm from "@/app/(panel)/admin/plans/_components/PlanForm";
@@ -90,12 +90,9 @@ export default function CoachPlanDetailsClient() {
           <h2 className="text-lg font-semibold">ویرایش پلن</h2>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" asChild>
-            <Link href={`/coach/plans/ai-suggest?id=${id}`}>
-              <SparklesIcon data-icon="inline-start" />
-              پیشنهاد AI برای این برنامه
-            </Link>
-          </Button>
+          {/* پیشنهاد AI حذف شد: این صفحه ویرایشگر پلن فروش (قیمت/مدت) است، نه
+              برنامه تمرین/تغذیه واقعی یک دانشجو — پیشنهاد AI روی صفحهٔ
+              ویرایشگر برنامهٔ دانشجو (coach/students/workout و nutrition) است. */}
           <Button type="button" variant="destructive" size="sm" onClick={onDelete}>
             <Trash2 data-icon="inline-start" />
             حذف پلن

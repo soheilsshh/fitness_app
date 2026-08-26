@@ -318,7 +318,10 @@ export default function CoachReviewDetailsSheet({
       </Sheet>
 
       <Dialog open={!!lightbox} onOpenChange={(next) => !next && setLightbox(null)}>
-        <DialogContent className="max-w-3xl gap-0 overflow-hidden p-0" dir="rtl">
+        <DialogContent
+          className="w-[calc(100%-2rem)] max-w-3xl gap-0 overflow-hidden p-0 sm:w-full"
+          dir="rtl"
+        >
           <DialogHeader className="border-b px-4 py-3 text-start">
             <DialogTitle className="text-sm">{lightbox?.title || "پیش‌نمایش تصویر"}</DialogTitle>
           </DialogHeader>

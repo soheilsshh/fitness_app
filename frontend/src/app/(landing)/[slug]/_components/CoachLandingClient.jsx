@@ -22,14 +22,14 @@ function formatToman(amount) {
   return new Intl.NumberFormat("fa-IR").format(Number(amount)) + " تومان";
 }
 
-export default function CoachLandingClient({ slug }) {
+export default function CoachLandingClient({ slug, initialCoach = null, initialPlans = [] }) {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const cartCoach = useAppSelector(selectCartCoach);
   const cartItems = useAppSelector(selectCartItems);
-  const [coach, setCoach] = useState(null);
-  const [plans, setPlans] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [coach, setCoach] = useState(initialCoach);
+  const [plans, setPlans] = useState(initialPlans);
+  const [loading, setLoading] = useState(!initialCoach);
   const [notFound, setNotFound] = useState(false);
   const [loadError, setLoadError] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
@@ -82,7 +82,7 @@ export default function CoachLandingClient({ slug }) {
     assignedCoach?.id && coach?.coachId && Number(assignedCoach.id) !== Number(coach.coachId);
   const canPurchase = !hasOtherCoach;
 
-  if (loading) {
+  if (loading && !coach) {
     return (
       <div className="mx-auto max-w-6xl px-4 pt-6 md:pt-10" aria-busy="true" aria-label="در حال بارگذاری پروفایل مربی">
         <div className="grid gap-px overflow-hidden rounded-[28px] ring-1 ring-white/10 md:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">

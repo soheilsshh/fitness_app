@@ -162,7 +162,7 @@ func (s *dailyFoodLogService) CreateLog(ctx context.Context, userID uint, req *C
 		return nil, err
 	}
 	if s.achievementSvc != nil {
-		s.achievementSvc.HandleFoodLogCreated(ctx, userID)
+		s.achievementSvc.HandleFoodLogCreated(ctx, userID, log.ID)
 	}
 
 	dto := dailyFoodLogToDTO(*log)

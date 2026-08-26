@@ -139,15 +139,27 @@ type MeProgramsResponse struct {
 	Programs []MeProgramDTO `json:"programs"`
 }
 
+// MeProgramSourceDTO describes who authored a workout/nutrition program's
+// content and its review status, so the student UI can show a badge like
+// "ساخته‌شده با هوش مصنوعی" or "توسط مربی" next to the creation date
+// (AI_PROGRAM_REFACTOR_TODO.md فاز ۲).
+type MeProgramSourceDTO struct {
+	Source    string    `json:"source"`    // coach | ai (models.ProgramSource*)
+	Status    string    `json:"status"`    // official | coach_approved | draft (models.ProgramStatus*)
+	CreatedAt time.Time `json:"createdAt"`
+}
+
 // MeProgramDetailDTO for GET /me/programs/:id (with schedule, planByDay - optional).
 type MeProgramDetailDTO struct {
 	MeProgramDTO
-	Goal      string                  `json:"goal,omitempty"`
-	Level     string                  `json:"level,omitempty"`
-	Coach     string                  `json:"coach,omitempty"`
-	Tags      []string                `json:"tags,omitempty"`
-	Schedule  *MeScheduleDTO          `json:"schedule,omitempty"`
-	PlanByDay map[string]MeDayPlanDTO `json:"planByDay,omitempty"`
+	Goal           string                  `json:"goal,omitempty"`
+	Level          string                  `json:"level,omitempty"`
+	Coach          string                  `json:"coach,omitempty"`
+	Tags           []string                `json:"tags,omitempty"`
+	Schedule       *MeScheduleDTO          `json:"schedule,omitempty"`
+	PlanByDay      map[string]MeDayPlanDTO `json:"planByDay,omitempty"`
+	WorkoutMeta    *MeProgramSourceDTO     `json:"workoutMeta,omitempty"`
+	NutritionMeta  *MeProgramSourceDTO     `json:"nutritionMeta,omitempty"`
 }
 
 type MeScheduleDTO struct {
@@ -224,17 +236,42 @@ type MeService interface {
 	GetMyOrderByID(ctx context.Context, userID uint, orderID uint) (*MeOrderDTO, error)
 	ListMyPrograms(ctx context.Context, userID uint) (*MeProgramsResponse, error)
 	GetMyProgramByID(ctx context.Context, userID uint, programID uint) (*MeProgramDetailDTO, error)
+	// ListMyWorkoutPrograms / ListMyNutritionPrograms return every saved
+	// version (active + the inactive pool) for the student's current
+	// subscription, so the "my saved plans" UI can list them with
+	// activate/deactivate actions.
+	ListMyWorkoutPrograms(ctx context.Context, userID uint) ([]ProgramVersionDTO, error)
+	ListMyNutritionPrograms(ctx context.Context, userID uint) ([]ProgramVersionDTO, error)
+	// ActivateWorkoutProgram/DeactivateWorkoutProgram (and the nutrition
+	// counterparts) own the "only one active plan" rule: activating a program
+	// deactivates whatever else was active for the same subscription;
+	// deactivating just turns the given one off, possibly leaving zero active.
+	ActivateWorkoutProgram(ctx context.Context, userID, programID uint) error
+	DeactivateWorkoutProgram(ctx context.Context, userID, programID uint) error
+	ActivateNutritionProgram(ctx context.Context, userID, programID uint) error
+	DeactivateNutritionProgram(ctx context.Context, userID, programID uint) error
 }
 
+// ErrMeProgramNotFound is returned when a workout/nutrition program id
+// doesn't exist or doesn't belong to the caller's current subscription.
+var ErrMeProgramNotFound = errors.New("program not found")
+
+// ErrMeProgramNotApproved is returned when a student tries to activate an
+// AI-generated nutrition program that the coach hasn't approved yet (roadmap
+// Phase 4: تأیید مربی → فعال شدن برنامه — coach approval is a hard gate, not
+// just a UI badge).
+var ErrMeProgramNotApproved = errors.New("ai program not yet approved by coach")
+
 type meService struct {
-	db           *gorm.DB
-	userRepo     repository.UserRepository
-	orderRepo    repository.OrderRepository
-	subRepo      repository.SubscriptionRepository
-	planRepo     repository.ServicePlanRepository
-	programRepo  repository.ProgramRepository
-	exerciseRepo repository.ExerciseRepository
-	foodRepo     repository.FoodRepository
+	db             *gorm.DB
+	userRepo       repository.UserRepository
+	orderRepo      repository.OrderRepository
+	subRepo        repository.SubscriptionRepository
+	planRepo       repository.ServicePlanRepository
+	programRepo    repository.ProgramRepository
+	exerciseRepo   repository.ExerciseRepository
+	foodRepo       repository.FoodRepository
+	achievementSvc AchievementService
 }
 
 func NewMeService(
@@ -246,16 +283,18 @@ func NewMeService(
 	programRepo repository.ProgramRepository,
 	exerciseRepo repository.ExerciseRepository,
 	foodRepo repository.FoodRepository,
+	achievementSvc AchievementService,
 ) MeService {
 	return &meService{
-		db:           db,
-		userRepo:     userRepo,
-		orderRepo:    orderRepo,
-		subRepo:      subRepo,
-		planRepo:     planRepo,
-		programRepo:  programRepo,
-		exerciseRepo: exerciseRepo,
-		foodRepo:     foodRepo,
+		db:             db,
+		userRepo:       userRepo,
+		orderRepo:      orderRepo,
+		subRepo:        subRepo,
+		planRepo:       planRepo,
+		programRepo:    programRepo,
+		exerciseRepo:   exerciseRepo,
+		foodRepo:       foodRepo,
+		achievementSvc: achievementSvc,
 	}
 }
 
@@ -497,6 +536,9 @@ func (s *meService) UpdateProfile(ctx context.Context, userID uint, req *MeProfi
 	if err := s.userRepo.Update(ctx, user); err != nil {
 		return nil, err
 	}
+	if s.achievementSvc != nil {
+		s.achievementSvc.HandleProfileUpdated(ctx, userID)
+	}
 	return s.GetProfile(ctx, userID)
 }
 
@@ -611,6 +653,9 @@ func (s *meService) UploadBodyPhoto(ctx context.Context, userID uint, file io.Re
 	if err := s.db.WithContext(ctx).Create(&photo).Error; err != nil {
 		_ = os.Remove(fullPath)
 		return nil, err
+	}
+	if s.achievementSvc != nil {
+		s.achievementSvc.HandlePhotoUploaded(ctx, userID)
 	}
 
 	return &MePhotoDTO{
@@ -809,13 +854,16 @@ func (s *meService) GetMyProgramByID(ctx context.Context, userID uint, programID
 	var nutritionItems []models.NutritionItem
 	var nutritionCaloriesTarget int
 	var nutritionProteinTarget string
+	var workoutMeta, nutritionMeta *MeProgramSourceDTO
 	if wp, err := s.programRepo.FindActiveWorkoutBySubscriptionID(ctx, sub.ID); err == nil && wp != nil {
 		workoutItems, _ = s.programRepo.FindWorkoutItemsByProgramID(ctx, wp.ID)
+		workoutMeta = &MeProgramSourceDTO{Source: wp.Source, Status: wp.Status, CreatedAt: wp.CreatedAt}
 	}
 	if np, err := s.programRepo.FindActiveNutritionBySubscriptionID(ctx, sub.ID); err == nil && np != nil {
 		nutritionItems, _ = s.programRepo.FindNutritionItemsByProgramID(ctx, np.ID)
 		nutritionCaloriesTarget = np.CaloriesTarget
 		nutritionProteinTarget = np.ProteinTarget
+		nutritionMeta = &MeProgramSourceDTO{Source: np.Source, Status: np.Status, CreatedAt: np.CreatedAt}
 	}
 	planByDay, schedule := buildFullPlanByDay(workoutItems, nutritionItems)
 	planByDay = enrichWorkoutPlan(ctx, s.exerciseRepo, planByDay)
@@ -839,12 +887,144 @@ func (s *meService) GetMyProgramByID(ctx context.Context, userID uint, programID
 			CoachName:     coachName,
 			CoachSlug:     coachSlug,
 		},
-		Goal:      plan.Description,
-		Level:     "",
-		Coach:     coachName,
-		Tags:      nil,
-		Schedule:  schedule,
-		PlanByDay: planByDay,
+		Goal:          plan.Description,
+		Level:         "",
+		Coach:         coachName,
+		Tags:          nil,
+		Schedule:      schedule,
+		PlanByDay:     planByDay,
+		WorkoutMeta:   workoutMeta,
+		NutritionMeta: nutritionMeta,
 	}
 	return detail, nil
+}
+
+func (s *meService) currentSubscription(ctx context.Context, userID uint) (*models.Subscription, error) {
+	sub, err := s.subRepo.FindCurrentByUserID(ctx, userID, time.Now())
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrMeProgramNotFound
+		}
+		return nil, err
+	}
+	return sub, nil
+}
+
+func (s *meService) ListMyWorkoutPrograms(ctx context.Context, userID uint) ([]ProgramVersionDTO, error) {
+	sub, err := s.currentSubscription(ctx, userID)
+	if err != nil {
+		if errors.Is(err, ErrMeProgramNotFound) {
+			return []ProgramVersionDTO{}, nil
+		}
+		return nil, err
+	}
+	programs, err := s.programRepo.ListWorkoutProgramsBySubscriptionID(ctx, sub.ID)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]ProgramVersionDTO, 0, len(programs))
+	for _, p := range programs {
+		out = append(out, ProgramVersionDTO{
+			ID: p.ID, Title: p.Title, Source: p.Source, Status: p.Status,
+			DurationWeeks: p.DurationWeeks, IsActive: p.IsActive, CreatedAt: p.CreatedAt,
+		})
+	}
+	return out, nil
+}
+
+func (s *meService) ListMyNutritionPrograms(ctx context.Context, userID uint) ([]ProgramVersionDTO, error) {
+	sub, err := s.currentSubscription(ctx, userID)
+	if err != nil {
+		if errors.Is(err, ErrMeProgramNotFound) {
+			return []ProgramVersionDTO{}, nil
+		}
+		return nil, err
+	}
+	programs, err := s.programRepo.ListNutritionProgramsBySubscriptionID(ctx, sub.ID)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]ProgramVersionDTO, 0, len(programs))
+	for _, p := range programs {
+		out = append(out, ProgramVersionDTO{
+			ID: p.ID, Title: p.Title, Source: p.Source, Status: p.Status,
+			DurationWeeks: p.DurationWeeks, IsActive: p.IsActive, CreatedAt: p.CreatedAt,
+		})
+	}
+	return out, nil
+}
+
+func (s *meService) ActivateWorkoutProgram(ctx context.Context, userID, programID uint) error {
+	program, err := s.programRepo.FindWorkoutProgramByID(ctx, programID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrMeProgramNotFound
+		}
+		return err
+	}
+	if err := s.assertOwnsProgramSubscription(ctx, userID, program.SubscriptionID); err != nil {
+		return err
+	}
+	return s.programRepo.SetWorkoutProgramActive(ctx, programID, true)
+}
+
+func (s *meService) DeactivateWorkoutProgram(ctx context.Context, userID, programID uint) error {
+	program, err := s.programRepo.FindWorkoutProgramByID(ctx, programID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrMeProgramNotFound
+		}
+		return err
+	}
+	if err := s.assertOwnsProgramSubscription(ctx, userID, program.SubscriptionID); err != nil {
+		return err
+	}
+	return s.programRepo.SetWorkoutProgramActive(ctx, programID, false)
+}
+
+func (s *meService) ActivateNutritionProgram(ctx context.Context, userID, programID uint) error {
+	program, err := s.programRepo.FindNutritionProgramByID(ctx, programID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrMeProgramNotFound
+		}
+		return err
+	}
+	if err := s.assertOwnsProgramSubscription(ctx, userID, program.SubscriptionID); err != nil {
+		return err
+	}
+	// AI-authored plans need the coach's sign-off before a student can put
+	// them into effect — coach-authored plans (default "official") are
+	// unaffected by this gate.
+	if program.Source == models.ProgramSourceAI && program.Status != models.ProgramStatusCoachApproved {
+		return ErrMeProgramNotApproved
+	}
+	return s.programRepo.SetNutritionProgramActive(ctx, programID, true)
+}
+
+func (s *meService) DeactivateNutritionProgram(ctx context.Context, userID, programID uint) error {
+	program, err := s.programRepo.FindNutritionProgramByID(ctx, programID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrMeProgramNotFound
+		}
+		return err
+	}
+	if err := s.assertOwnsProgramSubscription(ctx, userID, program.SubscriptionID); err != nil {
+		return err
+	}
+	return s.programRepo.SetNutritionProgramActive(ctx, programID, false)
+}
+
+// assertOwnsProgramSubscription confirms subscriptionID belongs to userID, so
+// activate/deactivate can't be pointed at another student's program by id.
+func (s *meService) assertOwnsProgramSubscription(ctx context.Context, userID, subscriptionID uint) error {
+	var sub models.Subscription
+	if err := s.db.WithContext(ctx).Where("id = ? AND user_id = ?", subscriptionID, userID).First(&sub).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrMeProgramNotFound
+		}
+		return err
+	}
+	return nil
 }

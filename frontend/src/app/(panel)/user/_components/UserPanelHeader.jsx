@@ -8,6 +8,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { PROFILE_UPDATED_EVENT } from "@/app/(panel)/user/_components/profileEvents";
+import UserNotificationBell from "./UserNotificationBell";
 import { api } from "@/lib/axios/client";
 import { apiAssetUrl } from "@/lib/api/assets";
 import { getAuthSession } from "@/lib/auth/session";
@@ -211,8 +212,9 @@ export default function UserPanelHeader() {
           </div>
         </div>
 
-        {/* Left: academy + FAQ + theme */}
+        {/* Left: notifications + academy + FAQ + theme */}
         <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+          <UserNotificationBell className={headerIconBtn} />
           <Link
             href="/user/academy"
             className={headerIconBtn}

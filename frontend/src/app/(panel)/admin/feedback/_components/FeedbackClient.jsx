@@ -5,7 +5,7 @@ import { FiMessageSquare } from "react-icons/fi";
 import { api } from "@/lib/axios/client";
 import FeedbackList from "./FeedbackList";
 import FeedbackDetailsModal from "./FeedbackDetailsModal";
-import PaginationBar from "./PaginationBar";
+import PanelPagination from "@/app/(panel)/_shared/Pagination";
 import {
   Card,
   CardContent,
@@ -103,12 +103,7 @@ export default function FeedbackClient() {
 
       <Card>
         <CardContent className="pt-4">
-          <PaginationBar
-            page={pageSafe}
-            totalPages={totalPages}
-            onPrev={() => setPage((p) => Math.max(1, p - 1))}
-            onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
-          />
+          <PanelPagination page={pageSafe} totalPages={totalPages} onPage={setPage} />
         </CardContent>
       </Card>
 

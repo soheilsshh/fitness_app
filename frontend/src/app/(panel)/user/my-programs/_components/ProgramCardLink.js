@@ -104,8 +104,8 @@ export default function ProgramCardLink({ program, timeline }) {
           </CardAction>
         </CardHeader>
 
-        {program.tags?.length ? (
-          <CardContent className="pt-4">
+        <CardContent className="flex flex-col gap-3 pt-4">
+          {program.tags?.length ? (
             <div className="flex flex-wrap gap-2">
               {program.tags.slice(0, 3).map((tag) => (
                 <Badge key={tag} variant="outline">
@@ -114,8 +114,17 @@ export default function ProgramCardLink({ program, timeline }) {
                 </Badge>
               ))}
             </div>
-          </CardContent>
-        ) : null}
+          ) : null}
+          <span
+            className={cn(
+              "inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-lg",
+              "bg-primary text-sm font-iranianSansDemiBold text-primary-foreground"
+            )}
+          >
+            مشاهده برنامه
+            <ChevronLeft className="size-4" />
+          </span>
+        </CardContent>
       </Card>
     </Link>
   );

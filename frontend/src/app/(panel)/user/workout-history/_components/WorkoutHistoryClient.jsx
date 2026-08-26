@@ -10,6 +10,7 @@ import PanelEmptyState from "@/app/(panel)/user/_components/ui/PanelEmptyState";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
   TableBody,
@@ -18,6 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import PersonalRecordsTab from "./PersonalRecordsTab";
 
 const PAGE_SIZE = 15;
 
@@ -84,82 +86,95 @@ export default function WorkoutHistoryClient() {
         }
       />
 
-      {loading ? (
-        <Card>
-          <CardContent className="space-y-2 pt-6">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="h-11 w-full rounded-md" />
-            ))}
-          </CardContent>
-        </Card>
-      ) : items.length === 0 ? (
-        <PanelEmptyState
-          icon={Dumbbell}
-          title="هنوز هیچ تمرینی ثبت نکرده‌اید!"
-          description="سفر تحول بدنی شما با استارت اولین تمرین آغاز می‌شود. پس از اتمام هر جلسه، گزارش و وزنه‌های جابه‌جا شده را از بخش برنامه‌های من ثبت کنید تا روند پیشرفت‌تان رسم شود."
-          actionHref="/user/my-programs"
-          actionLabel="مشاهده برنامه‌ها و ثبت اولین تمرین 🏋️"
-        />
-      ) : (
-        <Card>
-          <CardContent className="pt-6">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>برنامه</TableHead>
-                  <TableHead>تاریخ</TableHead>
-                  <TableHead>روز</TableHead>
-                  <TableHead>مربی</TableHead>
-                  <TableHead className="text-center">حرکت‌ها</TableHead>
-                  <TableHead className="text-end">مدت</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {items.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell>
-                      <p className="text-sm font-semibold">
-                        {item.programTitle || "برنامه تمرین"}
-                      </p>
-                      {item.notes ? (
-                        <p className="mt-1 max-w-xs truncate text-xs text-muted-foreground">
-                          {item.notes}
-                        </p>
-                      ) : null}
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {formatDateTime(item.completedAt)}
-                    </TableCell>
-                    <TableCell className="text-sm">
-                      {item.dayLabel || item.dayKey}
-                    </TableCell>
-                    <TableCell className="text-sm">{item.coachName || "—"}</TableCell>
-                    <TableCell className="text-center">
-                      <Badge variant="secondary">
-                        {Number(item.exerciseCount || 0).toLocaleString("fa-IR")}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-end">
-                      {item.durationMin > 0 ? (
-                        <Badge variant="outline" className="gap-1">
-                          <Clock className="size-3" />
-                          {Number(item.durationMin).toLocaleString("fa-IR")} دقیقه
-                        </Badge>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">—</span>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      )}
+      <Tabs defaultValue="history" className="w-full">
+        <TabsList>
+          <TabsTrigger value="history">تاریخچه تمرینات</TabsTrigger>
+          <TabsTrigger value="records">رکوردهای شخصی</TabsTrigger>
+        </TabsList>
 
-      {totalPages > 1 && (
-        <PanelPagination page={page} totalPages={totalPages} onPage={setPage} />
-      )}
+        <TabsContent value="history" className="mt-4 flex flex-col gap-4">
+          {loading ? (
+            <Card>
+              <CardContent className="space-y-2 pt-6">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <Skeleton key={i} className="h-11 w-full rounded-md" />
+                ))}
+              </CardContent>
+            </Card>
+          ) : items.length === 0 ? (
+            <PanelEmptyState
+              icon={Dumbbell}
+              title="هنوز هیچ تمرینی ثبت نکرده‌اید!"
+              description="سفر تحول بدنی شما با استارت اولین تمرین آغاز می‌شود. پس از اتمام هر جلسه، گزارش و وزنه‌های جابه‌جا شده را از بخش برنامه‌های من ثبت کنید تا روند پیشرفت‌تان رسم شود."
+              actionHref="/user/my-programs"
+              actionLabel="مشاهده برنامه‌ها و ثبت اولین تمرین 🏋️"
+            />
+          ) : (
+            <Card>
+              <CardContent className="pt-6">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>برنامه</TableHead>
+                      <TableHead>تاریخ</TableHead>
+                      <TableHead>روز</TableHead>
+                      <TableHead>مربی</TableHead>
+                      <TableHead className="text-center">حرکت‌ها</TableHead>
+                      <TableHead className="text-end">مدت</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {items.map((item) => (
+                      <TableRow key={item.id}>
+                        <TableCell>
+                          <p className="text-sm font-semibold">
+                            {item.programTitle || "برنامه تمرین"}
+                          </p>
+                          {item.notes ? (
+                            <p className="mt-1 max-w-xs truncate text-xs text-muted-foreground">
+                              {item.notes}
+                            </p>
+                          ) : null}
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground">
+                          {formatDateTime(item.completedAt)}
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {item.dayLabel || item.dayKey}
+                        </TableCell>
+                        <TableCell className="text-sm">{item.coachName || "—"}</TableCell>
+                        <TableCell className="text-center">
+                          <Badge variant="secondary">
+                            {Number(item.exerciseCount || 0).toLocaleString("fa-IR")}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-end">
+                          {item.durationMin > 0 ? (
+                            <Badge variant="outline" className="gap-1">
+                              <Clock className="size-3" />
+                              {Number(item.durationMin).toLocaleString("fa-IR")} دقیقه
+                            </Badge>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">—</span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          )}
+
+          {totalPages > 1 && (
+            <PanelPagination page={page} totalPages={totalPages} onPage={setPage} />
+          )}
+        </TabsContent>
+
+        <TabsContent value="records" className="mt-4">
+          <PersonalRecordsTab />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

@@ -5,6 +5,7 @@ const FunnelSuccessClient = lazyPage(() => import("./_components/FunnelSuccessCl
 
 export const metadata = {
   title: "پرداخت موفق | قیف فروش",
+  robots: { index: false, follow: false },
 };
 
 export default function FunnelSuccessPage() {

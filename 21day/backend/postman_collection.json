@@ -1,0 +1,90 @@
+{
+  "info": {
+    "_postman_id": "monetizeai-fake-backend-collection",
+    "name": "MonetizeAI Backend Test",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Register User",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"first_name\": \"Ali\",\n  \"last_name\": \"Testi\",\n  \"phone\": \"+989120000001\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/register",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "register"]
+        }
+      }
+    },
+    {
+      "name": "Get Videos",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:8080/api/videos",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "videos"]
+        }
+      }
+    },
+    {
+      "name": "Complete Video",
+      "request": {
+        "method": "POST",
+        "url": {
+          "raw": "http://localhost:8080/api/videos/1/complete?phone=+989120000001",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "videos", "1", "complete"],
+          "query": [
+            { "key": "phone", "value": "+989120000001" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Unlock Video",
+      "request": {
+        "method": "POST",
+        "url": {
+          "raw": "http://localhost:8080/api/videos/2/unlock?phone=+989120000001",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "videos", "2", "unlock"],
+          "query": [
+            { "key": "phone", "value": "+989120000001" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get User Progress",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:8080/api/progress?phone=+989120000001",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "progress"],
+          "query": [
+            { "key": "phone", "value": "+989120000001" }
+          ]
+        }
+      }
+    }
+  ]
+} 

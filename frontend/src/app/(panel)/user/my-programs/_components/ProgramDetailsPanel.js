@@ -13,6 +13,8 @@ import {
   ListChecks,
   Share2,
   Sparkles,
+  Bot,
+  UserCheck,
 } from "lucide-react";
 import { api } from "@/lib/axios/client";
 import WorkoutExerciseCards from "@/components/workout/WorkoutExerciseCards";
@@ -32,7 +34,10 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { formatDateFa, shortRemaining } from "./helpers";
 import NutritionDayView from "./NutritionDayView";
+import SavedPlansPoolCard from "./SavedPlansPoolCard";
+import PostWorkoutSurveyModal from "./PostWorkoutSurveyModal";
 import { SHARE_DRAFT_KEY } from "../../community/_components/CommunityClient";
+import ExerciseCountReveal from "../../community/_components/ExerciseCountReveal";
 import { checkStreakMilestone } from "@/lib/streak/checkMilestone";
 import StreakMilestonePopup from "@/components/streak/StreakMilestonePopup";
 
@@ -40,8 +45,14 @@ import StreakMilestonePopup from "@/components/streak/StreakMilestonePopup";
 // the share card, not a medical/nutrition-grade calculation.
 const KCAL_PER_MINUTE_ESTIMATE = 7;
 
-function buildShareCard({ dayLabel, durationMin, sets, newPrExercises }) {
-  const exerciseCount = new Set((sets || []).map((s) => s.exerciseName)).size;
+function uniqueExerciseNames(sets, workout) {
+  const fromSets = (sets || []).map((s) => s.exerciseName).filter(Boolean);
+  if (fromSets.length) return [...new Set(fromSets)];
+  return [...new Set((workout?.exercises || []).map((ex) => ex.name).filter(Boolean))];
+}
+
+function buildShareCard({ dayLabel, durationMin, sets, workout, newPrExercises }) {
+  const exerciseNames = uniqueExerciseNames(sets, workout);
   const bestSet = (sets || []).reduce((best, s) => {
     const score = (s.weightKg || 0) * (s.reps || 1);
     const bestScore = best ? (best.weightKg || 0) * (best.reps || 1) : -1;
@@ -51,7 +62,8 @@ function buildShareCard({ dayLabel, durationMin, sets, newPrExercises }) {
     dayLabel,
     durationMin: durationMin || 0,
     calories: Math.round((durationMin || 0) * KCAL_PER_MINUTE_ESTIMATE),
-    exerciseCount,
+    exerciseCount: exerciseNames.length,
+    exerciseNames,
     bestSet,
     newPrExercises: newPrExercises || [],
   };
@@ -96,13 +108,17 @@ function ShareableProgressCard({ card, onShare }) {
               </div>
             </>
           ) : null}
-          <div className="rounded-lg border bg-card px-2 py-2.5 text-center">
-            <ListChecks className="mx-auto size-4 text-muted-foreground" />
-            <p className="mt-1 text-sm font-iranianSansDemiBold tabular-nums">
-              {card.exerciseCount.toLocaleString("fa-IR")}
-            </p>
-            <p className="text-[10px] text-muted-foreground">حرکت</p>
-          </div>
+          {card.exerciseNames?.length ? (
+            <ExerciseCountReveal names={card.exerciseNames} />
+          ) : (
+            <div className="rounded-lg border bg-card px-2 py-2.5 text-center">
+              <ListChecks className="mx-auto size-4 text-muted-foreground" />
+              <p className="mt-1 text-sm font-iranianSansDemiBold tabular-nums">
+                {card.exerciseCount.toLocaleString("fa-IR")}
+              </p>
+              <p className="text-[10px] text-muted-foreground">حرکت</p>
+            </div>
+          )}
         </div>
         {card.bestSet ? (
           <div className="rounded-lg border bg-card px-3 py-2.5 text-center">
@@ -221,6 +237,43 @@ function buildSetsPayload(exercises, weights) {
     .filter(Boolean);
 }
 
+// sourceBadgeProps turns a workoutMeta/nutritionMeta ({source, status, createdAt})
+// into a small badge: who built this program's content, and when it was saved
+// (AI_PROGRAM_REFACTOR_TODO.md فاز ۲ — "AI + ذخیره‌شده" + تاریخ ایجاد).
+function sourceBadgeProps(meta) {
+  if (!meta?.source) return null;
+  if (meta.source === "ai") {
+    const label =
+      meta.status === "coach_approved"
+        ? `هوش مصنوعی · تأیید مربی · ${formatDateFa(meta.createdAt)}`
+        : `ساخته‌شده با هوش مصنوعی · ${formatDateFa(meta.createdAt)}`;
+    return {
+      label,
+      icon: Bot,
+      className:
+        "border-violet-500/30 bg-violet-500/10 text-violet-700 dark:text-violet-300",
+    };
+  }
+  return {
+    label: `تنظیم‌شده توسط مربی · ${formatDateFa(meta.createdAt)}`,
+    icon: UserCheck,
+    className:
+      "border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300",
+  };
+}
+
+function SourceBadge({ meta }) {
+  const props = sourceBadgeProps(meta);
+  if (!props) return null;
+  const Icon = props.icon;
+  return (
+    <Badge variant="outline" className={cn("gap-1", props.className)}>
+      <Icon className="size-3" />
+      {props.label}
+    </Badge>
+  );
+}
+
 function statusBadgeProps(timeline) {
   if (timeline?.isExpired) {
     return {
@@ -267,6 +320,7 @@ export default function ProgramDetailsPanel({ program, timeline }) {
   const [shareCard, setShareCard] = useState(null);
   const [milestoneOpen, setMilestoneOpen] = useState(false);
   const [milestoneStreak, setMilestoneStreak] = useState(0);
+  const [surveySession, setSurveySession] = useState(null); // { id, exercises } | null
 
   useEffect(() => {
     setActiveTab(defaultTab);
@@ -303,10 +357,14 @@ export default function ProgramDetailsPanel({ program, timeline }) {
           dayLabel: DAYS.find((d) => d.key === selectedDay)?.label || "امروز",
           durationMin: dayWorkout.durationMin,
           sets,
+          workout: dayWorkout,
           newPrExercises: res.data?.newPrExercises,
         })
       );
       setWeights({});
+      if (res.data?.isFirstSessionToday && res.data?.id) {
+        setSurveySession({ id: res.data.id, exercises: dayWorkout.exercises || [] });
+      }
       const { shouldCelebrate, streak } = await checkStreakMilestone();
       if (shouldCelebrate) {
         setMilestoneStreak(streak);
@@ -341,7 +399,13 @@ export default function ProgramDetailsPanel({ program, timeline }) {
     try {
       window.sessionStorage.setItem(
         SHARE_DRAFT_KEY,
-        JSON.stringify({ content: lines.join("\n"), category: "progress" })
+        JSON.stringify({
+          content: lines.join("\n"),
+          category: "progress",
+          metadata: shareCard.exerciseNames?.length
+            ? { exerciseNames: shareCard.exerciseNames }
+            : undefined,
+        })
       );
     } catch {
       // sessionStorage unavailable — user can still type the post manually
@@ -475,7 +539,10 @@ export default function ProgramDetailsPanel({ program, timeline }) {
                     <Dumbbell className="size-4 text-primary" />
                     برنامه تمرین
                   </CardTitle>
-                  <Badge variant="outline">{selectedDayLabel}</Badge>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <SourceBadge meta={program.workoutMeta} />
+                    <Badge variant="outline">{selectedDayLabel}</Badge>
+                  </div>
                 </div>
                 {workout?.title ? (
                   <CardDescription className="text-start">
@@ -561,6 +628,10 @@ export default function ProgramDetailsPanel({ program, timeline }) {
                 )}
               </CardContent>
             </Card>
+
+            <div className="mt-4">
+              <SavedPlansPoolCard type="workout" />
+            </div>
           </TabsContent>
 
           <TabsContent value="nutrition" className="mt-4">
@@ -571,13 +642,20 @@ export default function ProgramDetailsPanel({ program, timeline }) {
                     <Coffee className="size-4 text-primary" />
                     برنامه تغذیه
                   </CardTitle>
-                  <Badge variant="outline">{selectedDayLabel}</Badge>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <SourceBadge meta={program.nutritionMeta} />
+                    <Badge variant="outline">{selectedDayLabel}</Badge>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
                 <NutritionDayView nutrition={nutrition} dayKey={selectedDay} />
               </CardContent>
             </Card>
+
+            <div className="mt-4">
+              <SavedPlansPoolCard type="nutrition" />
+            </div>
           </TabsContent>
         </Tabs>
 
@@ -594,6 +672,14 @@ export default function ProgramDetailsPanel({ program, timeline }) {
       open={milestoneOpen}
       onOpenChange={setMilestoneOpen}
     />
+    {surveySession ? (
+      <PostWorkoutSurveyModal
+        open={Boolean(surveySession)}
+        onOpenChange={(v) => !v && setSurveySession(null)}
+        sessionId={surveySession.id}
+        exercises={surveySession.exercises}
+      />
+    ) : null}
     </>
   );
 }

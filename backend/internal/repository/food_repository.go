@@ -65,7 +65,9 @@ func (r *foodRepository) Search(ctx context.Context, query string, page, limit i
 		limit = 100
 	}
 
-	db := r.db.WithContext(ctx).Model(&models.Food{}).Where("is_canonical = ?", true)
+	db := r.db.WithContext(ctx).Model(&models.Food{}).
+		Where("is_canonical = ?", true).
+		Where("data_quality_status <> ?", "needs_review")
 	q := strings.TrimSpace(query)
 	if q != "" {
 		like := "%" + q + "%"

@@ -14,11 +14,26 @@ import (
 	"github.com/yourusername/fitness-management/config"
 )
 
-// TranscribeAudio converts a short voice note to Persian text via an
-// OpenAI-compatible Whisper endpoint (roadmap BE-2.3/2.4: voice-to-data pipeline,
-// step 1). The transcript is then fed into GenerateStructured by the caller.
+// TranscribeAudio converts a short voice note to Persian text.
+// Prefers local Shenava ASR when enabled; falls back to OpenAI-compatible Whisper.
 func TranscribeAudio(ctx context.Context, filename string, data []byte) (string, error) {
 	cfg := config.Get()
+
+	if cfg.ASR.ShenavaEnabled {
+		text, err := transcribeWithShenava(ctx, filename, data)
+		if err == nil {
+			return text, nil
+		}
+		// If Whisper is not configured either, surface the Shenava error.
+		if strings.TrimSpace(cfg.OpenAI.APIKey) == "" {
+			if config.IsDevelopment() && isShenavaUnavailable(err) {
+				return mockTranscript(), nil
+			}
+			return "", err
+		}
+		// Otherwise fall through to Whisper.
+	}
+
 	if strings.TrimSpace(cfg.OpenAI.APIKey) == "" {
 		if config.IsDevelopment() {
 			return mockTranscript(), nil
@@ -79,6 +94,16 @@ func TranscribeAudio(ctx context.Context, filename string, data []byte) (string,
 		return "", ErrEmptyResponse
 	}
 	return parsed.Text, nil
+}
+
+func isShenavaUnavailable(err error) bool {
+	if err == nil {
+		return false
+	}
+	msg := strings.ToLower(err.Error())
+	return strings.Contains(msg, "shenava") ||
+		strings.Contains(msg, "executable file not found") ||
+		strings.Contains(msg, "no module named")
 }
 
 func mockTranscript() string {

@@ -1,0 +1,72 @@
+# Backend configuration for MonetizeAI Webinar
+
+db_host: localhost
+db_port: 3306
+db_user: fitini
+db_password: aramezani82A@
+db_name: monetizeai
+server_port: "8081"
+
+melipayamak:
+  username: "989103946748"
+  api_key: ""
+  body_id_welcome: 395320
+  body_id_welcome_next_day: 0  # Disabled (pattern 395323 removed)
+  body_id_reminder_2pm: 395349
+  body_id_reminder_30min: 0  # Disabled - no longer used
+  enabled: true
+
+avanak:
+  token: ""
+  message_id: 40494229  # کد فایل صوتی
+  base_url: "https://portal.avanak.ir/Rest/QuickSend"  # Official QuickSend API endpoint
+  enabled: true
+
+faraz_sms:
+  api_key: ""  # API Key for Faraz SMS (IPPanel Edge)
+  from_number: "+98PRO"  # Sender phone number in E.164 format (e.g., +983000505)
+  enabled: true  # Enable/disable Faraz SMS service
+
+telegram:
+  bot_token: ""  # Telegram Bot Token
+  webhook_url: "https://webinar.sianacademy.com/webhook/telegram"  # Webhook URL (optional - can be set via API)
+  api_key: "0741a71b70336bf3d956cac3ac7f1582bbdc7a2fa661420a8e86c620c50f3e46"  # API Key for bot to authenticate with backend
+  enabled: true  # Enable/disable Telegram Bot
+
+groq:
+  api_key: ""  # Groq API Key for AI chat
+  model: "llama-3.3-70b-versatile"  # Groq model name
+  enabled: true  # Enable/disable Groq AI
+
+# HTTPS Configuration (for production)
+enable_https: false
+ssl_cert_file: "/etc/letsencrypt/live/sianmarketing.com/fullchain.pem"
+ssl_key_file: "/etc/letsencrypt/live/sianmarketing.com/privkey.pem"
+
+# CORS Configuration
+allowed_origins:
+  - "http://localhost:5173"
+  - "https://webinar.sianacademy.com"
+  - "http://localhost:8080"
+  - "http://localhost:3000"
+  - "http://localhost:8081"
+
+# Webinar Schedule Configuration (Iran/Tehran timezone)
+webinar:
+  start_hour: 19    # ساعت شروع (0-23)
+  start_minute: 0  # دقیقه شروع (0-59)
+  end_hour: 22      # ساعت پایان (0-23)
+  duration_minutes: 123  # مدت زمان وبینار به دقیقه (اختیاری - برای نمایش)
+
+# Test Mode Configuration (برای تست - بعد از تست false کنید)
+test_mode:
+  enabled: false  # فعال/غیرفعال کردن حالت تست
+  test_phone: "09155520952"  # شماره تست - فقط برای این شماره reminder یک دقیقه بعد از ثبت‌نام ارسال می‌شود
+
+# Payment Configuration (ZarinPal)
+payment:
+  merchant_id: ""  # Merchant ID شما از ZarinPal
+  sandbox: false  # false برای محیط واقعی، true برای تست
+  callback_url: "https://webinar.sianacademy.com/payment/callback"  # URL callback
+  frontend_url: "https://webinar.sianacademy.com"  # Frontend base URL برای redirect
+  subscription_price: 4900000   # 4,900,000 تومان

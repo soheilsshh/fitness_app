@@ -8,12 +8,13 @@ import (
 )
 
 type NotificationDTO struct {
-	ID        uint   `json:"id"`
-	Type      string `json:"type"`
-	Title     string `json:"title"`
-	Message   string `json:"message"`
-	IsRead    bool   `json:"isRead"`
-	CreatedAt string `json:"createdAt"`
+	ID         uint   `json:"id"`
+	Type       string `json:"type"`
+	Title      string `json:"title"`
+	Message    string `json:"message"`
+	ActionPath string `json:"actionPath,omitempty"`
+	IsRead     bool   `json:"isRead"`
+	CreatedAt  string `json:"createdAt"`
 }
 
 type NotificationSettingsDTO struct {
@@ -22,6 +23,7 @@ type NotificationSettingsDTO struct {
 
 type NotificationService interface {
 	ListRecent(ctx context.Context, userID uint, limit int) ([]NotificationDTO, error)
+	MarkRead(ctx context.Context, userID, notificationID uint) error
 	// GetSettings/UpdateSettings back the FE-8.6 toggle for push/SMS reminders.
 	GetSettings(ctx context.Context, userID uint) (*NotificationSettingsDTO, error)
 	UpdateSettings(ctx context.Context, userID uint, enabled bool) (*NotificationSettingsDTO, error)
@@ -64,13 +66,18 @@ func (s *notificationService) ListRecent(ctx context.Context, userID uint, limit
 	out := make([]NotificationDTO, 0, len(items))
 	for _, n := range items {
 		out = append(out, NotificationDTO{
-			ID:        n.ID,
-			Type:      n.Type,
-			Title:     n.Title,
-			Message:   n.Message,
-			IsRead:    n.IsRead,
-			CreatedAt: n.CreatedAt.Format(time.RFC3339),
+			ID:         n.ID,
+			Type:       n.Type,
+			Title:      n.Title,
+			Message:    n.Message,
+			ActionPath: n.ActionPath,
+			IsRead:     n.IsRead,
+			CreatedAt:  n.CreatedAt.Format(time.RFC3339),
 		})
 	}
 	return out, nil
+}
+
+func (s *notificationService) MarkRead(ctx context.Context, userID, notificationID uint) error {
+	return s.repo.MarkRead(ctx, userID, notificationID)
 }

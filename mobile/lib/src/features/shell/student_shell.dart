@@ -4,6 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/widgets/fitino_ai_fab.dart';
 import '../../core/widgets/fitino_bottom_dock.dart';
 import '../../core/widgets/fitino_student_header.dart';
+import '../ai_nutrition/presentation/daily_plan_screen.dart';
+import '../ai_nutrition/presentation/single_meal_screen.dart';
+import '../ai_nutrition/presentation/weekly_plan_screen.dart';
 import '../contact/presentation/contact_screen.dart';
 import '../dashboard/presentation/dashboard_screen.dart';
 import '../food_diary/presentation/food_diary_screen.dart';
@@ -24,6 +27,7 @@ class StudentShell extends ConsumerStatefulWidget {
 class _StudentShellState extends ConsumerState<StudentShell> {
   int _index = 0;
   int _trainingSub = 0;
+  int _nutritionSub = 0;
   int _accountSub = 0;
 
   static const _nav = [
@@ -46,7 +50,10 @@ class _StudentShellState extends ConsumerState<StudentShell> {
         subIndex: _trainingSub,
         onSubChanged: (i) => setState(() => _trainingSub = i),
       ),
-      const FoodDiaryScreen(),
+      _NutritionHub(
+        subIndex: _nutritionSub,
+        onSubChanged: (i) => setState(() => _nutritionSub = i),
+      ),
       const TrackingScreen(),
       _AccountHub(
         subIndex: _accountSub,
@@ -111,6 +118,45 @@ class _TrainingHub extends StatelessWidget {
             children: const [
               ProgramsScreen(),
               WorkoutHistoryScreen(),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _NutritionHub extends StatelessWidget {
+  const _NutritionHub({
+    required this.subIndex,
+    required this.onSubChanged,
+  });
+
+  final int subIndex;
+  final ValueChanged<int> onSubChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        FitinoSubNavChips(
+          selectedIndex: subIndex,
+          onSelect: onSubChanged,
+          items: const [
+            (label: 'کالری‌شمار من', icon: Icons.local_fire_department_outlined),
+            (label: 'تک‌غذا', icon: Icons.auto_awesome_outlined),
+            (label: 'برنامه روزانه', icon: Icons.wb_sunny_outlined),
+            (label: 'برنامه هفتگی', icon: Icons.calendar_view_week_outlined),
+          ],
+        ),
+        Expanded(
+          child: IndexedStack(
+            index: subIndex,
+            children: const [
+              FoodDiaryScreen(),
+              SingleMealScreen(),
+              DailyPlanScreen(),
+              WeeklyPlanScreen(),
             ],
           ),
         ),

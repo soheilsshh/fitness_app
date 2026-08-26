@@ -55,6 +55,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import ExercisePickerModal from "./ExercisePickerModal";
 import ManualExerciseModal from "./ManualExerciseModal";
 import TemplatePickerModal from "../../_components/TemplatePickerModal";
+import SavedProgramsApprovalCard from "../../_components/SavedProgramsApprovalCard";
 import { API_BASE_URL } from "@/lib/api/baseUrl";
 
 const API_BASE = API_BASE_URL;
@@ -338,6 +339,10 @@ export default function WorkoutEditorClient({
           {saving ? "در حال ارسال..." : "ارسال برنامه به دانشجو"}
         </Button>
       </div>
+
+      {apiBase === "coach" ? (
+        <SavedProgramsApprovalCard studentId={studentId} apiBase={apiBase} type="workout" />
+      ) : null}
 
       <Card>
         <CardHeader className="pb-3">

@@ -6,43 +6,44 @@ import { api } from "@/lib/axios/client";
 import Hero from "./Hero";
 import { SectionLoader } from "@/components/ui/page-loader";
 
-const MotionConfig = dynamic(
-  () => import("framer-motion").then((mod) => mod.MotionConfig),
-  { ssr: false }
+// These render real page content (H1/H2s, coach links, contact info) so they
+// must be part of the initial static HTML for crawlers — ssr:false previously
+// meant the whole homepage below the fold was invisible to Googlebot.
+const MotionConfig = dynamic(() =>
+  import("framer-motion").then((mod) => mod.MotionConfig)
 );
 
-const ScrollProgress = dynamic(
-  () => import("./landingEffects").then((mod) => mod.ScrollProgress),
-  { ssr: false }
+// Pure decoration (scroll-position bar), reads window only inside an effect.
+// Must stay ssr:true like its siblings — mixing ssr:false with ssr:true
+// dynamic() imports at the same tree level shifts React's useId() sequence
+// between the server and client render, breaking hydration for any sibling
+// that calls useId() (e.g. ContactSection's form field ids).
+const ScrollProgress = dynamic(() =>
+  import("./landingEffects").then((mod) => mod.ScrollProgress)
 );
 
 const ProgramsSection = dynamic(() => import("./ProgramsSection"), {
   loading: () => <SectionLoader />,
-  ssr: false,
 });
 
 const RecordsSection = dynamic(() => import("./RecordsSection"), {
   loading: () => <SectionLoader className="min-h-[420px]" />,
-  ssr: false,
 });
 
 const AboutSection = dynamic(() => import("./AboutSection"), {
   loading: () => <SectionLoader className="min-h-[360px]" />,
-  ssr: false,
 });
 
 const ContactSection = dynamic(() => import("./ContactSection"), {
   loading: () => <SectionLoader className="min-h-[320px]" />,
-  ssr: false,
 });
 
 const Footer = dynamic(() => import("./Footer"), {
   loading: () => <SectionLoader className="min-h-[200px]" />,
-  ssr: false,
 });
 
-export default function HomeClient() {
-  const [settings, setSettings] = useState(null);
+export default function HomeClient({ initialSettings = null, initialCoaches = [] }) {
+  const [settings, setSettings] = useState(initialSettings);
 
   useEffect(() => {
     let cancelled = false;
@@ -51,13 +52,14 @@ export default function HomeClient() {
         const res = await api.get("/site-settings");
         if (!cancelled) setSettings(res.data);
       } catch {
-        if (!cancelled) setSettings(null);
+        if (!cancelled && !initialSettings) setSettings(null);
       }
     }
     load();
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -67,7 +69,9 @@ export default function HomeClient() {
         <section id="home" className="scroll-mt-24">
           <Hero />
         </section>
-        {settings?.showCoachesSection ? <ProgramsSection /> : null}
+        {settings?.showCoachesSection ? (
+          <ProgramsSection initialCoaches={initialCoaches} />
+        ) : null}
         <RecordsSection />
         <AboutSection />
         <ContactSection contactInfo={settings?.contactInfo} />

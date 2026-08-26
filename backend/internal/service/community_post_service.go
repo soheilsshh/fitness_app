@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -9,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"gorm.io/gorm"
 
@@ -43,6 +45,10 @@ type PostAuthorDTO struct {
 	Role      string `json:"role,omitempty"`
 }
 
+type PostMetadata struct {
+	ExerciseNames []string `json:"exerciseNames,omitempty"`
+}
+
 type CommunityPostDTO struct {
 	ID           uint          `json:"id"`
 	Author       PostAuthorDTO `json:"author"`
@@ -50,6 +56,7 @@ type CommunityPostDTO struct {
 	ImageURL     string        `json:"imageUrl,omitempty"`
 	MediaType    string        `json:"mediaType,omitempty"`
 	Category     string        `json:"category,omitempty"`
+	Metadata     *PostMetadata `json:"metadata,omitempty"`
 	LikeCount    int           `json:"likeCount"`
 	CommentCount int           `json:"commentCount"`
 	LikedByMe    bool          `json:"likedByMe"`
@@ -78,10 +85,11 @@ type CommentListResponse struct {
 }
 
 type CreatePostRequest struct {
-	Content   string `json:"content"`
-	ImageURL  string `json:"imageUrl"`
-	MediaType string `json:"mediaType"`
-	Category  string `json:"category"`
+	Content   string        `json:"content"`
+	ImageURL  string        `json:"imageUrl"`
+	MediaType string        `json:"mediaType"`
+	Category  string        `json:"category"`
+	Metadata  *PostMetadata `json:"metadata"`
 }
 
 // PostMediaUploadResult is returned by UploadPostMedia so the client can drop
@@ -113,12 +121,13 @@ type CommunityPostService interface {
 }
 
 type communityPostService struct {
-	db   *gorm.DB
-	repo repository.CommunityPostRepository
+	db             *gorm.DB
+	repo           repository.CommunityPostRepository
+	achievementSvc AchievementService
 }
 
-func NewCommunityPostService(db *gorm.DB, repo repository.CommunityPostRepository) CommunityPostService {
-	return &communityPostService{db: db, repo: repo}
+func NewCommunityPostService(db *gorm.DB, repo repository.CommunityPostRepository, achievementSvc AchievementService) CommunityPostService {
+	return &communityPostService{db: db, repo: repo, achievementSvc: achievementSvc}
 }
 
 func (s *communityPostService) CreatePost(ctx context.Context, userID uint, req *CreatePostRequest) (*CommunityPostDTO, error) {
@@ -133,10 +142,18 @@ func (s *communityPostService) CreatePost(ctx context.Context, userID uint, req 
 	}
 	mediaType := strings.TrimSpace(req.MediaType)
 	post := &models.CommunityPost{
-		UserID: userID, Content: content, ImageURL: imageURL, MediaType: mediaType, Category: category,
+		UserID:    userID,
+		Content:   content,
+		ImageURL:  imageURL,
+		MediaType: mediaType,
+		Category:  category,
+		Metadata:  marshalPostMetadata(sanitizePostMetadata(req.Metadata)),
 	}
 	if err := s.repo.Create(ctx, post); err != nil {
 		return nil, err
+	}
+	if s.achievementSvc != nil {
+		s.achievementSvc.HandleCommunityEvent(ctx, userID, "post")
 	}
 	dto := s.postToDTO(ctx, *post, userID)
 	return &dto, nil
@@ -246,6 +263,9 @@ func (s *communityPostService) AddComment(ctx context.Context, userID, postID ui
 		return nil, err
 	}
 	_ = s.repo.IncrementCommentCount(ctx, postID, 1)
+	if s.achievementSvc != nil {
+		s.achievementSvc.HandleCommunityEvent(ctx, userID, "comment")
+	}
 
 	dto := PostCommentDTO{
 		ID:        comment.ID,
@@ -290,6 +310,9 @@ func (s *communityPostService) ToggleLike(ctx context.Context, userID, postID ui
 	if err != nil {
 		return false, 0, err
 	}
+	if liked && s.achievementSvc != nil {
+		s.achievementSvc.HandleCommunityEvent(ctx, userID, "like")
+	}
 	post, err := s.repo.FindByID(ctx, postID)
 	if err != nil {
 		return liked, 0, err
@@ -309,11 +332,66 @@ func (s *communityPostService) postToDTO(ctx context.Context, p models.Community
 		ImageURL:     p.ImageURL,
 		MediaType:    p.MediaType,
 		Category:     p.Category,
+		Metadata:     unmarshalPostMetadata(p.Metadata),
 		LikeCount:    p.LikeCount,
 		CommentCount: p.CommentCount,
 		LikedByMe:    likedByMe,
 		CreatedAt:    p.CreatedAt.Format(time.RFC3339),
 	}
+}
+
+const (
+	maxPostExerciseNames     = 40
+	maxPostExerciseNameRunes = 80
+)
+
+func sanitizePostMetadata(meta *PostMetadata) *PostMetadata {
+	if meta == nil {
+		return nil
+	}
+	names := make([]string, 0, len(meta.ExerciseNames))
+	seen := map[string]bool{}
+	for _, raw := range meta.ExerciseNames {
+		name := strings.TrimSpace(raw)
+		if name == "" || seen[name] {
+			continue
+		}
+		if utf8.RuneCountInString(name) > maxPostExerciseNameRunes {
+			name = string([]rune(name)[:maxPostExerciseNameRunes])
+		}
+		seen[name] = true
+		names = append(names, name)
+		if len(names) >= maxPostExerciseNames {
+			break
+		}
+	}
+	if len(names) == 0 {
+		return nil
+	}
+	return &PostMetadata{ExerciseNames: names}
+}
+
+func marshalPostMetadata(meta *PostMetadata) string {
+	if meta == nil {
+		return ""
+	}
+	b, err := json.Marshal(meta)
+	if err != nil {
+		return ""
+	}
+	return string(b)
+}
+
+func unmarshalPostMetadata(raw string) *PostMetadata {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return nil
+	}
+	var meta PostMetadata
+	if err := json.Unmarshal([]byte(raw), &meta); err != nil {
+		return nil
+	}
+	return sanitizePostMetadata(&meta)
 }
 
 func (s *communityPostService) resolveAuthor(ctx context.Context, userID uint) PostAuthorDTO {

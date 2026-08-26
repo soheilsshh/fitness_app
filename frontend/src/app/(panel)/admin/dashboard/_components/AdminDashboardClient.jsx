@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/axios/client";
 import { SectionCards } from "@/components/section-cards";
 import { ChartAreaInteractive } from "@/components/chart-area-interactive";
+import AiUsageCard from "./AiUsageCard";
 
 const CURRENT_YEAR = new Date().getFullYear();
 
@@ -89,6 +90,8 @@ export default function AdminDashboardClient() {
         years={years}
         onYearChange={setYear}
       />
+
+      <AiUsageCard />
     </div>
   );
 }

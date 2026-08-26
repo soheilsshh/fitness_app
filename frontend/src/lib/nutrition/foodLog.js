@@ -106,6 +106,12 @@ export function mealTypeLabel(value) {
   return MEAL_TYPE_OPTIONS.find((o) => o.value === value)?.label || "سایر";
 }
 
+function roundMacro(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return 0;
+  return Math.round(n * 10) / 10;
+}
+
 /** All 15 fields from a per-100g Food, scaled to `grams`. Mirrors the Go
  * `scaleFoodByGrams` / Dart `scaleByGrams` — kept in sync by hand since each
  * runtime needs its own copy for an instant local preview. */

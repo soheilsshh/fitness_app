@@ -1,0 +1,760 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Live Video - Disable timeline and seek controls for iOS (دقیق‌تر با ID) */
+#live-video::-webkit-media-controls-timeline,
+#live-video::-webkit-media-controls-seek-back-button,
+#live-video::-webkit-media-controls-seek-forward-button,
+#live-video::-webkit-media-controls-play-button,
+#live-video::-webkit-media-controls-rewind-button,
+#live-video::-webkit-media-controls-fast-forward-button,
+#live-video::-webkit-media-controls-timeline-container,
+#live-video::-webkit-media-controls-current-time-display,
+#live-video::-webkit-media-controls-time-remaining-display {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+/* Hide fullscreen button - چون fullscreen خودمون داریم */
+#live-video::-webkit-media-controls-fullscreen-button {
+  display: none !important;
+}
+
+/* Custom font family: IRANSansX */
+@font-face {
+  font-family: "IRANSansX";
+  src: url("/IRANSansX-Thin.ttf") format("truetype");
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "IRANSansX";
+  src: url("/IRANSansX-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "IRANSansX";
+  src: url("/IRANSansX-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "IRANSansX";
+  src: url("/IRANSansX-DemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "IRANSansX";
+  src: url("/IRANSansX-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. */
+
+@layer base {
+  /*
+   * Fitino Pulse (Reshaped) — the color palette is the REAL Fitino brand,
+   * sampled from the logo: deep teal → aqua → electric glow (#187272 →
+   * #2a9c96 → #58cac0 → #26fce3) on a near-black canvas. Do not change these
+   * colors — the redesign here is entirely about STRUCTURE and SHAPE
+   * (asymmetric layouts, bento grids, pennant tags, spine accents, rounded
+   * silhouettes instead of clipped notches), not about repainting the brand.
+   * This app has no light/dark toggle (no `.dark` class is ever applied),
+   * so :root IS the only active theme.
+   */
+  :root {
+    --background: 200 14% 6%;
+    --foreground: 0 0% 96%;
+
+    --card: 200 13% 9%;
+    --card-foreground: 0 0% 96%;
+
+    --popover: 200 14% 7%;
+    --popover-foreground: 0 0% 96%;
+
+    --primary: 176 60% 38%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 175 46% 55%;
+    --secondary-foreground: 200 14% 6%;
+
+    --muted: 200 10% 15%;
+    --muted-foreground: 210 8% 65%;
+
+    --accent: 172 96% 56%;
+    --accent-foreground: 200 14% 6%;
+
+    --destructive: 358 75% 59%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 55%;
+    --warning-foreground: 200 14% 6%;
+
+    --border: 200 12% 20%;
+    --input: 200 12% 18%;
+    --ring: 172 96% 56%;
+
+    --radius: 1.1rem;
+
+    --sidebar-background: 200 15% 8%;
+    --sidebar-foreground: 0 0% 90%;
+    --sidebar-primary: 176 60% 38%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 200 12% 14%;
+    --sidebar-accent-foreground: 0 0% 96%;
+    --sidebar-border: 200 12% 18%;
+    --sidebar-ring: 172 96% 56%;
+
+    --chart-1: 176 60% 38%;
+    --chart-2: 172 96% 56%;
+    --chart-3: 187 45% 55%;
+    --chart-4: 38 92% 55%;
+    --chart-5: 358 75% 59%;
+
+    /* Raw brand values, for contexts that need a literal hex (gradients,
+       box-shadows, canvas/SVG) rather than an hsl() token. Exact logo aqua. */
+    --fp-deep: #187272;
+    --fp-brand: #2a9c96;
+    --fp-mid: #58cac0;
+    --fp-glow: #26fce3;
+    --fp-ink: #0e0e0e;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: "IRANSansX", "IRANSans", "Tahoma", sans-serif;
+    font-feature-settings: "kern";
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   Fitino Pulse (Reshaped) — shared shape language (global, not scoped to
+   any page). Same brand teal/aqua-on-near-black color as always; the shape
+   signature changed from a clipped notch corner to soft fully-rounded
+   corners/pills, a pennant "ribbon" tag and a "spine" accent bar as new
+   asymmetric motifs, and tabular HUD numerals for every stat/countdown/
+   price. Used by ui/button, ui/card, ProgressRing, StatusChip, ActionDock
+   and every reshaped page.
+   ══════════════════════════════════════════════════════════════════════ */
+
+@layer components {
+.fp-notch {
+  border-radius: var(--radius);
+}
+
+.fp-notch-sm {
+  border-radius: calc(var(--radius) - 0.5rem);
+}
+
+.fp-notch-btn {
+  border-radius: 999px;
+}
+
+/* Base card surface: dark near-black tone + soft shadow, no heavy blur. */
+.fp-card {
+  position: relative;
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 28px -12px rgba(0, 0, 0, 0.45);
+  transition: box-shadow 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+}
+
+.fp-card:hover {
+  border-color: rgba(38, 252, 227, 0.3);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3), 0 18px 36px -14px rgba(0, 0, 0, 0.5);
+}
+
+/* Ambient "bloom" background: soft glow blobs instead of concentric
+   heartbeat rings. Placed absolutely by the consumer. */
+.fp-pulse-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(38, 252, 227, 0.4);
+  animation: fp-pulse 4.5s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+@keyframes fp-pulse {
+  0% {
+    transform: scale(0.55);
+    opacity: 0.7;
+  }
+  75% {
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+/* Bold tabular numerals for stats, countdowns, prices. */
+.fp-hud-num {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  font-weight: 800;
+  font-feature-settings: "tnum" 1;
+}
+
+/* Unified status chip (small pulsing dot + label), semantic color layers
+   on top of the near-black base instead of replacing it. */
+.fp-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 0.4rem 0.85rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+
+.fp-chip__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  background: currentColor;
+  box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 25%, transparent);
+}
+
+.fp-chip__dot--live {
+  animation: fp-dot-blink 1.6s ease-in-out infinite;
+}
+
+@keyframes fp-dot-blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* Pennant "ribbon" tag — legacy; prefer fp-live-badge on broadcast cards. */
+.fp-ribbon {
+  position: absolute;
+  top: -0.85rem;
+  inset-inline-start: 1.5rem;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--emerald-cyan);
+  color: #ffffff;
+  padding: 0.5rem 1.2rem 0.65rem 1rem;
+  font-weight: 800;
+  font-size: 0.8125rem;
+  clip-path: polygon(0 0, 100% 0, 100% 78%, 50% 100%, 0 78%);
+  transform: rotate(-2deg);
+  box-shadow: 0 12px 22px -10px rgba(38, 252, 227, 0.35);
+}
+
+/* Centered hex badge — sits above the video card, outside the frame. */
+.fp-live-badge {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 20;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 1rem;
+  font-weight: 800;
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+  color: var(--fp-ink);
+  white-space: nowrap;
+  background: linear-gradient(135deg, var(--fp-glow) 0%, var(--fp-mid) 55%, var(--fp-brand) 100%);
+  border: 1px solid rgba(38, 252, 227, 0.55);
+  clip-path: polygon(6% 0%, 94% 0%, 100% 50%, 94% 100%, 6% 100%, 0% 50%);
+  box-shadow:
+    0 0 0 1px rgba(14, 14, 14, 0.9),
+    0 10px 28px -10px rgba(38, 252, 227, 0.55);
+  transform: translate(-50%, -50%);
+}
+
+@media (min-width: 640px) {
+  .fp-live-badge {
+    gap: 0.4rem;
+    padding: 0.5rem 1.35rem;
+    font-size: 0.8125rem;
+  }
+}
+
+/* Left "spine" accent — an asymmetric alternative to a uniform border,
+   used on cards that want a bookmark-tab silhouette instead of fp-card. */
+.fp-spine {
+  position: relative;
+  border-inline-start: 4px solid var(--fp-brand);
+}
+
+/* Sticky bottom mobile action dock. */
+.fp-dock {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 60;
+  padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom));
+  background: rgba(14, 14, 14, 0.86);
+  backdrop-filter: blur(16px) saturate(160%);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fp-pulse-ring,
+  .fp-chip__dot--live {
+    animation: none !important;
+  }
+}
+} /* end @layer components (Fitino Sunrise) */
+
+/* Custom Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes gradientShift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.2s ease-out;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradientShift 3s ease infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Glow Effects */
+.glow-brand {
+  box-shadow: 0 0 20px rgba(38, 252, 227, 0.35);
+}
+
+.glow-purple {
+  box-shadow: 0 0 20px rgba(38, 252, 227, 0.35);
+}
+
+.glow-cyan {
+  box-shadow: 0 0 20px rgba(38, 252, 227, 0.5);
+}
+
+/* Backdrop Blur Enhancement */
+.backdrop-blur-enhanced {
+  backdrop-filter: blur(20px) saturate(180%);
+}
+
+/* Custom Scrollbar */
+.scrollbar-thin {
+  scrollbar-width: thin;
+}
+
+.scrollbar-thumb-brand\/50::-webkit-scrollbar-thumb,
+.scrollbar-thumb-purple-500\/50::-webkit-scrollbar-thumb {
+  background-color: rgba(38, 252, 227, 0.4);
+  border-radius: 6px;
+}
+
+.scrollbar-track-transparent::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 2px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(38, 252, 227, 0.45);
+  border-radius: 2px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(38, 252, 227, 0.65);
+}
+
+/* Custom animations for responsive design */
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.2s ease-out;
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .animate-bounce-slow {
+    animation: bounce 2s infinite;
+  }
+
+  /* Mobile-first responsive animations */
+  .animate-fade-in-mobile {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  .animate-slide-up-mobile {
+    animation: slideUpMobile 0.2s ease-out;
+  }
+
+  /* Responsive text animations */
+  .animate-text-glow {
+    animation: textGlow 2s ease-in-out infinite alternate;
+  }
+
+  /* Responsive hover effects */
+  .hover-scale-mobile {
+    @apply transition-transform duration-200;
+  }
+
+  .hover-scale-mobile:hover {
+    @apply scale-105;
+  }
+
+  /* Mobile-specific utilities */
+  .mobile-safe-area {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  .mobile-touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Responsive scrollbar */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 2px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: rgba(38, 252, 227, 0.45);
+    border-radius: 2px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: rgba(38, 252, 227, 0.65);
+  }
+
+  /* Mobile scrollbar */
+  @media (max-width: 640px) {
+    .scrollbar-thin::-webkit-scrollbar {
+      width: 2px;
+    }
+  }
+}
+
+/* Keyframe animations */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUpMobile {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes textGlow {
+  from {
+    text-shadow: 0 0 5px rgba(38, 252, 227, 0.35);
+  }
+  to {
+    text-shadow: 0 0 18px rgba(38, 252, 227, 0.55);
+  }
+}
+
+/* Responsive video player styles */
+.video-container {
+  position: relative;
+  width: 100%;
+  height: 0;
+  padding-bottom: 56.25%; /* 16:9 aspect ratio */
+}
+
+.video-container video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Mobile video player optimizations */
+@media (max-width: 640px) {
+  .video-container {
+    padding-bottom: 56.25%; /* Keep 16:9 ratio on mobile */
+  }
+
+  .video-container video {
+    object-fit: cover;
+  }
+}
+
+/* Responsive chat optimizations */
+.chat-message {
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+@media (max-width: 640px) {
+  .chat-message {
+    font-size: 0.875rem;
+    line-height: 1.4;
+  }
+}
+
+/* Responsive button optimizations */
+.btn-mobile {
+  @apply mobile-touch-target;
+  @apply hover-scale-mobile;
+}
+
+/* Responsive modal optimizations */
+.modal-mobile {
+  @apply mobile-safe-area;
+}
+
+@media (max-width: 640px) {
+  .modal-mobile {
+    margin: 0;
+    border-radius: 0;
+    min-height: 100vh;
+  }
+}
+
+/* Responsive text optimizations */
+.text-responsive {
+  @apply text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl;
+}
+
+.text-responsive-small {
+  @apply text-xs sm:text-sm md:text-base;
+}
+
+/* Responsive spacing utilities */
+.space-responsive {
+  @apply space-y-2 sm:space-y-3 md:space-y-4 lg:space-y-6;
+}
+
+.p-responsive {
+  @apply p-2 sm:p-3 md:p-4 lg:p-6;
+}
+
+.px-responsive {
+  @apply px-2 sm:px-3 md:px-4 lg:px-6;
+}
+
+.py-responsive {
+  @apply py-2 sm:py-3 md:py-4 lg:py-6;
+}
+
+/* Responsive grid utilities */
+.grid-responsive {
+  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
+}
+
+/* Responsive flex utilities */
+.flex-responsive {
+  @apply flex flex-col sm:flex-row;
+}
+
+/* Responsive visibility utilities */
+.hidden-mobile {
+  @apply hidden sm:block;
+}
+
+.visible-mobile {
+  @apply block sm:hidden;
+}
+
+/* Responsive border radius */
+.rounded-responsive {
+  @apply rounded-lg sm:rounded-xl md:rounded-2xl;
+}
+
+/* Responsive shadows */
+.shadow-responsive {
+  @apply shadow-lg sm:shadow-xl md:shadow-2xl;
+}
+
+/* Responsive backdrop blur */
+.backdrop-responsive {
+  @apply backdrop-blur-sm sm:backdrop-blur-md md:backdrop-blur-lg;
+}
+
+/* Brand gradient utilities — global (not scoped) so any restyled chrome
+   component can use them regardless of which page/shell renders it. */
+:root {
+  --emerald-cyan: linear-gradient(135deg, #187272 0%, #2a9c96 40%, #58cac0 70%, #26fce3 100%);
+}
+
+@layer components {
+.gradient-text {
+  background: var(--emerald-cyan);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.gradient-bg {
+  background: var(--emerald-cyan);
+}
+
+/* ── Fitino landing (scoped: RTL + font only) ── */
+.fitino-landing {
+  direction: rtl;
+  font-family: "IRANSansX", "IRANSans", "Tahoma", sans-serif;
+}
+
+/* Card/button/input/chip look now lives in the global Fitino Sunrise
+   primitives (.fp-card/.fp-notch, ui/button.tsx, ui/input.tsx, StatusChip). */
+
+.fitino-landing .benefit-row {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  border-radius: calc(var(--radius) - 0.4rem);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.025);
+  padding: 0.9rem 1rem;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.fitino-landing .benefit-row:hover {
+  border-color: rgba(38, 252, 227, 0.32);
+  background: rgba(38, 252, 227, 0.06);
+}
+} /* end @layer components (brand gradient + landing scope) */
+
+#scroll-progress {
+  position: fixed;
+  top: 0;
+  inset-inline-end: 0;
+  height: 4px;
+  background: linear-gradient(135deg, #187272 0%, #2a9c96 40%, #58cac0 70%, #26fce3 100%);
+  z-index: 200;
+  width: 0%;
+}
+
+@keyframes fitino-logo-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.035); }
+}
+
+.fitino-logo-breathe {
+  animation: fitino-logo-breathe 3.4s ease-in-out infinite;
+}
+
+.fitino-landing a:focus-visible,
+.fitino-landing button:focus-visible,
+.fitino-landing input:focus-visible {
+  outline: 2px solid #26fce3;
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fitino-logo-breathe {
+    animation: none !important;
+  }
+}

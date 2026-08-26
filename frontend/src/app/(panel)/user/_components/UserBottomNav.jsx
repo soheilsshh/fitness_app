@@ -11,6 +11,8 @@ import { cn } from "@/lib/utils";
 
 /**
  * Student panel bottom dock — style-guide surfaces + primary teal active pill.
+ * Column count tracks `userNavGroups.length` so adding/removing a top-level
+ * group can never silently overflow/wrap the dock again.
  */
 export default function UserBottomNav() {
   const pathname = usePathname();
@@ -45,7 +47,12 @@ export default function UserBottomNav() {
             "dark:bg-[color:var(--up-surface-elev,#111827)]"
           )}
         >
-          <ul className="relative z-[1] grid grid-cols-5 gap-0.5 p-1.5">
+          <ul
+            className="relative z-[1] grid gap-0.5 p-1.5"
+            style={{
+              gridTemplateColumns: `repeat(${userNavGroups.length}, minmax(0, 1fr))`,
+            }}
+          >
             {userNavGroups.map((group) => {
               const Icon = group.icon;
               const active = activeGroup?.id === group.id;
