@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	"fitino/challenge21/database"
-	"fitino/challenge21/models"
-	"fitino/challenge21/services"
+	"fitino-challenge-backend/database"
+	"fitino-challenge-backend/models"
+	"fitino-challenge-backend/services"
 	"net/http"
 	"strconv"
 	"time"

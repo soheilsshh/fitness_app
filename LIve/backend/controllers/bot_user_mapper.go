@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"log"
-	"monetizeai-backend/models"
+	"fitino-live-backend/models"
 	"strconv"
 
 	"gorm.io/gorm"

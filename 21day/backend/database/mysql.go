@@ -3,8 +3,8 @@ package database
 import (
 	"fmt"
 	"log"
-	"fitino/challenge21/config"
-	"fitino/challenge21/models"
+	"fitino-challenge-backend/config"
+	"fitino-challenge-backend/models"
 	"time"
 
 	"gorm.io/driver/mysql"
@@ -23,7 +23,7 @@ func Connect() {
 	}
 	DB = db
 
-	db.AutoMigrate(&models.User{}, &models.Video{}, &models.Progress{}, &models.ScheduledSMS{}, &models.AdminSession{})
+	db.AutoMigrate(&models.User{}, &models.Video{}, &models.Progress{}, &models.ScheduledSMS{}, &models.AdminSession{}, &models.Payment{})
 
 	seedFakeVideos()
 }

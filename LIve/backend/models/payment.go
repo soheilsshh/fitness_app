@@ -31,6 +31,8 @@ type PaymentTransaction struct {
 	NextInstallmentDate *time.Time          `json:"next_installment_date,omitempty"`                                    // Date when next installment is due
 	ParentInstallmentID *uint               `gorm:"index" json:"parent_installment_id,omitempty"`                       // ID of first installment (for linking installments)
 	ParentInstallment   *PaymentTransaction `gorm:"foreignKey:ParentInstallmentID" json:"parent_installment,omitempty"` // First installment transaction
+	WebinarProgramID    *uint               `gorm:"index" json:"webinar_program_id,omitempty"`                          // which WebinarProgram this purchase grants access to (nil = legacy single-webinar payment)
+	WebinarProgram      *WebinarProgram     `gorm:"foreignKey:WebinarProgramID" json:"webinar_program,omitempty"`
 	CreatedAt           time.Time           `json:"created_at"`
 	UpdatedAt           time.Time           `json:"updated_at"`
 	DeletedAt           gorm.DeletedAt      `gorm:"index" json:"deleted_at,omitempty"`

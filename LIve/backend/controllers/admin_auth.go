@@ -3,7 +3,7 @@ package controllers
 import (
 	"crypto/subtle"
 	"log"
-	"monetizeai-backend/models"
+	"fitino-live-backend/models"
 	"net/http"
 	"time"
 

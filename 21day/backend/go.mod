@@ -1,4 +1,4 @@
-module fitino/challenge21
+module fitino-challenge-backend
 
 go 1.23.0
 

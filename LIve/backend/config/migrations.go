@@ -2,7 +2,7 @@ package config
 
 import (
 	"log"
-	"monetizeai-backend/models"
+	"fitino-live-backend/models"
 	"strconv"
 	"time"
 

@@ -3,8 +3,8 @@ package controllers
 import (
 	"bufio"
 	"log"
-	"monetizeai-backend/models"
-	"monetizeai-backend/utils"
+	"fitino-live-backend/models"
+	"fitino-live-backend/utils"
 	"net/http"
 	"regexp"
 	"strconv"

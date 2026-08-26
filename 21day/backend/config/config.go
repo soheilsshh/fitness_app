@@ -19,14 +19,21 @@ type AdminConfig struct {
 	Password string
 }
 
+type ZarinpalConfig struct {
+	MerchantID string `mapstructure:"merchant_id"`
+	Sandbox    bool   `mapstructure:"sandbox"`
+	CallbackURL string `mapstructure:"callback_url"`
+	FrontendURL string `mapstructure:"frontend_url"`
+	Price      int    `mapstructure:"price"`
+}
+
 type AppConfig struct {
-	ServerPort string            `mapstructure:"server_port"`
-	DB         DBConfig          `mapstructure:"db"`
-	Admin      AdminConfig       `mapstructure:"admin"`
-	SMSApiKey  string            `mapstructure:"smsapikey"`
-	FromNumber string            `mapstructure:"from_number"`
-	SMSBaseURL string            `mapstructure:"sms_base_url"`
-	Patterns   map[string]string `mapstructure:"patterns"`
+	ServerPort      string            `mapstructure:"server_port"`
+	DB              DBConfig          `mapstructure:"db"`
+	Admin           AdminConfig       `mapstructure:"admin"`
+	KavenegarAPIKey string            `mapstructure:"kavenegar_api_key"`
+	Patterns        map[string]string `mapstructure:"patterns"`
+	Zarinpal        ZarinpalConfig    `mapstructure:"zarinpal"`
 }
 
 var Config AppConfig

@@ -41,9 +41,9 @@ const VideoPlayer = ({ onVideoEnd, isStreamEnded = false, streamResetKey = 0, on
   const videoEndedPermanentlyRef = useRef(false); // Track if video has permanently ended
   const stalledRecoveryRef = useRef<{ count: number; lastRecovery: number }>({ count: 0, lastRecovery: 0 });
   const startupTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const flvStreamUrl = 'https://webinar.sianacademy.com/live/stream';
+  const flvStreamUrl = 'https://live.fitinoo.ir/live/stream';
   // Use master playlist for multi-bitrate HLS, fallback to single playlist
-  const hlsStreamUrl = 'https://webinar.sianacademy.com/hls/stream.m3u8'; // Master playlist (if multi-bitrate) or single playlist
+  const hlsStreamUrl = 'https://live.fitinoo.ir/hls/stream.m3u8'; // Master playlist (if multi-bitrate) or single playlist
   // Low-bitrate stream URL for weak Android devices
   const hlsLowStreamUrl = hlsStreamUrl.replace('stream.m3u8', 'stream_low.m3u8');
   const userStartNotifiedRef = useRef(false);

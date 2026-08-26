@@ -3,13 +3,13 @@ export const config = {
   API_BASE_URL:
     import.meta.env.VITE_API_BASE_URL ||
     (import.meta.env.PROD
-      ? 'https://webinar.sianacademy.com/api'
+      ? 'https://live.fitinoo.ir/api'
       : 'http://localhost:8083/api'),
   VIDEO_BASE_URL: import.meta.env.VITE_VIDEO_BASE_URL || 'http://localhost:8083',
   IS_DEVELOPMENT: import.meta.env.DEV,
   IS_PRODUCTION: import.meta.env.PROD,
   FRONTEND_URL: import.meta.env.PROD
-    ? 'https://webinar.sianacademy.com'
+    ? 'https://live.fitinoo.ir'
     : 'http://localhost:8080',
 };
 
@@ -22,7 +22,7 @@ console.log('Environment Debug:', {
   API_BASE_URL:
     import.meta.env.VITE_API_BASE_URL ||
     (import.meta.env.PROD
-      ? 'https://webinar.sianacademy.com/api'
+      ? 'https://live.fitinoo.ir/api'
       : 'http://localhost:8083/api'),
 });
 

@@ -2,11 +2,11 @@ package controllers
 
 import (
 	"log"
-	"monetizeai-backend/config"
-	"monetizeai-backend/models"
-	"monetizeai-backend/services"
-	"monetizeai-backend/streaming"
-	"monetizeai-backend/utils"
+	"fitino-live-backend/config"
+	"fitino-live-backend/models"
+	"fitino-live-backend/services"
+	"fitino-live-backend/streaming"
+	"fitino-live-backend/utils"
 	"net/http"
 	"strconv"
 	"time"

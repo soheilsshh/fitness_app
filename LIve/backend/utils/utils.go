@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"monetizeai-backend/config"
+	"fitino-live-backend/config"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"

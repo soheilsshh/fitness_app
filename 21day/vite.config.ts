@@ -8,7 +8,7 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
-    allowedHosts: ["localhost"],
+    allowedHosts: ["localhost", "challenge.fitinoo.ir"],
   },
   plugins: [
     react(),

@@ -3693,7 +3693,7 @@ const AIPage = () => {
   <!-- Footer -->
   <footer class="mainfooter">
     <div class="footer-row">
-      <span>© 2025 MonetizeAI • تمامی حقوق محفوظ است.</span>
+      <span>© 2026 Fitino Live • تمامی حقوق محفوظ است.</span>
     </div>
   </footer>
   
@@ -3704,6 +3704,41 @@ const AIPage = () => {
   
   <!-- JavaScript -->
   <script>
+    // Multi-webinar buy-button gating. Fetches which WebinarProgram is
+    // currently active/upcoming and shows the floating CTA only when that
+    // program has selling enabled AND its "golden time" has arrived.
+    // If no WebinarProgram rows exist at all (legacy single-webinar mode,
+    // nothing configured yet), this leaves the button exactly as it always
+    // was — always visible, no gating — since canBuyNow defaults to true
+    // and only ever gets set to false once a real program says so.
+    (function () {
+      const API_BASE = '${config.API_BASE_URL}';
+      var canBuyNow = true;
+      var currentProgramId = null;
+
+      function applyButtonVisibility() {
+        var btn = document.querySelector('.floating-cta-btn');
+        if (btn) btn.style.display = canBuyNow ? '' : 'none';
+      }
+
+      function checkWebinarProgram() {
+        fetch(API_BASE + '/webinar-programs/current')
+          .then(function (res) { return res.ok ? res.json() : null; })
+          .then(function (data) {
+            if (!data) return; // legacy mode — leave canBuyNow as-is (true)
+            currentProgramId = data.id;
+            canBuyNow = !!data.show_buy_button;
+            applyButtonVisibility();
+          })
+          .catch(function () { /* network hiccup — keep last known state */ });
+      }
+
+      checkWebinarProgram();
+      setInterval(checkWebinarProgram, 60000);
+      window.__canBuyNow = function () { return canBuyNow; };
+      window.__currentWebinarProgramId = function () { return currentProgramId; };
+    })();
+
     // Countdown Timer - 8 hours (always resets to 8 hours)
     (function () {
       const EIGHT_HOURS = 8 * 60 * 60 * 1000; // 8 hours in milliseconds
@@ -3963,6 +3998,12 @@ const AIPage = () => {
     let currentStep = 1;
     
     function openPaymentModal() {
+      // Defense in depth: the floating button is already hidden via
+      // display:none when canBuyNow is false, but guard the actual open
+      // too in case something else calls this function directly.
+      if (typeof window.__canBuyNow === 'function' && !window.__canBuyNow()) {
+        return;
+      }
       const modal = document.getElementById('paymentModal');
       modal.classList.add('active');
       // Lock body and html scroll when modal is open
@@ -4101,7 +4142,7 @@ const AIPage = () => {
         lastName = nameParts.slice(1).join(' ') || '';
         
         // Get API base URL from window
-        const apiBaseUrl = window.API_BASE_URL || 'https://webinar.sianacademy.com/api';
+        const apiBaseUrl = window.API_BASE_URL || 'https://live.fitinoo.ir/api';
         
         // Create payment request
         const response = await fetch(apiBaseUrl + '/payment/create', {
@@ -4115,7 +4156,10 @@ const AIPage = () => {
             phone: normalizedPhone,
             amount: window.SUBSCRIPTION_PRICE || 4900000,
             type: 'subscription',
-            description: 'اشتراک مادام‌العمر MonetizeAI'
+            description: 'اشتراک مادام‌العمر Fitino Live',
+            webinar_program_id: typeof window.__currentWebinarProgramId === 'function'
+              ? window.__currentWebinarProgramId()
+              : null
           })
         });
         

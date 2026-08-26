@@ -8,10 +8,10 @@ import (
 	"strings"
 	"time"
 
-	"monetizeai-backend/models"
-	"monetizeai-backend/scheduler"
-	"monetizeai-backend/services"
-	"monetizeai-backend/utils"
+	"fitino-live-backend/models"
+	"fitino-live-backend/scheduler"
+	"fitino-live-backend/services"
+	"fitino-live-backend/utils"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"

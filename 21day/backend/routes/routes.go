@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"fitino/challenge21/controllers"
+	"fitino-challenge-backend/controllers"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,6 +14,9 @@ func RegisterRoutes(r *gin.Engine) {
 		api.POST("/videos/:id/complete", controllers.CompleteVideo)
 		api.POST("/videos/:id/unlock", controllers.UnlockVideo)
 		api.GET("/progress", controllers.GetUserProgress)
+
+		api.POST("/payment/request", controllers.CreatePayment)
+		api.GET("/payment/callback", controllers.PaymentCallback)
 
 		api.POST("/admin/login", controllers.AdminLogin)
 

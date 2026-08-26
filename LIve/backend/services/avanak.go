@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"monetizeai-backend/config"
+	"fitino-live-backend/config"
 	"net/http"
 	"net/url"
 	"strconv"

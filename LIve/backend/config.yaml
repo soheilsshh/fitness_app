@@ -1,12 +1,16 @@
-# Backend configuration for MonetizeAI Webinar
+# Backend configuration for Fitino Live Webinar
 
 db_host: localhost
 db_port: 3306
-db_user: fitini
-db_password: aramezani82A@
-db_name: monetizeai
-server_port: "8081"
+db_user: fitino_live
+db_password: L1ve-Fitino-Webinar-2026
+db_name: fitino_live
+server_port: "8096"
 
+# melipayamak/faraz_sms are vestigial — SendPatternSMS now goes through
+# Kavenegar (see kavenegar: below) regardless of what's set here. Left in
+# place only because the admin panel still has settings screens for them;
+# safe to delete both the config here and those screens later.
 melipayamak:
   username: "989103946748"
   api_key: ""
@@ -16,20 +20,37 @@ melipayamak:
   body_id_reminder_30min: 0  # Disabled - no longer used
   enabled: true
 
-avanak:
-  token: ""
-  message_id: 40494229  # کد فایل صوتی
-  base_url: "https://portal.avanak.ir/Rest/QuickSend"  # Official QuickSend API endpoint
-  enabled: true
-
 faraz_sms:
   api_key: ""  # API Key for Faraz SMS (IPPanel Edge)
   from_number: "+98PRO"  # Sender phone number in E.164 format (e.g., +983000505)
   enabled: true  # Enable/disable Faraz SMS service
 
+# avanak = voice calls with a prerecorded audio file (message_id). Kavenegar
+# has no equivalent for playing a specific prerecorded file, so this is
+# NOT migrated — still calling Avanak directly, untouched, until a real
+# replacement is sourced (see TODO.md).
+avanak:
+  token: "23568A4E750C3C8849CDCABFC2A5B4AB9241C864"
+  message_id: 49170751  # کد فایل صوتی
+  base_url: "https://portal.avanak.ir/Rest/QuickSend"  # Official QuickSend API endpoint
+  enabled: true
+
+# Kavenegar Verify Lookup — every SendPatternSMS call (webinar reminders,
+# license codes, admin-authored messages) resolves its numeric pattern
+# code through this map to a template name. A code with no entry here
+# fails loudly (logged + error returned) instead of silently doing
+# nothing, so a newly-added admin message type is easy to notice.
+kavenegar:
+  api_key: "SET-ME-REAL-KAVENEGAR-API-KEY"
+  templates:
+    "395320": "fitino-live-welcome"          # webinar registration welcome SMS
+    "395349": "fitino-live-reminder-2pm"     # 2pm-day-of reminder
+    "403249": "fitino-live-license-code"     # license/access code delivery (token=name, token2=code)
+    "404962": "fitino-live-program-ready"    # "your program is ready" task message (token=name, token2=phone)
+
 telegram:
   bot_token: ""  # Telegram Bot Token
-  webhook_url: "https://webinar.sianacademy.com/webhook/telegram"  # Webhook URL (optional - can be set via API)
+  webhook_url: "https://live.fitinoo.ir/webhook/telegram"  # Webhook URL (optional - can be set via API)
   api_key: "0741a71b70336bf3d956cac3ac7f1582bbdc7a2fa661420a8e86c620c50f3e46"  # API Key for bot to authenticate with backend
   enabled: true  # Enable/disable Telegram Bot
 
@@ -38,18 +59,19 @@ groq:
   model: "llama-3.3-70b-versatile"  # Groq model name
   enabled: true  # Enable/disable Groq AI
 
-# HTTPS Configuration (for production)
+# HTTPS Configuration — nginx terminates TLS in front of this app, same as
+# every other Fitino/Quantino site on this server, so this stays false.
 enable_https: false
-ssl_cert_file: "/etc/letsencrypt/live/sianmarketing.com/fullchain.pem"
-ssl_key_file: "/etc/letsencrypt/live/sianmarketing.com/privkey.pem"
+ssl_cert_file: "/var/www/live/fullchain.pem"
+ssl_key_file: "/var/www/live/privateKey.pem"
 
 # CORS Configuration
 allowed_origins:
   - "http://localhost:5173"
-  - "https://webinar.sianacademy.com"
+  - "https://live.fitinoo.ir"
   - "http://localhost:8080"
   - "http://localhost:3000"
-  - "http://localhost:8081"
+  - "http://localhost:8096"
 
 # Webinar Schedule Configuration (Iran/Tehran timezone)
 webinar:
@@ -63,10 +85,11 @@ test_mode:
   enabled: false  # فعال/غیرفعال کردن حالت تست
   test_phone: "09155520952"  # شماره تست - فقط برای این شماره reminder یک دقیقه بعد از ثبت‌نام ارسال می‌شود
 
-# Payment Configuration (ZarinPal)
+# Payment Configuration (ZarinPal) — callback lives on a rapexa.ir subdomain,
+# same pattern as Fitinoo/Joftinoo's payment callbacks on this server.
 payment:
-  merchant_id: ""  # Merchant ID شما از ZarinPal
-  sandbox: false  # false برای محیط واقعی، true برای تست
-  callback_url: "https://webinar.sianacademy.com/payment/callback"  # URL callback
-  frontend_url: "https://webinar.sianacademy.com"  # Frontend base URL برای redirect
+  merchant_id: "fcbfe898-c7bf-4bee-9ac4-e37e79f730f5"  # همون مرچنت فیتینو/جفتینو
+  sandbox: false
+  callback_url: "https://live.rapexa.ir/payment/callback"  # URL callback
+  frontend_url: "https://live.fitinoo.ir"  # Frontend base URL برای redirect
   subscription_price: 4900000   # 4,900,000 تومان

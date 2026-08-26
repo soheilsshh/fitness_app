@@ -2,14 +2,14 @@ package main
 
 import (
 	"log"
-	"monetizeai-backend/config"
-	"monetizeai-backend/controllers"
-	"monetizeai-backend/models"
-	"monetizeai-backend/routes"
-	"monetizeai-backend/scheduler"
-	"monetizeai-backend/services"
-	"monetizeai-backend/streaming"
-	"monetizeai-backend/utils"
+	"fitino-live-backend/config"
+	"fitino-live-backend/controllers"
+	"fitino-live-backend/models"
+	"fitino-live-backend/routes"
+	"fitino-live-backend/scheduler"
+	"fitino-live-backend/services"
+	"fitino-live-backend/streaming"
+	"fitino-live-backend/utils"
 	"os"
 	"time"
 
@@ -68,6 +68,7 @@ func main() {
 		&models.ChatMessage{},
 		&models.Webinar{},
 		&models.WebinarActivity{},
+		&models.WebinarProgram{},
 		&models.AdminUser{},       // Must be before AdminUserPermission
 		&models.AdminPermission{}, // Must be before AdminUserPermission
 		&models.SystemConfig{},
@@ -322,6 +323,7 @@ func main() {
 	avanakService := services.NewAvanakService(&mergedConfig.Avanak)
 	melipayamakService := services.NewMelipayamakService(&mergedConfig.Melipayamak)
 	farazSMSService := services.NewFarazSMSService(&mergedConfig.FarazSMS)
+	services.SetKavenegarConfig(mergedConfig.Kavenegar)
 	
 	// Initialize Telegram Bot Service if enabled
 	var telegramBotService *services.TelegramBotService
@@ -382,6 +384,7 @@ func main() {
 		}()
 		utils.LogInfo("Starting scheduler...")
 		scheduler.StartScheduler(db, avanakService, melipayamakService, farazSMSService, &mergedConfig.TestMode, mergedConfig)
+		scheduler.StartWebinarProgramScheduler(db)
 		utils.LogSuccess("Scheduler started successfully")
 	}()
 
