@@ -1,4 +1,8 @@
-export const API_BASE_URL = 'http://localhost:8081/api';
+// Relative path: resolves against whatever origin actually served the page
+// (nginx proxies /api/ to the backend on this same domain). A hardcoded
+// localhost URL here would only ever work on the developer's own machine —
+// every real visitor's browser would try to reach their own computer.
+export const API_BASE_URL = '/api';
 
 export interface User {
   id: number;
@@ -100,6 +104,15 @@ class ApiService {
   // Get user progress
   async getUserProgress(phone: string): Promise<UserProgress> {
     return this.request<UserProgress>(`/progress?phone=${encodeURIComponent(phone)}`);
+  }
+
+  // Start a Zarinpal payment for full-program access. Returns a URL to
+  // redirect the browser to (Zarinpal's own payment page).
+  async createPayment(phone: string): Promise<{ payment_url: string; authority: string }> {
+    return this.request<{ payment_url: string; authority: string }>('/payment/request', {
+      method: 'POST',
+      body: JSON.stringify({ phone }),
+    });
   }
 }
 
