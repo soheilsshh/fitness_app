@@ -19,7 +19,7 @@ var (
 )
 
 type CoachStudentDetail struct {
-	CoachStudentListItem
+	AdminStudentItem
 	Email                 string     `json:"email"`
 	HeightCm              *float64   `json:"heightCm,omitempty"`
 	WeightKg              *float64   `json:"weightKg,omitempty"`
