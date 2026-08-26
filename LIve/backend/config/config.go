@@ -146,10 +146,20 @@ type PaymentConfig struct {
 	SubscriptionPrice int    `mapstructure:"subscription_price"` // قیمت اشتراک (تومان)
 }
 
+type KavenegarConfig struct {
+	APIKey string `mapstructure:"api_key"`
+	// Templates maps a numeric pattern code (kept as-is everywhere in this
+	// codebase — DB columns, admin panel, scheduler — to a Kavenegar Verify
+	// Lookup template name. Keys are strings because YAML/viper map keys
+	// come through as strings; look up with strconv.Itoa(bodyId).
+	Templates map[string]string `mapstructure:"templates"`
+}
+
 type Config struct {
 	Avanak         AvanakConfig      `mapstructure:"avanak"`
 	Melipayamak    MelipayamakConfig `mapstructure:"melipayamak"`
 	FarazSMS       FarazSMSConfig    `mapstructure:"faraz_sms"`
+	Kavenegar      KavenegarConfig   `mapstructure:"kavenegar"`
 	Telegram       TelegramConfig    `mapstructure:"telegram"`
 	Groq           GroqConfig        `mapstructure:"groq"`
 	Webinar        WebinarConfig     `mapstructure:"webinar"`

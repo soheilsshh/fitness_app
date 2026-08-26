@@ -322,6 +322,7 @@ func main() {
 	avanakService := services.NewAvanakService(&mergedConfig.Avanak)
 	melipayamakService := services.NewMelipayamakService(&mergedConfig.Melipayamak)
 	farazSMSService := services.NewFarazSMSService(&mergedConfig.FarazSMS)
+	services.SetKavenegarConfig(mergedConfig.Kavenegar)
 	
 	// Initialize Telegram Bot Service if enabled
 	var telegramBotService *services.TelegramBotService

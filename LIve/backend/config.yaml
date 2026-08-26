@@ -7,6 +7,10 @@ db_password: L1ve-Fitino-Webinar-2026
 db_name: fitino_live
 server_port: "8096"
 
+# melipayamak/faraz_sms are vestigial — SendPatternSMS now goes through
+# Kavenegar (see kavenegar: below) regardless of what's set here. Left in
+# place only because the admin panel still has settings screens for them;
+# safe to delete both the config here and those screens later.
 melipayamak:
   username: "989103946748"
   api_key: ""
@@ -16,16 +20,33 @@ melipayamak:
   body_id_reminder_30min: 0  # Disabled - no longer used
   enabled: true
 
+faraz_sms:
+  api_key: ""  # API Key for Faraz SMS (IPPanel Edge)
+  from_number: "+98PRO"  # Sender phone number in E.164 format (e.g., +983000505)
+  enabled: true  # Enable/disable Faraz SMS service
+
+# avanak = voice calls with a prerecorded audio file (message_id). Kavenegar
+# has no equivalent for playing a specific prerecorded file, so this is
+# NOT migrated — still calling Avanak directly, untouched, until a real
+# replacement is sourced (see TODO.md).
 avanak:
   token: ""
   message_id: 40494229  # کد فایل صوتی
   base_url: "https://portal.avanak.ir/Rest/QuickSend"  # Official QuickSend API endpoint
   enabled: true
 
-faraz_sms:
-  api_key: ""  # API Key for Faraz SMS (IPPanel Edge)
-  from_number: "+98PRO"  # Sender phone number in E.164 format (e.g., +983000505)
-  enabled: true  # Enable/disable Faraz SMS service
+# Kavenegar Verify Lookup — every SendPatternSMS call (webinar reminders,
+# license codes, admin-authored messages) resolves its numeric pattern
+# code through this map to a template name. A code with no entry here
+# fails loudly (logged + error returned) instead of silently doing
+# nothing, so a newly-added admin message type is easy to notice.
+kavenegar:
+  api_key: "SET-ME-REAL-KAVENEGAR-API-KEY"
+  templates:
+    "395320": "fitino-live-welcome"          # webinar registration welcome SMS
+    "395349": "fitino-live-reminder-2pm"     # 2pm-day-of reminder
+    "403249": "fitino-live-license-code"     # license/access code delivery (token=name, token2=code)
+    "404962": "fitino-live-program-ready"    # "your program is ready" task message (token=name, token2=phone)
 
 telegram:
   bot_token: ""  # Telegram Bot Token
