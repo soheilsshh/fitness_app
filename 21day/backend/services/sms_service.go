@@ -96,6 +96,8 @@ func sendVerifyLookup(receptor, template string, tokens ...string) (*KavenegarRe
 // uses (phone, {"name": ...}, patternKey) — patternKey now looks up a
 // Kavenegar Verify Lookup template name (config.Patterns) instead of an
 // ippanel pattern code, and params["name"] becomes Kavenegar's `token`.
+// An optional params["day"] becomes `token2` — used by the winback nudge
+// so one template can reference whichever day the user is stuck on.
 func SendSMS(phone string, params map[string]string, patternKey string) error {
 	template, ok := config.Config.Patterns[patternKey]
 	if !ok || template == "" {
@@ -108,7 +110,12 @@ func SendSMS(phone string, params map[string]string, patternKey string) error {
 		name = strings.SplitN(name, " ", 2)[0]
 	}
 
-	resp, err := sendVerifyLookup(phone, template, name)
+	tokens := []string{name}
+	if day := params["day"]; day != "" {
+		tokens = append(tokens, day)
+	}
+
+	resp, err := sendVerifyLookup(phone, template, tokens...)
 	if err != nil {
 		log.Printf("[SMS] Kavenegar send failed (phone=%s, template=%s): %v", phone, template, err)
 		return err

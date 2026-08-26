@@ -24,6 +24,16 @@ func startSMSScheduler() {
 				var user models.User
 				database.DB.First(&user, job.UserID)
 				smsParams := map[string]string{"name": user.FirstName}
+				if job.Pattern == "winback" {
+					// Read the stuck-at day fresh at send time, not schedule time —
+					// this is the same value CompleteVideo would have used to cancel
+					// this job if the user had actually kept going.
+					var maxCompleted int
+					database.DB.Model(&models.Progress{}).
+						Where("user_id = ? AND completed = ?", job.UserID, true).
+						Select("COALESCE(MAX(video_id), 0)").Scan(&maxCompleted)
+					smsParams["day"] = strconv.Itoa(maxCompleted + 1)
+				}
 				services.SendSMS(user.Phone, smsParams, job.Pattern)
 				database.MarkSMSSent(job.ID)
 			}
