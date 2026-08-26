@@ -1,7 +1,9 @@
 # TODO — multi-webinar support
 
-**Status: backend + admin panel done and deployed (2026-08-26). Public
-landing-page wiring is what's left — see "Still needed" below.**
+**Status: DONE and deployed (2026-08-26)** — backend, admin panel, and
+public landing-page wiring (buy button + live comments) all shipped and
+verified in-browser on the live site. What's left is entirely on the
+content/account side — see "Separately blocked" below, unchanged.
 
 Was single-webinar: one schedule (`webinar.start_hour`/`end_hour` in
 config), one stream, one buy-button/countdown state, shared across every
@@ -30,25 +32,33 @@ stream, selling flag, "golden time" buy-button reveal, price, and comments.
   time + price, and comments as JSON (same `TimeRange[]` shape the old file
   used, so existing scripts are copy-paste portable).
 
-## Still needed — public landing page
-`src/data/landing-html.txt` (~3000 lines) is the actual page visitors see —
-raw legacy HTML/CSS/vanilla-JS from the pre-rebrand business, not a React
-component, with its own `openPaymentModal()`/modal-visibility JS and (per
-`LiveChat.tsx`) a *separate* React comment feed that statically imports
-`timedComments.ts`. To finish this feature:
-1. Read `landing-html.txt`'s existing payment-modal trigger logic — is
-   there already a timer/reveal condition to replace, or is the button just
-   always clickable today (no "golden time" gating exists yet at all)?
-2. Wire whatever's there to call `GET /api/webinar-programs/current` and
-   show/hide the buy button per `show_buy_button`, and point the actual
-   purchase action at the right program (so `POST /api/payment/create` /
-   whatever it calls knows which `webinar_program_id` is being bought).
-3. Change `LiveChat.tsx` from `import { timedComments } from "@/data/timedComments"`
-   to fetching `GET /api/webinar-programs/current/comments` at runtime —
-   otherwise switching which program is "current" won't change what
-   comments play without a rebuild.
-Deliberately not attempted in the same pass as the backend — didn't want to
-edit 3000 lines of unfamiliar legacy JS without reading it properly first.
+## Public landing page — done
+Turned out `src/data/landing-html.txt` (the ~3000-line legacy file) isn't
+actually loaded by anything — the real page is a template literal
+(`landingHTML`, ~3000 lines) embedded directly in `AIPage.tsx` at line
+~1109, rendered via `dangerouslySetInnerHTML`. That's what got wired:
+
+1. A gating IIFE in that embedded `<script>` fetches
+   `GET /api/webinar-programs/current` on load + every 60s and hides
+   `.floating-cta-btn` (the only buy-button trigger — confirmed via grep,
+   there's exactly one) when `show_buy_button` is false. Defaults to
+   "always visible" if no program exists yet or the request fails, so it
+   can only ever hide the button, never wrongly hide it in the account's
+   current single-webinar setup. `openPaymentModal()` also no-ops if
+   buying isn't currently allowed, as a second layer.
+2. The `/payment/create` POST now sends `webinar_program_id` (read from
+   `window.__currentWebinarProgramId()`); the backend links the resulting
+   `PaymentTransaction` to that program via a separate update, without
+   touching `PaymentService.CreatePaymentRequest`'s existing
+   promoter-assignment logic.
+3. `LiveChat.tsx` now fetches
+   `GET /api/webinar-programs/current/comments` once on mount instead of
+   only using the static `timedComments.ts` import — falls back to the
+   static file if no program exists or the fetch fails.
+
+Verified live in-browser on `/webinar`: the comments endpoint fires and
+returns 200, zero console errors, legacy `/api/webinar` calls still firing
+alongside it undisturbed.
 
 ## Separately blocked / needs input before or alongside this
 - **No real webinar video content exists yet.** The stream scheduler is
