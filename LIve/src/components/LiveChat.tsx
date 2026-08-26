@@ -2,7 +2,8 @@ import { useState, useEffect, useRef, useMemo, useCallback, memo } from "react";
 import type { KeyboardEvent } from "react";
 import { Send, MessageCircle, Pin, X, Reply, UserPlus, ArrowLeft } from "lucide-react";
 import { apiService } from "@/services/api";
-import { timedComments } from "@/data/timedComments";
+import { config } from "@/config/environment";
+import { timedComments, TimeRange } from "@/data/timedComments";
 import { AdaptiveCommentEngine, DisplayComment, mapCommentsToAbsoluteTime } from "@/services/AdaptiveCommentEngine";
 import StatusChip from "@/components/StatusChip";
 import { isWebinarPreviewMode } from "@/config/webinarPreview";
@@ -186,14 +187,38 @@ const LiveChat = ({
   const lastStreamTimeRef = useRef<number | null>(null);
   const initLoggedRef = useRef(false);
 
-  // Map comments once per mount/reset
+  // Map comments once per mount/reset. Starts from the static bundled
+  // timedComments.ts (legacy single-webinar script, always available
+  // synchronously) so the chat has something to show immediately, then
+  // the effect below replaces it with whichever WebinarProgram's own
+  // comments_json is currently active, fetched live from the API — that's
+  // what makes per-webinar marketing comments possible without a rebuild
+  // every time a program's script changes.
   const ensureMappedComments = useCallback((): DisplayComment[] => {
     if (!mappedCommentsRef.current) {
       const mapped = mapCommentsToAbsoluteTime(timedComments);
       mappedCommentsRef.current = mapped;
-      console.log(`[LiveChat] ✅ mapped ${mapped.length} comments to absolute timestamps`);
+      console.log(`[LiveChat] ✅ mapped ${mapped.length} comments to absolute timestamps (static fallback)`);
     }
     return mappedCommentsRef.current!;
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`${config.API_BASE_URL}/webinar-programs/current/comments`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: TimeRange[] | null) => {
+        if (cancelled || !Array.isArray(data) || data.length === 0) return;
+        mappedCommentsRef.current = mapCommentsToAbsoluteTime(data);
+        console.log(`[LiveChat] ✅ loaded ${data.length} comment ranges for the active webinar program from API`);
+      })
+      .catch(() => {
+        // No WebinarProgram configured yet (legacy mode) or a network
+        // hiccup — keep the static fallback already in mappedCommentsRef.
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // NEW: Get unified comments (marketing + user comments), sorted by displayAt/globalTime

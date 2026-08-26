@@ -21,7 +21,7 @@ import (
 // generateLicenseKey creates a unique license key based on ref_id and phone
 func generateLicenseKey(refID, phone string) string {
 	// Create a unique string from ref_id and phone
-	data := fmt.Sprintf("%s-%s-MONETIZEAI-2024", refID, phone)
+	data := fmt.Sprintf("%s-%s-FITINOLIVE-2026", refID, phone)
 	hash := md5.Sum([]byte(data))
 
 	// Format as XXXXX-XXXXX-XXXXX-XXXXX
@@ -70,12 +70,13 @@ func getSubscriptionPriceFromDB(db *gorm.DB, cfg *config.Config) int {
 // CreatePaymentRequest handles payment creation request from frontend
 func CreatePaymentRequest(c *gin.Context, db *gorm.DB, cfg *config.Config) {
 	var req struct {
-		FirstName   string `json:"first_name" binding:"required"`
-		LastName    string `json:"last_name" binding:"required"`
-		Phone       string `json:"phone" binding:"required"`
-		Amount      int    `json:"amount" binding:"required"`
-		Type        string `json:"type" binding:"required"`
-		Description string `json:"description"`
+		FirstName        string `json:"first_name" binding:"required"`
+		LastName         string `json:"last_name" binding:"required"`
+		Phone            string `json:"phone" binding:"required"`
+		Amount           int    `json:"amount" binding:"required"`
+		Type             string `json:"type" binding:"required"`
+		Description      string `json:"description"`
+		WebinarProgramID *uint  `json:"webinar_program_id"` // which WebinarProgram this purchase is for (multi-webinar mode); nil in legacy single-webinar mode
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -122,9 +123,9 @@ func CreatePaymentRequest(c *gin.Context, db *gorm.DB, cfg *config.Config) {
 	description := req.Description
 	if description == "" {
 		if req.Type == "subscription" {
-			description = "اشتراک مادام‌العمر MonetizeAI"
+			description = "اشتراک مادام‌العمر Fitino Live"
 		} else {
-			description = "رودمپ اختصاصی MonetizeAI"
+			description = "رودمپ اختصاصی Fitino Live"
 		}
 	}
 
@@ -147,6 +148,17 @@ func CreatePaymentRequest(c *gin.Context, db *gorm.DB, cfg *config.Config) {
 			"error":   err.Error(),
 		})
 		return
+	}
+
+	// Tie this purchase to a specific WebinarProgram when the caller knows
+	// which one (multi-webinar mode). A separate update rather than
+	// threading a new param through PaymentService.CreatePaymentRequest —
+	// that function already has a lot of promoter-assignment logic tied to
+	// the single-webinar product; this keeps that untouched.
+	if req.WebinarProgramID != nil {
+		if err := db.Model(&transaction).Update("webinar_program_id", *req.WebinarProgramID).Error; err != nil {
+			log.Printf("⚠️ Failed to link payment #%d to webinar program #%d: %v", transaction.ID, *req.WebinarProgramID, err)
+		}
 	}
 
 	// Link payment to landing activity
