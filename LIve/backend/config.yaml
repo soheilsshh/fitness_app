@@ -30,7 +30,7 @@ faraz_sms:
 # NOT migrated — still calling Avanak directly, untouched, until a real
 # replacement is sourced (see TODO.md).
 avanak:
-  token: ""
+  token: "23568A4E750C3C8849CDCABFC2A5B4AB9241C864"
   message_id: 40494229  # کد فایل صوتی
   base_url: "https://portal.avanak.ir/Rest/QuickSend"  # Official QuickSend API endpoint
   enabled: true
