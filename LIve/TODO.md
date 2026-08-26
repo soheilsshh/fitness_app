@@ -76,3 +76,16 @@ verify.
   (`fcbfe898-c7bf-4bee-9ac4-e37e79f730f5`) with `sandbox: false` — i.e. this
   is already taking real payments for the single existing webinar. Confirm
   that's intended before this becomes 6 webinars each capable of charging.
+
+---
+
+## Superseded (this file's previous content, for the record)
+This file previously tracked a plan to build "simple SMS" (no-pattern)
+sending on top of Faraz SMS: config, a controller, an admin-panel history
+view, etc. That's moot now — `faraz_sms` was already dead code (nothing in
+the codebase ever called it) before this session, and SMS transport moved
+to Kavenegar entirely (see the commit that added `services/kavenegar.go`).
+Not carrying the old checklist forward since building more on top of Faraz
+doesn't make sense anymore, but noting it existed rather than silently
+dropping it — it was overwritten by mistake when this file was rewritten
+for the multi-webinar scope above (should have been read first, wasn't).
