@@ -92,4 +92,4 @@ payment:
   sandbox: false
   callback_url: "https://live.rapexa.ir/payment/callback"  # URL callback
   frontend_url: "https://live.fitinoo.ir"  # Frontend base URL برای redirect
-  subscription_price: 4900000   # 4,900,000 تومان
+  subscription_price: 1490000   # matches Fitinoo's main VIP plan (funnel_1, Ali Rashidabadi) — was 4,900,000, changed 2026-08-27

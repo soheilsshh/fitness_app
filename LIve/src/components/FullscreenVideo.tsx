@@ -192,7 +192,7 @@ const FullscreenVideo = ({ onClose, onVideoEnd, videoUrl }: FullscreenVideoProps
         <div className="absolute bottom-0 left-0 right-0 z-50 bg-gradient-to-t from-black/70 to-transparent p-2">
           <div className="flex items-center justify-between gap-3">
             <div className="fp-spine bg-black/30 px-3 py-1.5 text-white backdrop-blur-sm" style={{ borderInlineStartColor: 'rgba(168, 85, 247, 0.7)' }}>
-              <h3 className="font-bold text-sm mb-0.5">راز کسب درآمد دلاری با هوش مصنوعی</h3>
+              <h3 className="font-bold text-sm mb-0.5">وبینار زنده فیتینو</h3>
               <p className="text-gray-300 text-xs">توسط تیم متخصص Fitino Live</p>
             </div>
 

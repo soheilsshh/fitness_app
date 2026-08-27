@@ -37,8 +37,12 @@ func CompleteVideo(c *gin.Context) {
 		database.DB.Save(&progress)
 	}
 
-	// Send completion SMS based on video ID
+	// Send completion SMS based on video ID. Days 1-4 keep the dense
+	// 3h/15h follow-up cadence (highest drop-off window). Days 5-20 send
+	// nothing except three milestone days the content already treats as
+	// checkpoints (7/14/21) — see config.yaml's patterns: comment for why.
 	var patternKey string
+	sendSMS := true
 	switch videoID {
 	case 1:
 		patternKey = "complete1"
@@ -90,14 +94,31 @@ func CompleteVideo(c *gin.Context) {
 		database.CancelScheduledSMS(user.ID, "followup4_3h")
 		database.CancelScheduledSMS(user.ID, "followup4_15h")
 		// No more follow-ups needed for final step
+	case 7:
+		patternKey = "week1"
+	case 14:
+		patternKey = "midpoint"
+	case 21:
+		patternKey = "finish"
 	default:
-		patternKey = "complete1"
+		sendSMS = false
 	}
 
-	smsParams := map[string]string{
-		"name": user.FirstName,
+	if sendSMS {
+		smsParams := map[string]string{
+			"name": user.FirstName,
+		}
+		services.SendSMS(user.Phone, smsParams, patternKey)
 	}
-	services.SendSMS(user.Phone, smsParams, patternKey)
+
+	// Inactivity nudge: reschedule "winback" 48h out from this completion,
+	// canceling whatever was pending before. Fires once, only if nothing
+	// new gets completed before it's due, and reflects whichever day the
+	// user is actually stuck on at send time (see main.go's scheduler).
+	database.CancelScheduledSMS(user.ID, "winback")
+	if videoID < 21 {
+		database.ScheduleSMS(user.ID, "winback", time.Now().Add(48*time.Hour))
+	}
 
 	// Passing the session quiz unlocks the next day automatically (no end-of-video code).
 	nextID := videoID + 1

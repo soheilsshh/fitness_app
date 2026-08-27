@@ -258,7 +258,7 @@ func main() {
 
 	if webinar.ID == 0 { // If no webinar exists, create one
 		webinar = models.Webinar{
-			Title:           "وبینار ساخت سیستم پولسازی دلاری با هوش مصنوعی",
+			Title:           "وبینار زنده فیتینو",
 			StartTime:       startTime,
 			EndTime:         endTime,
 			VideoURL:        "video1.mp4",

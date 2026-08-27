@@ -30,6 +30,14 @@ patterns:
   complete2: "fitino-challenge-complete2"
   complete3: "fitino-challenge-complete3"
   complete4: "fitino-challenge-complete4"
+  # Days 5-20 send nothing (silence between milestones keeps the ones below
+  # feeling earned, and costs nothing for the ~17 days most users won't
+  # reach anyway). Only 3 milestone days + one inactivity nudge, covering
+  # the whole rest of the course with 4 templates instead of 17.
+  week1: "fitino-challenge-week1"       # day 7 completion
+  midpoint: "fitino-challenge-midpoint" # day 14 completion
+  finish: "fitino-challenge-finish"     # day 21 completion — the money message, links to purchase
+  winback: "fitino-challenge-winback"   # fires once after 48h with no new video completed, any day
 
 # Zarinpal — same merchant Fitinoo/Joftinoo already use in production.
 zarinpal:
@@ -37,7 +45,7 @@ zarinpal:
   sandbox: false
   callback_url: "https://challenge.rapexa.ir/api/payment/callback"
   frontend_url: "https://challenge.fitinoo.ir"
-  price: 990000  # placeholder — 990,000 Toman, change to the real price
+  price: 1490000  # matches Fitinoo's main VIP plan (funnel_1, Ali Rashidabadi) — same price everywhere on purpose
 
 # Values from main (kept for local/dev; not loaded). Previous port: 8081.
 # db: fitino_21day_user / change_me / fitino_21day

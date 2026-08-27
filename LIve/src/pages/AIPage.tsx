@@ -652,7 +652,7 @@ const AIPage = () => {
           phone: normalizedPhone,
           amount: (window as any).SUBSCRIPTION_PRICE || subscriptionPrice,
           type: 'subscription',
-          description: 'اشتراک مادام‌العمر MonetizeAI'
+          description: 'اشتراک مادام‌العمر فیتینو لایو'
         });
         
         if (response.success && response.payment_url) {
@@ -758,7 +758,7 @@ const AIPage = () => {
           phone: normalizedPhone,
           amount: (window as any).SUBSCRIPTION_PRICE || subscriptionPrice,
           type: 'subscription',
-          description: 'اشتراک مادام‌العمر MonetizeAI'
+          description: 'اشتراک مادام‌العمر فیتینو لایو'
         });
         
         if (response.success && response.payment_url) {
@@ -1111,7 +1111,7 @@ const AIPage = () => {
 <html lang="fa" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>MonetizeAI | سیستم درآمد دلاری با هوش مصنوعی</title>
+  <title>فیتینو لایو | وبینار زنده تناسب اندام</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;800;900&display=swap');
@@ -3451,111 +3451,79 @@ const AIPage = () => {
 <body>
   <div class="container">
     <div class="logo-ai">
-      <img src="/logo.JPG" alt="Monetize AI Logo" />
+      <img src="/logo.JPG" alt="Fitino Live Logo" />
     </div>
-    
+
     <h1>
-      <span class="brand-name">MonetizeAI</span>
-      <span class="subtitle">سیستم پولسازی خودکار با هوش مصنوعی</span>
+      <span class="brand-name">فیتینو لایو</span>
+      <span class="subtitle">مربیگری هوشمند برای تناسب اندام</span>
     </h1>
-    
+
     <div class="desc">
-      اولین هوش مصنوعی درآمدزایی با هوش مصنوعی
+      برنامه تمرین و تغذیه اختصاصی، با پایش هوش مصنوعی ۲۴ ساعته
     </div>
-    
+
     <div class="features-wrapper">
       <div class="features-list">
         <div class="feature-item" onclick="this.classList.toggle('active')">
           <div class="feature-header">
-            <div class="feature-text">⭐️ تیم هوش مصنوعی ۱۰ نفره (۲۴/۷)</div>
+            <div class="feature-text">⭐️ برنامه تمرین و تغذیه اختصاصی</div>
             <div class="arrow">▶</div>
           </div>
-          <div class="feature-description">همه کارهایی که باید خودت انجام بدی، از ایده تا فروش، توسط یک تیم هوشمند انجام میشه؛ انگار ده‌تا متخصص همیشه پشت‌صحنه دارن برای درآمد تو کار می‌کنن.</div>
+          <div class="feature-description">بر اساس بیومکانیک بدن و سفره‌ی ایرانی طراحی می‌شه، نه یه برنامه‌ی عمومی و کپی‌شده از اینترنت.</div>
         </div>
-        
+
         <div class="feature-item" onclick="this.classList.toggle('active')">
           <div class="feature-header">
-            <div class="feature-text">⚡️ ساخت سیستم پولسازی بدون مهارت</div>
+            <div class="feature-text">⚡️ پایش پیشرفت با هوش مصنوعی</div>
             <div class="arrow">▶</div>
           </div>
-          <div class="feature-description">فقط با موبایل، مرحله‌به‌مرحله جلو می‌ری و یه سیستم درآمدزایی واقعی می‌سازی… بدون اینکه لازم باشه چیزی بلد باشی.</div>
+          <div class="feature-description">هر روز مسیرت آنالیز می‌شه و برنامه بر اساس نتیجه‌ی واقعی تنظیم می‌شه؛ نه یه برنامه‌ی ثابت که هیچ‌وقت عوض نمی‌شه.</div>
         </div>
-        
+
         <div class="feature-item" onclick="this.classList.toggle('active')">
           <div class="feature-header">
-            <div class="feature-text">🔥 اتومات‌سازی کامل مسیر درآمد</div>
+            <div class="feature-text">🔥 گزارش آنالیز بدنی و پیش‌بینی ۱۲ هفته‌ای</div>
             <div class="arrow">▶</div>
           </div>
-          <div class="feature-description">تولید محتوا، پیدا کردن مشتری، فالوآپ، فروش… بخش زیادی از کار کاملاً خودکار انجام میشه. تو فقط نتیجه رو می‌گیری.</div>
+          <div class="feature-description">دقیقاً می‌بینی مسیرت به کجا می‌رسه، نه فقط حدس و امید.</div>
         </div>
-        
+
         <div class="feature-item" onclick="this.classList.toggle('active')">
           <div class="feature-header">
-            <div class="feature-text">🧠 آی ای کوچ شخصی سازی شده</div>
+            <div class="feature-text">🧠 پشتیبانی و رفع اشکال</div>
             <div class="arrow">▶</div>
           </div>
-          <div class="feature-description">هر سؤالی داشته باشی، هر مرحله‌ای گیر کنی، مربی هوشمند شخصی‌سازی‌شده راهکار آماده می‌ده؛ انگار خود سازنده ۲۴ ساعته همراهته.</div>
+          <div class="feature-description">هر سؤالی داشته باشی یا هر مرحله‌ای گیر کنی، از طریق تیکت پنل جواب می‌گیری؛ هیچ‌وقت تنها نمی‌مونی.</div>
         </div>
-        
+
         <div class="feature-item" onclick="this.classList.toggle('active')">
           <div class="feature-header">
-            <div class="feature-text">🎯 مسیر ۹ سطحی ساخت اولین درآمد واقعی</div>
+            <div class="feature-text">🎯 دسترسی کامل به اپلیکیشن و داشبورد</div>
             <div class="arrow">▶</div>
           </div>
-          <div class="feature-description">به‌جای ماه‌ها سردرگمی، مسیری داری که از صفر تا رسیدن به درآمد مشخص و تست‌شده‌ست؛ فقط طبق مراحل میری جلو و نتیجه می‌گیری.</div>
+          <div class="feature-description">تمام امکانات فیتینو، بدون محدودیت، در یک اشتراک — همیشه در دسترس.</div>
         </div>
       </div>
     </div>
-    
+
     <div class="pricebox">
-      <span class="price-old">۷.۵ میلیون</span>
-      <span class="price-value">۴,۹۰۰,۰۰۰ تومان</span>
+      <span class="price-old"></span>
+      <span class="price-value">۱,۴۹۰,۰۰۰ تومان</span>
       <div class="price-desc">
-        فقط با <b>۴,۹۰۰,۰۰۰ تومان</b> صاحب لایف‌تایم شو!
+        فقط با <b>۱,۴۹۰,۰۰۰ تومان</b> دسترسی کامل رو فعال کن!
       </div>
-      <div class="discount-badge">تخفیف ویژه فقط برای ۳۰۰ نفر اول</div>
+      <div class="discount-badge">دوره ۳ ماهه — تمرین، تغذیه و پایش هوشمند</div>
     </div>
   </div>
-  
+
   <!-- Payment Options Link -->
   <div class="payment-options-banner">
     <a href="#" class="payment-options-link" onclick="openPaymentOptionsModal(); return false;">
       💳 کارت به کارت و خرید قسطی
     </a>
   </div>
-  
-  <!-- Compare Section -->
-  <section class="compare-section">
-    <h2>⚔️ مقایسه قبل و بعد از مانتیاز</h2>
-    <div class="compare-table">
-      <div class="row header">
-        <div class="cell">قبل از مانتیاز</div>
-        <div class="cell">بعد از مانتیاز</div>
-      </div>
-      <div class="row">
-        <div class="cell">سردرگم، بی‌مسیر</div>
-        <div class="cell">مسیر دقیق و مرحله‌به‌مرحله</div>
-      </div>
-      <div class="row">
-        <div class="cell">شروع از صفر هر روز</div>
-        <div class="cell">سیستم خودکار همیشه روشن</div>
-      </div>
-      <div class="row">
-        <div class="cell">ایده‌های حدسی و نامطمئن</div>
-        <div class="cell">ایده‌های پولساز بر اساس داده واقعی</div>
-      </div>
-      <div class="row">
-        <div class="cell">تولید محتوا و فروش با شانس</div>
-        <div class="cell">محتوا و فروش هوشمند با AI</div>
-      </div>
-      <div class="row">
-        <div class="cell">ده تا ابزار، ده تا هزینه</div>
-        <div class="cell">همه‌چیز یک‌جا، یک سیستم واحد</div>
-      </div>
-    </div>
-    <p class="note">📌 این فقط یه آموزش نیست؛ این یه بازی جدیه که تهش پول درمیاری!</p>
-  </section>
-  
+
   <!-- Countdown Box -->
   <div class="countdownbox">
     <div class="countdown-title">⏰ فرصت ویژه فقط تا پایان تخفیف!</div>
@@ -3572,13 +3540,13 @@ const AIPage = () => {
     <h2>🧠 دقیقاً چی دریافت می‌کنی؟</h2>
     <div class="hint">روی هر کادر بزن تا بیشتر بدونی 😉</div>
     <div class="badge-grid">
-      <div class="badge" data-detail="کوچ هوشمند تو کل مسیر همراهته و بهت کمک میکنه کل مسیرو بسازی">🧠 کوچ هوشمند ۲۴/۷</div>
-      <div class="badge" data-detail="تنها نمی‌مونی؛ هرجا گیر کردی راهنمایی فوری داری.">🤝 پشتیبانی دائمی</div>
-      <div class="badge" data-detail="اسم، ساختار، مزیت؛ کل محصولت به‌صورت اتوماتیک ساخته می‌شه.">🛠 سرویس‌ساز خودکار</div>
-      <div class="badge" data-detail="نقشه دقیق از صفر تا درآمد؛ فقط اجرا می‌کنی.">🎯 مسیر ۲۹ مرحله‌ای</div>
-      <div class="badge" data-detail="کجا مشتری هست و چطور باید بهش بفروشی رو نشونت می‌ده.">🔍 مشتری‌یاب فوری</div>
-      <div class="badge" data-detail="یه سیستم کامل که جای تو محتوا، پیام، فالوآپ و فروش رو انجام می‌ده.">⚙️ فروش خودکار</div>
-      <div class="badge" data-detail="بدون اشتراک دلاری؛ همیشه فعال و نامحدود.">🔑 چت‌جی‌پی‌تی پلاس داخلی</div>
+      <div class="badge" data-detail="پیشرفتت هر روز آنالیز می‌شه و برنامه بر اساس نتیجه‌ی واقعی تنظیم می‌شه.">🧠 پایش هوشمند ۲۴/۷</div>
+      <div class="badge" data-detail="تنها نمی‌مونی؛ هر سؤالی داشته باشی از تیکت پنل جواب می‌گیری.">🤝 پشتیبانی دائمی</div>
+      <div class="badge" data-detail="بر اساس سفره‌ی ایرانی و هدف خودت طراحی می‌شه، نه یه رژیم عمومی.">🍽 برنامه غذایی اختصاصی</div>
+      <div class="badge" data-detail="بر اساس بیومکانیک بدنت، نه یه برنامه‌ی کپی‌شده از اینترنت.">🏋️ برنامه تمرینی اصولی</div>
+      <div class="badge" data-detail="پیش‌بینی روند ۱۲ هفته‌ای؛ دقیقاً می‌دونی کجای مسیری.">📊 گزارش آنالیز بدنی</div>
+      <div class="badge" data-detail="تمام امکانات داشبورد فیتینو، همیشه در دسترس.">📱 دسترسی کامل اپلیکیشن</div>
+      <div class="badge" data-detail="یک‌بار پرداخت، دسترسی همیشگی؛ بدون هزینه پنهان یا تمدید ماهانه.">🔑 اشتراک دائمی</div>
     </div>
     <div id="feature-detail-popup" class="popup"></div>
   </section>
@@ -3588,108 +3556,46 @@ const AIPage = () => {
     <div class="faq-title">سوالات پرتکرار</div>
     
     <div class="faq-item">
-      <input type="checkbox" id="faq1"><label for="faq1">واقعاً می‌تونم با این سیستم پول دربیارم؟</label>
-      <div class="faq-body">بله. مانیتایز‌اِی‌آی آموزش تئوری نیست؛ یه سیستم عملیه که از انتخاب ایده تا ساخت سرویس، تولید محتوا و جذب مشتری رو اتوماتیک برات انجام می‌ده.</div>
+      <input type="checkbox" id="faq1"><label for="faq1">واقعاً این برنامه برام نتیجه می‌ده؟</label>
+      <div class="faq-body">بله. برنامه‌ات بر اساس بدن و هدف خودت طراحی می‌شه و هوش مصنوعی هر روز مسیرت رو پایش می‌کنه — نه یه برنامه‌ی عمومی و ثابت.</div>
     </div>
-    
+
     <div class="faq-item">
-      <input type="checkbox" id="faq2"><label for="faq2">من مهارتی ندارم؛ بازم می‌تونم؟</label>
-      <div class="faq-body">کاملاً. هدف مانیتایز ای آی همینه که کل اتفاقات به دست هوش مصنوعی انجام بشه شما فقط قدم به قدم بر اساس مراحل میری جلو</div>
+      <input type="checkbox" id="faq2"><label for="faq2">هیچ تجربه‌ای تو ورزش ندارم؛ بازم می‌تونم؟</label>
+      <div class="faq-body">کاملاً. برنامه از همون سطحی که هستی شروع می‌شه و قدم‌به‌قدم جلو می‌ری، فرقی نمی‌کنه مبتدی باشی یا حرفه‌ای.</div>
     </div>
-    
+
     <div class="faq-item">
-      <input type="checkbox" id="faq3"><label for="faq3">هزینه‌ی ماهانه یا اشتراک دلاری داره؟</label>
-      <div class="faq-body">نه. اشتراک مانیتایز‌اِی‌آی مادام‌العمره و همه ابزارها + کوچ هوشمند + مسیر ۲۹ مرحله‌ای با یک پرداخت فعال می‌شه. هیچ هزینه پنهان یا اشتراک دلاری نداره.</div>
+      <input type="checkbox" id="faq3"><label for="faq3">هزینه‌ی ماهانه یا تمدید داره؟</label>
+      <div class="faq-body">نه. اشتراک فیتینو لایو مادام‌العمره و همه‌ی امکانات با یک پرداخت فعال می‌شه. هیچ هزینه پنهان یا تمدید ماهانه‌ای نداره.</div>
     </div>
-    
+
     <div class="faq-item">
-      <input type="checkbox" id="faq4"><label for="faq4">فالوئر کم دارم؛ چطور مشتری پیدا کنم؟</label>
-      <div class="faq-body">نیازی به فالوئر نیست. ابزار مشتری‌یاب فوری در مانیتایز‌اِی‌آی نشون می‌ده مشتری واقعی کجاست و چطور باید بهش برسی. فروش از فالوئر نیست؛ از نیاز بازاره.</div>
+      <input type="checkbox" id="faq4"><label for="faq4">برنامه‌ی غذایی هم داره یا فقط تمرینه؟</label>
+      <div class="faq-body">هر دو. برنامه‌ی تمرین و تغذیه با هم و بر اساس سفره‌ی ایرانی طراحی می‌شن، نه یه رژیم جدا از زندگی واقعیت.</div>
     </div>
-    
+
     <div class="faq-item">
-      <input type="checkbox" id="faq5"><label for="faq5">من بلد نیستم محتوا بسازم؛ چی کار کنم؟</label>
-      <div class="faq-body">نگران نباش. مانیتایز‌اِی‌آی خودش محتوا تولید می‌کنه: سناریو، ایده، کپشن، ساخت ویدیو، و حتی وایرال‌سازی تو همه اینا بهت کمک میکنه. تو فقط کافی‌یه اجرا کنی.</div>
+      <input type="checkbox" id="faq5"><label for="faq5">اگه وسط مسیر گیر کنم؟ پشتیبانی دارم؟</label>
+      <div class="faq-body">بله. هر سؤالی داشته باشی یا هر جا گیر کنی، از طریق تیکت پنل جواب می‌گیری. هیچ‌وقت تنها نمی‌مونی.</div>
     </div>
-    
+
     <div class="faq-item">
-      <input type="checkbox" id="faq6"><label for="faq6">اگه وسط مسیر گیر کنم؟ پشتیبانی دارم؟</label>
-      <div class="faq-body">بله. کوچ هوشمند ۲۴/۷ همیشه همراهته و هرجا گیر کردی راه رو نشون می‌ده. علاوه بر اون، پشتیبانی انسانی هم داری. هیچ‌وقت تنها نمی‌مونی.</div>
+      <input type="checkbox" id="faq6"><label for="faq6">چقدر طول می‌کشه نتیجه بگیرم؟</label>
+      <div class="faq-body">بستگی به هدف و پیگیریت داره، ولی گزارش پیش‌بینی ۱۲ هفته‌ای از همون ابتدا نشونت می‌ده مسیرت به کجا می‌رسه.</div>
     </div>
-    
+
     <div class="faq-item">
-      <input type="checkbox" id="faq7"><label for="faq7">چند روز طول می‌کشه به درآمد برسم؟</label>
-      <div class="faq-body">به اجرای تو بستگی داره، ولی کاربران معمولاً بین ۲۰ تا ۴۵ روز اولین فروششون رو می‌زنن. مسیر طوری طراحی شده که سریع‌ترین نتیجه ممکن رو بده.</div>
+      <input type="checkbox" id="faq7"><label for="faq7">فرق این با یه برنامه‌ی آماده‌ی اینترنتیه؟</label>
+      <div class="faq-body">برنامه‌ی آماده برای بدن و هدف تو طراحی نشده. اینجا برنامه‌ات اختصاصیه، پایش هوشمند داره، و گزارش واقعی از پیشرفتت می‌گیری.</div>
     </div>
-    
+
     <div class="faq-item">
-      <input type="checkbox" id="faq8"><label for="faq8">فرق این پلتفرم با دوره‌های هوش مصنوعی چیه؟</label>
-      <div class="faq-body">این دوره نیست. این یه سیستم کامل پولسازیه: ابزار داره، کوچ داره، مسیر داره، اتوماسیون داره، محتوا می‌سازه، سرویس می‌سازه، فروش می‌کنه. جایی که بقیه فقط «یاد می‌دن»، مانیتایز‌اِی‌آی «می‌سازه» و «اجرا می‌کنه».</div>
+      <input type="checkbox" id="faq8"><label for="faq8">پشتیبانیش انسانیه یا فقط هوش مصنوعیه؟</label>
+      <div class="faq-body">هر دو. هوش مصنوعی ۲۴ ساعته پایشت می‌کنه، و برای هر سؤال یا گیر کردنی هم از تیکت پنل پشتیبانی انسانی می‌گیری.</div>
     </div>
   </div>
-  
-  <!-- Mockup Box with Carousel -->
-  <div class="mockupbox">
-    <div class="mockup-title">داخل MonetizeAI چه شکلیه؟</div>
-    
-    <div class="carousel-container">
-      <div class="carousel-wrapper">
-        <div class="carousel-slide active">
-          <img src="/ابزار های هوشمند.png" alt="ابزارهای هوشمند">
-          <div class="slide-caption">ابزارهای هوشمند</div>
-        </div>
-        <div class="carousel-slide">
-          <img src="/داشبورد.png" alt="داشبورد">
-          <div class="slide-caption">داشبورد</div>
-        </div>
-        <div class="carousel-slide">
-          <img src="/دستیار هوش مصنوعی.png" alt="دستیار هوش مصنوعی">
-          <div class="slide-caption">دستیار هوش مصنوعی</div>
-        </div>
-        <div class="carousel-slide">
-          <img src="/دوره های ویژه.png" alt="دوره های ویژه">
-          <div class="slide-caption">دوره های ویژه</div>
-        </div>
-        <div class="carousel-slide">
-          <img src="/مراحل قدم به قدم.png" alt="مراحل قدم به قدم">
-          <div class="slide-caption">مراحل قدم به قدم</div>
-        </div>
-        <div class="carousel-slide">
-          <img src="/پروفایل و پشتیبانی ۲۴ ساعته.png" alt="پروفایل و پشتیبانی ۲۴ ساعته">
-          <div class="slide-caption">پروفایل و پشتیبانی ۲۴ ساعته</div>
-        </div>
-      </div>
-      
-      <button class="carousel-btn prev" onclick="changeSlide(-1)">❮</button>
-      <button class="carousel-btn next" onclick="changeSlide(1)">❯</button>
-      
-      <div class="carousel-dots">
-        <span class="dot active" onclick="currentSlide(1)"></span>
-        <span class="dot" onclick="currentSlide(2)"></span>
-        <span class="dot" onclick="currentSlide(3)"></span>
-        <span class="dot" onclick="currentSlide(4)"></span>
-        <span class="dot" onclick="currentSlide(5)"></span>
-        <span class="dot" onclick="currentSlide(6)"></span>
-      </div>
-    </div>
-    
-    <div class="mockup-caption">
-      محیط واقعی MonetizeAI؛ حس پیشرفت مثل بازی و راحتی استفاده!
-    </div>
-  </div>
-  
-  <!-- Video Reviews Section -->
-  <div class="video-reviews-section">
-    <div class="video-reviews-title">نظرات افراد راجع به پلتفرم و حسین عباسیان</div>
-    
-    <div class="video-container">
-      <video controls preload="metadata" playsinline>
-        <source src="/+ویدئو رضایت.mp4" type="video/mp4">
-        مرورگر شما از پخش ویدیو پشتیبانی نمی‌کند.
-      </video>
-    </div>
-  </div>
-  
+
   <!-- Footer -->
   <footer class="mainfooter">
     <div class="footer-row">

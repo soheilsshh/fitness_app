@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import ThankYou from "./pages/ThankYou";
 import Videos from "./pages/Videos";
+import Upgrade from "./pages/Upgrade";
 import NotFound from "./pages/NotFound";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
@@ -26,6 +27,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/register/thank-you" element={<ThankYou />} />
             <Route path="/videos" element={<Videos />} />
+            <Route path="/upgrade" element={<Upgrade />} />
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/payment/success" element={<PaymentSuccess />} />
