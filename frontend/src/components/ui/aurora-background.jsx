@@ -87,16 +87,16 @@ const AuroraBackground = ({
           />
         </motion.div>
 
-        {/* Twinkling stars */}
+        {/* Twinkling stars — use % of parent, never vw/vh (causes page horizontal scroll) */}
         {Array.from({ length: starCount }).map((_, i) => (
           <motion.div
             key={i}
-            className="absolute w-0.5 h-0.5 bg-white rounded-full"
-            initial={{
-              x: `${Math.random() * 100}vw`,
-              y: `${Math.random() * 100}vh`,
-              opacity: 0,
+            className="absolute h-0.5 w-0.5 rounded-full bg-white"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
             }}
+            initial={{ opacity: 0 }}
             animate={{
               opacity: [0, Math.random() * 0.8, 0],
             }}

@@ -46,10 +46,11 @@ const EMPTY_JALALI = { year: "", month: "", day: "" };
 const MEDICAL_NONE = "ندارم";
 
 const GOAL_OPTIONS = [
+  { value: "weight_loss", label: "کاهش وزن" },
   { value: "muscle_gain", label: "افزایش حجم عضلانی" },
-  { value: "weight_loss", label: "کاهش وزن و چربی‌سوزی" },
   { value: "fitness", label: "آمادگی عمومی" },
   { value: "endurance", label: "استقامت" },
+  { value: "flexibility", label: "انعطاف‌پذیری" },
   { value: "rehabilitation", label: "بازگشت به تمرین" },
 ];
 
@@ -140,9 +141,18 @@ function mapMeToProfile(data) {
     if (p?.type) photoMap[p.type] = p;
   }
   const goals = Array.isArray(data.goals) ? data.goals : [];
-  const matched = GOAL_OPTIONS.find(
-    (g) => goals.includes(g.value) || g.label === data.primaryGoal
-  );
+  const allowed = new Set(GOAL_OPTIONS.map((g) => g.value));
+  const selectedGoals = goals.filter((g) => allowed.has(g));
+  if (!selectedGoals.length && data.primaryGoal) {
+    for (const g of GOAL_OPTIONS) {
+      if (
+        data.primaryGoal === g.label ||
+        String(data.primaryGoal).includes(g.label)
+      ) {
+        selectedGoals.push(g.value);
+      }
+    }
+  }
   const avatarRaw = data.avatarUrl || data.avatar || "";
   return {
     firstName: data.firstName || "",
@@ -161,8 +171,8 @@ function mapMeToProfile(data) {
     targetWeightKg: data.targetWeightKg ?? "",
     bodyCondition: data.bodyCondition || "",
     bodyFatPercent: data.bodyFatPercent ?? "",
-    goals,
-    primaryGoal: matched?.value || goals[0] || "",
+    goals: selectedGoals,
+    primaryGoal: selectedGoals[0] || "",
     medicalHistory: data.medicalHistory || "",
     injuries: data.injuries || "",
     physicalLimitations: data.physicalLimitations || "",
@@ -409,12 +419,19 @@ export default function ProfileClient() {
       if (result.value !== undefined) payload[key] = result.value;
     }
     if (draft.bodyCondition) payload.bodyCondition = draft.bodyCondition;
-    if (draft.primaryGoal || (draft.goals || []).length) {
-      const tag = draft.primaryGoal || draft.goals[0];
-      const label =
-        GOAL_OPTIONS.find((g) => g.value === tag)?.label || draft.primaryGoal;
-      payload.goals = [tag];
-      payload.primaryGoal = label;
+    if ((draft.goals || []).length) {
+      const selected = draft.goals.filter((g) =>
+        GOAL_OPTIONS.some((opt) => opt.value === g),
+      );
+      if (!selected.length) {
+        setToast({ type: "error", text: "حداقل یک هدف را انتخاب کنید." });
+        return;
+      }
+      const labels = selected.map(
+        (tag) => GOAL_OPTIONS.find((g) => g.value === tag)?.label || tag,
+      );
+      payload.goals = selected;
+      payload.primaryGoal = labels.join("، ");
     }
 
     setSavingSection("body");
@@ -874,23 +891,37 @@ export default function ProfileClient() {
             </div>
 
             <div className="space-y-2">
-              <Label>هدف اصلی شما در فیتینو</Label>
+              <Label>اهداف شما در فیتینو</Label>
+              <p className="text-xs text-muted-foreground">
+                می‌توانید چند مورد را هم‌زمان انتخاب کنید.
+              </p>
               <div className="flex flex-wrap gap-2">
-                {GOAL_OPTIONS.map((g) => (
-                  <PillOption
-                    key={g.value}
-                    selected={draft.primaryGoal === g.value}
-                    onClick={() =>
-                      setDraft((prev) => ({
-                        ...prev,
-                        primaryGoal: g.value,
-                        goals: [g.value],
-                      }))
-                    }
-                  >
-                    {g.label}
-                  </PillOption>
-                ))}
+                {GOAL_OPTIONS.map((g) => {
+                  const selected = (draft.goals || []).includes(g.value);
+                  return (
+                    <PillOption
+                      key={g.value}
+                      selected={selected}
+                      onClick={() =>
+                        setDraft((prev) => {
+                          const current = Array.isArray(prev.goals)
+                            ? prev.goals
+                            : [];
+                          const next = selected
+                            ? current.filter((v) => v !== g.value)
+                            : [...current, g.value];
+                          return {
+                            ...prev,
+                            goals: next,
+                            primaryGoal: next[0] || "",
+                          };
+                        })
+                      }
+                    >
+                      {g.label}
+                    </PillOption>
+                  );
+                })}
               </div>
             </div>
 

@@ -147,9 +147,9 @@ export const userNavGroups = [
       },
       {
         href: "/user/community",
-        label: "فید و رویدادها",
+        label: "اجتماع",
         icon: Users,
-        description: "پست‌ها، لایک، کامنت و رویدادهای فیتینو",
+        description: "پست‌ها، لایک و کامنت",
       },
       {
         href: "/user/sessions",

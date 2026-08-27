@@ -11,9 +11,9 @@ import { toastError, toastSuccess } from "@/app/(site)/auth/_components/helpers"
 import { getAuthSession } from "@/lib/auth/session";
 import { getCoachPublicPath } from "@/lib/routes/coach-public";
 import BorderGlow from "@/components/ui/BorderGlow";
-import ContainerTextFlip from "@/components/ui/ContainerTextFlip";
+import ContainerTextFlip, { limitPhraseWords } from "@/components/ui/ContainerTextFlip";
 import AuroraBackground from "@/components/ui/aurora-background";
-import BlurTextAnimation from "@/components/ui/blur-text-animation";
+import CoachAboutPanel from "./CoachAboutPanel";
 import { useRouter } from "next/navigation";
 
 const HERO_PIXEL_COLORS = ["#34d399", "#6ee7b7", "#a7f3d0", "#ecfdf5", "#ffffff"];
@@ -34,6 +34,7 @@ export default function CoachLandingClient({ slug, initialCoach = null, initialP
   const [loadError, setLoadError] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
   const [assignedCoach, setAssignedCoach] = useState(null);
+  const [aboutOpen, setAboutOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -138,38 +139,40 @@ export default function CoachLandingClient({ slug, initialCoach = null, initialP
   const avatar = apiAssetUrl(coach.avatarUrl);
   // Big hero portrait uses the cover image (fallback to avatar).
   const portrait = cover || avatar;
-  const aboutLines = (coach.aboutCoach || coach.bio || "")
-    .split(/\r?\n/)
-    .map((s) => s.replace(/^[•\-•]\s*/, "").trim())
-    .filter(Boolean);
   const plansExist = plans.length > 0;
   const minPrice = plansExist
     ? Math.min(...plans.map((p) => (p.discountPrice > 0 ? p.discountPrice : p.price)))
     : 0;
   const showHeroCta = plansExist && canPurchase;
   const specialtyParts = (coach.specialty || "")
-    .split(/[،,]/)
+    .split(/[،,\n|/]+/)
     .map((s) => s.trim())
     .filter(Boolean);
+
+  const openAbout = (e) => {
+    e?.preventDefault?.();
+    setAboutOpen(true);
+  };
 
   const socialLinks = coach.social?.phone ? (
     <a
       href={`tel:${coach.social.phone}`}
       aria-label={`تماس: ${coach.social.phone}`}
       dir="rtl"
-      className="inline-flex h-11 items-center gap-2 rounded-xl bg-zinc-800/60 px-3.5 text-sm font-medium text-white ring-1 ring-white/15 backdrop-blur transition-colors hover:bg-zinc-700/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+      className="inline-flex h-11 max-w-full items-center gap-2 rounded-xl bg-zinc-800/60 px-3.5 text-sm font-medium text-white ring-1 ring-white/15 backdrop-blur transition-colors hover:bg-zinc-700/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
     >
-      <FiPhone /> {coach.social.phone}
+      <FiPhone className="shrink-0" />
+      <span className="min-w-0 truncate" dir="ltr">{coach.social.phone}</span>
     </a>
   ) : null;
 
   return (
-    <div className="pb-28 md:pb-16">
+    <div className="w-full overflow-x-hidden pb-28 md:pb-16">
       {/* HERO — split: big portrait (left) + green info panel (right) */}
-      <section className="mx-auto max-w-6xl px-4 pt-6 md:pt-10">
-        <div className="grid overflow-hidden rounded-[28px] shadow-2xl ring-1 ring-white/10 md:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+      <section className="relative z-10 mx-auto w-full max-w-6xl px-3 pt-6 sm:px-4 md:pt-10">
+        <div className="grid min-w-0 overflow-hidden rounded-[22px] shadow-2xl ring-1 ring-white/10 sm:rounded-[28px] md:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
           {/* Portrait — left column in RTL */}
-          <div className="relative min-h-[340px] bg-zinc-900 md:min-h-[540px]">
+          <div className="relative min-h-[280px] min-w-0 bg-zinc-900 sm:min-h-[340px] md:min-h-[540px]">
             {portrait ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -177,7 +180,7 @@ export default function CoachLandingClient({ slug, initialCoach = null, initialP
                 alt={`عکس ${coach.displayName}`}
                 loading="eager"
                 decoding="async"
-                className="absolute inset-0 h-full w-full object-fill"
+                className="absolute inset-0 h-full w-full object-cover"
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center text-7xl font-bold text-teal-300">
@@ -187,112 +190,73 @@ export default function CoachLandingClient({ slug, initialCoach = null, initialP
           </div>
 
           {/* Info panel — right column in RTL */}
-          <AuroraBackground>
-            <div className="relative z-10 flex h-full w-full flex-col justify-center gap-5 p-7 text-right md:p-10">
-              <div className="relative">
-              <h1 className="text-3xl font-extrabold tracking-tight text-white md:text-5xl">
+          <AuroraBackground className="min-w-0">
+            <div className="relative z-10 flex h-full w-full min-w-0 flex-col justify-center gap-4 p-5 pb-8 text-right sm:gap-5 sm:p-7 md:p-10">
+              <div className="relative min-w-0">
+              <h1 className="break-words text-2xl font-extrabold tracking-tight text-white sm:text-3xl md:text-5xl">
                 {coach.displayName}
               </h1>
               {coach.title && (
-                <p className="mt-2 text-base font-semibold text-amber-100/90 md:text-lg">
+                <p className="mt-2 break-words text-sm font-semibold text-amber-100/90 sm:text-base md:text-lg">
                   {coach.title}
                 </p>
               )}
             </div>
 
             {specialtyParts.length > 1 ? (
-              <div className="relative flex justify-start">
-                <ContainerTextFlip words={specialtyParts} />
+              <div className="relative flex w-full max-w-full justify-start">
+                <ContainerTextFlip words={specialtyParts} maxWords={15} />
               </div>
             ) : coach.specialty ? (
-              <p className="relative text-sm leading-7 text-amber-100/90">{coach.specialty}</p>
+              <p className="relative break-words text-sm leading-7 text-amber-100/90">
+                {limitPhraseWords(specialtyParts[0] || coach.specialty, 15)}
+              </p>
             ) : null}
 
-            {aboutLines.length > 0 && (
-              <div className="relative">
-                <h2 className="mb-3 text-lg font-bold text-white md:text-xl">سوابق حرفه‌ای</h2>
-                <ul className="space-y-2">
-                  {aboutLines.map((line, i) => (
-                    <li
-                      key={i}
-                      className="flex items-start justify-start gap-2 text-sm leading-7 text-zinc-300 md:text-base"
-                    >
-                      <span className="mt-2 inline-block h-1.5 w-1.5 flex-shrink-0 rounded-full bg-amber-500" />
-                      <span>{line}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            <div className="relative flex max-w-full flex-wrap items-center justify-start gap-2">{socialLinks}</div>
 
-            <div className="relative flex flex-wrap items-center justify-start gap-2">{socialLinks}</div>
-
-            <a
-              href="#about"
+            <button
+              type="button"
+              onClick={openAbout}
               dir="rtl"
-              className="relative self-start inline-flex items-center justify-center gap-2 rounded-2xl bg-zinc-800/65 px-6 py-3.5 text-base font-bold text-white ring-1 ring-white/25 backdrop-blur transition-colors hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+              className="relative z-20 inline-flex max-w-full cursor-pointer items-center justify-center gap-2 self-start rounded-2xl bg-zinc-800/65 px-4 py-3 text-sm font-bold text-white ring-1 ring-white/25 backdrop-blur transition-colors duration-200 hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 sm:px-6 sm:py-3.5 sm:text-base"
             >
-              <FiChevronDown className="text-lg" />
-              آشنایی بیشتر با مربی
-            </a>
+              <FiChevronDown className="shrink-0 text-lg" />
+              <span className="min-w-0">آشنایی بیشتر با مربی</span>
+            </button>
             </div>
           </AuroraBackground>
         </div>
       </section>
 
-      {/* VALUE / PROOF STRIP */}
+      {/* VALUE / PROOF STRIP — no negative margin so it never covers hero CTA */}
       {plansExist && (
-        <div className="mx-auto -mt-10 max-w-3xl px-4">
-          <div className="grid grid-cols-3 gap-2 rounded-3xl border border-white/10 bg-white/5 p-4 text-center backdrop-blur md:gap-4 md:p-6">
-            <div>
-              <p className="text-xl font-extrabold text-white md:text-2xl">{plans.length}</p>
-              <p className="mt-1 text-xs text-zinc-400 md:text-sm">پلن آماده</p>
+        <div className="relative z-0 mx-auto mt-6 w-full max-w-3xl px-3 sm:mt-8 sm:px-4">
+          <div className="grid grid-cols-3 gap-1.5 rounded-2xl border border-white/10 bg-white/5 p-3 text-center backdrop-blur sm:gap-4 sm:rounded-3xl sm:p-4 md:p-6">
+            <div className="min-w-0">
+              <p className="text-base font-extrabold text-white sm:text-xl md:text-2xl">{plans.length}</p>
+              <p className="mt-1 text-[10px] leading-tight text-zinc-400 sm:text-xs md:text-sm">پلن آماده</p>
             </div>
-            <div className="border-x border-white/10">
-              <p className="text-xl font-extrabold text-teal-300 md:text-2xl">
+            <div className="min-w-0 border-x border-white/10 px-1">
+              <p className="break-all text-sm font-extrabold tabular-nums text-teal-300 sm:text-xl md:text-2xl">
                 {new Intl.NumberFormat("fa-IR").format(minPrice)}
               </p>
-              <p className="mt-1 text-xs text-zinc-400 md:text-sm">شروع از (تومان)</p>
+              <p className="mt-1 text-[10px] leading-tight text-zinc-400 sm:text-xs md:text-sm">شروع از (تومان)</p>
             </div>
-            <div>
-              <p className="text-xl font-extrabold text-white md:text-2xl">۱۰۰٪</p>
-              <p className="mt-1 text-xs text-zinc-400 md:text-sm">اختصاصی</p>
+            <div className="min-w-0">
+              <p className="text-base font-extrabold text-white sm:text-xl md:text-2xl">۱۰۰٪</p>
+              <p className="mt-1 text-[10px] leading-tight text-zinc-400 sm:text-xs md:text-sm">اختصاصی</p>
             </div>
           </div>
         </div>
       )}
 
-      <div className="mx-auto mt-10 max-w-5xl px-4">
-        {(coach.bio || coach.aboutCoach) && (
-          <section id="about" className="scroll-mt-20 space-y-4 rounded-[26px] border border-white/10 bg-white/5 p-6">
-            {coach.bio && (
-              <BlurTextAnimation
-                text={coach.bio}
-                textColor="text-zinc-200"
-                fontSize="text-sm"
-                className="leading-7"
-              />
-            )}
-            {coach.aboutCoach && (
-              <div>
-                <h2 className="mb-2 text-lg font-bold text-white">
-                  <BlurTextAnimation
-                    text="درباره مربی"
-                    textColor="text-white"
-                    fontSize="text-lg"
-                    className="font-bold"
-                  />
-                </h2>
-                <BlurTextAnimation
-                  text={coach.aboutCoach}
-                  textColor="text-zinc-300"
-                  fontSize="text-sm"
-                  className="leading-7 whitespace-pre-line mt-2"
-                />
-              </div>
-            )}
-          </section>
-        )}
+      <div className="mx-auto mt-10 w-full max-w-5xl overflow-x-clip px-3 sm:px-4">
+        <CoachAboutPanel
+          coach={coach}
+          open={aboutOpen}
+          onOpenChange={setAboutOpen}
+        />
 
         <section id="plans" className="mt-10 scroll-mt-20">
           <div className="mb-4">
@@ -321,7 +285,7 @@ export default function CoachLandingClient({ slug, initialCoach = null, initialP
               فعلاً پلن فعالی برای خرید ثبت نشده است. مربی می‌تواند از پنل، پلن‌های فروش را فعال کند.
             </div>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 md:gap-6">
+            <div className="grid gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-3">
               {plans.map((plan) => {
                 const price =
                   plan.discountPrice > 0 ? plan.discountPrice : plan.price;
@@ -335,11 +299,11 @@ export default function CoachLandingClient({ slug, initialCoach = null, initialP
                 );
                 const popular = !!plan.isPopular;
                 return (
+                  <div key={plan.id} className="min-w-0 overflow-hidden rounded-[26px]">
                   <BorderGlow
-                    key={plan.id}
-                    className="h-full"
+                    className="h-full max-w-full"
                     borderRadius={26}
-                    glowRadius={popular ? 44 : 30}
+                    glowRadius={popular ? 28 : 20}
                     edgeSensitivity={popular ? 22 : 30}
                     coneSpread={25}
                     backgroundColor="#09090b"
@@ -351,33 +315,33 @@ export default function CoachLandingClient({ slug, initialCoach = null, initialP
                         : ["#34d399", "#22d3ee", "#a1a1aa"]
                     }
                   >
-                    <div className="flex h-full w-full flex-col p-2">
+                    <div className="flex h-full w-full min-w-0 flex-col p-2">
                     {/* header */}
                     <div
                       className={[
-                        "rounded-[18px] px-6 py-8",
+                        "rounded-[18px] px-4 py-6 sm:px-6 sm:py-8",
                         popular
                           ? "bg-zinc-900 ring-1 ring-teal-400/20 shadow-[0_8px_24px_-6px_rgba(38,252,227,0.25)]"
                           : "bg-zinc-950 ring-1 ring-white/5 shadow-[0_8px_8px_-3px_rgba(0,0,0,0.4)]",
                       ].join(" ")}
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <p className="text-xl font-bold text-white md:text-2xl">{plan.title}</p>
+                        <p className="min-w-0 break-words text-lg font-bold text-white sm:text-xl md:text-2xl">{plan.title}</p>
                         {popular && (
-                          <span className="rounded-full bg-teal-500/20 px-2.5 py-1 text-xs font-bold text-teal-300">
+                          <span className="shrink-0 rounded-full bg-teal-500/20 px-2.5 py-1 text-xs font-bold text-teal-300">
                             محبوب‌ترین
                           </span>
                         )}
                       </div>
                       {plan.subtitle && (
-                        <p className="mt-2 text-sm leading-6 text-zinc-400">{plan.subtitle}</p>
+                        <p className="mt-2 break-words text-sm leading-6 text-zinc-400">{plan.subtitle}</p>
                       )}
                     </div>
 
                     {/* body */}
-                    <div className="mt-2 p-6">
+                    <div className="mt-2 min-w-0 p-4 sm:p-6">
                       <div className="flex flex-wrap items-end gap-x-2 gap-y-1">
-                        <span className="text-4xl font-extrabold tracking-tight text-white lg:text-5xl">
+                        <span className="break-all text-2xl font-extrabold tracking-tight text-white tabular-nums sm:text-4xl lg:text-5xl">
                           {new Intl.NumberFormat("fa-IR").format(price)}
                         </span>
                         <span className={["text-sm", popular ? "text-teal-50/90" : "text-zinc-400"].join(" ")}>تومان</span>
@@ -495,7 +459,7 @@ export default function CoachLandingClient({ slug, initialCoach = null, initialP
                                   />
                                 </span>
                                 <p className={[
-                                  "text-sm font-medium leading-6",
+                                  "min-w-0 break-words text-sm font-medium leading-6",
                                   popular ? "text-zinc-100" : "text-zinc-300",
                                 ].join(" ")}>
                                   {feature}
@@ -508,6 +472,7 @@ export default function CoachLandingClient({ slug, initialCoach = null, initialP
                     </div>
                     </div>
                   </BorderGlow>
+                  </div>
                 );
               })}
             </div>
@@ -517,13 +482,15 @@ export default function CoachLandingClient({ slug, initialCoach = null, initialP
 
       {/* STICKY MOBILE CTA */}
       {showHeroCta && (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-zinc-950/90 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur md:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-zinc-950/90 px-3 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur sm:px-4 md:hidden">
           <a
             href="#plans"
-            className="flex w-full items-center justify-center rounded-2xl bg-white px-4 py-3 text-sm font-extrabold text-zinc-950 transition-colors hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400"
+            className="flex w-full max-w-full flex-wrap items-center justify-center gap-x-1 rounded-2xl bg-white px-3 py-3 text-center text-sm font-extrabold leading-snug text-zinc-950 transition-colors hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400"
           >
-            مشاهده پلن‌ها و خرید برنامه · از{" "}
-            {new Intl.NumberFormat("fa-IR").format(minPrice)} تومان
+            <span>مشاهده پلن‌ها و خرید برنامه</span>
+            <span className="tabular-nums">
+              · از {new Intl.NumberFormat("fa-IR").format(minPrice)} تومان
+            </span>
           </a>
         </div>
       )}

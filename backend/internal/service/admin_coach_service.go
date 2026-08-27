@@ -162,7 +162,7 @@ func (s *adminCoachService) GetCoachByID(ctx context.Context, coachUserID uint) 
 		Telegram:       profile.Telegram,
 		WhatsApp:       profile.WhatsApp,
 		Website:        profile.Website,
-		PublicURL:      "/coach/" + profile.Slug,
+		PublicURL:      "/" + profile.Slug,
 		Achievements:   achievementDTOs,
 	}, nil
 }

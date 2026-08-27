@@ -42,7 +42,7 @@ import { cn } from "@/lib/utils";
 
 const STEPS = [
   { id: "name", label: "نام شما", icon: User },
-  { id: "goal", label: "هدف اصلی", icon: Target },
+  { id: "goal", label: "اهداف", icon: Target },
   { id: "photos", label: "عکس بدن (اختیاری)", icon: ImageIcon },
 ];
 
@@ -86,7 +86,7 @@ export default function OnboardingClient() {
   const [step, setStep] = useState(0);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [primaryGoal, setPrimaryGoal] = useState("");
+  const [goals, setGoals] = useState([]);
   const [photos, setPhotos] = useState({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -106,11 +106,20 @@ export default function OnboardingClient() {
         }
         setFirstName(data.firstName || "");
         setLastName(data.lastName || "");
-        const goalFromTags = Array.isArray(data.goals) ? data.goals[0] : "";
-        const matched = GOAL_OPTIONS.find(
-          (g) => g.value === goalFromTags || g.label === data.primaryGoal
-        );
-        setPrimaryGoal(matched?.value || goalFromTags || "");
+        const allowed = new Set(GOAL_OPTIONS.map((g) => g.value));
+        const fromTags = Array.isArray(data.goals)
+          ? data.goals.filter((g) => allowed.has(g))
+          : [];
+        if (fromTags.length) {
+          setGoals(fromTags);
+        } else if (data.primaryGoal) {
+          const matched = GOAL_OPTIONS.filter(
+            (g) =>
+              data.primaryGoal === g.label ||
+              String(data.primaryGoal).includes(g.label),
+          ).map((g) => g.value);
+          setGoals(matched);
+        }
         const photoMap = {};
         for (const p of data.photos || []) {
           if (p.type && !p.checkInDate) photoMap[p.type] = p;
@@ -157,18 +166,19 @@ export default function OnboardingClient() {
   };
 
   const saveGoal = async () => {
-    if (!primaryGoal) {
-      setError("هدف اصلی را انتخاب کنید.");
+    if (!goals.length) {
+      setError("حداقل یک هدف را انتخاب کنید.");
       return null;
     }
-    const label =
-      GOAL_OPTIONS.find((g) => g.value === primaryGoal)?.label || primaryGoal;
+    const labels = goals.map(
+      (value) => GOAL_OPTIONS.find((g) => g.value === value)?.label || value,
+    );
     setSaving(true);
     setError("");
     try {
       const res = await api.patch("/me", {
-        goals: [primaryGoal],
-        primaryGoal: label,
+        goals,
+        primaryGoal: labels.join("، "),
       });
       window.localStorage.setItem(
         "profile_complete",
@@ -359,11 +369,14 @@ export default function OnboardingClient() {
           {step === 1 && (
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>هدف اصلی‌تان چیست؟</Label>
+                <Label>اهداف‌تان را انتخاب کنید</Label>
+                <p className="text-xs text-muted-foreground">
+                  می‌توانید چند مورد را هم‌زمان انتخاب کنید.
+                </p>
                 <ToggleGroup
-                  type="single"
-                  value={primaryGoal}
-                  onValueChange={(v) => v && setPrimaryGoal(v)}
+                  type="multiple"
+                  value={goals}
+                  onValueChange={setGoals}
                   variant="outline"
                   className="grid w-full grid-cols-2 gap-2"
                 >
@@ -371,7 +384,7 @@ export default function OnboardingClient() {
                     <ToggleGroupItem
                       key={goal.value}
                       value={goal.value}
-                      className="h-11 text-xs sm:text-sm"
+                      className="h-11 cursor-pointer text-xs sm:text-sm"
                     >
                       {goal.label}
                     </ToggleGroupItem>

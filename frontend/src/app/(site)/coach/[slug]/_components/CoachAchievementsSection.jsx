@@ -148,7 +148,10 @@ function AchievementCard({ item, onImageClick }) {
   );
 }
 
-export default function CoachAchievementsSection({ achievements }) {
+export default function CoachAchievementsSection({
+  achievements,
+  embedded = false,
+}) {
   const [lightbox, setLightbox] = useState(null);
   const items = useMemo(
     () => sortAchievements(achievements || []),
@@ -157,40 +160,48 @@ export default function CoachAchievementsSection({ achievements }) {
 
   if (!items.length) return null;
 
+  const grid = (
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-5">
+      {items.map((item) => (
+        <AchievementCard
+          key={item.id}
+          item={item}
+          onImageClick={setLightbox}
+        />
+      ))}
+    </div>
+  );
+
   return (
     <>
-      <section
-        id="achievements"
-        className="mt-10 scroll-mt-20"
-        dir="rtl"
-        aria-labelledby="achievements-heading"
-      >
-        <div className="mb-6 flex flex-col gap-2 text-right md:mb-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-300/80">
-            اعتبار و تخصص
-          </p>
-          <h2
-            id="achievements-heading"
-            className="text-xl font-extrabold text-white md:text-2xl"
-          >
-            مدارک و افتخارات
-          </h2>
-          <p className="max-w-2xl text-sm leading-7 text-zinc-400">
-            گواهینامه‌ها، مدارک و افتخارات حرفه‌ای این مربی — برای اطمینان بیشتر
-            قبل از انتخاب پلن.
-          </p>
-        </div>
+      {embedded ? (
+        grid
+      ) : (
+        <section
+          id="achievements"
+          className="mt-10 scroll-mt-20"
+          dir="rtl"
+          aria-labelledby="achievements-heading"
+        >
+          <div className="mb-6 flex flex-col gap-2 text-right md:mb-8">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-300/80">
+              اعتبار و تخصص
+            </p>
+            <h2
+              id="achievements-heading"
+              className="text-xl font-extrabold text-white md:text-2xl"
+            >
+              مدارک و افتخارات
+            </h2>
+            <p className="max-w-2xl text-sm leading-7 text-zinc-400">
+              گواهینامه‌ها، مدارک و افتخارات حرفه‌ای این مربی — برای اطمینان بیشتر
+              قبل از انتخاب پلن.
+            </p>
+          </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-5">
-          {items.map((item) => (
-            <AchievementCard
-              key={item.id}
-              item={item}
-              onImageClick={setLightbox}
-            />
-          ))}
-        </div>
-      </section>
+          {grid}
+        </section>
+      )}
 
       {lightbox ? (
         <div

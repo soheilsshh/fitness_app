@@ -64,3 +64,36 @@ func AuthMiddleware() gin.HandlerFunc {
 		c.Next()
 	}
 }
+
+// OptionalAuthMiddleware attaches user id/role when a valid Bearer token is
+// present, but never rejects anonymous requests.
+func OptionalAuthMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		authHeader := strings.TrimSpace(c.GetHeader("Authorization"))
+		if authHeader == "" {
+			c.Next()
+			return
+		}
+
+		var tokenStr string
+		parts := strings.SplitN(authHeader, " ", 2)
+		if len(parts) == 2 && strings.EqualFold(parts[0], "Bearer") {
+			tokenStr = strings.TrimSpace(parts[1])
+		} else {
+			tokenStr = authHeader
+		}
+		if tokenStr == "" {
+			c.Next()
+			return
+		}
+		claims, err := auth.ParseToken(tokenStr)
+		if err != nil {
+			c.Next()
+			return
+		}
+
+		c.Set(ContextUserIDKey, claims.UserID)
+		c.Set(ContextRoleKey, claims.Role)
+		c.Next()
+	}
+}

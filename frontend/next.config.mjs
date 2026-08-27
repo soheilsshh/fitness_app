@@ -1,6 +1,11 @@
 /** @type {import('next').NextConfig} */
+const isProd = process.env.NODE_ENV === "production";
+
 const nextConfig = {
-  output: "export",
+  // Static export is for production builds only. In `next dev`, keeping
+  // `output: "export"` makes Next reject any `/{slug}` not listed in
+  // generateStaticParams (breaks coach landing preview for new drafts).
+  ...(isProd ? { output: "export" } : {}),
   trailingSlash: true,
   turbopack: {
     root: import.meta.dirname,

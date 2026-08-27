@@ -102,9 +102,9 @@ function joinSpecialties(tags) {
 }
 
 function publicPathLabel(slug, publicUrl) {
-  const path = publicUrl || getCoachPublicPath(slug);
-  if (!path) return "fitino.app/coach/…";
-  return `fitino.app${path.startsWith("/") ? path : `/${path}`}`;
+  const path = getCoachPublicPath(slug) || getCoachPublicPath(publicUrl);
+  if (!path) return "fitino.app/…";
+  return `fitino.app${path}`;
 }
 
 function ImageUploadBox({
@@ -542,7 +542,8 @@ export default function ProfileClient() {
     }
   };
 
-  const previewHref = form.publicUrl || getCoachPublicPath(form.slug);
+  const previewHref =
+    getCoachPublicPath(form.slug) || getCoachPublicPath(form.publicUrl);
 
   if (loading) {
     return (
@@ -843,24 +844,19 @@ export default function ProfileClient() {
             )}
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              asChild
-              disabled={!previewHref}
-            >
-              <a
-                href={previewHref || "#"}
-                target="_blank"
-                rel="noreferrer"
-                aria-disabled={!previewHref}
-                className={cn(!previewHref && "pointer-events-none opacity-50")}
-              >
+            {previewHref ? (
+              <Button variant="outline" size="sm" asChild>
+                <a href={previewHref} target="_blank" rel="noreferrer">
+                  <Eye data-icon="inline-start" />
+                  پیش‌نمایش لندینگ
+                </a>
+              </Button>
+            ) : (
+              <Button type="button" variant="outline" size="sm" disabled>
                 <Eye data-icon="inline-start" />
                 پیش‌نمایش لندینگ
-              </a>
-            </Button>
+              </Button>
+            )}
             {!readOnly ? (
               <Button
                 type="button"

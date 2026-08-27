@@ -97,6 +97,7 @@ type PublicCoachDTO struct {
 	Bio           string                 `json:"bio"`
 	AboutCoach    string                 `json:"aboutCoach"`
 	Specialty     string                 `json:"specialty"`
+	City          string                 `json:"city"`
 	AvatarURL     string                 `json:"avatarUrl"`
 	CoverImageURL string                 `json:"coverImageUrl"`
 	Social        CoachSocialLinks       `json:"social"`
@@ -142,8 +143,8 @@ type CoachProfileService interface {
 	UpdateAvatarURL(ctx context.Context, coachUserID uint, url string) (*CoachProfileDTO, error)
 	UpdateCoverURL(ctx context.Context, coachUserID uint, url string) (*CoachProfileDTO, error)
 	SubmitProfileRequest(ctx context.Context, coachUserID uint) (*CoachProfileSubmitResponse, error)
-	GetPublicProfile(ctx context.Context, slug string) (*PublicCoachDTO, error)
-	ListPublicPlans(ctx context.Context, slug string) ([]PublicPlanDTO, error)
+	GetPublicProfile(ctx context.Context, slug string, viewerUserID uint) (*PublicCoachDTO, error)
+	ListPublicPlans(ctx context.Context, slug string, viewerUserID uint) ([]PublicPlanDTO, error)
 	ListPublishedCoaches(ctx context.Context, page, pageSize int) (*PublicCoachListResponse, error)
 }
 
@@ -387,12 +388,35 @@ func (s *coachProfileService) UpdateCoverURL(ctx context.Context, coachUserID ui
 	return toCoachProfileDTO(profile), nil
 }
 
-func (s *coachProfileService) GetPublicProfile(ctx context.Context, slugParam string) (*PublicCoachDTO, error) {
-	profile, err := s.coachRepo.FindPublishedBySlug(ctx, slug.Normalize(slugParam))
+func (s *coachProfileService) resolvePublicOrOwnerProfile(ctx context.Context, slugParam string, viewerUserID uint) (*models.CoachProfile, error) {
+	normalized := slug.Normalize(slugParam)
+	profile, err := s.coachRepo.FindPublishedBySlug(ctx, normalized)
+	if err == nil {
+		return profile, nil
+	}
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, err
+	}
+	// Owner preview: allow the coach to open their own unpublished landing.
+	if viewerUserID == 0 {
+		return nil, ErrCoachNotPublished
+	}
+	own, err := s.coachRepo.FindBySlug(ctx, normalized)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrCoachNotPublished
 		}
+		return nil, err
+	}
+	if own.UserID != viewerUserID {
+		return nil, ErrCoachNotPublished
+	}
+	return own, nil
+}
+
+func (s *coachProfileService) GetPublicProfile(ctx context.Context, slugParam string, viewerUserID uint) (*PublicCoachDTO, error) {
+	profile, err := s.resolvePublicOrOwnerProfile(ctx, slugParam, viewerUserID)
+	if err != nil {
 		return nil, err
 	}
 	achievements, err := s.achievementRepo.ListVisibleByCoachUserID(ctx, profile.UserID)
@@ -436,12 +460,9 @@ func (s *coachProfileService) ListPublishedCoaches(ctx context.Context, page, pa
 	}, nil
 }
 
-func (s *coachProfileService) ListPublicPlans(ctx context.Context, slugParam string) ([]PublicPlanDTO, error) {
-	profile, err := s.coachRepo.FindPublishedBySlug(ctx, slug.Normalize(slugParam))
+func (s *coachProfileService) ListPublicPlans(ctx context.Context, slugParam string, viewerUserID uint) ([]PublicPlanDTO, error) {
+	profile, err := s.resolvePublicOrOwnerProfile(ctx, slugParam, viewerUserID)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrCoachNotPublished
-		}
 		return nil, err
 	}
 	plans, err := s.planRepo.ListActiveByCoachID(ctx, profile.UserID)
@@ -481,7 +502,7 @@ func toCoachProfileDTO(p *models.CoachProfile) *CoachProfileDTO {
 			Website:   p.Website,
 		},
 		IsPublished: p.IsPublished,
-		PublicURL:   "/coach/" + p.Slug,
+		PublicURL:   "/" + p.Slug,
 		UpdatedAt:   p.UpdatedAt,
 	}
 }
@@ -499,6 +520,7 @@ func toPublicCoachDTO(p *models.CoachProfile, achievements []models.CoachAchieve
 		Bio:           p.Bio,
 		AboutCoach:    p.AboutCoach,
 		Specialty:     p.Specialty,
+		City:          p.City,
 		AvatarURL:     p.AvatarURL,
 		CoverImageURL: p.CoverImageURL,
 		Social: CoachSocialLinks{

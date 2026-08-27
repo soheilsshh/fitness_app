@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/yourusername/fitness-management/internal/middleware"
 	"github.com/yourusername/fitness-management/internal/service"
 )
 
@@ -15,6 +16,14 @@ type PublicCoachController struct {
 
 func NewPublicCoachController(s service.CoachProfileService) *PublicCoachController {
 	return &PublicCoachController{coachService: s}
+}
+
+func viewerUserID(c *gin.Context) uint {
+	id, err := middleware.GetUserID(c)
+	if err != nil {
+		return 0
+	}
+	return id
 }
 
 func (h *PublicCoachController) ListCoaches(c *gin.Context) {
@@ -40,7 +49,7 @@ func (h *PublicCoachController) ListCoaches(c *gin.Context) {
 
 func (h *PublicCoachController) GetCoachBySlug(c *gin.Context) {
 	slug := c.Param("slug")
-	dto, err := h.coachService.GetPublicProfile(c.Request.Context(), slug)
+	dto, err := h.coachService.GetPublicProfile(c.Request.Context(), slug, viewerUserID(c))
 	if err != nil {
 		if err == service.ErrCoachNotPublished {
 			c.JSON(http.StatusNotFound, gin.H{"error": "coach not found"})
@@ -54,7 +63,7 @@ func (h *PublicCoachController) GetCoachBySlug(c *gin.Context) {
 
 func (h *PublicCoachController) GetCoachPlans(c *gin.Context) {
 	slug := c.Param("slug")
-	plans, err := h.coachService.ListPublicPlans(c.Request.Context(), slug)
+	plans, err := h.coachService.ListPublicPlans(c.Request.Context(), slug, viewerUserID(c))
 	if err != nil {
 		if err == service.ErrCoachNotPublished {
 			c.JSON(http.StatusNotFound, gin.H{"error": "coach not found"})

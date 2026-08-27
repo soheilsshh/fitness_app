@@ -15,6 +15,7 @@ import CoachLandingJsonLd from "./_components/CoachLandingJsonLd";
  * first paint is only the site Navbar (looks like the homepage).
  *
  * New coaches require a rebuild/deploy after they are published in the API.
+ * In `next dev` (without output:export) any slug can still be opened on demand.
  */
 export async function generateStaticParams() {
   const coaches = await fetchPublishedCoaches();
@@ -28,6 +29,9 @@ export async function generateStaticParams() {
   console.log(`[coach-slugs] emitting ${slugs.length} landing page(s): ${slugs.join(", ")}`);
   return slugs.map((slug) => ({ slug }));
 }
+
+// Allow on-demand slugs in development (ignored for production static export).
+export const dynamicParams = true;
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;

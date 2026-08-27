@@ -44,13 +44,13 @@ export default function BlurTextAnimation({
   }, [textWords]);
 
   return (
-    <div className={`flex items-center justify-start bg-transparent w-full`}>
-      <div className="w-full">
-        <div className={`${textColor} ${fontSize} ${fontFamily} ${className}`}>
+    <div className={`flex w-full min-w-0 items-center justify-start bg-transparent`}>
+      <div className="w-full min-w-0">
+        <div className={`${textColor} ${fontSize} ${fontFamily} ${className} break-words`}>
           {textWords.map((word, index) => (
             <span
               key={index}
-              className={`inline-block transition-all ${isAnimating ? 'opacity-100' : 'opacity-0'}`}
+              className={`inline transition-all ${isAnimating ? 'opacity-100' : 'opacity-0'}`}
               style={{
                 transitionDuration: `${word.duration}s`,
                 transitionDelay: `${word.delay}s`,

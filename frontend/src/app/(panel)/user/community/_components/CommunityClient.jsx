@@ -2,13 +2,11 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  CalendarDays,
   Heart,
   ImagePlus,
   Loader2,
   MessageCircle,
   Send,
-  Trophy,
   Users,
   X,
 } from "lucide-react";
@@ -20,12 +18,8 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -527,160 +521,14 @@ function FeedTab() {
   );
 }
 
-function EventCard({ event, onJoin, onLeave, busy }) {
-  const dateLabel = event.eventDate
-    ? new Date(event.eventDate).toLocaleDateString("fa-IR", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })
-    : "";
-
-  return (
-    <Card>
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between gap-2">
-          <div>
-            <CardTitle className="text-base">{event.title}</CardTitle>
-            <CardDescription className="mt-1">{event.description}</CardDescription>
-          </div>
-          <Badge variant={event.eventType === "online" ? "secondary" : "outline"}>
-            {event.eventType === "online" ? "آنلاین" : "حضوری"}
-          </Badge>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1">
-            <CalendarDays className="size-3.5" />
-            {dateLabel}
-          </span>
-          {event.prize ? (
-            <span className="flex items-center gap-1">
-              <Trophy className="size-3.5 text-amber-500" />
-              {event.prize}
-            </span>
-          ) : null}
-        </div>
-        <Button
-          type="button"
-          size="sm"
-          variant={event.joinedByMe ? "outline" : "default"}
-          disabled={busy}
-          onClick={() => (event.joinedByMe ? onLeave(event) : onJoin(event))}
-        >
-          {event.joinedByMe ? "انصراف از شرکت" : "شرکت در رویداد"}
-        </Button>
-      </CardContent>
-    </Card>
-  );
-}
-
-function EventsTab() {
-  const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [busyId, setBusyId] = useState(null);
-
-  const loadEvents = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await api.get("/me/events");
-      const items = res.data?.items || res.data || [];
-      setEvents(items);
-    } catch (err) {
-      toast.error(err?.response?.data?.error || "بارگذاری رویدادها ناموفق بود");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadEvents();
-  }, [loadEvents]);
-
-  const handleJoin = async (event) => {
-    setBusyId(event.id);
-    try {
-      await api.post(`/me/events/${event.id}/join`);
-      toast.success("ثبت‌نام شما در رویداد انجام شد");
-      await loadEvents();
-    } catch (err) {
-      toast.error(err?.response?.data?.error || "ثبت‌نام ناموفق بود");
-    } finally {
-      setBusyId(null);
-    }
-  };
-
-  const handleLeave = async (event) => {
-    setBusyId(event.id);
-    try {
-      await api.post(`/me/events/${event.id}/leave`);
-      toast.success("از رویداد انصراف دادید");
-      await loadEvents();
-    } catch (err) {
-      toast.error(err?.response?.data?.error || "انصراف ناموفق بود");
-    } finally {
-      setBusyId(null);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="space-y-3">
-        {Array.from({ length: 2 }).map((_, i) => (
-          <Skeleton key={i} className="h-36 w-full rounded-xl" />
-        ))}
-      </div>
-    );
-  }
-
-  if (events.length === 0) {
-    return (
-      <Card>
-        <CardContent className="py-10 text-center">
-          <CalendarDays className="mx-auto size-8 text-muted-foreground/60" />
-          <p className="mt-3 text-sm text-muted-foreground">
-            در حال حاضر رویداد فعالی وجود ندارد
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <div className="space-y-3">
-      {events.map((event) => (
-        <EventCard
-          key={event.id}
-          event={event}
-          busy={busyId === event.id}
-          onJoin={handleJoin}
-          onLeave={handleLeave}
-        />
-      ))}
-    </div>
-  );
-}
-
 export default function CommunityClient() {
   return (
     <div className="flex flex-col gap-4 md:gap-6" dir="rtl">
       <PageHeader
         title="اجتماع فیتینو"
-        description="با دیگر ورزشکارها در ارتباط باشید و در رویدادها شرکت کنید"
+        description="با دیگر ورزشکارها در ارتباط باشید"
       />
-      <Tabs defaultValue="feed">
-        <TabsList>
-          <TabsTrigger value="feed">فید</TabsTrigger>
-          <TabsTrigger value="events">رویدادها</TabsTrigger>
-        </TabsList>
-        <TabsContent value="feed" className="mt-4">
-          <FeedTab />
-        </TabsContent>
-        <TabsContent value="events" className="mt-4">
-          <EventsTab />
-        </TabsContent>
-      </Tabs>
+      <FeedTab />
     </div>
   );
 }
