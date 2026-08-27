@@ -1,6 +1,6 @@
-# MonetizeAI Webinar Backend
+# Fitino Live Webinar Backend
 
-This is the backend for the MonetizeAI Webinar app, built with Go, Gin, Viper, and MySQL.
+This is the backend for the Fitino Live Webinar app, built with Go, Gin, Viper, and MySQL.
 
 ## Features
 - User registration
