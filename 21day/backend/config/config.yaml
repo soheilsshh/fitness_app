@@ -45,7 +45,7 @@ zarinpal:
   sandbox: false
   callback_url: "https://challenge.rapexa.ir/api/payment/callback"
   frontend_url: "https://challenge.fitinoo.ir"
-  price: 990000  # placeholder — 990,000 Toman, change to the real price
+  price: 1490000  # matches Fitinoo's main VIP plan (funnel_1, Ali Rashidabadi) — same price everywhere on purpose
 
 # Values from main (kept for local/dev; not loaded). Previous port: 8081.
 # db: fitino_21day_user / change_me / fitino_21day

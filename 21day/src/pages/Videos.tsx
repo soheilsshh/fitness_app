@@ -36,7 +36,6 @@ const Videos = () => {
   const [quizVideoId, setQuizVideoId] = useState<number | null>(null);
   const [completing, setCompleting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [payingForAccess, setPayingForAccess] = useState(false);
   const { toast } = useToast();
   const { phone, logout } = useUser();
   const navigate = useNavigate();
@@ -82,23 +81,6 @@ const Videos = () => {
       });
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleBuyFullAccess = async () => {
-    if (!phone || payingForAccess) return;
-    try {
-      setPayingForAccess(true);
-      const { payment_url } = await apiService.createPayment(phone);
-      window.location.href = payment_url;
-    } catch (error) {
-      console.error('Error starting payment:', error);
-      toast({
-        title: 'شروع پرداخت ناموفق بود',
-        description: 'دوباره امتحان کن',
-        variant: 'destructive',
-      });
-      setPayingForAccess(false);
     }
   };
 
@@ -414,11 +396,10 @@ const Videos = () => {
                             </p>
                             <Button
                               type="button"
-                              onClick={handleBuyFullAccess}
-                              disabled={payingForAccess}
+                              onClick={() => navigate('/upgrade')}
                               className="mt-3 min-h-[44px] w-full cursor-pointer rounded-none border-0 bg-[#26fce3] font-bold text-[#0a1a18] hover:bg-[#7dffe8]"
                             >
-                              {payingForAccess ? 'در حال انتقال به درگاه…' : 'فعال‌سازی دسترسی کامل'}
+                              فعال‌سازی دسترسی کامل
                             </Button>
                           </div>
                         )}
