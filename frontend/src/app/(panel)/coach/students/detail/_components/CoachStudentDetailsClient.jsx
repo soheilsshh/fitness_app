@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import NutritionProgramPreview from "./NutritionProgramPreview";
 import WorkoutProgramPreview from "./WorkoutProgramPreview";
 import WorkoutEditorClient from "../../workout/_components/WorkoutEditorClient";
+import SavedProgramsApprovalCard from "../../_components/SavedProgramsApprovalCard";
 
 function InfoCard({ icon: Icon, label, value }) {
   return (
@@ -175,6 +176,17 @@ export default function CoachStudentDetailsClient() {
           ) : null}
         </CardContent>
       </Card>
+
+      <SavedProgramsApprovalCard
+        studentId={id}
+        type="nutrition"
+        onApproved={loadStudent}
+      />
+      <SavedProgramsApprovalCard
+        studentId={id}
+        type="workout"
+        onApproved={loadStudent}
+      />
 
       {isPending ? (
         <>

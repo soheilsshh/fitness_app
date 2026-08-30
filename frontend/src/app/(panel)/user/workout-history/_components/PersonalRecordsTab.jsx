@@ -26,6 +26,14 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
+import {
+  METRIC_HOLD,
+  METRIC_LABELS,
+  METRIC_REPS,
+  METRIC_WEIGHT,
+  formatMetricValue,
+  metricValue,
+} from "@/lib/workout/exerciseMetric";
 import { SHARE_DRAFT_KEY } from "../../community/_components/CommunityClient";
 
 const RANGE_OPTIONS = [
@@ -35,6 +43,54 @@ const RANGE_OPTIONS = [
   { key: "3months", label: "سه ماه اخیر" },
   { key: "year", label: "یک‌ساله" },
 ];
+
+// Keep in sync with backend MuscleGroupCatalog (recordable: true).
+// Used immediately so the picker is never empty if /me/exercise-categories
+// fails, 404s on an older API, or returns an unexpected shape.
+const MUSCLE_GROUP_OPTIONS = [
+  { value: "chest", label: "سینه" },
+  { value: "back", label: "زیربغل و پشت" },
+  { value: "shoulders", label: "سرشانه" },
+  { value: "traps", label: "کول" },
+  { value: "biceps", label: "جلو بازو" },
+  { value: "triceps", label: "پشت بازو" },
+  { value: "forearms", label: "ساعد" },
+  { value: "abs", label: "شکم و مرکز بدن" },
+  { value: "quads", label: "چهارسر ران" },
+  { value: "hamstrings", label: "همسترینگ" },
+  { value: "glutes", label: "سرینی" },
+  { value: "adductors", label: "داخل ران" },
+  { value: "abductors", label: "بیرون ران" },
+  { value: "calves", label: "ساق پا" },
+  { value: "neck", label: "گردن" },
+  { value: "fullbody", label: "تمام بدن" },
+];
+
+const CANONICAL_CODES = new Set(MUSCLE_GROUP_OPTIONS.map((o) => o.value));
+
+function categoriesFromResponse(data) {
+  const labelByCode = Object.fromEntries(MUSCLE_GROUP_OPTIONS.map((o) => [o.value, o.label]));
+  // Older APIs returned DISTINCT exercises.target — machine-translated catalog
+  // strings like "گوساله ها" / "آدم ربایان". Those are not picker values.
+  const groups = data?.groups;
+  if (Array.isArray(groups) && groups.length) {
+    const mapped = groups
+      .filter((g) => g?.code && CANONICAL_CODES.has(String(g.code)))
+      .map((g) => ({
+        value: String(g.code),
+        label: g.label || labelByCode[g.code],
+      }));
+    if (mapped.length) return mapped;
+  }
+  const items = data?.items;
+  if (Array.isArray(items) && items.length) {
+    const mapped = items
+      .filter((c) => CANONICAL_CODES.has(String(c)))
+      .map((c) => ({ value: String(c), label: labelByCode[String(c)] || String(c) }));
+    if (mapped.length) return mapped;
+  }
+  return null;
+}
 
 function isoDate(d) {
   return d.toISOString().slice(0, 10);
@@ -63,7 +119,13 @@ function rangeToDates(key) {
   return { from: isoDate(from), to: isoDate(to) };
 }
 
-const chartConfig = { weight: { label: "وزنه (کیلوگرم)", color: "var(--chart-1)" } };
+// The progression chart plots whichever number is the record for this
+// movement — kilos, reps, or seconds held — so bodyweight training charts too.
+const CHART_CONFIG_BY_METRIC = {
+  [METRIC_WEIGHT]: { value: { label: "وزنه (کیلوگرم)", color: "var(--chart-1)" } },
+  [METRIC_REPS]: { value: { label: "تکرار", color: "var(--chart-2)" } },
+  [METRIC_HOLD]: { value: { label: "زمان (ثانیه)", color: "var(--chart-3)" } },
+};
 
 function formatFaNumber(value) {
   try {
@@ -77,12 +139,19 @@ function ExerciseRecordCard({ exerciseName, records }) {
   const router = useRouter();
   const [sending, setSending] = useState(false);
 
+  // All records in one card share an exercise but not necessarily a metric
+  // (a student can hold both a weighted and a bodyweight record); the card
+  // follows whichever metric the newest record uses.
+  const kind = records[0]?.metricKind || METRIC_WEIGHT;
+  const labels = METRIC_LABELS[kind] || METRIC_LABELS[METRIC_WEIGHT];
+  const chartConfig = CHART_CONFIG_BY_METRIC[kind] || CHART_CONFIG_BY_METRIC[METRIC_WEIGHT];
+
   const best = records.reduce(
-    (b, r) => (!b || r.weightKg > b.weightKg ? r : b),
+    (b, r) => (!b || metricValue(kind, r) > metricValue(kind, b) ? r : b),
     null
   );
   const chartData = records.map((r) => ({
-    weight: r.weightKg,
+    value: metricValue(kind, r),
     label: new Intl.DateTimeFormat("fa-IR", { month: "short", day: "numeric" }).format(
       new Date(r.achievedAt)
     ),
@@ -94,7 +163,7 @@ function ExerciseRecordCard({ exerciseName, records }) {
       window.sessionStorage.setItem(
         SHARE_DRAFT_KEY,
         JSON.stringify({
-          content: `رکورد جدید در ${exerciseName}: ${best.weightKg}kg × ${best.reps} 🏆`,
+          content: `رکورد جدید در ${exerciseName}: ${formatMetricValue(kind, best)} 🏆`,
           category: "progress",
         })
       );
@@ -110,8 +179,10 @@ function ExerciseRecordCard({ exerciseName, records }) {
     try {
       await api.post("/me/personal-records/notify-coach", {
         exerciseName,
+        metricKind: kind,
         weightKg: best.weightKg,
         reps: best.reps,
+        holdSeconds: best.holdSeconds,
       });
       toast.success("برای مربی ارسال شد");
     } catch (err) {
@@ -125,15 +196,21 @@ function ExerciseRecordCard({ exerciseName, records }) {
     <Card>
       <CardHeader className="pb-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <CardTitle className="text-base">{exerciseName}</CardTitle>
+          <div className="flex flex-wrap items-center gap-2">
+            <CardTitle className="text-base">{exerciseName}</CardTitle>
+            {records[0]?.muscleGroupLabel ? (
+              <Badge variant="secondary" className="text-[10px]">
+                {records[0].muscleGroupLabel}
+              </Badge>
+            ) : null}
+          </div>
           {best ? (
             <Badge
               variant="outline"
               className="gap-1 border-amber-400 bg-amber-500/10 text-amber-700 dark:text-amber-300"
             >
               <Award className="size-3.5" />
-              بهترین: {best.weightKg.toLocaleString("fa-IR")}kg ×{" "}
-              {best.reps.toLocaleString("fa-IR")}
+              بهترین: {formatMetricValue(kind, best)}
             </Badge>
           ) : null}
         </div>
@@ -154,13 +231,15 @@ function ExerciseRecordCard({ exerciseName, records }) {
               <ChartTooltip
                 cursor={false}
                 content={
-                  <ChartTooltipContent formatter={(value) => [`${formatFaNumber(value)} کیلوگرم`, "وزنه"]} />
+                  <ChartTooltipContent
+                    formatter={(value) => [`${formatFaNumber(value)} ${labels.unit}`, labels.input]}
+                  />
                 }
               />
               <Line
                 type="monotone"
-                dataKey="weight"
-                stroke="var(--color-weight)"
+                dataKey="value"
+                stroke="var(--color-value)"
                 strokeWidth={2}
                 dot={{ r: 4 }}
                 activeDot={{ r: 6 }}
@@ -171,7 +250,10 @@ function ExerciseRecordCard({ exerciseName, records }) {
 
         <div className="flex flex-wrap gap-2">
           {records.map((r, i) => {
-            const isBest = best && r.weightKg === best.weightKg && r.achievedAt === best.achievedAt;
+            const isBest =
+              best &&
+              metricValue(kind, r) === metricValue(kind, best) &&
+              r.achievedAt === best.achievedAt;
             return (
               <span
                 key={`${r.achievedAt}-${i}`}
@@ -182,7 +264,7 @@ function ExerciseRecordCard({ exerciseName, records }) {
                     : "border-border bg-muted/30 text-muted-foreground"
                 )}
               >
-                {r.weightKg.toLocaleString("fa-IR")}kg × {r.reps.toLocaleString("fa-IR")}
+                {formatMetricValue(kind, r)}
               </span>
             );
           })}
@@ -205,7 +287,7 @@ function ExerciseRecordCard({ exerciseName, records }) {
 
 export default function PersonalRecordsTab() {
   const [range, setRange] = useState("month");
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState(MUSCLE_GROUP_OPTIONS);
   const [target, setTarget] = useState("");
   const [loading, setLoading] = useState(false);
   const [records, setRecords] = useState(null); // null = not searched yet
@@ -215,10 +297,12 @@ export default function PersonalRecordsTab() {
     api
       .get("/me/exercise-categories")
       .then((res) => {
-        if (!cancelled) setCategories(res.data?.items || []);
+        if (cancelled) return;
+        const next = categoriesFromResponse(res.data);
+        if (next?.length) setCategories(next);
       })
       .catch(() => {
-        if (!cancelled) setCategories([]);
+        // Keep MUSCLE_GROUP_OPTIONS so the picker still works.
       });
     return () => {
       cancelled = true;
@@ -245,10 +329,13 @@ export default function PersonalRecordsTab() {
 
   const grouped = useMemo(() => {
     if (!records) return [];
+    // Keyed by exercise *and* metric: a weighted pull-up record and a
+    // bodyweight rep record on the same movement are separate progressions.
     const map = new Map();
     for (const r of records) {
-      if (!map.has(r.exerciseName)) map.set(r.exerciseName, []);
-      map.get(r.exerciseName).push(r);
+      const key = `${r.exerciseName}|${r.metricKind || METRIC_WEIGHT}`;
+      if (!map.has(key)) map.set(key, { exerciseName: r.exerciseName, records: [] });
+      map.get(key).records.push(r);
     }
     return Array.from(map.entries());
   }, [records]);
@@ -280,14 +367,14 @@ export default function PersonalRecordsTab() {
           </div>
           <div className="space-y-2">
             <p className="text-sm font-medium">گروه عضلانی</p>
-            <Select value={target} onValueChange={setTarget}>
+            <Select value={target || undefined} onValueChange={setTarget}>
               <SelectTrigger className="w-full sm:w-64">
                 <SelectValue placeholder="انتخاب کنید" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent position="popper" className="z-80">
                 {categories.map((c) => (
-                  <SelectItem key={c} value={c}>
-                    {c}
+                  <SelectItem key={c.value} value={c.value}>
+                    {c.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -314,8 +401,12 @@ export default function PersonalRecordsTab() {
           </Card>
         ) : (
           <div className="grid gap-4 lg:grid-cols-2">
-            {grouped.map(([name, recs]) => (
-              <ExerciseRecordCard key={name} exerciseName={name} records={recs} />
+            {grouped.map(([key, group]) => (
+              <ExerciseRecordCard
+                key={key}
+                exerciseName={group.exerciseName}
+                records={group.records}
+              />
             ))}
           </div>
         )

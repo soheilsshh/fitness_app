@@ -38,6 +38,15 @@ import SavedPlansPoolCard from "./SavedPlansPoolCard";
 import PostWorkoutSurveyModal from "./PostWorkoutSurveyModal";
 import { SHARE_DRAFT_KEY } from "../../community/_components/CommunityClient";
 import ExerciseCountReveal from "../../community/_components/ExerciseCountReveal";
+import {
+  METRIC_HOLD,
+  METRIC_LABELS,
+  METRIC_REPS,
+  METRIC_WEIGHT,
+  buildSetsPayload,
+  detectMetricKind,
+  formatMetricValue,
+} from "@/lib/workout/exerciseMetric";
 import { checkStreakMilestone } from "@/lib/streak/checkMilestone";
 import StreakMilestonePopup from "@/components/streak/StreakMilestonePopup";
 
@@ -51,12 +60,27 @@ function uniqueExerciseNames(sets, workout) {
   return [...new Set((workout?.exercises || []).map((ex) => ex.name).filter(Boolean))];
 }
 
+// setEffortScore ranks sets of different metric kinds against each other well
+// enough to pick a single "بهترین حرکت" for the share card. The weights are
+// deliberately rough — this is a motivational highlight, not a training metric.
+function setEffortScore(set) {
+  if (!set) return -1;
+  switch (set.metricKind) {
+    case METRIC_REPS:
+      return (set.reps || 0) * 2;
+    case METRIC_HOLD:
+      return set.holdSeconds || 0;
+    default:
+      return (set.weightKg || 0) * (set.reps || 1);
+  }
+}
+
 function buildShareCard({ dayLabel, durationMin, sets, workout, newPrExercises }) {
   const exerciseNames = uniqueExerciseNames(sets, workout);
+  // "Best" has to be comparable across metrics: a weighted set scores by
+  // tonnage, a bodyweight set by reps, an isometric one by seconds held.
   const bestSet = (sets || []).reduce((best, s) => {
-    const score = (s.weightKg || 0) * (s.reps || 1);
-    const bestScore = best ? (best.weightKg || 0) * (best.reps || 1) : -1;
-    return score > bestScore ? s : best;
+    return setEffortScore(s) > setEffortScore(best) ? s : best;
   }, null);
   return {
     dayLabel,
@@ -124,8 +148,8 @@ function ShareableProgressCard({ card, onShare }) {
           <div className="rounded-lg border bg-card px-3 py-2.5 text-center">
             <p className="text-[11px] text-muted-foreground">بهترین حرکت</p>
             <p className="mt-0.5 text-sm font-iranianSansDemiBold tabular-nums">
-              {card.bestSet.exerciseName} {card.bestSet.weightKg}kg ×{" "}
-              {card.bestSet.reps}
+              {card.bestSet.exerciseName}{" "}
+              {formatMetricValue(card.bestSet.metricKind, card.bestSet)}
             </p>
           </div>
         ) : null}
@@ -213,30 +237,6 @@ function defaultDayForTab(program, tab, restSet) {
   return first?.key || "sat";
 }
 
-// firstInt extracts the leading integer from a reps string like "12" or "8-10".
-function firstInt(value) {
-  const m = String(value ?? "").match(/\d+/);
-  return m ? parseInt(m[0], 10) : 0;
-}
-
-// buildSetsPayload turns entered per-exercise weights into the API `sets` shape,
-// dropping exercises with no (or non-positive) weight entered.
-function buildSetsPayload(exercises, weights) {
-  return (exercises || [])
-    .map((ex) => {
-      const w = parseFloat(weights?.[ex.name]);
-      if (!Number.isFinite(w) || w <= 0) return null;
-      return {
-        exerciseName: ex.name,
-        exerciseId: ex.exerciseId || undefined,
-        setNumber: 1,
-        weightKg: w,
-        reps: firstInt(ex.reps),
-      };
-    })
-    .filter(Boolean);
-}
-
 // sourceBadgeProps turns a workoutMeta/nutritionMeta ({source, status, createdAt})
 // into a small badge: who built this program's content, and when it was saved
 // (AI_PROGRAM_REFACTOR_TODO.md فاز ۲ — "AI + ذخیره‌شده" + تاریخ ایجاد).
@@ -294,6 +294,59 @@ function statusBadgeProps(timeline) {
   };
 }
 
+// ExerciseRecordInput logs one exercise with the unit that movement is
+// actually measured in. Weight PRs were the only kind the app understood, so a
+// student doing شنا or پلانک had no way to record anything; the metric toggle
+// lets them log reps or a hold, and switch if the guess is wrong (e.g. a
+// weighted pull-up).
+function ExerciseRecordInput({ exercise, entry, onChange }) {
+  const defaultKind = detectMetricKind(exercise);
+  const kind = entry?.kind || defaultKind;
+  const labels = METRIC_LABELS[kind] || METRIC_LABELS[METRIC_WEIGHT];
+
+  return (
+    <div className="rounded-md border bg-card px-3 py-2">
+      <div className="flex items-center justify-between gap-2">
+        <span className="min-w-0 flex-1 truncate text-sm">{exercise.name}</span>
+        <div className="flex shrink-0 items-center gap-1">
+          <Input
+            type="number"
+            inputMode="decimal"
+            min="0"
+            step={kind === METRIC_WEIGHT ? "0.5" : "1"}
+            placeholder="۰"
+            aria-label={`${exercise.name} — ${labels.input}`}
+            value={entry?.value ?? ""}
+            onChange={(e) => onChange({ kind, value: e.target.value })}
+            className="h-8 w-20 text-center"
+          />
+          <span className="text-xs text-muted-foreground">{labels.unit}</span>
+        </div>
+      </div>
+      <ToggleGroup
+        type="single"
+        value={kind}
+        onValueChange={(next) => {
+          if (next) onChange({ kind: next, value: entry?.value ?? "" });
+        }}
+        variant="outline"
+        size="sm"
+        className="mt-2 grid grid-cols-3 gap-1"
+      >
+        <ToggleGroupItem value={METRIC_WEIGHT} className="h-7 text-[11px]">
+          وزنه
+        </ToggleGroupItem>
+        <ToggleGroupItem value={METRIC_REPS} className="h-7 text-[11px]">
+          تکرار
+        </ToggleGroupItem>
+        <ToggleGroupItem value={METRIC_HOLD} className="h-7 text-[11px]">
+          ثانیه
+        </ToggleGroupItem>
+      </ToggleGroup>
+    </div>
+  );
+}
+
 export default function ProgramDetailsPanel({ program, timeline }) {
   const router = useRouter();
   const restSet = useMemo(
@@ -315,8 +368,10 @@ export default function ProgramDetailsPanel({ program, timeline }) {
   const [activeTab, setActiveTab] = useState(defaultTab);
   const [selectedDay, setSelectedDay] = useState(defaultDay);
   const [loggingWorkout, setLoggingWorkout] = useState(false);
-  // weights maps an exercise name to the weight (kg) the user lifted today.
-  const [weights, setWeights] = useState({});
+  // setEntries maps an exercise name to what the student actually did today:
+  // { kind: "weight"|"reps"|"hold", value: string }. The kind defaults to the
+  // movement's natural metric so bodyweight work is loggable without fiddling.
+  const [setEntries, setSetEntries] = useState({});
   const [shareCard, setShareCard] = useState(null);
   const [milestoneOpen, setMilestoneOpen] = useState(false);
   const [milestoneStreak, setMilestoneStreak] = useState(0);
@@ -333,9 +388,9 @@ export default function ProgramDetailsPanel({ program, timeline }) {
     setSelectedDay(defaultDayForTab(program, nextTab, restSet));
   };
 
-  // Reset entered weights whenever the selected day changes.
+  // Reset entered sets whenever the selected day changes.
   useEffect(() => {
-    setWeights({});
+    setSetEntries({});
     setShareCard(null);
   }, [selectedDay]);
 
@@ -344,7 +399,7 @@ export default function ProgramDetailsPanel({ program, timeline }) {
     if (!program?.id || !dayWorkout) return;
     setLoggingWorkout(true);
     try {
-      const sets = buildSetsPayload(dayWorkout.exercises, weights);
+      const sets = buildSetsPayload(dayWorkout.exercises, setEntries);
       const res = await api.post("/me/workout-sessions", {
         subscriptionId: program.id,
         dayKey: selectedDay,
@@ -361,7 +416,7 @@ export default function ProgramDetailsPanel({ program, timeline }) {
           newPrExercises: res.data?.newPrExercises,
         })
       );
-      setWeights({});
+      setSetEntries({});
       if (res.data?.isFirstSessionToday && res.data?.id) {
         setSurveySession({ id: res.data.id, exercises: dayWorkout.exercises || [] });
       }
@@ -390,7 +445,10 @@ export default function ProgramDetailsPanel({ program, timeline }) {
     ];
     if (shareCard.bestSet) {
       lines.push(
-        `بهترین حرکت: ${shareCard.bestSet.exerciseName} ${shareCard.bestSet.weightKg}kg × ${shareCard.bestSet.reps}`
+        `بهترین حرکت: ${shareCard.bestSet.exerciseName} ${formatMetricValue(
+          shareCard.bestSet.metricKind,
+          shareCard.bestSet
+        )}`
       );
     }
     if (shareCard.newPrExercises.length) {
@@ -569,41 +627,27 @@ export default function ProgramDetailsPanel({ program, timeline }) {
                     {timeline?.isActive && workout.exercises?.length ? (
                       <div className="mt-5 rounded-lg border bg-muted/30 p-4">
                         <div className="mb-3 flex items-center justify-between gap-2">
-                          <p className="text-sm font-medium">ثبت وزنه‌ها (اختیاری)</p>
+                          <p className="text-sm font-medium">ثبت رکورد امروز (اختیاری)</p>
                           <p className="text-xs text-muted-foreground">
                             برای محاسبه رکوردهای شخصی
                           </p>
                         </div>
                         <div className="grid gap-2 sm:grid-cols-2">
                           {workout.exercises.map((ex, i) => (
-                            <label
+                            <ExerciseRecordInput
                               key={`${ex.exerciseId || ex.name}-${i}`}
-                              className="flex items-center justify-between gap-2 rounded-md border bg-card px-3 py-2"
-                            >
-                              <span className="min-w-0 flex-1 truncate text-sm">
-                                {ex.name}
-                              </span>
-                              <div className="flex shrink-0 items-center gap-1">
-                                <Input
-                                  type="number"
-                                  inputMode="decimal"
-                                  min="0"
-                                  step="0.5"
-                                  placeholder="۰"
-                                  value={weights[ex.name] ?? ""}
-                                  onChange={(e) =>
-                                    setWeights((prev) => ({
-                                      ...prev,
-                                      [ex.name]: e.target.value,
-                                    }))
-                                  }
-                                  className="h-8 w-20 text-center"
-                                />
-                                <span className="text-xs text-muted-foreground">کیلوگرم</span>
-                              </div>
-                            </label>
+                              exercise={ex}
+                              entry={setEntries[ex.name]}
+                              onChange={(next) =>
+                                setSetEntries((prev) => ({ ...prev, [ex.name]: next }))
+                              }
+                            />
                           ))}
                         </div>
+                        <p className="mt-3 text-[11px] text-muted-foreground">
+                          حرکت‌های با وزن بدن با تعداد تکرار و حرکت‌های ثابت مثل پلانک با
+                          ثانیه ثبت می‌شوند.
+                        </p>
                       </div>
                     ) : null}
                     {timeline?.isActive && (

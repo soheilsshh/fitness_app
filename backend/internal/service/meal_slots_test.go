@@ -24,6 +24,36 @@ func TestNormalizeMealSlot(t *testing.T) {
 	}
 }
 
+func TestNormalizeMealSlot_fiveMealDay(t *testing.T) {
+	snack := 0
+	got := []string{
+		NormalizeMealSlot("صبحانه", &snack),
+		NormalizeMealSlot("میان وعده صبح", &snack),
+		NormalizeMealSlot("ناهار", &snack),
+		NormalizeMealSlot("میان وعده عصر", &snack),
+		NormalizeMealSlot("شام", &snack),
+	}
+	want := []string{MealSlotBreakfast, MealSlotSnack1, MealSlotLunch, MealSlotSnack2, MealSlotDinner}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Fatalf("meal %d: got %q want %q (all=%v)", i, got[i], want[i], got)
+		}
+	}
+}
+
+func TestMealSlotAssigner_reusesSlotForSameNotes(t *testing.T) {
+	a := &mealSlotAssigner{}
+	first := a.slotForNotes("میان وعده صبح")
+	second := a.slotForNotes("میان وعده صبح")
+	lunch := a.slotForNotes("ناهار")
+	if first != MealSlotSnack1 || second != MealSlotSnack1 {
+		t.Fatalf("snack rows should share snack1, got %q then %q", first, second)
+	}
+	if lunch != MealSlotLunch {
+		t.Fatalf("lunch=%q", lunch)
+	}
+}
+
 func TestNormalizeExerciseCoreName(t *testing.T) {
 	a := normalizeExerciseCoreNameSvc("اسکوات دمبل")
 	b := normalizeExerciseCoreNameSvc("اسکوات هالتر")

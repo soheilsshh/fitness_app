@@ -34,6 +34,10 @@ type AchievementService interface {
 	SeedDefaultRules(ctx context.Context)
 	GetSummary(ctx context.Context, userID uint) (*AchievementSummaryDTO, error)
 	HandleNewPR(ctx context.Context, userID uint, exerciseName string)
+	// HandleBodyweightSet checks a logged bodyweight/isometric set against the
+	// tiered calisthenics medals (bronze/silver/gold per movement family).
+	// value is reps for MetricKindReps and seconds for MetricKindHold.
+	HandleBodyweightSet(ctx context.Context, userID uint, exerciseName, metricKind string, value int)
 	HandleFoodLogCreated(ctx context.Context, userID uint, logID uint)
 	HandleWorkoutSessionCompleted(ctx context.Context, userID uint, sessionID uint)
 	// HandleProfileUpdated re-checks profile completion after every profile
@@ -82,8 +86,8 @@ func NewAchievementService(db *gorm.DB, repo repository.AchievementRepository, g
 
 // defaultAchievementRules is the initial rule set (roadmap BE-6.6).
 func defaultAchievementRules() []models.AchievementRule {
-	return []models.AchievementRule{
-		{Code: models.AchievementCodeNewPR, Title: "رکورد جدید", Description: "هر بار که وزنه یا تکرار جدیدی نسبت به قبل رکورد بزنی.", Points: 10, Repeatable: true},
+	rules := []models.AchievementRule{
+		{Code: models.AchievementCodeNewPR, Title: "رکورد جدید", Description: "هر بار که رکورد قبلی خودت را بشکنی: وزنه سنگین‌تر، تکرار بیشتر، یا نگه‌داشتن طولانی‌تر.", Points: 10, Repeatable: true},
 		{Code: models.AchievementCodeFoodStreak30, Title: "پیوستگی ۳۰ روزه ثبت غذا", Description: "۳۰ روز متوالی ثبت غذا.", Points: 100, Repeatable: false},
 		{Code: models.AchievementCodeWorkoutStreak7, Title: "تداوم تمرین یک هفته‌ای", Description: "۷ روز متوالی تمرین ثبت‌شده.", Points: 50, Repeatable: false},
 		{Code: models.AchievementCode5YearMember, Title: "مدال ۵ سال سابقه", Description: "۵ سال از عضویت تو در فیتینو گذشته.", Points: 500, Repeatable: false},
@@ -111,6 +115,10 @@ func defaultAchievementRules() []models.AchievementRule {
 		{Code: models.AchievementCodeSubRenewal, Title: "ادامه مسیر", Description: "اشتراک خود را تمدید کردی.", Points: 20, Repeatable: true},
 		{Code: models.AchievementCode1YearMember, Title: "یک سال همراه فیتینو", Description: "۱ سال از عضویت تو در فیتینو گذشته.", Points: 200, Repeatable: false},
 	}
+
+	// Calisthenics ladders: bronze/silver/gold per movement family, so students
+	// training without weights have a progression to chase too.
+	return append(rules, bodyweightMilestoneRules()...)
 }
 
 func (s *achievementService) SeedDefaultRules(ctx context.Context) {

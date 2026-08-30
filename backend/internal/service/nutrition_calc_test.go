@@ -37,6 +37,17 @@ func TestCalculateNutritionTargets_DefaultsWhenMissing(t *testing.T) {
 	}
 }
 
+func TestCalculateNutritionTargets_OptionalOverride(t *testing.T) {
+	base := CalculateNutritionTargets(NutritionCalcInput{Gender: "male", WeightKg: 80, HeightCm: 180, Goal: "maintain"})
+	over := CalculateNutritionTargets(NutritionCalcInput{Gender: "male", WeightKg: 80, HeightCm: 180, Goal: "maintain", TargetCalories: 2000})
+	if over.TargetCalories != 2000 {
+		t.Fatalf("override calories=%d", over.TargetCalories)
+	}
+	if over.TargetCalories == base.TargetCalories {
+		t.Fatal("override should differ from auto target")
+	}
+}
+
 func TestCalculateNutritionTargets_BodyFatUsesKatchMcArdle(t *testing.T) {
 	bf := 15.0
 	withBF := CalculateNutritionTargets(NutritionCalcInput{Gender: "male", WeightKg: 80, HeightCm: 180, BodyFatPercent: &bf})

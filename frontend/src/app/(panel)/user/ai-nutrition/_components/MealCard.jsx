@@ -43,9 +43,8 @@ export default function MealCard({ meal, onRegenerate, regenerating }) {
 
         <Button
           type="button"
-          size="sm"
           variant="outline"
-          className="w-full gap-1.5"
+          className="h-11 w-full cursor-pointer gap-1.5"
           disabled={regenerating}
           onClick={onRegenerate}
         >

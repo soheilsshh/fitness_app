@@ -114,6 +114,44 @@ func IsValidMealSlot(slot string) bool {
 	return ok
 }
 
+func looksLikeMealName(name string) bool {
+	n := strings.ToLower(strings.ReplaceAll(strings.TrimSpace(name), "‌", " "))
+	if n == "" {
+		return false
+	}
+	return strings.Contains(n, "صبحانه") ||
+		strings.Contains(n, "ناهار") ||
+		strings.Contains(n, "نهار") ||
+		strings.Contains(n, "شام") ||
+		strings.Contains(n, "میان") ||
+		strings.Contains(n, "breakfast") ||
+		strings.Contains(n, "lunch") ||
+		strings.Contains(n, "dinner") ||
+		strings.Contains(n, "snack")
+}
+
+// mealSlotAssigner maps AI meal names onto canonical slots once per meal
+// (several food rows share the same Notes). Index-based mapping is wrong
+// when the model inserts snacks between lunch and dinner.
+type mealSlotAssigner struct {
+	snack     int
+	lastNotes string
+	lastSlot  string
+}
+
+func (a *mealSlotAssigner) slotForNotes(notes string) string {
+	if a == nil {
+		return ""
+	}
+	if notes == a.lastNotes && a.lastSlot != "" {
+		return a.lastSlot
+	}
+	slot := NormalizeMealSlot(notes, &a.snack)
+	a.lastNotes = notes
+	a.lastSlot = slot
+	return slot
+}
+
 // --- exercise core-name helpers (shared with seed package conceptually) ---
 
 var exerciseEquipmentTokensSvc = []string{

@@ -91,6 +91,46 @@ func NewAIGenerateService(
 	}
 }
 
+// DailyNutritionCheckIn is the optional same-day questionnaire from the
+// "برنامه روزانه با AI" page. It is NOT persisted — it only steers this
+// one generation, the same way WorkoutConstraints works for AI workouts.
+type DailyNutritionCheckIn struct {
+	MealCount      string   `json:"mealCount"`
+	Protein        []string `json:"protein"`
+	Carbs          []string `json:"carbs"`
+	Produce        []string `json:"produce"`
+	AvailableExtra []string `json:"availableExtra"`
+	Craving        []string `json:"craving"`
+	CravingCustom  string   `json:"cravingCustom"`
+	Training       string   `json:"training"`
+	PrepTime       string   `json:"prepTime"`
+	Avoid          []string `json:"avoid"`
+	AvoidExtra     []string `json:"avoidExtra"`
+	Style          string   `json:"style"`
+}
+
+// WeeklyNutritionCheckIn is the optional week-rules questionnaire from the
+// "برنامه هفتگی با AI" page. It is NOT persisted — it only steers this one
+// generation so the model can pattern the whole week without per-day meals.
+type WeeklyNutritionCheckIn struct {
+	WeeklyGoal           string   `json:"weeklyGoal"`
+	MealCount            string   `json:"mealCount"`
+	TrainingDays         []string `json:"trainingDays"`
+	TrainingIntensity    string   `json:"trainingIntensity"`
+	LikedFoods           []string `json:"likedFoods"`
+	FavoriteFood         string   `json:"favoriteFood"`
+	Avoid                []string `json:"avoid"`
+	AvoidExtra           []string `json:"avoidExtra"`
+	Available            []string `json:"available"`
+	AvailableExtra       []string `json:"availableExtra"`
+	Budget               string   `json:"budget"`
+	EatingPlace          string   `json:"eatingPlace"`
+	PrepTime             string   `json:"prepTime"`
+	RepeatPreference     string   `json:"repeatPreference"`
+	SpecialCircumstances string   `json:"specialCircumstances"`
+	Style                string   `json:"style"`
+}
+
 // GenerateNutrition asks AI for a plan grounded in deterministically-computed
 // BMR/TDEE targets (BE-1.1), validates it, and optionally saves it as the
 // student's active nutrition_program (BE-1.2). goal defaults to the user's
@@ -99,7 +139,7 @@ func NewAIGenerateService(
 // When existingPlan is set (preview already shown in the client), AI is skipped
 // and the provided plan is validated and optionally persisted — so a flaky
 // second upstream call cannot block save after a successful preview.
-func (s *AIGenerateService) GenerateNutrition(ctx context.Context, userID uint, goal string, save bool, existingPlan *ai.NutritionPlanSchema) (*NutritionPlanResult, error) {
+func (s *AIGenerateService) GenerateNutrition(ctx context.Context, userID uint, goal string, save bool, existingPlan *ai.NutritionPlanSchema, checkIn DailyNutritionCheckIn, targetCalories int, activate bool) (*NutritionPlanResult, error) {
 	var plan *ai.NutritionPlanSchema
 	var targets NutritionTargets
 
@@ -128,12 +168,13 @@ func (s *AIGenerateService) GenerateNutrition(ctx context.Context, userID uint, 
 			BirthDate:      profile.BirthDate,
 			BodyFatPercent: profile.BodyFatPercent,
 			Goal:           goal,
+			TargetCalories: targetCalories,
 		})
 
 		userContext := buildAIUserContext(profile) + s.loadFunnelAIContext(ctx, profile) + fmt.Sprintf(
 			"\nهدف تغذیه‌ای انتخاب‌شده: %s\nهدف کالری روزانه محاسبه‌شده (حتماً نزدیک به همین عدد بمان): %d کیلوکالری، پروتئین %dگرم، کربوهیدرات %dگرم، چربی %dگرم.",
 			targets.Goal, targets.TargetCalories, targets.ProteinG, targets.CarbsG, targets.FatG,
-		)
+		) + buildDailyCheckInContext(checkIn)
 		persona := string(ai.PersonaNutrition)
 
 		generated, genRes, genErr := ai.GenerateNutritionPlan(ctx, userContext)
@@ -150,7 +191,7 @@ func (s *AIGenerateService) GenerateNutrition(ctx context.Context, userID uint, 
 
 	result := &NutritionPlanResult{Plan: plan, Targets: targets}
 	if save {
-		programID, subscriptionID, err := s.saveNutritionProgram(ctx, userID, plan, targets)
+		programID, subscriptionID, err := s.saveNutritionProgram(ctx, userID, plan, targets, activate)
 		if err != nil {
 			return nil, err
 		}
@@ -176,7 +217,7 @@ type NutritionWeekResult struct {
 // (dayNumberToKey in program_mapper.go), so the coach can review/edit a
 // weekly AI plan with the same per-day editor used for coach-authored plans
 // — no new coach-side UI needed.
-func (s *AIGenerateService) GenerateWeeklyNutrition(ctx context.Context, userID uint, goal string, save bool, existingPlan *ai.NutritionWeekSchema) (*NutritionWeekResult, error) {
+func (s *AIGenerateService) GenerateWeeklyNutrition(ctx context.Context, userID uint, goal string, save bool, existingPlan *ai.NutritionWeekSchema, checkIn WeeklyNutritionCheckIn, targetCalories int) (*NutritionWeekResult, error) {
 	var plan *ai.NutritionWeekSchema
 	var targets NutritionTargets
 
@@ -211,16 +252,22 @@ func (s *AIGenerateService) GenerateWeeklyNutrition(ctx context.Context, userID 
 			BirthDate:      profile.BirthDate,
 			BodyFatPercent: profile.BodyFatPercent,
 			Goal:           goal,
+			TargetCalories: targetCalories,
 		})
 
 		userContext := buildAIUserContext(profile) + s.loadFunnelAIContext(ctx, profile) + fmt.Sprintf(
 			"\nهدف تغذیه‌ای انتخاب‌شده: %s\nهدف کالری روزانه محاسبه‌شده (حتماً هر روز نزدیک به همین عدد بمان): %d کیلوکالری، پروتئین %dگرم، کربوهیدرات %dگرم، چربی %dگرم.",
 			targets.Goal, targets.TargetCalories, targets.ProteinG, targets.CarbsG, targets.FatG,
-		)
+		) + buildWeeklyCheckInContext(checkIn)
 		persona := string(ai.PersonaNutrition)
 
-		generated, genRes, genErr := ai.GenerateWeeklyNutritionPlan(ctx, userContext)
-		s.persistLog(ctx, userID, "nutrition_week", persona, userContext, genRes, genErr)
+		// Client axios used to abort at 15s while week generation takes ~50s+.
+		// Keep the upstream call alive on a detached deadline so a disconnect
+		// does not cancel GapGPT mid-response or drop the AI log write.
+		aiCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 2*time.Minute)
+		defer cancel()
+		generated, genRes, genErr := ai.GenerateWeeklyNutritionPlan(aiCtx, userContext)
+		s.persistLog(context.WithoutCancel(ctx), userID, "nutrition_week", persona, userContext, genRes, genErr)
 
 		if genErr != nil {
 			return nil, mapAIGenErr(genErr)
@@ -309,13 +356,15 @@ func nutritionWeekToItems(plan *ai.NutritionWeekSchema) []models.NutritionItem {
 				dayNum = 7
 			}
 		}
+		snackCount := 0
 		for mealIdx, meal := range day.Meals {
+			slot := NormalizeMealSlot(meal.Name, &snackCount)
 			for itemIdx, food := range meal.Items {
 				items = append(items, models.NutritionItem{
 					DayNumber:  dayNum,
 					MealNumber: mealIdx + 1,
 					OrderIndex: itemIdx,
-					MealSlot:   mealSlotFromIndex(mealIdx),
+					MealSlot:   slot,
 					Food:       food.FoodName,
 					Quantity:   fmt.Sprintf("%.0f گرم", food.AmountG),
 					Multiplier: 1,
@@ -344,7 +393,7 @@ func nutritionTargetsFromPlan(plan *ai.NutritionPlanSchema) NutritionTargets {
 // saveNutritionProgram persists an AI-generated plan as the student's active
 // nutrition_program + nutrition_item rows (roadmap BE-1.2). Requires an active
 // coach subscription, mirroring the coach-authored program flow.
-func (s *AIGenerateService) saveNutritionProgram(ctx context.Context, userID uint, plan *ai.NutritionPlanSchema, targets NutritionTargets) (programID, subscriptionID uint, err error) {
+func (s *AIGenerateService) saveNutritionProgram(ctx context.Context, userID uint, plan *ai.NutritionPlanSchema, targets NutritionTargets, activate bool) (programID, subscriptionID uint, err error) {
 	sub, err := s.subRepo.FindCurrentByUserID(ctx, userID, time.Now())
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -372,12 +421,12 @@ func (s *AIGenerateService) saveNutritionProgram(ctx context.Context, userID uin
 		ProteinTarget:  fmt.Sprintf("%dg", targets.ProteinG),
 		Goal:           targets.Goal,
 		Source:         models.ProgramSourceAI,
-		// AI-authored plans start as a draft awaiting coach approval
-		// (POST /coach/students/:id/nutrition-programs/:programId/approve) —
-		// only coach-authored plans default to "official".
-		Status:        models.ProgramStatusDraft,
-		DurationWeeks: 4,
-		IsActive:      false,
+		Status:         models.ProgramStatusDraft,
+		DurationWeeks:  4,
+		IsActive:       false,
+	}
+	if activate {
+		program.Status = models.ProgramStatusOfficial
 	}
 	if err := s.programRepo.CreateNutritionProgram(ctx, program); err != nil {
 		return 0, 0, err
@@ -390,6 +439,11 @@ func (s *AIGenerateService) saveNutritionProgram(ctx context.Context, userID uin
 	if err := s.programRepo.UpsertNutritionItems(ctx, program.ID, items); err != nil {
 		return 0, 0, err
 	}
+	if activate {
+		if err := s.programRepo.SetNutritionProgramActive(ctx, program.ID, true); err != nil {
+			return 0, 0, err
+		}
+	}
 	if s.achievementSvc != nil {
 		s.achievementSvc.HandleAIProgramSaved(ctx, userID, "nutrition")
 	}
@@ -398,13 +452,15 @@ func (s *AIGenerateService) saveNutritionProgram(ctx context.Context, userID uin
 
 func nutritionPlanToItems(plan *ai.NutritionPlanSchema) []models.NutritionItem {
 	items := make([]models.NutritionItem, 0)
+	snackCount := 0
 	for mealIdx, meal := range plan.Meals {
+		slot := NormalizeMealSlot(meal.Name, &snackCount)
 		for itemIdx, food := range meal.Items {
 			items = append(items, models.NutritionItem{
 				DayNumber:  1,
 				MealNumber: mealIdx + 1,
 				OrderIndex: itemIdx,
-				MealSlot:   mealSlotFromIndex(mealIdx),
+				MealSlot:   slot,
 				Food:       food.FoodName,
 				Quantity:   fmt.Sprintf("%.0f گرم", food.AmountG),
 				Multiplier: 1,
@@ -417,14 +473,6 @@ func nutritionPlanToItems(plan *ai.NutritionPlanSchema) []models.NutritionItem {
 		}
 	}
 	return items
-}
-
-func mealSlotFromIndex(idx int) string {
-	slots := []string{"breakfast", "lunch", "snack1", "dinner", "snack2", "snack3"}
-	if idx >= 0 && idx < len(slots) {
-		return slots[idx]
-	}
-	return "snack3"
 }
 
 func mapPrimaryGoalToPlanGoal(primaryGoal string) string {
@@ -476,6 +524,108 @@ func (s *AIGenerateService) SuggestFromIngredients(ctx context.Context, userID u
 	// come from real nutrition data rather than an LLM guess whenever possible.
 	suggestion.Items = s.reconcileFoodItemsWithCatalog(ctx, suggestion.Items)
 	return suggestion, nil
+}
+
+func (s *AIGenerateService) ListTodayNutritionSlots(ctx context.Context, userID uint) (*TodayNutritionSlotsResult, error) {
+	dayNum := persianDayNumberNow()
+	result := &TodayNutritionSlotsResult{
+		HasProgram: false,
+		DayNumber:  dayNum,
+		Slots:      emptyTodaySlots(),
+	}
+	sub, err := s.subRepo.FindCurrentByUserID(ctx, userID, time.Now())
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return result, nil
+		}
+		return nil, err
+	}
+	program, err := s.programRepo.FindActiveNutritionBySubscriptionID(ctx, sub.ID)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, err
+	}
+	if program == nil {
+		return result, nil
+	}
+	items, err := s.programRepo.FindNutritionItemsByProgramID(ctx, program.ID)
+	if err != nil {
+		return nil, err
+	}
+	result.HasProgram = true
+	result.Slots = groupTodayMealSlots(items, dayNum)
+	return result, nil
+}
+
+// ApplyIngredientSuggestion replaces one meal slot on today's active nutrition
+// program with the generated recipe. If none is active, it creates and activates
+// a small program that only contains that slot.
+func (s *AIGenerateService) ApplyIngredientSuggestion(ctx context.Context, userID uint, suggestion *ai.IngredientSuggestionSchema, replaceSlot string) error {
+	if suggestion == nil || !IsValidMealSlot(replaceSlot) {
+		return ErrAIInvalidInput
+	}
+	if err := ai.ValidateIngredientSuggestion(suggestion); err != nil {
+		return fmt.Errorf("%w: %s", ErrAIInvalidPlan, err.Error())
+	}
+	sub, err := s.subRepo.FindCurrentByUserID(ctx, userID, time.Now())
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrAINoActiveSubscription
+		}
+		return err
+	}
+
+	program, err := s.programRepo.FindActiveNutritionBySubscriptionID(ctx, sub.ID)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return err
+	}
+
+	dayNum := persianDayNumberNow()
+	newItems := suggestionToNutritionItems(suggestion, dayNum, replaceSlot)
+
+	if program == nil {
+		maxVersion, verr := s.programRepo.MaxNutritionVersion(ctx, sub.ID)
+		if verr != nil {
+			return verr
+		}
+		program = &models.NutritionProgram{
+			SubscriptionID: sub.ID,
+			CoachID:        sub.CoachID,
+			Version:        maxVersion + 1,
+			Title:          "وعده هوش مصنوعی",
+			Notes:          "این وعده توسط دستیار هوشمند فیتینو به برنامه اضافه شد.",
+			CaloriesTarget: suggestion.TotalCalories,
+			Goal:           ai.GoalMaintain,
+			Source:         models.ProgramSourceAI,
+			Status:         models.ProgramStatusOfficial,
+			DurationWeeks:  4,
+			IsActive:       false,
+		}
+		if err := s.programRepo.CreateNutritionProgram(ctx, program); err != nil {
+			return err
+		}
+		for i := range newItems {
+			newItems[i].NutritionProgramID = program.ID
+			newItems[i].MealNumber = 1
+		}
+		if err := s.programRepo.UpsertNutritionItems(ctx, program.ID, newItems); err != nil {
+			return err
+		}
+		return s.programRepo.SetNutritionProgramActive(ctx, program.ID, true)
+	}
+
+	existing, err := s.programRepo.FindNutritionItemsByProgramID(ctx, program.ID)
+	if err != nil {
+		return err
+	}
+	merged := replaceNutritionSlot(existing, dayNum, replaceSlot, newItems)
+	for i := range merged {
+		merged[i].NutritionProgramID = program.ID
+	}
+	return s.programRepo.UpsertNutritionItems(ctx, program.ID, merged)
+}
+
+func persianDayNumberNow() int {
+	return (int(time.Now().Weekday())-int(time.Saturday)+7)%7 + 1
 }
 
 // RegenerateMeal produces a single replacement meal ("تغییر این وعده") without
@@ -612,10 +762,45 @@ func (s *AIGenerateService) reconcileFoodItemsWithCatalog(ctx context.Context, i
 	return items
 }
 
-// SuggestFoodLogFromVoice runs the two-step voice pipeline (roadmap BE-2.3/2.4):
-// STT transcription, then structured extraction into food-log items. Never
-// saved to DB directly — the caller (FE) previews it and the user confirms via
-// the existing POST /user/food-logs endpoint per item.
+func (s *AIGenerateService) hydrateVoiceItemsFromCatalog(ctx context.Context, items []ai.FoodItem) []ai.FoodItem {
+	if s.foodRepo == nil {
+		return s.reconcileFoodItemsWithCatalog(ctx, items)
+	}
+	for i := range items {
+		id := strings.TrimSpace(items[i].FoodID)
+		if id == "" {
+			continue
+		}
+		food, err := s.foodRepo.FindByExternalID(ctx, id)
+		if err != nil {
+			continue
+		}
+		full, err := s.foodRepo.FindByID(ctx, food.ID)
+		if err != nil {
+			full = food
+		}
+		grams := items[i].AmountG
+		if grams <= 0 {
+			if g, ok := gramsFromVoiceUnit(full, items[i].VoiceUnit, items[i].VoiceQty); ok {
+				grams = g
+			}
+		}
+		if grams <= 0 {
+			continue
+		}
+		facts := scaleFoodByGrams(full, grams)
+		items[i].FoodName = full.Name
+		items[i].AmountG = facts.Grams
+		items[i].Calories = int(facts.Calories + 0.5)
+		items[i].ProteinG = round1(facts.Protein)
+		items[i].CarbsG = round1(facts.Carbs)
+		items[i].FatG = round1(facts.Fat)
+	}
+	return items
+}
+
+// SuggestFoodLogFromVoice runs Whisper catalog extraction then Gemini JSON
+// referee (PIPELINE layer 9) and returns a preview. Never saved to DB directly.
 func (s *AIGenerateService) SuggestFoodLogFromVoice(ctx context.Context, userID uint, audioFilename string, audioData []byte) (*ai.FoodLogSchema, error) {
 	if !s.allow(userID) {
 		return nil, ErrAIRateLimited
@@ -624,22 +809,19 @@ func (s *AIGenerateService) SuggestFoodLogFromVoice(ctx context.Context, userID 
 		return nil, ErrAIInvalidInput
 	}
 
-	transcript, err := ai.TranscribeAudio(ctx, audioFilename, audioData)
+	log, genRes, err := ai.LogMealFromVoice(ctx, audioFilename, audioData)
+	userContext := ""
+	if log != nil {
+		userContext = log.Transcript
+	}
+	s.persistLog(ctx, userID, "food_log_voice", string(ai.PersonaNutrition), userContext, genRes, err)
 	if err != nil {
-		s.persistLog(ctx, userID, "food_log_voice", string(ai.PersonaNutrition), "", nil, err)
 		return nil, mapAIGenErr(err)
 	}
-
-	userContext := "متن پیاده‌سازی‌شده از صدای کاربر: " + transcript
-	log, genRes, genErr := ai.GenerateFoodLog(ctx, userContext)
-	s.persistLog(ctx, userID, "food_log_voice", string(ai.PersonaNutrition), userContext, genRes, genErr)
-	if genErr != nil {
-		return nil, mapAIGenErr(genErr)
-	}
+	log.Items = s.hydrateVoiceItemsFromCatalog(ctx, log.Items)
 	if err := ai.ValidateFoodLog(log); err != nil {
 		return nil, fmt.Errorf("%w: %s", ErrAIInvalidPlan, err.Error())
 	}
-	log.Transcript = transcript
 	return log, nil
 }
 
@@ -724,9 +906,21 @@ type WorkoutPlanResult struct {
 // are NOT persisted to the profile — only used to steer this one generation,
 // the same way GenerateNutrition's goal override already works.
 type WorkoutConstraints struct {
-	Equipment      []string
-	DaysPerWeek    int
-	SessionMinutes int
+	Goal                string
+	Equipment           []string
+	DaysPerWeek         int
+	SessionMinutes      int
+	ExperienceLevel     string
+	TrainingHistory     string
+	TrainingLocation    string
+	PhysicalLimitations []string
+	LimitationNote      string
+	DislikedExercises   []string
+	DislikedNote        string
+	PreferredStyle      string
+	CardioPreference    string
+	BodyPartPriority    []string
+	VoiceNotes          string
 }
 
 // GenerateWorkout asks AI for a workout plan and optionally saves it as the
@@ -832,10 +1026,15 @@ func workoutPlanToItems(plan *ai.WorkoutPlanSchema) []models.ProgramItem {
 	for dayIdx, day := range plan.Days {
 		for exIdx, ex := range day.Exercises {
 			items = append(items, models.ProgramItem{
-				WeekNumber:        1,
-				DayNumber:         dayIdx + 1,
-				OrderIndex:        exIdx,
-				Exercise:          ex.ExerciseName,
+				WeekNumber: 1,
+				DayNumber:  dayIdx + 1,
+				OrderIndex: exIdx,
+				Exercise:   ex.ExerciseName,
+				// AI plans (home workouts especially) name movements freely and
+				// are never linked to the catalog, so the muscle group is
+				// classified from the name. Without it these programs would
+				// produce set logs that no personal-record filter can find.
+				MuscleGroup:       ClassifyMuscleGroup(ex.ExerciseName, ""),
 				Sets:              ex.Sets,
 				Reps:              ex.Reps,
 				RestTime:          fmt.Sprintf("%d ثانیه", ex.RestSeconds),
@@ -1043,22 +1242,183 @@ func (s *AIGenerateService) loadFunnelAIContext(ctx context.Context, profile *Me
 // exactly like before this wizard existed.
 func buildWorkoutConstraintsContext(c WorkoutConstraints) string {
 	var b strings.Builder
-	equipment := make([]string, 0, len(c.Equipment))
-	for _, e := range c.Equipment {
-		if e = strings.TrimSpace(e); e != "" {
-			equipment = append(equipment, e)
+	write := func(label, value string) {
+		value = strings.TrimSpace(value)
+		if value == "" {
+			return
 		}
+		b.WriteString("\n- " + label + ": " + truncateRunes(value, 400))
 	}
-	if len(equipment) > 0 {
-		b.WriteString("\n- تجهیزات در دسترس کاربر (فقط با همین‌ها برنامه بچین): " + strings.Join(equipment, "، "))
+	writeList := func(label string, items []string) {
+		cleaned := cleanPromptList(items)
+		if len(cleaned) == 0 {
+			return
+		}
+		b.WriteString("\n- " + label + ": " + strings.Join(cleaned, "، "))
 	}
+
+	write("هدف تمرینی", c.Goal)
+	writeList("تجهیزات در دسترس (فقط با همین‌ها برنامه بچین)", c.Equipment)
 	if c.DaysPerWeek > 0 {
 		b.WriteString(fmt.Sprintf("\n- تعداد روزهای تمرین در هفته که کاربر می‌خواهد: دقیقاً %d روز (تعداد آیتم‌های days باید همین باشد)", c.DaysPerWeek))
 	}
 	if c.SessionMinutes > 0 {
 		b.WriteString(fmt.Sprintf("\n- مدت زمان هر جلسه تمرین: حدود %d دقیقه (حجم تمرین هر روز را متناسب با این زمان تنظیم کن)", c.SessionMinutes))
 	}
-	return b.String()
+	write("سطح تمرین", c.ExperienceLevel)
+	write("سابقه تمرین منظم", c.TrainingHistory)
+	write("محل تمرین", c.TrainingLocation)
+	writeList("محدودیت حرکتی / ناحیه حساس", c.PhysicalLimitations)
+	write("توضیح محدودیت", c.LimitationNote)
+	writeList("حرکاتی که نباید در برنامه باشد", c.DislikedExercises)
+	write("توضیح حرکات نامطلوب", c.DislikedNote)
+	write("سبک تمرین مورد علاقه", c.PreferredStyle)
+	write("ترجیح هوازی", c.CardioPreference)
+	writeList("اولویت بخش‌های بدن", c.BodyPartPriority)
+	write("توضیح صوتی/متنی اضافه کاربر", c.VoiceNotes)
+
+	if b.Len() == 0 {
+		return ""
+	}
+	return "\nپروفایل تمرینی ویزارد (اطلاعات پایه سن/قد/وزن از پروفایل جداگانه آمده؛ این‌ها را حتماً رعایت کن). محدودیت جسمی فقط برای شخصی‌سازی است و برنامه جایگزین ارزیابی پزشکی نیست:" + b.String()
+}
+
+// buildDailyCheckInContext turns the daily nutrition questionnaire into extra
+// prompt lines. Empty fields are omitted so a bare {} body behaves exactly
+// like before this check-in existed (mobile clients included).
+func buildDailyCheckInContext(c DailyNutritionCheckIn) string {
+	var b strings.Builder
+	wrote := false
+	write := func(label, value string) {
+		value = strings.TrimSpace(value)
+		if value == "" {
+			return
+		}
+		wrote = true
+		b.WriteString("\n- " + label + ": " + truncateRunes(value, 200))
+	}
+	writeList := func(label string, items []string) {
+		cleaned := cleanPromptList(items)
+		if len(cleaned) == 0 {
+			return
+		}
+		wrote = true
+		b.WriteString("\n- " + label + ": " + strings.Join(cleaned, "، "))
+	}
+
+	write("تعداد وعده امروز", c.MealCount)
+	if n := mealCountFromCheckIn(c.MealCount); n > 0 {
+		b.WriteString(fmt.Sprintf(" (آرایه meals باید دقیقاً %d عضو داشته باشد)", n))
+	}
+	writeList("پروتئین در دسترس", c.Protein)
+	writeList("کربوهیدرات در دسترس", c.Carbs)
+	writeList("سبزیجات و میوه در دسترس", c.Produce)
+	writeList("مواد غذایی اضافه‌شده", c.AvailableExtra)
+	writeList("هوس امروز", c.Craving)
+	write("غذای دلخواه", c.CravingCustom)
+	write("تمرین امروز", c.Training)
+	write("وقت آماده‌سازی غذا", c.PrepTime)
+	writeList("نمی‌خواهد بخورد", c.Avoid)
+	writeList("غذاهای اضافه‌ای که نمی‌خواهد", c.AvoidExtra)
+	write("سبک برنامه امروز", c.Style)
+
+	if !wrote {
+		return ""
+	}
+	return "\nچک‌این روزانه تغذیه (فقط برای همین امروز؛ این ترجیحات را حتماً در برنامه رعایت کن):" + b.String()
+}
+
+// buildWeeklyCheckInContext turns the weekly nutrition questionnaire into extra
+// prompt lines. Empty fields are omitted so a bare {} body behaves exactly
+// like before this check-in existed (mobile clients included).
+func buildWeeklyCheckInContext(c WeeklyNutritionCheckIn) string {
+	var b strings.Builder
+	wrote := false
+	write := func(label, value string) {
+		value = strings.TrimSpace(value)
+		if value == "" {
+			return
+		}
+		wrote = true
+		b.WriteString("\n- " + label + ": " + truncateRunes(value, 400))
+	}
+	writeList := func(label string, items []string) {
+		cleaned := cleanPromptList(items)
+		if len(cleaned) == 0 {
+			return
+		}
+		wrote = true
+		b.WriteString("\n- " + label + ": " + strings.Join(cleaned, "، "))
+	}
+
+	write("هدف این هفته (نیت کاربر)", c.WeeklyGoal)
+	write("تعداد وعده در روز", c.MealCount)
+	if n := mealCountFromCheckIn(c.MealCount); n > 0 {
+		b.WriteString(fmt.Sprintf(" (هر روز آرایه meals باید دقیقاً %d عضو داشته باشد)", n))
+	} else if strings.Contains(strings.TrimSpace(c.MealCount), "متغیر") {
+		wrote = true
+		b.WriteString(" (تعداد وعده را خودت بر اساس وقت آشپزی، محل غذا و تمرین هر روز بین ۳ تا ۶ تعیین کن)")
+	}
+	writeList("روزهای تمرین", c.TrainingDays)
+	write("شدت تمرین هفته", c.TrainingIntensity)
+	writeList("سبک غذاهای مورد علاقه", c.LikedFoods)
+	write("غذای موردعلاقه", c.FavoriteFood)
+	writeList("نمی‌خواهد بخورد", c.Avoid)
+	writeList("غذاهای اضافه‌ای که نمی‌خواهد", c.AvoidExtra)
+	writeList("مواد غذایی معمولاً در دسترس", c.Available)
+	writeList("مواد غذایی اضافه‌شده", c.AvailableExtra)
+	write("بودجه خرید", c.Budget)
+	write("محل غذا خوردن", c.EatingPlace)
+	write("وقت آشپزی", c.PrepTime)
+	write("ترجیح تکرار غذا در هفته", c.RepeatPreference)
+	write("شرایط خاص این هفته", c.SpecialCircumstances)
+	write("سبک برنامه هفتگی", c.Style)
+
+	if !wrote {
+		return ""
+	}
+	return "\nچک‌این هفتگی تغذیه (قواعد کل هفته؛ وعدهٔ تک‌تک روزها را از کاربر نپرسیده‌ایم — خودت الگوی ۷ روز را از این قواعد بساز." +
+		" روزهای تمرین را پرحجم‌تر و روزهای استراحت را سبک‌تر بچین." +
+		" شرایط خاص همان روز را حتماً override کن." +
+		" محل غذا خوردن را در پیچیدگی وعده رعایت کن؛ محل کار/دانشگاه یعنی غذای قابل‌حمل." +
+		" بودجه و ترجیح تکرار را در تنوع بین روزها رعایت کن):" + b.String()
+}
+
+func mealCountFromCheckIn(s string) int {
+	s = strings.TrimSpace(s)
+	switch {
+	case strings.Contains(s, "۳") || strings.HasPrefix(s, "3"):
+		return 3
+	case strings.Contains(s, "۴") || strings.HasPrefix(s, "4"):
+		return 4
+	case strings.Contains(s, "۵") || strings.HasPrefix(s, "5"):
+		return 5
+	case strings.Contains(s, "۶") || strings.HasPrefix(s, "6"):
+		return 6
+	default:
+		return 0
+	}
+}
+
+func cleanPromptList(items []string) []string {
+	out := make([]string, 0, len(items))
+	seen := make(map[string]struct{}, len(items))
+	for _, raw := range items {
+		s := strings.TrimSpace(raw)
+		if s == "" {
+			continue
+		}
+		s = truncateRunes(s, 80)
+		if _, ok := seen[s]; ok {
+			continue
+		}
+		seen[s] = struct{}{}
+		out = append(out, s)
+		if len(out) >= 20 {
+			break
+		}
+	}
+	return out
 }
 
 func truncateRunes(s string, max int) string {

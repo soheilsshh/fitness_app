@@ -341,7 +341,12 @@ export default function WorkoutEditorClient({
       </div>
 
       {apiBase === "coach" ? (
-        <SavedProgramsApprovalCard studentId={studentId} apiBase={apiBase} type="workout" />
+        <SavedProgramsApprovalCard
+          studentId={studentId}
+          apiBase={apiBase}
+          type="workout"
+          onApproved={loadPrograms}
+        />
       ) : null}
 
       <Card>

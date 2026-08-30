@@ -54,7 +54,10 @@ export default function ProfileSummaryCard({ profile, loading }) {
             </div>
           ))}
         </dl>
-        <Button asChild variant="outline" size="sm" className="w-full">
+        <p className="text-xs leading-5 text-muted-foreground">
+          سن، قد و وزن از پروفایل است و در این ویزارد دوباره پرسیده نمی‌شود.
+        </p>
+        <Button asChild variant="outline" className="h-11 w-full cursor-pointer">
           <Link href="/user/profile">ویرایش پروفایل</Link>
         </Button>
       </CardContent>

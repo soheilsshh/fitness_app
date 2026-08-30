@@ -1,5 +1,5 @@
-/** Shenava cold-start + structured LLM often exceeds the default 15s axios timeout. */
-export const VOICE_API_TIMEOUT_MS = 90_000;
+/** Whisper + optional Gemini JSON refine can exceed the default axios timeout. */
+export const VOICE_API_TIMEOUT_MS = 120_000;
 
 export function voiceApiErrorMessage(err, fallback = "پردازش صدا ناموفق بود") {
   const code = err?.code;

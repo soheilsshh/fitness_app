@@ -1,0 +1,10 @@
+﻿externalId,sourceExternalId,name,category,unit,amount,isCanonical,calories,fat,protein,carbs,voiceAliases,nutrientSourceRef,dataQualityStatus,dataQualityFlags
+SUP-WHEY-GENERIC,generic,وی بدون برند,پروتئین,گرم,30,True,120,2,24,3,"وی, پروتئین وی, پروتین وی, وی پروتئین, پودر وی, whey",Supplement:SUP-WHEY-GENERIC,reference,generic_reference_profile
+SUP-CASEIN-GENERIC,generic,کازئین بدون برند,پروتئین,گرم,30,True,120,1,24,3,"کازئین, کازین, پروتئین کازئین, پروتین کازئین, پروتئین کازین, casein",Supplement:SUP-CASEIN-GENERIC,reference,generic_reference_profile
+SUP-WHEY-KALEH,ایرانی-کاله,وی کاله,پروتئین,گرم,32.5,True,122,2,24,2,"وی کاله, پروتئین وی کاله, پروتین وی کاله, کاله وی, کاله",Supplement:SUP-WHEY-KALEH,reference,brand_label_values_vary
+SUP-WHEY-PEGAH,ایرانی-پگاه,وی پگاه,پروتئین,گرم,33,True,127,1.5,24.5,3,"وی پگاه, پروتئین وی پگاه, پروتین وی پگاه, پگاه وی, پگاه",Supplement:SUP-WHEY-PEGAH,reference,brand_label_values_vary
+SUP-WHEY-KAREN,ایرانی-کارن,وی کارن,پروتئین,گرم,30,True,120,1.5,24,2,"وی کارن, پروتئین وی کارن, پروتین وی کارن, کارن وی, پروتئین کارن, کارن",Supplement:SUP-WHEY-KAREN,reference,brand_label_values_vary
+SUP-WHEY-ISO,generic,وی ایزوله,پروتئین,گرم,30,True,115,0.5,27,1,"وی ایزوله, پروتئین وی ایزوله, پروتین وی ایزوله, وی خالص, whey isolate",Supplement:SUP-WHEY-ISO,reference,generic_reference_profile
+SUP-WHEY-CONC,generic,وی کنسانتره,پروتئین,گرم,30,True,120,2,24,3,"وی کنسانتره, پروتئین وی کنسانتره, پروتین وی کنسانتره, whey concentrate",Supplement:SUP-WHEY-CONC,reference,generic_reference_profile
+SUP-WHEY-HYDRO,generic,وی هیدرولیزه,پروتئین,گرم,30,True,120,1,25,2,"وی هیدرولیزه, پروتئین وی هیدرولیزه, پروتین وی هیدرولیزه, whey hydrolyzed",Supplement:SUP-WHEY-HYDRO,reference,generic_reference_profile
+SUP-CASEIN,generic,کازئین,پروتئین,گرم,30,True,120,1,24,3,"کازئین, کازین, پروتئین کازئین, پروتین کازئین, casein",Supplement:SUP-CASEIN,reference,generic_reference_profile

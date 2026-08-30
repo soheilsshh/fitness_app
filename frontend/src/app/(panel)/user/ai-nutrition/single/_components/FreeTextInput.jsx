@@ -13,7 +13,12 @@ import { cn } from "@/lib/utils";
  * Free-text restriction/preference field with an optional voice shortcut.
  * Voice → STT → متن → این فیلد (هیچ‌وقت صدا مستقیم به مدل برنامه‌ریز داده نمی‌شود).
  */
-export default function FreeTextInput({ value, onChange }) {
+export default function FreeTextInput({
+  value,
+  onChange,
+  label = "یا متن آزاد بنویس",
+  placeholder = "مثلاً: مرغ و تخم‌مرغ دارم، ماهی ندارم، لبنیات دوست ندارم و شامم سبک باشه.",
+}) {
   const [recording, setRecording] = useState(false);
   const [transcribing, setTranscribing] = useState(false);
   const [error, setError] = useState("");
@@ -80,13 +85,13 @@ export default function FreeTextInput({ value, onChange }) {
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <p className="text-sm font-iranianSansDemiBold text-foreground">
-          یا متن آزاد بنویس
+          {label}
         </p>
         <Button
           type="button"
           size="sm"
           variant={recording ? "destructive" : "outline"}
-          className="gap-1.5 rounded-full"
+          className="h-11 gap-1.5 rounded-full cursor-pointer"
           disabled={transcribing}
           onClick={recording ? stopRecording : startRecording}
         >
@@ -110,7 +115,7 @@ export default function FreeTextInput({ value, onChange }) {
       </div>
       <Textarea
         rows={4}
-        placeholder="مثلاً: مرغ و تخم‌مرغ دارم، ماهی ندارم، لبنیات دوست ندارم و شامم سبک باشه."
+        placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className={cn(recording && "ring-2 ring-red-500/40")}

@@ -87,12 +87,20 @@ func (h *WorkoutHistoryController) ListExerciseTargets(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
+	// `items` stays a string array of group codes for older clients; `groups`
+	// carries the Persian labels the picker should display.
 	targets, err := h.historyService.ListExerciseTargets(c.Request.Context())
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"items": targets})
+	groups := make([]service.MuscleGroupInfo, 0, len(targets))
+	for _, g := range h.historyService.ListMuscleGroups(c.Request.Context()) {
+		if g.Recordable {
+			groups = append(groups, g)
+		}
+	}
+	c.JSON(http.StatusOK, gin.H{"items": targets, "groups": groups})
 }
 
 func (h *WorkoutHistoryController) NotifyCoachOfPersonalRecord(c *gin.Context) {
@@ -101,16 +109,12 @@ func (h *WorkoutHistoryController) NotifyCoachOfPersonalRecord(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
-	var req struct {
-		ExerciseName string  `json:"exerciseName"`
-		WeightKg     float64 `json:"weightKg"`
-		Reps         int     `json:"reps"`
-	}
+	var req service.PersonalRecordShareRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err := h.historyService.NotifyCoachOfPersonalRecord(c.Request.Context(), userID, req.ExerciseName, req.WeightKg, req.Reps); err != nil {
+	if err := h.historyService.NotifyCoachOfPersonalRecord(c.Request.Context(), userID, req); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

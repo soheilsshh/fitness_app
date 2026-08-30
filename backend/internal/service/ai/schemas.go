@@ -9,9 +9,9 @@ const (
 
 // Workout goal types.
 const (
-	WorkoutStrength     = "strength"
-	WorkoutHypertrophy  = "hypertrophy"
-	WorkoutFatLoss      = "fat_loss"
+	WorkoutStrength    = "strength"
+	WorkoutHypertrophy = "hypertrophy"
+	WorkoutFatLoss     = "fat_loss"
 )
 
 // NutritionPlanSchema is the structured AI output for a nutrition plan.
@@ -30,6 +30,13 @@ type MealSchema struct {
 	Items []FoodItem `json:"items"`
 }
 
+// FoodAvailableUnit is one DB-backed household measure the client may offer
+// in the voice-review unit dropdown. GramsPerUnit is the conversion; never guess.
+type FoodAvailableUnit struct {
+	Unit         string  `json:"unit"`
+	GramsPerUnit float64 `json:"grams_per_unit"`
+}
+
 // FoodItem is a single food entry with macros.
 type FoodItem struct {
 	FoodName string  `json:"food_name"`
@@ -42,6 +49,24 @@ type FoodItem struct {
 	ProteinG     float64 `json:"protein_g"`
 	CarbsG       float64 `json:"carbs_g"`
 	FatG         float64 `json:"fat_g"`
+	// FoodID is the catalog external_id. Gemini may only pick ids from extractor
+	// JSON; grams/kcal are filled from the food table, never from the model.
+	FoodID   string   `json:"food_id,omitempty"`
+	MealType string   `json:"meal_type,omitempty"`
+	Spoken   string   `json:"spoken,omitempty"`
+	Quantity *float64 `json:"quantity,omitempty"`
+	Unit     string   `json:"unit,omitempty"`
+	// NeedsQuantity / NeedsConversion tell the review UI to collect amount
+	// before saving. AvailableUnits is the only legal dropdown; no generic fallback.
+	NeedsQuantity   bool                `json:"needs_quantity,omitempty"`
+	NeedsConversion bool                `json:"needs_conversion,omitempty"`
+	AvailableUnits  []FoodAvailableUnit `json:"available_units,omitempty"`
+	KcalPer100g     *float64            `json:"kcal_per_100g,omitempty"`
+	ProteinPer100g  *float64            `json:"protein_per_100g,omitempty"`
+	CarbsPer100g    *float64            `json:"carbs_per_100g,omitempty"`
+	FatPer100g      *float64            `json:"fat_per_100g,omitempty"`
+	VoiceUnit       string              `json:"-"`
+	VoiceQty        *float64            `json:"-"`
 }
 
 // NutritionWeekDaySchema is one day inside a weekly nutrition plan. DayName
@@ -108,9 +133,16 @@ type ProgressAnalysisSchema struct {
 type FoodLogSchema struct {
 	Items []FoodItem `json:"items"`
 	Notes string     `json:"notes"`
-	// Transcript is the raw STT text (Shenava/Whisper). Set by the server after
-	// transcription — not produced by the structured LLM schema.
+	// Transcript is the raw STT text (Whisper Persian via fa-calorie-api).
 	Transcript string `json:"transcript,omitempty"`
+	// Questions are Gemini clarifications for ambiguous voice logs (PIPELINE layer 9).
+	Questions []FoodLogQuestion `json:"questions,omitempty"`
+}
+
+// FoodLogQuestion is one clarification plus exactly three short Persian options.
+type FoodLogQuestion struct {
+	Text    string   `json:"text"`
+	Options []string `json:"options,omitempty"`
 }
 
 // SetLogSchema is used later for voice set logging (phase 3 roadmap).
@@ -227,7 +259,7 @@ func FunnelAnalysisJSONSchema() map[string]interface{} {
 			},
 			"analysis_ready_title": str,
 			"analysis_ready_body":  str,
-			"ai_guard":               str,
+			"ai_guard":             str,
 		},
 		"required": []string{
 			"ai_warning",
@@ -421,8 +453,8 @@ func IngredientSuggestionJSONSchema() map[string]interface{} {
 	return map[string]interface{}{
 		"type": "object",
 		"properties": map[string]interface{}{
-			"recipe_name":   map[string]string{"type": "string"},
-			"instructions":  map[string]string{"type": "string"},
+			"recipe_name":    map[string]string{"type": "string"},
+			"instructions":   map[string]string{"type": "string"},
 			"total_calories": map[string]string{"type": "integer"},
 			"items": map[string]interface{}{
 				"type":  "array",
@@ -434,32 +466,55 @@ func IngredientSuggestionJSONSchema() map[string]interface{} {
 	}
 }
 
-// FoodLogJSONSchema returns the OpenAI json_schema object for voice-transcribed
-// food log entries (roadmap BE-2.4).
-func FoodLogJSONSchema() map[string]interface{} {
-	foodItem := map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"food_name": map[string]string{"type": "string"},
-			"amount_g":  map[string]string{"type": "number"},
-			"calories":  map[string]string{"type": "integer"},
-			"protein_g": map[string]string{"type": "number"},
-			"carbs_g":   map[string]string{"type": "number"},
-			"fat_g":     map[string]string{"type": "number"},
-		},
-		"required":             []string{"food_name", "amount_g", "calories", "protein_g", "carbs_g", "fat_g"},
-		"additionalProperties": false,
-	}
+// CalorieLogRefineJSONSchema is Gemini layer-9 output: choose/drop/meals/questions.
+// It must not carry grams/kcal so the model cannot invent nutrition numbers.
+func CalorieLogRefineJSONSchema() map[string]interface{} {
 	return map[string]interface{}{
 		"type": "object",
 		"properties": map[string]interface{}{
-			"items": map[string]interface{}{
+			"drop_item_indexes": map[string]interface{}{
 				"type":  "array",
-				"items": foodItem,
+				"items": map[string]string{"type": "integer"},
+			},
+			"choose_food_ids": map[string]interface{}{
+				"type":  "array",
+				"items": map[string]string{"type": "string"},
+			},
+			"item_meals": map[string]interface{}{
+				"type": "array",
+				"items": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"food_id": map[string]string{"type": "string"},
+						"meal": map[string]interface{}{
+							"type": "string",
+							"enum": []string{"breakfast", "lunch", "dinner", "snack"},
+						},
+					},
+					"required":             []string{"food_id", "meal"},
+					"additionalProperties": false,
+				},
+			},
+			"questions": map[string]interface{}{
+				"type": "array",
+				"items": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"text": map[string]string{"type": "string"},
+						"options": map[string]interface{}{
+							"type":     "array",
+							"items":    map[string]string{"type": "string"},
+							"minItems": 3,
+							"maxItems": 3,
+						},
+					},
+					"required":             []string{"text", "options"},
+					"additionalProperties": false,
+				},
 			},
 			"notes": map[string]string{"type": "string"},
 		},
-		"required":             []string{"items", "notes"},
+		"required":             []string{"drop_item_indexes", "choose_food_ids", "item_meals", "questions", "notes"},
 		"additionalProperties": false,
 	}
 }

@@ -9,10 +9,31 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import PageHeader from "../../../_components/ui/PageHeader";
-import { DAILY_GOAL_OPTIONS, mealTotals } from "../../_components/nutritionGoals";
+import { mealTotals } from "../../_components/nutritionGoals";
 import MealCard from "../../_components/MealCard";
 import RegenerateMealDialog from "../../_components/RegenerateMealDialog";
 import SavedPlansPoolCard from "../../../my-programs/_components/SavedPlansPoolCard";
+import WeeklyCheckInForm from "./WeeklyCheckInForm";
+import OptionalCalorieTarget, { parseOptionalCalories } from "../../_components/OptionalCalorieTarget";
+import GenerationHistory from "../../_components/GenerationHistory";
+import {
+  cloneJSON,
+  HISTORY_KEYS,
+  loadHistory,
+  newHistoryId,
+  recordHistory,
+  weeklyHistorySummary,
+} from "../../_components/generationHistory";
+import {
+  emptyWeeklyCheckIn,
+  isWeeklyCheckInComplete,
+  isWeeklyRulesComplete,
+  toWeeklyCheckInPayload,
+  weeklyGoalToPlanGoal,
+} from "./weeklyCheckIn";
+
+// Week generation is 7× a daily plan (~50s, retries can exceed 90s).
+const AI_PLAN_TIMEOUT_MS = 120_000;
 
 function dayTotals(meals = []) {
   return meals.reduce(
@@ -30,7 +51,9 @@ function dayTotals(meals = []) {
 }
 
 export default function WeeklyPlanClient() {
-  const [goal, setGoal] = useState("");
+  const [checkIn, setCheckIn] = useState(() => emptyWeeklyCheckIn());
+  const [calorieTarget, setCalorieTarget] = useState("");
+  const [step, setStep] = useState("rules");
   const [loading, setLoading] = useState(false);
   const [plan, setPlan] = useState(null);
   const [targets, setTargets] = useState(null);
@@ -40,8 +63,11 @@ export default function WeeklyPlanClient() {
   const [regenerating, setRegenerating] = useState(null);
   const [confirming, setConfirming] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
+  const [history, setHistory] = useState(() => loadHistory(HISTORY_KEYS.weekly));
+  const [currentHistoryId, setCurrentHistoryId] = useState(null);
 
-  const goalLabel = DAILY_GOAL_OPTIONS.find((g) => g.value === goal)?.label || "";
+  const goalLabel = checkIn.weeklyGoal;
+  const planGoal = weeklyGoalToPlanGoal(checkIn.weeklyGoal);
 
   const weekTotals = useMemo(() => {
     if (!plan) return { calories: 0, protein: 0, carbs: 0, fat: 0 };
@@ -62,13 +88,42 @@ export default function WeeklyPlanClient() {
   const generatePlan = async () => {
     setLoading(true);
     try {
-      const res = await api.post("/me/nutrition/generate-week", { goal, save: false });
-      setPlan(res.data.plan);
-      setTargets(res.data.targets);
+      const res = await api.post(
+        "/me/nutrition/generate-week",
+        {
+          goal: planGoal,
+          save: false,
+          checkIn: toWeeklyCheckInPayload(checkIn),
+          targetCalories: parseOptionalCalories(calorieTarget),
+        },
+        { timeout: AI_PLAN_TIMEOUT_MS }
+      );
+      const nextPlan = res.data?.plan;
+      if (!Array.isArray(nextPlan?.days) || nextPlan.days.length === 0) {
+        toast.error("پاسخ برنامه ناقص بود. دوباره تلاش کن.");
+        return;
+      }
+      const nextTargets = res.data.targets;
+      const entry = {
+        id: newHistoryId(),
+        at: Date.now(),
+        summary: weeklyHistorySummary(nextPlan, nextTargets),
+        plan: cloneJSON(nextPlan),
+        targets: cloneJSON(nextTargets),
+      };
+      setHistory((prev) => recordHistory(prev, entry, HISTORY_KEYS.weekly));
+      setCurrentHistoryId(entry.id);
+      setPlan(nextPlan);
+      setTargets(nextTargets);
       setSelectedDay(0);
       setConfirmed(false);
     } catch (e) {
-      toast.error(getApiErrorMessage(e, "ساخت برنامه هفتگی ناموفق بود"));
+      const aborted = e?.code === "ECONNABORTED" || /timeout/i.test(e?.message || "");
+      toast.error(
+        aborted
+          ? "ساخت برنامه هفتگی طول کشید. چند ثانیه صبر کن و دوباره بزن."
+          : getApiErrorMessage(e, "ساخت برنامه هفتگی ناموفق بود")
+      );
     } finally {
       setLoading(false);
     }
@@ -96,19 +151,33 @@ export default function WeeklyPlanClient() {
 
     setRegenerating(dialogMeal);
     try {
-      const res = await api.post("/me/nutrition/regenerate-meal", {
-        goal: goalLabel,
-        mealName: meal.name,
-        targetCalories: currentCalories,
-        reason,
-      });
+      const res = await api.post(
+        "/me/nutrition/regenerate-meal",
+        {
+          goal: goalLabel,
+          mealName: meal.name,
+          targetCalories: currentCalories,
+          reason,
+        },
+        { timeout: AI_PLAN_TIMEOUT_MS }
+      );
       const nextDays = plan.days.map((day, di) => {
         if (di !== dayIndex) return day;
         const nextMeals = [...day.meals];
         nextMeals[mealIndex] = res.data;
         return { ...day, meals: nextMeals };
       });
-      setPlan({ ...plan, days: nextDays });
+      const nextPlan = { ...plan, days: nextDays };
+      const entry = {
+        id: newHistoryId(),
+        at: Date.now(),
+        summary: weeklyHistorySummary(nextPlan, targets),
+        plan: cloneJSON(nextPlan),
+        targets: cloneJSON(targets),
+      };
+      setHistory((prev) => recordHistory(prev, entry, HISTORY_KEYS.weekly));
+      setCurrentHistoryId(entry.id);
+      setPlan(nextPlan);
       setConfirmed(false);
       setDialogMeal(null);
       toast.success("وعده جایگزین شد");
@@ -119,44 +188,104 @@ export default function WeeklyPlanClient() {
     }
   };
 
+  const restoreHistory = (entry) => {
+    setPlan(cloneJSON(entry.plan));
+    setTargets(cloneJSON(entry.targets));
+    setCurrentHistoryId(entry.id);
+    setConfirmed(false);
+    toast.success("این نسخه برگردانده شد");
+  };
+
   return (
     <div className="flex flex-col gap-4 md:gap-6" dir="rtl">
       <PageHeader
-        title="📅 برنامه هفتگی با AI"
-        description="برنامه غذایی ۷ روز آینده، متناسب با هدفت."
+        title="برنامه هفتگی با AI"
+        description="قواعد هفته را بگو تا AI خودش ۷ روز × چند وعده را بسازد — نه سؤال تکراری برای هر روز."
       />
 
       {!plan ? (
+        <>
         <Card>
-          <CardContent className="space-y-5 pt-6">
-            <div>
-              <p className="mb-2 text-sm font-iranianSansDemiBold text-foreground">هدف</p>
-              <div className="flex flex-wrap gap-2">
-                {DAILY_GOAL_OPTIONS.map((g) => (
-                  <button
-                    key={g.value}
-                    type="button"
-                    onClick={() => setGoal(g.value)}
-                    className={
-                      "rounded-full border px-3.5 py-1.5 text-sm font-iranianSansMedium transition-colors " +
-                      (goal === g.value
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-border bg-muted/20 text-muted-foreground hover:border-primary/40")
-                    }
-                  >
-                    {g.label}
-                  </button>
-                ))}
-              </div>
+          <CardContent className="space-y-6 pt-6">
+            <WeeklyCheckInForm value={checkIn} onChange={setCheckIn} step={step} />
+            {step === "style" ? (
+              <OptionalCalorieTarget value={calorieTarget} onChange={setCalorieTarget} />
+            ) : null}
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              {step === "style" ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={loading}
+                  onClick={() => {
+                    setStep("rules");
+                    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                    window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+                  }}
+                  className="h-11 cursor-pointer"
+                >
+                  بازگشت به قواعد هفته
+                </Button>
+              ) : null}
+              {step === "rules" ? (
+                <Button
+                  type="button"
+                  disabled={!isWeeklyRulesComplete(checkIn)}
+                  onClick={() => {
+                    setStep("style");
+                    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                    window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+                  }}
+                  className="h-11 w-full cursor-pointer sm:w-auto"
+                >
+                  ادامه: سبک برنامه
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  disabled={!isWeeklyCheckInComplete(checkIn) || loading}
+                  onClick={generatePlan}
+                  className="h-11 w-full cursor-pointer gap-2 sm:w-auto"
+                >
+                  {loading ? "در حال ساخت..." : "برنامه هفتگی را بساز"}
+                  <Sparkles className="size-4" data-icon="inline-end" />
+                </Button>
+              )}
             </div>
-            <Button type="button" disabled={!goal || loading} onClick={generatePlan} className="gap-2">
-              {loading ? "در حال ساخت..." : "برنامه هفتگی را بساز"}
-              <Sparkles className="size-4" data-icon="inline-end" />
-            </Button>
+            {step === "rules" && !isWeeklyRulesComplete(checkIn) ? (
+              <p className="text-xs text-muted-foreground">
+                هر ۱۲ سؤال را جواب بده تا مرحله سبک برنامه باز شود. «فرقی نمی‌کنه» هم پاسخ معتبر است.
+              </p>
+            ) : null}
+            {step === "style" && !checkIn.style ? (
+              <p className="text-xs text-muted-foreground">
+                یک سبک را انتخاب کن تا دکمه ساخت برنامه فعال شود.
+              </p>
+            ) : null}
+            {loading ? (
+              <p className="text-sm text-muted-foreground">
+                ساخت ۷ روز معمولاً ۳۰ تا ۹۰ ثانیه طول می‌کشد. این صفحه را نبند.
+              </p>
+            ) : null}
           </CardContent>
         </Card>
+        <GenerationHistory items={history} currentId={currentHistoryId} onRestore={restoreHistory} />
+        </>
       ) : (
         <>
+          <div className="flex justify-start">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setPlan(null);
+                setStep("rules");
+              }}
+              className="h-11 cursor-pointer"
+            >
+              تغییر قواعد هفته
+            </Button>
+          </div>
           <Card>
             <CardContent className="flex flex-wrap items-center justify-between gap-3 pt-5">
               <p className="text-sm font-iranianSansDemiBold text-foreground">
@@ -180,12 +309,13 @@ export default function WeeklyPlanClient() {
               <button
                 key={`${day.day_name}-${i}`}
                 type="button"
+                aria-pressed={selectedDay === i}
                 onClick={() => setSelectedDay(i)}
                 className={
-                  "rounded-full border px-3.5 py-1.5 text-sm font-iranianSansMedium transition-colors " +
+                  "inline-flex min-h-11 cursor-pointer touch-manipulation items-center rounded-full border px-3.5 text-sm font-iranianSansMedium transition-colors duration-200 " +
                   (selectedDay === i
                     ? "border-primary bg-primary text-primary-foreground"
-                    : "border-border bg-muted/20 text-muted-foreground hover:border-primary/40")
+                    : "border-border bg-muted/20 text-muted-foreground hover:border-primary/40 hover:text-foreground")
                 }
               >
                 {day.day_name}
@@ -237,7 +367,7 @@ export default function WeeklyPlanClient() {
               </div>
               <Button
                 type="button"
-                className="w-full gap-2"
+                className="h-11 w-full cursor-pointer gap-2"
                 disabled={confirming || confirmed}
                 onClick={confirmPlan}
               >
@@ -245,11 +375,11 @@ export default function WeeklyPlanClient() {
                   ? "برای تأیید مربی ارسال شد"
                   : confirming
                     ? "در حال ارسال..."
-                    : "تأیید برنامه"}
+                    : "ارسال برای تأیید مربی"}
               </Button>
               {confirmed ? (
                 <p className="text-center text-xs text-muted-foreground">
-                  برنامه برای مربی‌ات ارسال شد و بعد از تأییدش می‌توانی فعالش کنی — پایین همین صفحه را ببین.
+                  مربی در پروفایل شاگرد دکمه تأیید می‌بیند و با تأیید، این برنامه روی برنامه اصلیت اعمال می‌شود.
                 </p>
               ) : null}
             </CardContent>
@@ -264,6 +394,8 @@ export default function WeeklyPlanClient() {
             onClose={() => setDialogMeal(null)}
             onConfirm={regenerateMeal}
           />
+
+          <GenerationHistory items={history} currentId={currentHistoryId} onRestore={restoreHistory} />
 
           <SavedPlansPoolCard key={confirmed ? "confirmed" : "pending"} type="nutrition" />
         </>

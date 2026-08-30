@@ -80,9 +80,8 @@ type CoachProgramService interface {
 	AssignWorkoutFromTemplate(ctx context.Context, coachID, studentID, templateID uint) (*CoachStudentProgramsResponse, error)
 	AssignNutritionFromTemplate(ctx context.Context, coachID, studentID, templateID uint) (*CoachStudentProgramsResponse, error)
 	// ApproveWorkoutProgram / ApproveNutritionProgram let a coach mark an
-	// AI-generated program version (from a student's own AI builder — coaches
-	// never generate/regenerate with AI themselves) as reviewed. It only
-	// flips Status to coach_approved; program content is untouched.
+	// AI-generated program as reviewed. Nutrition approval also activates it
+	// as the student's live program.
 	ApproveWorkoutProgram(ctx context.Context, coachID, studentID, programID uint) error
 	ApproveNutritionProgram(ctx context.Context, coachID, studentID, programID uint) error
 	// ListStudentPrograms returns every saved version (active + inactive pool)
@@ -688,6 +687,9 @@ func (s *coachProgramService) ApproveNutritionProgram(ctx context.Context, coach
 	}
 	program.Status = models.ProgramStatusCoachApproved
 	if err := s.programRepo.UpdateNutritionProgram(ctx, program); err != nil {
+		return err
+	}
+	if err := s.programRepo.SetNutritionProgramActive(ctx, program.ID, true); err != nil {
 		return err
 	}
 	if s.achievementSvc != nil {

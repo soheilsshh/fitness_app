@@ -289,7 +289,12 @@ export default function NutritionEditorClient({
       </div>
 
       {apiBase === "coach" ? (
-        <SavedProgramsApprovalCard studentId={studentId} apiBase={apiBase} type="nutrition" />
+        <SavedProgramsApprovalCard
+          studentId={studentId}
+          apiBase={apiBase}
+          type="nutrition"
+          onApproved={loadPrograms}
+        />
       ) : null}
 
       <Card>

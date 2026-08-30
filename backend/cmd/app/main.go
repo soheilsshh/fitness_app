@@ -380,6 +380,8 @@ func NewServer(db *gorm.DB) *Server {
 		studentGroup.POST("/me/nutrition/regenerate-meal", aiGenerateController.RegenerateMeal)
 		studentGroup.POST("/me/nutrition/generate-week", aiGenerateController.GenerateWeeklyNutrition)
 		studentGroup.POST("/me/nutrition/suggest-from-ingredients", aiGenerateController.SuggestFromIngredients)
+		studentGroup.GET("/me/nutrition/today-slots", aiGenerateController.ListTodayNutritionSlots)
+		studentGroup.POST("/me/nutrition/apply-suggestion", aiGenerateController.ApplyIngredientSuggestion)
 		studentGroup.POST("/me/ai/transcribe", aiGenerateController.TranscribeVoice)
 		studentGroup.POST("/me/workout/generate", aiGenerateController.GenerateWorkout)
 		studentGroup.POST("/me/mobile/heartbeat", mobileAppController.MeHeartbeat)

@@ -1,0 +1,7 @@
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+python-multipart>=0.0.12
+numpy>=1.26.0
+rapidfuzz>=3.9.0
+# Only needed for `python voice_to_text.py` with no file argument (live mic).
+sounddevice>=0.5.0

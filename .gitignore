@@ -16,10 +16,44 @@ node_modules
 # Local Go build cache (never commit)
 .gocache/
 
-# ML / ASR large weights (~450MB onnx — download on pull via .githooks)
-ml/models/**/*.onnx
-ml/models/.download.log
-ml/models/**/.cache/
-ml/**/__pycache__/
-ml/**/*.egg-info/
-ml/.venv/
+# graphify knowledge graph (local cache — regenerated via `graphify update`)
+graphify-out/
+**/graphify-out/
+
+# Python (fa-calorie-api, scripts)
+**/.venv/
+**/__pycache__/
+**/*.py[cod]
+**/*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Generated food DB JSON (source of truth: backend/data/foods/Persian_food_facts.csv)
+backend/data/foods/Persian_food_facts.json
+fa-calorie-api/data/Persian_food_facts.json
+
+# fa-calorie-api benchmark / run artifacts (fixtures like transcripts.json stay tracked)
+fa-calorie-api/test/benchmark_*_report.json
+fa-calorie-api/test/benchmark_*_run.log
+fa-calorie-api/test/benchmark_report.json
+fa-calorie-api/test/benchmark_run.log
+
+# 50-voice ASR clips and generated eval reports (local test only)
+fa-calorie-api/test/audio/
+fa-calorie-api/test/*.wav
+fa-calorie-api/test/*_run.log
+fa-calorie-api/test/calorie_report_50.json
+fa-calorie-api/test/calorie_report_50.md
+fa-calorie-api/test/calorie_report_50.prev.json
+fa-calorie-api/test/calorie_report_50.prev.md
+fa-calorie-api/test/gemini_refine_50.json
+fa-calorie-api/test/gemini_refine_50.md
+fa-calorie-api/test/gemini_refine_50.v5.json
+fa-calorie-api/test/gemini_refine_50.v5.md
+fa-calorie-api/test/gemini_refine_50.v7.json
+fa-calorie-api/test/gemini_refine_50.v7.md
+fa-calorie-api/test/gemini_layer8_50.json
+fa-calorie-api/test/gemini_layer8_drop_rule.json
+fa-calorie-api/test/gemini_refine_drop_allowlist.json
+fa-calorie-api/test/gemini_refine_drop_rule.json

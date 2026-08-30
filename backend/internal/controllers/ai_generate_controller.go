@@ -23,9 +23,12 @@ func NewAIGenerateController(svc *service.AIGenerateService) *AIGenerateControll
 }
 
 type generateNutritionRequest struct {
-	Goal string                  `json:"goal"` // cut | bulk | maintain, defaults to profile's primary goal
-	Save *bool                   `json:"save"` // defaults to true — set false for a preview-only call
-	Plan *ai.NutritionPlanSchema `json:"plan"` // optional — save the previewed plan without re-calling AI
+	Goal            string                        `json:"goal"`
+	Save            *bool                         `json:"save"`
+	Plan            *ai.NutritionPlanSchema       `json:"plan"`
+	CheckIn         service.DailyNutritionCheckIn `json:"checkIn"`
+	TargetCalories  int                           `json:"targetCalories"`
+	Activate        bool                          `json:"activate"`
 }
 
 // GenerateNutrition godoc
@@ -57,7 +60,7 @@ func (h *AIGenerateController) GenerateNutrition(c *gin.Context) {
 		save = *req.Save
 	}
 
-	result, err := h.svc.GenerateNutrition(c.Request.Context(), userID, req.Goal, save, req.Plan)
+	result, err := h.svc.GenerateNutrition(c.Request.Context(), userID, req.Goal, save, req.Plan, req.CheckIn, req.TargetCalories, req.Activate)
 	if err != nil {
 		writeAIGenerateError(c, err)
 		return
@@ -109,9 +112,11 @@ func (h *AIGenerateController) RegenerateMeal(c *gin.Context) {
 }
 
 type generateWeeklyNutritionRequest struct {
-	Goal string                `json:"goal"`
-	Save *bool                 `json:"save"`
-	Plan *ai.NutritionWeekSchema `json:"plan"`
+	Goal           string                         `json:"goal"`
+	Save           *bool                          `json:"save"`
+	Plan           *ai.NutritionWeekSchema        `json:"plan"`
+	CheckIn        service.WeeklyNutritionCheckIn `json:"checkIn"`
+	TargetCalories int                            `json:"targetCalories"`
 }
 
 // GenerateWeeklyNutrition godoc
@@ -143,7 +148,7 @@ func (h *AIGenerateController) GenerateWeeklyNutrition(c *gin.Context) {
 		save = *req.Save
 	}
 
-	result, err := h.svc.GenerateWeeklyNutrition(c.Request.Context(), userID, req.Goal, save, req.Plan)
+	result, err := h.svc.GenerateWeeklyNutrition(c.Request.Context(), userID, req.Goal, save, req.Plan, req.CheckIn, req.TargetCalories)
 	if err != nil {
 		writeAIGenerateError(c, err)
 		return
@@ -152,11 +157,12 @@ func (h *AIGenerateController) GenerateWeeklyNutrition(c *gin.Context) {
 }
 
 type suggestFromIngredientsRequest struct {
-	Ingredients string `json:"ingredients"`
-	Goal        string `json:"goal"`        // e.g. کاهش وزن | عضله‌سازی | حفظ وزن — optional
-	Preferences string `json:"preferences"` // free-text restrictions/likes/dislikes — optional
-	CalorieMin  int    `json:"calorieMin"`
-	CalorieMax  int    `json:"calorieMax"`
+	Ingredients    string `json:"ingredients"`
+	Goal           string `json:"goal"`
+	Preferences    string `json:"preferences"`
+	CalorieMin     int    `json:"calorieMin"`
+	CalorieMax     int    `json:"calorieMax"`
+	TargetCalories int    `json:"targetCalories"`
 }
 
 // SuggestFromIngredients godoc
@@ -187,6 +193,11 @@ func (h *AIGenerateController) SuggestFromIngredients(c *gin.Context) {
 		return
 	}
 
+	if req.TargetCalories >= 800 && req.TargetCalories <= 6000 {
+		req.CalorieMin = req.TargetCalories
+		req.CalorieMax = req.TargetCalories
+	}
+
 	suggestion, err := h.svc.SuggestFromIngredients(c.Request.Context(), userID, req.Ingredients, req.Goal, req.Preferences, req.CalorieMin, req.CalorieMax)
 	if err != nil {
 		writeAIGenerateError(c, err)
@@ -195,15 +206,78 @@ func (h *AIGenerateController) SuggestFromIngredients(c *gin.Context) {
 	c.JSON(http.StatusOK, suggestion)
 }
 
-type generateWorkoutRequest struct {
-	Save *bool `json:"save"` // defaults to true — set false for a preview-only call
-	Plan *ai.WorkoutPlanSchema `json:"plan"` // optional — save the previewed plan without re-calling AI
+// ListTodayNutritionSlots godoc
+// @Summary Today's meal slots from the student's active nutrition program
+// @Tags me-ai
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} service.TodayNutritionSlotsResult
+// @Router /me/nutrition/today-slots [get]
+func (h *AIGenerateController) ListTodayNutritionSlots(c *gin.Context) {
+	userID, err := middleware.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	result, err := h.svc.ListTodayNutritionSlots(c.Request.Context(), userID)
+	if err != nil {
+		writeAIGenerateError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, result)
+}
 
-	// Optional per-request hints from the AI program wizard (not persisted to
-	// the profile — only steer this one generation).
-	Equipment      []string `json:"equipment"`
-	DaysPerWeek    int      `json:"daysPerWeek"`
-	SessionMinutes int      `json:"sessionMinutes"`
+type applyIngredientSuggestionRequest struct {
+	Suggestion  ai.IngredientSuggestionSchema `json:"suggestion"`
+	ReplaceSlot string                        `json:"replaceSlot"`
+}
+
+// ApplyIngredientSuggestion godoc
+// @Summary Replace one meal slot on today's active nutrition program with a generated recipe
+// @Tags me-ai
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param body body applyIngredientSuggestionRequest true "Recipe and which program slot to replace"
+// @Success 200 {object} map[string]bool
+// @Router /me/nutrition/apply-suggestion [post]
+func (h *AIGenerateController) ApplyIngredientSuggestion(c *gin.Context) {
+	userID, err := middleware.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	var req applyIngredientSuggestionRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid body"})
+		return
+	}
+	if err := h.svc.ApplyIngredientSuggestion(c.Request.Context(), userID, &req.Suggestion, req.ReplaceSlot); err != nil {
+		writeAIGenerateError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"ok": true})
+}
+
+type generateWorkoutRequest struct {
+	Save *bool                 `json:"save"`
+	Plan *ai.WorkoutPlanSchema `json:"plan"`
+
+	Equipment           []string `json:"equipment"`
+	DaysPerWeek         int      `json:"daysPerWeek"`
+	SessionMinutes      int      `json:"sessionMinutes"`
+	Goal                string   `json:"goal"`
+	ExperienceLevel     string   `json:"experienceLevel"`
+	TrainingHistory     string   `json:"trainingHistory"`
+	TrainingLocation    string   `json:"trainingLocation"`
+	PhysicalLimitations []string `json:"physicalLimitations"`
+	LimitationNote      string   `json:"limitationNote"`
+	DislikedExercises   []string `json:"dislikedExercises"`
+	DislikedNote        string   `json:"dislikedNote"`
+	PreferredStyle      string   `json:"preferredStyle"`
+	CardioPreference    string   `json:"cardioPreference"`
+	BodyPartPriority    []string `json:"bodyPartPriority"`
+	VoiceNotes          string   `json:"voiceNotes"`
 }
 
 // GenerateWorkout godoc
@@ -236,9 +310,21 @@ func (h *AIGenerateController) GenerateWorkout(c *gin.Context) {
 	}
 
 	constraints := service.WorkoutConstraints{
-		Equipment:      req.Equipment,
-		DaysPerWeek:    req.DaysPerWeek,
-		SessionMinutes: req.SessionMinutes,
+		Goal:                req.Goal,
+		Equipment:           req.Equipment,
+		DaysPerWeek:         req.DaysPerWeek,
+		SessionMinutes:      req.SessionMinutes,
+		ExperienceLevel:     req.ExperienceLevel,
+		TrainingHistory:     req.TrainingHistory,
+		TrainingLocation:    req.TrainingLocation,
+		PhysicalLimitations: req.PhysicalLimitations,
+		LimitationNote:      req.LimitationNote,
+		DislikedExercises:   req.DislikedExercises,
+		DislikedNote:        req.DislikedNote,
+		PreferredStyle:      req.PreferredStyle,
+		CardioPreference:    req.CardioPreference,
+		BodyPartPriority:    req.BodyPartPriority,
+		VoiceNotes:          req.VoiceNotes,
 	}
 	result, err := h.svc.GenerateWorkout(c.Request.Context(), userID, save, constraints, req.Plan)
 	if err != nil {
@@ -361,7 +447,7 @@ func (h *AIGenerateController) TranscribeVoice(c *gin.Context) {
 }
 
 // SuggestFoodLogFromVoice godoc
-// @Summary Transcribe a voice note and suggest food-log items (roadmap BE-2.3/2.4, preview only — not saved)
+// @Summary Transcribe a voice note via fa-calorie-api (Whisper Persian) and suggest food-log items (preview only — not saved)
 // @Tags me-ai
 // @Accept multipart/form-data
 // @Produce json
@@ -447,6 +533,9 @@ func writeAIGenerateError(c *gin.Context, err error) {
 		msg := "ارتباط با سرویس هوش مصنوعی برقرار نشد"
 		if strings.Contains(err.Error(), "unmarshal") || strings.Contains(err.Error(), "تبدیل جواب") {
 			msg = "پاسخ AI ناقص بود — دوباره تلاش کنید"
+		}
+		if strings.Contains(err.Error(), "calorie-api") {
+			msg = "سرویس تبدیل صدا در دسترس نیست — دوباره تلاش کنید"
 		}
 		c.JSON(http.StatusBadGateway, gin.H{"error": msg})
 	default:

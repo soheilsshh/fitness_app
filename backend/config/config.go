@@ -88,11 +88,10 @@ type Config struct {
 		BaseURL string `mapstructure:"base_url"`
 	} `mapstructure:"openai"`
 
-	// ASR controls local speech-to-text (Shenava) used by voice food/workout flows.
+	// ASR: all voice flows use fa-calorie-api (GapGPT Whisper layer 3).
 	ASR struct {
-		ShenavaEnabled bool   `mapstructure:"shenava_enabled"`
-		Python         string `mapstructure:"python"`
-		ModelDir       string `mapstructure:"model_dir"`
+		CalorieAPIURL string `mapstructure:"calorie_api_url"`
+		WhisperModel  string `mapstructure:"whisper_model"`
 	} `mapstructure:"asr"`
 
 	FCM struct {
@@ -250,9 +249,8 @@ func setDefaults() {
 	viper.SetDefault("payments.zarinpal.mobile_deep_link_scheme", "fitinoo")
 	viper.SetDefault("openai.model", "gemini-3.1-flash-lite")
 	viper.SetDefault("openai.base_url", "https://api.gapgpt.app/v1")
-	viper.SetDefault("asr.shenava_enabled", true)
-	viper.SetDefault("asr.python", "python")
-	viper.SetDefault("asr.model_dir", "")
+	viper.SetDefault("asr.calorie_api_url", "http://127.0.0.1:8000")
+	viper.SetDefault("asr.whisper_model", "gapgpt/whisper-1")
 }
 
 func bindEnvKeys() {
@@ -289,9 +287,8 @@ func bindEnvKeys() {
 	_ = viper.BindEnv("openai.api_key", "OPENAI_API_KEY")
 	_ = viper.BindEnv("openai.model", "OPENAI_MODEL")
 	_ = viper.BindEnv("openai.base_url", "OPENAI_BASE_URL")
-	_ = viper.BindEnv("asr.shenava_enabled", "ASR_SHENAVA_ENABLED")
-	_ = viper.BindEnv("asr.python", "ASR_PYTHON")
-	_ = viper.BindEnv("asr.model_dir", "SHENAVA_MODEL_DIR")
+	_ = viper.BindEnv("asr.calorie_api_url", "ASR_CALORIE_API_URL")
+	_ = viper.BindEnv("asr.whisper_model", "GAPGPT_WHISPER_MODEL")
 	_ = viper.BindEnv("fcm.server_key", "FCM_SERVER_KEY")
 }
 

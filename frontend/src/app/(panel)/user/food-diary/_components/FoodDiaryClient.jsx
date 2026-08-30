@@ -5,18 +5,19 @@ import {
   Apple,
   ChevronLeft,
   ChevronRight,
-  Flame,
   Mic,
   PenLine,
   Plus,
   Trash2,
   UtensilsCrossed,
 } from "lucide-react";
+import NutritionAnalysisDashboard from "./NutritionAnalysisDashboard";
 import { api } from "@/lib/axios/client";
 import { USER_FOOD_LOGS_PATH, USER_FOODS_PATH } from "@/lib/api/user";
 import FoodPickerModal from "@/app/(panel)/coach/students/nutrition/_components/FoodPickerModal";
 import ManualFoodModal from "@/app/(panel)/coach/students/nutrition/_components/ManualFoodModal";
 import VoiceFoodLogModal from "./VoiceFoodLogModal";
+import PlannedMealsCard from "./PlannedMealsCard";
 import PageHeader from "@/app/(panel)/user/_components/ui/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,22 +28,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import {
-  formatMacro,
-  parseProteinTargetGrams,
-  targetProgressPercent,
-} from "@/lib/nutrition/display";
+import { formatMacro } from "@/lib/nutrition/display";
 import {
   dateToDayKey,
-  extractNutritionTargets,
+  extractDayNutrition,
   formatDateFaLong,
   formatDateISO,
   isToday,
   mealToFoodLogPayload,
   MEAL_TYPE_OPTIONS,
+  plannedMealToPickerMeal,
   startOfDay,
 } from "@/lib/nutrition/foodLog";
 import { toast } from "sonner";
@@ -55,124 +52,6 @@ function MacroBadge({ label, value, unit, className }) {
     <Badge variant="outline" className={cn("tabular-nums text-[11px]", className)}>
       {label}: {formatMacro(value, unit)}
     </Badge>
-  );
-}
-
-function DailyProgressCard({ totals, targets, loading }) {
-  const caloriesTarget = Number(targets.caloriesTarget) || 0;
-  const proteinTargetG = parseProteinTargetGrams(targets.proteinTarget);
-  const proteinTargetLabel = targets.proteinTarget?.trim() || "";
-
-  const caloriesPct = targetProgressPercent(totals.calories, caloriesTarget);
-  const proteinPct = targetProgressPercent(totals.protein, proteinTargetG);
-
-  if (loading) {
-    return (
-      <Card>
-        <CardContent className="space-y-4 pt-6">
-          <Skeleton className="h-5 w-40" />
-          <Skeleton className="h-3 w-full" />
-          <Skeleton className="h-3 w-full" />
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card className="border-primary/15 bg-gradient-to-t from-primary/5 to-card">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-base">
-          <Flame className="size-4 text-orange-600 dark:text-orange-400" />
-          خلاصه دریافت روزانه
-        </CardTitle>
-        <CardDescription>
-          {caloriesTarget || proteinTargetG
-            ? "مقایسه با اهداف برنامه غذایی مربی"
-            : "هدف کالری/پروتئین روزانه ثبت نشده (حالت آزاد). وعده‌های برنامه را در «برنامه‌های من» ببینید."}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-5">
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <StatTile
-            label="کالری دریافتی"
-            value={totals.calories}
-            unit="کیلوکالری"
-            accent="text-foreground"
-          />
-          <StatTile
-            label="پروتئین"
-            value={totals.protein}
-            unit="گرم"
-            accent="text-primary"
-          />
-          <StatTile
-            label="کربوهیدرات"
-            value={totals.carbs}
-            unit="گرم"
-            accent="text-orange-600 dark:text-orange-400"
-          />
-          <StatTile
-            label="چربی"
-            value={totals.fat}
-            unit="گرم"
-            accent="text-amber-600 dark:text-amber-400"
-          />
-        </div>
-
-        {caloriesTarget > 0 ? (
-          <ProgressRow
-            label="کالری دریافتی"
-            current={totals.calories}
-            target={caloriesTarget}
-            unit="کیلوکالری"
-            percent={caloriesPct}
-          />
-        ) : null}
-
-        {proteinTargetG > 0 ? (
-          <ProgressRow
-            label="پروتئین"
-            current={totals.protein}
-            target={proteinTargetG}
-            unit="گرم"
-            percent={proteinPct}
-            targetLabel={proteinTargetLabel}
-          />
-        ) : null}
-      </CardContent>
-    </Card>
-  );
-}
-
-function StatTile({ label, value, unit, accent }) {
-  return (
-    <div className="rounded-xl border bg-card px-3 py-2.5 text-center">
-      <p className="text-[11px] text-muted-foreground">{label}</p>
-      <p className={cn("mt-0.5 text-sm font-semibold tabular-nums", accent)}>
-        {formatMacro(value, unit)}
-      </p>
-    </div>
-  );
-}
-
-function ProgressRow({ label, current, target, unit, percent, targetLabel }) {
-  return (
-    <div className="space-y-2">
-      <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
-        <span className="font-medium">{label}</span>
-        <span className="tabular-nums text-muted-foreground">
-          {formatMacro(current, unit)}
-          <span className="mx-1">/</span>
-          {targetLabel || formatMacro(target, unit)}
-        </span>
-      </div>
-      <Progress value={percent ?? 0} className="h-2" />
-      {percent != null ? (
-        <p className="text-xs text-muted-foreground">
-          {percent.toLocaleString("fa-IR")}٪ از هدف روزانه
-        </p>
-      ) : null}
-    </div>
   );
 }
 
@@ -260,6 +139,10 @@ export default function FoodDiaryClient() {
   const [mealType, setMealType] = useState("breakfast");
   const [milestoneOpen, setMilestoneOpen] = useState(false);
   const [milestoneStreak, setMilestoneStreak] = useState(0);
+  const [weekSeries, setWeekSeries] = useState([]);
+  const [plannedMeals, setPlannedMeals] = useState([]);
+  const [planFallback, setPlanFallback] = useState(false);
+  const [plannedBusyKey, setPlannedBusyKey] = useState(null);
 
   const dateISO = useMemo(() => formatDateISO(selectedDate), [selectedDate]);
   const dayLabel = useMemo(() => formatDateFaLong(selectedDate), [selectedDate]);
@@ -308,14 +191,20 @@ export default function FoodDiaryClient() {
         (p) => p.type === "nutrition" || p.type === "both"
       );
       const dayKey = dateToDayKey(selectedDate);
+      const toScan = candidates.length ? candidates : programs;
 
-      for (const program of candidates) {
+      for (const program of toScan) {
         try {
           const detailRes = await api.get(`/me/programs/${program.id}`);
           const detail = detailRes.data;
-          const next = extractNutritionTargets(detail, dayKey);
-          if (next.caloriesTarget > 0 || next.proteinTarget) {
-            setTargets(next);
+          const next = extractDayNutrition(detail, dayKey);
+          if (next.meals.length || next.caloriesTarget > 0 || next.proteinTarget) {
+            setTargets({
+              caloriesTarget: next.caloriesTarget,
+              proteinTarget: next.proteinTarget,
+            });
+            setPlannedMeals(next.meals);
+            setPlanFallback(Boolean(next.fallback));
             return;
           }
         } catch {
@@ -323,11 +212,40 @@ export default function FoodDiaryClient() {
         }
       }
       setTargets({ caloriesTarget: 0, proteinTarget: "" });
+      setPlannedMeals([]);
+      setPlanFallback(false);
     } catch {
       setTargets({ caloriesTarget: 0, proteinTarget: "" });
+      setPlannedMeals([]);
+      setPlanFallback(false);
     } finally {
       setTargetsLoading(false);
     }
+  }, [selectedDate]);
+
+  const loadWeek = useCallback(async () => {
+    const weekdayFa = ["ی", "د", "س", "چ", "پ", "ج", "ش"];
+    const days = Array.from({ length: 7 }, (_, i) => {
+      const d = startOfDay(selectedDate);
+      d.setDate(d.getDate() - (6 - i));
+      return d;
+    });
+    const rows = await Promise.all(
+      days.map(async (d) => {
+        const iso = formatDateISO(d);
+        try {
+          const res = await api.get(USER_FOOD_LOGS_PATH, { params: { date: iso } });
+          return {
+            iso,
+            calories: Number(res.data?.totals?.calories) || 0,
+            label: weekdayFa[d.getDay()],
+          };
+        } catch {
+          return { iso, calories: 0, label: weekdayFa[d.getDay()] };
+        }
+      })
+    );
+    setWeekSeries(rows);
   }, [selectedDate]);
 
   useEffect(() => {
@@ -337,6 +255,19 @@ export default function FoodDiaryClient() {
   useEffect(() => {
     loadTargets();
   }, [loadTargets]);
+
+  useEffect(() => {
+    loadWeek();
+  }, [loadWeek]);
+
+  useEffect(() => {
+    if (loading) return;
+    setWeekSeries((prev) =>
+      prev.map((row) =>
+        row.iso === dateISO ? { ...row, calories: Number(totals.calories) || 0 } : row
+      )
+    );
+  }, [dateISO, totals.calories, loading]);
 
   const shiftDate = (deltaDays) => {
     setSelectedDate((prev) => {
@@ -382,6 +313,28 @@ export default function FoodDiaryClient() {
       toast.error(err?.response?.data?.error || "حذف ناموفق بود");
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const handleTogglePlanned = async (meal, index, checked, log) => {
+    const rowKey = `${index}-${meal.foodId || meal.title}`;
+    setPlannedBusyKey(rowKey);
+    try {
+      if (checked) {
+        await api.post(
+          USER_FOOD_LOGS_PATH,
+          mealToFoodLogPayload(plannedMealToPickerMeal(meal), dateISO)
+        );
+        toast.success("مصرف ثبت شد");
+      } else if (log?.id) {
+        await api.delete(`${USER_FOOD_LOGS_PATH}/${log.id}`);
+        toast.success("تیک برداشته شد");
+      }
+      await loadLogs();
+    } catch (err) {
+      toast.error(err?.response?.data?.error || "به‌روزرسانی مصرف ناموفق بود");
+    } finally {
+      setPlannedBusyKey(null);
     }
   };
 
@@ -439,10 +392,20 @@ export default function FoodDiaryClient() {
         </CardContent>
       </Card>
 
-      <DailyProgressCard
+      <NutritionAnalysisDashboard
+        date={selectedDate}
         totals={totals}
         targets={targets}
+        weekSeries={weekSeries}
         loading={loading || targetsLoading}
+      />
+
+      <PlannedMealsCard
+        meals={plannedMeals}
+        logs={items}
+        fallback={planFallback}
+        busyKey={plannedBusyKey}
+        onToggle={handleTogglePlanned}
       />
 
       <div className="space-y-2">
@@ -535,8 +498,12 @@ export default function FoodDiaryClient() {
             </div>
           ) : (
             groupedItems.map((group) => (
-              <div key={group.value} className="space-y-2">
-                <div className="flex items-center justify-between gap-2">
+              <section
+                key={group.value}
+                className="overflow-hidden rounded-xl border bg-muted/10"
+                aria-label={group.label}
+              >
+                <div className="flex items-center justify-between gap-2 border-b border-border/60 bg-muted/30 px-3 py-2">
                   <p className="text-sm font-iranianSansDemiBold text-foreground">
                     {group.label}
                   </p>
@@ -544,15 +511,17 @@ export default function FoodDiaryClient() {
                     {group.items.length.toLocaleString("fa-IR")} مورد
                   </span>
                 </div>
-                {group.items.map((item) => (
-                  <LoggedItemRow
-                    key={item.id}
-                    item={item}
-                    onDelete={handleDelete}
-                    deleting={deletingId === item.id}
-                  />
-                ))}
-              </div>
+                <div className="space-y-2 p-3">
+                  {group.items.map((item) => (
+                    <LoggedItemRow
+                      key={item.id}
+                      item={item}
+                      onDelete={handleDelete}
+                      deleting={deletingId === item.id}
+                    />
+                  ))}
+                </div>
+              </section>
             ))
           )}
         </CardContent>
@@ -580,6 +549,7 @@ export default function FoodDiaryClient() {
         onClose={() => setVoiceOpen(false)}
         onAdd={handleAddMeal}
         dayLabel={dayLabel}
+        foodsPath={USER_FOODS_PATH}
       />
 
       <StreakMilestonePopup

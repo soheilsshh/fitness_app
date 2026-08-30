@@ -106,7 +106,25 @@ func ValidateMeal(meal *MealSchema) error {
 			return fmt.Errorf("%w: مقادیر آیتم غذایی نامعتبر است", ErrInvalidPlan)
 		}
 	}
+	if isMainMealName(meal.Name) {
+		cal := 0
+		for _, item := range meal.Items {
+			cal += item.Calories
+		}
+		if cal < 300 {
+			return fmt.Errorf("%w: وعده %s باید غذای اصلی باشد نه میان‌وعده", ErrInvalidPlan, meal.Name)
+		}
+	}
 	return nil
+}
+
+func isMainMealName(name string) bool {
+	n := strings.ToLower(strings.ReplaceAll(strings.TrimSpace(name), "‌", " "))
+	if strings.Contains(n, "میان") {
+		return false
+	}
+	return strings.Contains(n, "ناهار") || strings.Contains(n, "نهار") ||
+		strings.Contains(n, "شام") || strings.Contains(n, "lunch") || strings.Contains(n, "dinner")
 }
 
 // ValidateWorkoutPlan rejects empty or nonsensical workout plans.
@@ -292,7 +310,7 @@ func ValidateFoodLog(log *FoodLogSchema) error {
 	if log == nil {
 		return fmt.Errorf("%w: food log is nil", ErrInvalidPlan)
 	}
-	if len(log.Items) == 0 {
+	if len(log.Items) == 0 && len(foodLogQuestionTexts(log.Questions)) == 0 {
 		return fmt.Errorf("%w: هیچ آیتم غذایی ثبت نشده", ErrInvalidPlan)
 	}
 	for _, item := range log.Items {

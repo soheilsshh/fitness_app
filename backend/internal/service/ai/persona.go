@@ -6,7 +6,7 @@ import "strings"
 // that produced it (roadmap Phase 5: prompt versioning) — bump this whenever
 // SystemPrompt() wording changes meaningfully, so output-quality issues can be
 // correlated with a specific prompt revision in ai_request_log.
-const PromptVersion = "nutrition-v2-serving-label"
+const PromptVersion = "nutrition-v9-layer8-gemini"
 
 // Persona identifies which AI coach personality to use.
 type Persona string

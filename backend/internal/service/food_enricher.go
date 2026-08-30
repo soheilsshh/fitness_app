@@ -89,6 +89,29 @@ func scaleFoodByGrams(f *models.Food, grams float64) NutritionFacts {
 	}
 }
 
+func gramsFromVoiceUnit(food *models.Food, unit string, quantity *float64) (float64, bool) {
+	if food == nil {
+		return 0, false
+	}
+	qty := 1.0
+	if quantity != nil && *quantity > 0 {
+		qty = *quantity
+	}
+	label := strings.TrimSpace(unit)
+	switch label {
+	case "گرم":
+		return qty, true
+	case "کیلوگرم":
+		return qty * 1000, true
+	}
+	for _, su := range food.ServingUnits {
+		if strings.TrimSpace(su.Label) == label {
+			return su.GramsPerUnit * qty, true
+		}
+	}
+	return 0, false
+}
+
 func foodModelToMealDTO(food *models.Food, multiplier float64, existing MeMealDTO) MeMealDTO {
 	multiplier = mealMultiplier(multiplier)
 	servingAmount := food.Amount * multiplier

@@ -11,6 +11,17 @@ import IngredientsQuickPick from "./IngredientsQuickPick";
 import FreeTextInput from "./FreeTextInput";
 import SummaryStep from "./SummaryStep";
 import ResultCard from "./ResultCard";
+import OptionalCalorieTarget, { parseOptionalCalories } from "../../_components/OptionalCalorieTarget";
+import ReplaceMealSlotDialog from "../../_components/ReplaceMealSlotDialog";
+import GenerationHistory from "../../_components/GenerationHistory";
+import {
+  cloneJSON,
+  HISTORY_KEYS,
+  loadHistory,
+  newHistoryId,
+  recordHistory,
+  singleHistorySummary,
+} from "../../_components/generationHistory";
 
 const STEP_INPUT = "input";
 const STEP_SUMMARY = "summary";
@@ -23,6 +34,12 @@ export default function SingleMealClient() {
   const [freeText, setFreeText] = useState("");
   const [suggestion, setSuggestion] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [calorieTarget, setCalorieTarget] = useState("");
+  const [applying, setApplying] = useState(false);
+  const [applied, setApplied] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [history, setHistory] = useState(() => loadHistory(HISTORY_KEYS.single));
+  const [currentHistoryId, setCurrentHistoryId] = useState(null);
 
   const ingredients = Object.keys(selectedIngredients).filter((k) => selectedIngredients[k]);
 
@@ -42,8 +59,19 @@ export default function SingleMealClient() {
         ingredients: ingredients.join("، "),
         goal: goalLabel,
         preferences: freeText.trim(),
+        targetCalories: parseOptionalCalories(calorieTarget),
       });
-      setSuggestion(res.data);
+      const next = res.data;
+      const entry = {
+        id: newHistoryId(),
+        at: Date.now(),
+        summary: singleHistorySummary(next),
+        suggestion: cloneJSON(next),
+      };
+      setHistory((prev) => recordHistory(prev, entry, HISTORY_KEYS.single));
+      setCurrentHistoryId(entry.id);
+      setSuggestion(next);
+      setApplied(false);
       setStep(STEP_RESULT);
     } catch (e) {
       toast.error(getApiErrorMessage(e, "تولید پیشنهاد ناموفق بود"));
@@ -52,11 +80,37 @@ export default function SingleMealClient() {
     }
   };
 
+  const applySuggestion = async (replaceSlot) => {
+    if (!suggestion || !replaceSlot) return;
+    setApplying(true);
+    try {
+      await api.post("/me/nutrition/apply-suggestion", {
+        suggestion,
+        replaceSlot,
+      });
+      setApplied(true);
+      setPickerOpen(false);
+      toast.success("این غذا جایگزین وعده انتخاب‌شده شد");
+    } catch (e) {
+      toast.error(getApiErrorMessage(e, "اعمال وعده ناموفق بود"));
+    } finally {
+      setApplying(false);
+    }
+  };
+
+  const restoreHistory = (entry) => {
+    setSuggestion(cloneJSON(entry.suggestion));
+    setCurrentHistoryId(entry.id);
+    setApplied(false);
+    setStep(STEP_RESULT);
+    toast.success("این نسخه برگردانده شد");
+  };
+
   return (
     <div className="flex flex-col gap-4 md:gap-6" dir="rtl">
       <PageHeader
-        title="🍳 امروز چی درست کنم؟"
-        description="بگو چه مواد غذایی در دسترس داری یا نداری تا یک غذای مناسب برایت بسازیم."
+        title="امروز چی درست کنم؟"
+        description="بگو چه مواد غذایی در دسترس داری تا یک غذای مناسب برایت بسازیم. اگر دوست داشتی، همان غذا را به‌جای یکی از وعده‌های برنامه امروز می‌گذاری."
       />
 
       {step === STEP_INPUT ? (
@@ -72,6 +126,7 @@ export default function SingleMealClient() {
             <div className="flex justify-start">
               <Button
                 type="button"
+                className="h-11 cursor-pointer"
                 disabled={!canContinue}
                 onClick={() => setStep(STEP_SUMMARY)}
               >
@@ -89,6 +144,8 @@ export default function SingleMealClient() {
               goal={goal}
               ingredients={ingredients}
               freeText={freeText}
+              calorieTarget={calorieTarget}
+              onCalorieTargetChange={setCalorieTarget}
               onBack={() => setStep(STEP_INPUT)}
               onGenerate={generate}
               generating={loading}
@@ -98,8 +155,26 @@ export default function SingleMealClient() {
       ) : null}
 
       {step === STEP_RESULT ? (
-        <ResultCard suggestion={suggestion} onRegenerate={generate} regenerating={loading} />
+        <>
+        <ResultCard
+          suggestion={suggestion}
+          onRegenerate={generate}
+          regenerating={loading}
+          onApply={() => setPickerOpen(true)}
+          applying={applying}
+          applied={applied}
+        />
+        <ReplaceMealSlotDialog
+          open={pickerOpen}
+          recipeName={suggestion?.recipe_name}
+          confirming={applying}
+          onClose={() => setPickerOpen(false)}
+          onConfirm={applySuggestion}
+        />
+        </>
       ) : null}
+
+      <GenerationHistory items={history} currentId={currentHistoryId} onRestore={restoreHistory} />
     </div>
   );
 }

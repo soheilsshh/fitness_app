@@ -185,6 +185,7 @@ func exerciseDTOToProgramItem(ex MeWorkoutExerciseDTO, dayNum, orderIndex int) m
 		DayNumber:         dayNum,
 		OrderIndex:        orderIndex,
 		Exercise:          name,
+		MuscleGroup:       ClassifyMuscleGroup(name, ex.Target),
 		Sets:              ex.Sets,
 		Reps:              strings.TrimSpace(ex.Reps),
 		SupersetID:        ex.SupersetID,
@@ -250,6 +251,7 @@ func workoutItemsToPlanByDay(items []models.ProgramItem) (map[string]MeDayPlanDT
 
 func nutritionItemsToPlanByDay(items []models.NutritionItem) map[string]MeDayPlanDTO {
 	planByDay := make(map[string]MeDayPlanDTO)
+	assignerByDay := make(map[string]*mealSlotAssigner)
 
 	for _, it := range items {
 		key, ok := dayNumberToKey[it.DayNumber]
@@ -259,8 +261,15 @@ func nutritionItemsToPlanByDay(items []models.NutritionItem) map[string]MeDayPla
 		day := planByDay[key]
 		if day.Nutrition == nil {
 			day.Nutrition = &MeNutritionDTO{Meals: []MeMealDTO{}}
+			assignerByDay[key] = &mealSlotAssigner{}
 		}
-		day.Nutrition.Meals = append(day.Nutrition.Meals, nutritionItemToMealDTO(it))
+		meal := nutritionItemToMealDTO(it)
+		if notes := strings.TrimSpace(it.Notes); looksLikeMealName(notes) {
+			if a := assignerByDay[key]; a != nil {
+				meal.MealSlot = a.slotForNotes(notes)
+			}
+		}
+		day.Nutrition.Meals = append(day.Nutrition.Meals, meal)
 		planByDay[key] = day
 	}
 
@@ -347,12 +356,13 @@ func planByDayToWorkoutItems(planByDay map[string]MeDayPlanDTO) []models.Program
 				name = step
 			}
 			item := models.ProgramItem{
-				WeekNumber: 1,
-				DayNumber:  dayNum,
-				OrderIndex: i + 1,
-				Exercise:   name,
-				Sets:       sets,
-				Reps:       reps,
+				WeekNumber:  1,
+				DayNumber:   dayNum,
+				OrderIndex:  i + 1,
+				Exercise:    name,
+				MuscleGroup: ClassifyMuscleGroup(name, ""),
+				Sets:        sets,
+				Reps:        reps,
 			}
 			if sets > 0 {
 				item.SetsDetails = legacySetsToDetails(sets, reps)

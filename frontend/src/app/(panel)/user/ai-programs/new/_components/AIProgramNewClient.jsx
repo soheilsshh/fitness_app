@@ -1,53 +1,38 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { api } from "@/lib/axios/client";
-import { getApiErrorMessage } from "@/lib/api/translateError";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import PageHeader from "../../../_components/ui/PageHeader";
-import Stepper from "./Stepper";
-import GoalStep, { GOAL_OPTIONS } from "./GoalStep";
-import InfoStep from "./InfoStep";
-import DetailsStep, { EQUIPMENT_OPTIONS, LIMITATION_OPTIONS } from "./DetailsStep";
 import PreviewStep from "./PreviewStep";
 import ProfileSummaryCard from "./ProfileSummaryCard";
-
-const STEPS = [
-  { id: "goal", label: "هدف" },
-  { id: "info", label: "اطلاعات" },
-  { id: "details", label: "جزئیات" },
-  { id: "preview", label: "پیش‌نمایش" },
-];
-
-const labelsFor = (options, values) =>
-  values.map((v) => options.find((o) => o.value === v)?.label || v).filter(Boolean);
+import WizardProgress from "./WizardProgress";
+import WizardSlide from "./WizardSlide";
+import {
+  emptyAnswers,
+  isSlideComplete,
+  SLIDE_COUNT,
+  SLIDES,
+  toGeneratePayload,
+} from "./workoutWizard";
 
 export default function AIProgramNewClient() {
   const [profile, setProfile] = useState(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
-  const [step, setStep] = useState(0);
-  const [saving, setSaving] = useState(false);
-
-  const [goal, setGoal] = useState("");
-  const [details, setDetails] = useState({
-    equipment: [],
-    daysPerWeek: null,
-    sessionMinutes: null,
-    limitations: [],
-  });
+  const [slide, setSlide] = useState(0);
+  const [answers, setAnswers] = useState(() => emptyAnswers());
+  const [preview, setPreview] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
       try {
         const res = await api.get("/me");
-        if (cancelled) return;
-        setProfile(res.data);
-        const goalFromTags = Array.isArray(res.data?.goals) ? res.data.goals[0] : "";
-        if (GOAL_OPTIONS.some((g) => g.value === goalFromTags)) setGoal(goalFromTags);
+        if (!cancelled) setProfile(res.data);
       } catch {
-        /* profile is optional context, wizard still works without it */
+        /* profile is optional context */
       } finally {
         if (!cancelled) setLoadingProfile(false);
       }
@@ -58,103 +43,75 @@ export default function AIProgramNewClient() {
     };
   }, []);
 
-  const saveGoal = async () => {
-    const label = GOAL_OPTIONS.find((g) => g.value === goal)?.label || goal;
-    setSaving(true);
-    try {
-      const res = await api.patch("/me", { goals: [goal], primaryGoal: label });
-      setProfile(res.data);
-      setStep(1);
-    } catch (e) {
-      toast.error(getApiErrorMessage(e, "ذخیره هدف ناموفق بود"));
-    } finally {
-      setSaving(false);
+  const current = SLIDES[slide];
+  const canNext = current ? isSlideComplete(current, answers) : false;
+
+  const goNext = () => {
+    if (slide >= SLIDE_COUNT - 1) {
+      setPreview(true);
+      return;
     }
+    setSlide((s) => s + 1);
   };
 
-  const saveInfo = async (payload) => {
-    setSaving(true);
-    try {
-      const res = await api.patch("/me", payload);
-      setProfile(res.data);
-      setStep(2);
-    } catch (e) {
-      toast.error(getApiErrorMessage(e, "ذخیره اطلاعات ناموفق بود"));
-    } finally {
-      setSaving(false);
+  const goBack = () => {
+    if (preview) {
+      setPreview(false);
+      return;
     }
-  };
-
-  const saveDetails = async () => {
-    const limitationLabels = labelsFor(LIMITATION_OPTIONS, details.limitations);
-    setSaving(true);
-    try {
-      const res = await api.patch("/me", {
-        physicalLimitations: limitationLabels.includes("بدون محدودیت")
-          ? ""
-          : limitationLabels.join("، "),
-      });
-      setProfile(res.data);
-      setStep(3);
-    } catch (e) {
-      toast.error(getApiErrorMessage(e, "ذخیره جزئیات ناموفق بود"));
-    } finally {
-      setSaving(false);
-    }
+    setSlide((s) => Math.max(0, s - 1));
   };
 
   return (
-    <div className="flex flex-col gap-4 md:gap-6" dir="rtl">
+    <div className="flex min-w-0 flex-col gap-4 md:gap-6" dir="rtl">
       <PageHeader
         title="ساخت برنامه با هوش مصنوعی"
-        description="هدف، اطلاعات و جزئیات را مشخص کنید تا هوش مصنوعی یک برنامهٔ پیش‌نویس برایتان بسازد."
+        description="سن، قد و وزن از پروفایل خوانده می‌شود. اینجا فقط هدف، سطح، امکانات و ترجیح‌های تمرینی‌ات را می‌پرسیم."
       />
 
-      <Card>
-        <CardContent className="pt-6">
-          <Stepper steps={STEPS} activeIndex={step} onStepClick={setStep} />
-        </CardContent>
-      </Card>
+      {!preview ? <WizardProgress index={slide} total={SLIDE_COUNT} title={current?.title || ""} /> : (
+        <p className="text-sm text-muted-foreground">پیش‌نمایش برنامه بر اساس پاسخ‌هایت</p>
+      )}
 
-      <div className="grid gap-4 md:grid-cols-[1fr_18rem] md:gap-6">
-        <Card>
-          <CardContent className="pt-6">
-            {step === 0 ? (
-              <GoalStep value={goal} onChange={setGoal} onNext={saveGoal} saving={saving} />
-            ) : null}
-            {step === 1 ? (
-              <InfoStep
-                key={loadingProfile ? "loading" : "loaded"}
-                profile={profile}
-                onNext={saveInfo}
-                onBack={() => setStep(0)}
-                saving={saving}
-              />
-            ) : null}
-            {step === 2 ? (
-              <DetailsStep
-                value={details}
-                onChange={setDetails}
-                onNext={saveDetails}
-                onBack={() => setStep(1)}
-                saving={saving}
-              />
-            ) : null}
-            {step === 3 ? (
+      <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,1fr)_16rem] lg:gap-6">
+        <Card className="min-w-0 overflow-hidden">
+          <CardContent className="space-y-6 pt-6">
+            {preview ? (
               <PreviewStep
-                goal={goal}
-                details={{
-                  equipmentLabels: labelsFor(EQUIPMENT_OPTIONS, details.equipment),
-                  daysPerWeek: details.daysPerWeek,
-                  sessionMinutes: details.sessionMinutes,
-                }}
-                onBack={() => setStep(2)}
+                answers={answers}
+                payload={toGeneratePayload(answers)}
+                onBack={goBack}
               />
-            ) : null}
+            ) : (
+              <>
+                <WizardSlide slide={current} answers={answers} onChange={setAnswers} />
+                <div className="flex flex-col-reverse gap-2 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-11 cursor-pointer gap-2"
+                    disabled={slide === 0}
+                    onClick={goBack}
+                  >
+                    <ArrowRight data-icon="inline-start" />
+                    قبلی
+                  </Button>
+                  <Button
+                    type="button"
+                    className="h-11 cursor-pointer gap-2"
+                    disabled={!canNext}
+                    onClick={goNext}
+                  >
+                    {slide >= SLIDE_COUNT - 1 ? "ساخت پیش‌نمایش" : "ادامه"}
+                    <ArrowLeft data-icon="inline-end" />
+                  </Button>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
 
-        <div className="md:sticky md:top-4 md:self-start">
+        <div className="min-w-0 lg:sticky lg:top-4 lg:self-start">
           <ProfileSummaryCard profile={profile} loading={loadingProfile} />
         </div>
       </div>

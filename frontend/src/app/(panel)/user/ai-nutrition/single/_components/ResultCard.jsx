@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
-export default function ResultCard({ suggestion, onRegenerate, regenerating }) {
+export default function ResultCard({ suggestion, onRegenerate, regenerating, onApply, applying, applied }) {
   if (!suggestion) return null;
 
   const { recipe_name: recipeName, instructions, items = [], total_calories: totalCalories } =
@@ -89,16 +89,26 @@ export default function ResultCard({ suggestion, onRegenerate, regenerating }) {
           </div>
         </div>
 
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full gap-2"
-          disabled={regenerating}
-          onClick={onRegenerate}
-        >
-          <RefreshCcw className={regenerating ? "size-4 animate-spin" : "size-4"} />
-          {regenerating ? "در حال ساخت پیشنهاد دیگر..." : "پیشنهاد دیگر"}
-        </Button>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Button
+            type="button"
+            className="h-11 w-full cursor-pointer gap-2"
+            disabled={regenerating || applying || applied}
+            onClick={onApply}
+          >
+            {applied ? "جایگزین شد" : applying ? "در حال اعمال..." : "جایگزین روی برنامه اصلیم"}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            className="h-11 w-full cursor-pointer gap-2"
+            disabled={regenerating || applying}
+            onClick={onRegenerate}
+          >
+            <RefreshCcw className={regenerating ? "size-4 animate-spin" : "size-4"} />
+            {regenerating ? "در حال ساخت پیشنهاد دیگر..." : "پیشنهاد دیگر"}
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );

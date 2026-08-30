@@ -75,11 +75,12 @@ type apiResponse struct {
 	} `json:"error"`
 }
 
-var defaultHTTPClient = &http.Client{Timeout: 90 * time.Second}
+var defaultHTTPClient = &http.Client{Timeout: 120 * time.Second}
 
 // structuredMaxTokens is intentionally high: some Gemini flash models spend a
 // large share of the budget on reasoning tokens, which previously truncated
 // food-log JSON mid-number (see ai_request_logs unmarshal errors).
+// GapGPT/Gemini rejects values above 8192 ("Provider returned error").
 const structuredMaxTokens = 8192
 
 // GenerateStructured calls the configured OpenAI-compatible API and returns raw JSON content.
@@ -194,6 +195,11 @@ func callWithSchema(
 		msg := "upstream error"
 		if parsed.Error != nil && parsed.Error.Message != "" {
 			msg = parsed.Error.Message
+		} else if snippet := strings.TrimSpace(string(rawResp)); snippet != "" {
+			if len(snippet) > 400 {
+				snippet = snippet[:400]
+			}
+			msg = snippet
 		}
 		return nil, nil, fmt.Errorf("%w: %s", ErrUpstream, msg)
 	}
@@ -221,7 +227,9 @@ func isSchemaUnsupported(err error) bool {
 		strings.Contains(msg, "response_format") ||
 		strings.Contains(msg, "strict") ||
 		strings.Contains(msg, "unsupported") ||
-		strings.Contains(msg, "invalid_request")
+		strings.Contains(msg, "invalid_request") ||
+		// GapGPT wraps Gemini schema/token rejects as this generic string.
+		strings.Contains(msg, "provider returned error")
 }
 
 func stripCodeFence(s string) string {
@@ -255,7 +263,7 @@ func GenerateNutritionPlan(ctx context.Context, userContext string) (*NutritionP
 // GenerateWeeklyNutritionPlan produces a 7-day nutrition plan struct (roadmap
 // Phase 3: برنامه هفتگی; caller should Validate).
 func GenerateWeeklyNutritionPlan(ctx context.Context, userContext string) (*NutritionWeekSchema, *GenerateResult, error) {
-	system := PersonaNutrition.SystemPrompt() + "\nبرای هر یک از ۷ روز هفته، به‌ترتیب شنبه، یکشنبه، دوشنبه، سه‌شنبه، چهارشنبه، پنج‌شنبه، جمعه، وعده‌های غذایی جداگانه بساز. لازم نیست وعده‌های هر روز کاملاً یکسان باشند، ولی هر روز باید در محدوده هدف کالری/ماکرو روزانه بماند و از تنوع غذایی معقول برخوردار باشد. خروجی باید دقیقاً JSON مطابق اسکیما باشد و آرایه days دقیقاً ۷ عضو داشته باشد."
+	system := PersonaNutrition.SystemPrompt() + "\nبرای هر یک از ۷ روز هفته، به‌ترتیب شنبه، یکشنبه، دوشنبه، سه‌شنبه، چهارشنبه، پنج‌شنبه، جمعه، وعده‌های غذایی جداگانه بساز. کاربر فقط قواعد کل هفته را داده؛ وعدهٔ تک‌تک روزها را از او نپرسیده‌ایم — خودت ترکیب وعده‌ها را از همان قواعد بساز. روزهای تمرین را نسبت به روزهای استراحت پرحجم‌تر (کربوهیدرات و پروتئین بیشتر) بچین و شرایط خاص همان روز را حتماً override کن. لازم نیست هر ۷ روز یکسان باشند مگر کاربر تکرار ثابت خواسته باشد. هر روز باید در محدوده هدف کالری/ماکرو روزانه بماند. ناهار و شام باید غذای اصلی کامل باشند (پروتئین + کربوهیدرات + سبزی)، نه فقط میوه؛ میوه فقط برای میان‌وعده. خروجی باید دقیقاً JSON مطابق اسکیما باشد و آرایه days دقیقاً ۷ عضو داشته باشد. JSON را فشرده بنویس: هر وعده حداکثر ۳ آیتم غذایی؛ توضیح اضافه نده."
 	res, err := GenerateStructured(ctx, "nutrition_week", NutritionWeekJSONSchema(), system, userContext)
 	if err != nil {
 		return nil, res, err
@@ -263,6 +271,9 @@ func GenerateWeeklyNutritionPlan(ctx context.Context, userContext string) (*Nutr
 	var plan NutritionWeekSchema
 	if err := json.Unmarshal(res.RawJSON, &plan); err != nil {
 		return nil, res, fmt.Errorf("%w: %v", ErrUnmarshal, err)
+	}
+	if len(plan.Days) == 0 {
+		return nil, res, fmt.Errorf("%w: weekly plan missing days", ErrUnmarshal)
 	}
 	return &plan, res, nil
 }
@@ -313,19 +324,60 @@ func GenerateIngredientSuggestion(ctx context.Context, userContext string) (*Ing
 	return &suggestion, res, nil
 }
 
-// GenerateFoodLog turns a transcribed voice note into structured food-log items
-// (roadmap BE-2.4, step 2 of the voice pipeline; caller should Validate).
-func GenerateFoodLog(ctx context.Context, userContext string) (*FoodLogSchema, *GenerateResult, error) {
-	system := PersonaNutrition.SystemPrompt() + "\nمتن کاربر توصیف غذاهایی است که همین الان خورده. آن را به آیتم‌های غذایی با کالری و ماکرو تخمینی تبدیل کن. خروجی باید دقیقاً JSON کامل مطابق اسکیما باشد؛ اعداد را کامل و بدون فاصله بنویس و JSON را وسط راه قطع نکن."
-	res, err := GenerateStructured(ctx, "food_log", FoodLogJSONSchema(), system, userContext)
+const calorieRefineSystemPrompt = `تو داور ثبت غذای فیتینو هستی. ورودی JSON لایه ۸ است (raw_text, items, candidates, unmatched, confidence). صدای خام نمی‌بینی.
+
+قانون: کالری، گرم و ماکرو را نساز و غذا را در کاتالوگ سرچ نکن.
+فقط می‌توانی:
+1) انتخاب candidate: choose_food_ids فقط از food_idهای همین JSON (items یا candidates).
+2) نفی: drop_item_indexes فقط برای همان آیتمی که «نخوردم / بدون / نه» به آن برمی‌گردد.
+3) اصلاح جمله: اگر وسط حرف همان غذا عوض شد، ایندکس قبلی را drop کن؛ food_id درست را از candidates/items انتخاب کن.
+4) چند وعده: item_meals با food_id + breakfast|lunch|dinner|snack. اگر فقط یک وعده است آرایه را خالی بگذار.
+5) questions: اگر بین چند food_id مطمئن نیستی، یا غذایی در unmatched مهم است، سؤال بپرس و id انتخاب نکن.
+هر سؤال یک شیء است: {"text":"...","options":["...","...","..."]}.
+برای هر سؤال دقیقاً ۳ گزینهٔ کوتاه فارسی بگذار — از items/candidates/unmatched یا انواع رایج ایرانی همان غذا (مثلاً سوپ: سوپ سبزیجات، سوپ جو، سوپ مرغ).
+کالری، گرم، مقدار عددی ساختگی، یا food_id جدید در سؤال یا گزینه نگذار.
+اگر چند ابهام جدا هست چند سؤال جدا بساز؛ هر سؤال فقط یک ابهام.
+6) notes کوتاه.
+
+قانون بحرانی drop:
+هر آیتم committed را جداگانه قضاوت کن.
+آیتم committed را فقط وقتی drop کن که یکی از این سه برقرار باشد:
+1) raw_text همان آیتم را صریحاً نفی کند (نخوردم / بدون / نه مربوط به همان غذا).
+2) raw_text همان آیتم را صریحاً اصلاح یا جایگزین کند (منظورم / بلکه / به جاش).
+3) شواهد معنایی قوی باشد که extractor عبارت گفته‌شده را به غذای غلط match کرده (spoken با food نمی‌خواند).
+در غیر این صورت KEEP. حدس، تکراری بودن، یا غذای unmatched دیگر کافی نیست.
+هرگز یک آیتم committed را فقط به‌خاطر این drop نکن که غذای دیگری در raw_text نامشخص، unmatched یا غایب است.
+غذای اصلی گم‌شده دلیل حذف بقیهٔ غذاهای تأییدشده نیست.
+اگر غذای مهمی unmatched است: همهٔ آیتم‌های committed مستقل را نگه دار، حذف‌شان نکن، و در صورت نیاز برای همان غذای unmatched سؤال بساز.
+کلمات unmatched دور یک غذا ممکن است زیرنوع، روش پخت، قید، مقدار، صفت یا بافت باشند — نه دلیل drop.
+اگر خودِ غذای committed در متن صریحاً آمده، KEEP کن مگر متن همان غذا را نفی یا جایگزین کند.
+
+مثال: «ماکارونی با گوشت چرخ کرده»
+committed: ماکارونی، گوشت. unmatched: چرخ، کرده.
+هر دو را KEEP کن. «چرخ کرده» گوشت committed را باطل نمی‌کند. گوشت را drop نکن.
+
+مثال: raw_text «یک پرس چلو کباب کوبیده خوردم، دو سیخ کباب بود، یک بشقاب برنج و یک گوجه کبابی.»
+committed: برنج، گوجه. unmatched: کباب کوبیده، سیخ کباب.
+درست: برنج و گوجه را KEEP کن. کباب را جدا با questions رسیدگی کن. drop_item_indexes را برای برنج/گوجه پر نکن.
+
+food_id جدید نساز. اگر ابهامی نیست آرایه‌ها را خالی بگذار.`
+
+// RefineCalorieFoodLog is PIPELINE layer 9: Gemini looks only at structured JSON.
+func RefineCalorieFoodLog(ctx context.Context, parsed calorieAPIResponse) (*calorieLogRefine, *GenerateResult, error) {
+	payload, err := json.Marshal(layer8ForGemini(parsed))
+	if err != nil {
+		return nil, nil, err
+	}
+	userContext := "JSON استخراج قطعی ثبت غذا:\n" + string(payload)
+	res, err := GenerateStructured(ctx, "calorie_log_refine", CalorieLogRefineJSONSchema(), calorieRefineSystemPrompt, userContext)
 	if err != nil {
 		return nil, res, err
 	}
-	var log FoodLogSchema
-	if err := json.Unmarshal(res.RawJSON, &log); err != nil {
+	var refine calorieLogRefine
+	if err := json.Unmarshal(res.RawJSON, &refine); err != nil {
 		return nil, res, fmt.Errorf("%w: %v", ErrUnmarshal, err)
 	}
-	return &log, res, nil
+	return &refine, res, nil
 }
 
 // GenerateSetLog turns a transcribed voice note into a single structured
@@ -469,14 +521,8 @@ func mockStructured(schemaName, model string) *GenerateResult {
   "analysis_ready_body": "داده‌های فیزیولوژیک شما ثبت شد. بلافاصله پس از تکمیل سفارش، کالیبراسیون برنامه توسط سیستم هوشمند فیتینو آغاز می‌شود.",
   "ai_guard": "پایش ضد استپ فیتینو: به محض کند شدن چربی‌سوزی، سیستم هوشمند برنامه را بدون هزینه اضافه به‌روز می‌کند."
 }`)
-	case "food_log":
-		raw = []byte(`{
-  "items": [
-    {"food_name": "تخم‌مرغ آب‌پز", "amount_g": 100, "calories": 155, "protein_g": 13, "carbs_g": 1.1, "fat_g": 11},
-    {"food_name": "شیر کم‌چرب", "amount_g": 240, "calories": 100, "protein_g": 8, "carbs_g": 12, "fat_g": 2.5}
-  ],
-  "notes": "صبحانه"
-}`)
+	case "calorie_log_refine":
+		raw = []byte(`{"drop_item_indexes":[],"choose_food_ids":[],"item_meals":[],"questions":[],"notes":""}`)
 	case "ingredient_suggestion":
 		raw = []byte(`{
   "recipe_name": "املت گوجه و پنیر بداهه",

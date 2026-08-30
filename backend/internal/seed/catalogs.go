@@ -89,6 +89,12 @@ func seedExercisesIfNeeded(ctx context.Context, db *gorm.DB, opts CatalogSeedOpt
 	if err := ImportExercisesJSON(ctx, db, path); err != nil {
 		return err
 	}
+	// The catalog just changed under existing programs and PR history, which
+	// reference exercises by name rather than by key. Repoint them before
+	// anything reads those names again.
+	if err := ApplyExerciseRenames(ctx, db); err != nil {
+		log.Printf("[catalog-seed] exercise rename migration error: %v", err)
+	}
 	return FillMissingExerciseMedia(ctx, db)
 }
 

@@ -42,7 +42,7 @@ export function audioBufferToWavBlob(buffer) {
   return new Blob([arrayBuffer], { type: "audio/wav" });
 }
 
-/** Decode any browser-recorded blob (e.g. webm) to 16 kHz mono WAV for Shenava. */
+/** Decode any browser-recorded blob (e.g. webm) to 16 kHz mono WAV for voice APIs. */
 export async function blobToWav16kMono(blob) {
   const OfflineCtx =
     window.OfflineAudioContext || window.webkitOfflineAudioContext;

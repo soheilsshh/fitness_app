@@ -17,6 +17,7 @@ type NutritionCalcInput struct {
 	BirthDate      *string // "2006-01-02", optional
 	BodyFatPercent *float64
 	Goal           string // cut | bulk | maintain (defaults to maintain)
+	TargetCalories int    // optional override; 800–6000 keeps macros around this number
 }
 
 // NutritionTargets holds deterministic daily calorie & macro targets, computed
@@ -78,7 +79,10 @@ func CalculateNutritionTargets(in NutritionCalcInput) NutritionTargets {
 	case ai.GoalBulk:
 		target = tdee * 1.1
 	}
-	if target < 1200 {
+	if in.TargetCalories >= 800 && in.TargetCalories <= 6000 {
+		target = float64(in.TargetCalories)
+	}
+	if target < 1200 && !(in.TargetCalories >= 800 && in.TargetCalories <= 6000) {
 		target = 1200
 	}
 

@@ -57,11 +57,11 @@ func TestAuditedFoodDataset(t *testing.T) {
 	if err := validateCSVFoodRows(rows); err != nil {
 		t.Fatal(err)
 	}
-	if len(rows) != 7345 {
-		t.Fatalf("row count=%d, want 7345", len(rows))
+	if len(rows) != 7351 {
+		t.Fatalf("row count=%d, want 7351", len(rows))
 	}
-	if canonicalCount != 3350 {
-		t.Fatalf("canonical count=%d, want 3350", canonicalCount)
+	if canonicalCount != 3353 {
+		t.Fatalf("canonical count=%d, want 3353", canonicalCount)
 	}
 	if statusCounts["needs_review"] != 87 {
 		t.Fatalf("needs_review count=%d, want 87", statusCounts["needs_review"])

@@ -13,11 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 
-function goalToNutritionGoal(goal) {
-  if (goal === "weight_loss") return "cut";
-  if (goal === "muscle_gain" || goal === "weight_gain") return "bulk";
-  return "maintain";
-}
+import { nutritionGoalFromWizard } from "./workoutWizard";
 
 function WorkoutPreview({ plan }) {
   return (
@@ -69,7 +65,7 @@ function NutritionPreview({ plan }) {
   );
 }
 
-export default function PreviewStep({ goal, details, onBack }) {
+export default function PreviewStep({ answers, payload, onBack }) {
   const router = useRouter();
   const [plan, setPlan] = useState(null);
   const [generating, setGenerating] = useState(false);
@@ -109,9 +105,7 @@ export default function PreviewStep({ goal, details, onBack }) {
       try {
         const body = {
           save,
-          equipment: details.equipmentLabels,
-          daysPerWeek: details.daysPerWeek,
-          sessionMinutes: details.sessionMinutes,
+          ...payload,
         };
         if (planToSave) {
           body.plan = planToSave;
@@ -138,7 +132,7 @@ export default function PreviewStep({ goal, details, onBack }) {
         setGenerating(false);
       }
     },
-    [details]
+    [payload]
   );
 
   useEffect(() => {
@@ -151,7 +145,7 @@ export default function PreviewStep({ goal, details, onBack }) {
     try {
       const body = {
         save,
-        goal: goalToNutritionGoal(goal),
+        goal: nutritionGoalFromWizard(answers.goal),
       };
       if (planToSave) {
         body.plan = planToSave;
@@ -242,7 +236,7 @@ export default function PreviewStep({ goal, details, onBack }) {
             <Button
               type="button"
               variant="outline"
-              size="sm"
+              className="h-11 cursor-pointer"
               disabled={generating || saving}
               onClick={() => generate({ save: false })}
             >
@@ -251,7 +245,7 @@ export default function PreviewStep({ goal, details, onBack }) {
             </Button>
             <Button
               type="button"
-              size="sm"
+              className="h-11 cursor-pointer"
               disabled={generating || saving || !plan || !canSave}
               onClick={async () => {
                 setSaving(true);
@@ -299,7 +293,7 @@ export default function PreviewStep({ goal, details, onBack }) {
             <Button
               type="button"
               variant="outline"
-              size="sm"
+              className="h-11 cursor-pointer"
               disabled={nutritionGenerating || nutritionSaving}
               onClick={() => generateNutrition({ save: false })}
             >
@@ -309,7 +303,7 @@ export default function PreviewStep({ goal, details, onBack }) {
             {nutritionPlan ? (
               <Button
                 type="button"
-                size="sm"
+                className="h-11 cursor-pointer"
                 disabled={nutritionGenerating || nutritionSaving || !canSave}
                 onClick={async () => {
                   setNutritionSaving(true);

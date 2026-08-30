@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Bot, Check, UserCheck } from "lucide-react";
+import { Bot, Check } from "lucide-react";
 import { api } from "@/lib/axios/client";
 import { toastError, toastSuccess } from "@/app/(site)/auth/_components/helpers";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +13,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 
 function formatDateFa(iso) {
   const d = new Date(iso);
@@ -26,17 +25,24 @@ function formatDateFa(iso) {
 }
 
 /**
- * Coaches never generate/regenerate content with AI — this card only lets
- * them see a student's saved program versions (active + inactive pool) and
- * "approve" the ones the student built themselves with AI. Manual editing
- * stays on the normal editor form; this card doesn't touch program content.
+ * Conditional coach approval: only pending AI drafts. Nutrition approve
+ * also activates that version as the student's live program.
  */
-export default function SavedProgramsApprovalCard({ studentId, apiBase = "coach", type }) {
+function isPendingAI(p) {
+  return p.source === "ai" && p.status !== "coach_approved";
+}
+
+export default function SavedProgramsApprovalCard({
+  studentId,
+  apiBase = "coach",
+  type,
+  onApproved,
+}) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [approvingId, setApprovingId] = useState(null);
   const listPath = type === "workout" ? "workout-programs" : "nutrition-programs";
-  const title = type === "workout" ? "برنامه‌های تمرینی ذخیره‌شده" : "برنامه‌های غذایی ذخیره‌شده";
+  const title = type === "workout" ? "برنامه تمرینی در انتظار تأیید" : "برنامه غذایی در انتظار تأیید";
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -58,8 +64,14 @@ export default function SavedProgramsApprovalCard({ studentId, apiBase = "coach"
     setApprovingId(programId);
     try {
       await api.post(`/${apiBase}/students/${studentId}/${listPath}/${programId}/approve`);
-      toastSuccess("تأیید شد", "برنامه تأیید شد.");
+      toastSuccess(
+        "تأیید شد",
+        type === "nutrition"
+          ? "برنامه روی برنامه اصلی شاگرد اعمال شد."
+          : "برنامه تأیید شد."
+      );
       await load();
+      onApproved?.();
     } catch (error) {
       toastError("خطا", error?.response?.data?.error || "تأیید ناموفق بود");
     } finally {
@@ -67,74 +79,56 @@ export default function SavedProgramsApprovalCard({ studentId, apiBase = "coach"
     }
   }
 
-  if (loading) {
-    return (
-      <Card>
-        <CardContent className="space-y-2 pt-6">
-          <Skeleton className="h-6 w-40" />
-          <Skeleton className="h-16 w-full rounded-md" />
-        </CardContent>
-      </Card>
-    );
-  }
+  if (loading) return null;
 
-  if (items.length === 0) return null;
+  const pending = items.filter(isPendingAI);
+  if (pending.length === 0) return null;
+
+  const approveLabel =
+    type === "nutrition" ? "تأیید و اعمال روی برنامه شاگرد" : "تأیید";
 
   return (
-    <Card>
+    <Card className="border-amber-500/25 bg-amber-500/5">
       <CardHeader className="pb-3">
         <CardTitle className="text-base">{title}</CardTitle>
         <CardDescription>
-          نسخه‌های ذخیره‌شده‌ی این دانشجو (فعال و غیرفعال) — برنامه‌هایی که با هوش مصنوعی
-          ساخته شده‌اند را می‌توانید تأیید کنید.
+          {type === "nutrition"
+            ? "برنامه‌های هوش مصنوعی که شاگرد برایت فرستاده. با تأیید، همان نسخه برنامه فعال شاگرد می‌شود."
+            : "برنامه‌های هوش مصنوعی در انتظار تأیید — فقط همین نسخه‌ها دکمه تأیید دارند."}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-2">
-        {items.map((p) => (
+        {pending.map((p) => (
           <div
             key={p.id}
-            className="flex flex-wrap items-center justify-between gap-2 rounded-lg border bg-muted/30 px-3 py-2"
+            className="flex flex-wrap items-center justify-between gap-2 rounded-xl border bg-background px-3 py-3"
           >
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
               <span className="text-sm font-medium">{p.title}</span>
               <Badge
                 variant="outline"
-                className={
-                  p.source === "ai"
-                    ? "gap-1 border-violet-500/30 bg-violet-500/10 text-violet-700 dark:text-violet-300"
-                    : "gap-1 border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300"
-                }
+                className="gap-1 border-violet-500/30 bg-violet-500/10 text-violet-700 dark:text-violet-300"
               >
-                {p.source === "ai" ? <Bot className="size-3" /> : <UserCheck className="size-3" />}
-                {p.source === "ai" ? "هوش مصنوعی" : "مربی"}
+                <Bot className="size-3" />
+                هوش مصنوعی
               </Badge>
-              {p.isActive ? <Badge>فعال</Badge> : null}
-              {p.source === "ai" ? (
-                <Badge
-                  variant="outline"
-                  className={
-                    p.status === "coach_approved"
-                      ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-                      : "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300"
-                  }
-                >
-                  {p.status === "coach_approved" ? "تأییدشده توسط مربی" : "در انتظار تأیید مربی"}
-                </Badge>
-              ) : null}
+              <Badge
+                variant="outline"
+                className="border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300"
+              >
+                در انتظار تأیید
+              </Badge>
               <span className="text-xs text-muted-foreground">{formatDateFa(p.createdAt)}</span>
             </div>
-            {p.source === "ai" && p.status !== "coach_approved" ? (
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                disabled={approvingId === p.id}
-                onClick={() => handleApprove(p.id)}
-              >
-                <Check data-icon="inline-start" />
-                {approvingId === p.id ? "در حال تأیید..." : "تأیید"}
-              </Button>
-            ) : null}
+            <Button
+              type="button"
+              className="h-11 min-w-[11rem] cursor-pointer touch-manipulation gap-2"
+              disabled={approvingId === p.id}
+              onClick={() => handleApprove(p.id)}
+            >
+              <Check className="size-4" data-icon="inline-start" />
+              {approvingId === p.id ? "در حال تأیید..." : approveLabel}
+            </Button>
           </div>
         ))}
       </CardContent>

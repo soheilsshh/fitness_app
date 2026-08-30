@@ -1,6 +1,9 @@
 package ai
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func TestValidateNutritionPlan_RejectsBadCalories(t *testing.T) {
 	badPlan := &NutritionPlanSchema{
@@ -53,7 +56,8 @@ func TestValidateNutritionPlan_AcceptsValid(t *testing.T) {
 			{
 				Name: "شام",
 				Items: []FoodItem{
-					{FoodName: "ماست", AmountG: 200, Calories: 150, ProteinG: 12},
+					{FoodName: "ماهی", AmountG: 180, Calories: 220, ProteinG: 35},
+					{FoodName: "سبزیجات", AmountG: 150, Calories: 90, ProteinG: 4},
 				},
 			},
 		},
@@ -84,6 +88,32 @@ func TestValidateWorkoutPlan_AcceptsValid(t *testing.T) {
 	}
 	if err := ValidateWorkoutPlan(plan); err != nil {
 		t.Fatalf("valid workout rejected: %v", err)
+	}
+}
+
+func TestValidateMeal_RejectsFruitAsLunch(t *testing.T) {
+	meal := &MealSchema{
+		Name: "ناهار",
+		Items: []FoodItem{
+			{FoodName: "سیب", AmountG: 100, Calories: 100},
+		},
+	}
+	if err := ValidateMeal(meal); err == nil {
+		t.Fatal("expected lunch of only fruit to be rejected")
+	}
+}
+
+func TestValidateWeeklyPlan_RejectsEmptyDays(t *testing.T) {
+	bad := &NutritionWeekSchema{GoalType: GoalCut, TotalCalories: 1800, Days: nil}
+	if err := ValidateWeeklyPlan(bad); err == nil {
+		t.Fatal("expected error for empty weekly days")
+	}
+}
+
+func TestIsSchemaUnsupported_gapgptProviderError(t *testing.T) {
+	err := fmt.Errorf("%w: Provider returned error (request id: abc)", ErrUpstream)
+	if !isSchemaUnsupported(err) {
+		t.Fatal("GapGPT generic provider error should fall back to json_object")
 	}
 }
 

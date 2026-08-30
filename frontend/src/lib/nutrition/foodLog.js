@@ -153,3 +153,90 @@ export function extractNutritionTargets(program, dayKey) {
     proteinTarget: nutrition.proteinTarget || "",
   };
 }
+
+export function normalizeLogMealType(raw) {
+  const v = String(raw || "").toLowerCase().trim();
+  if (v === "breakfast" || v === "lunch" || v === "dinner" || v === "snack") return v;
+  if (v.startsWith("snack")) return "snack";
+  return "";
+}
+
+export function slotToLogMealType(slot) {
+  return normalizeLogMealType(slot);
+}
+
+function normalizeFoodName(name) {
+  return String(name || "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+}
+
+function plannedSame(a, b) {
+  const aType = slotToLogMealType(a?.mealSlot) || "snack";
+  const bType = slotToLogMealType(b?.mealSlot) || "snack";
+  if (aType !== bType) return false;
+  const aId = Number(a?.foodId) || 0;
+  const bId = Number(b?.foodId) || 0;
+  if (aId && bId) return aId === bId;
+  return normalizeFoodName(a?.title) === normalizeFoodName(b?.title);
+}
+
+function logMatchesPlanned(meal, item) {
+  const plannedType = slotToLogMealType(meal?.mealSlot) || "snack";
+  if (plannedType !== normalizeLogMealType(item?.mealType)) return false;
+  const pId = Number(meal?.foodId) || 0;
+  const lId = Number(item?.foodId) || 0;
+  if (pId && lId) return pId === lId;
+  return normalizeFoodName(meal?.title) === normalizeFoodName(item?.foodName);
+}
+
+export function extractDayNutrition(program, dayKey) {
+  const days = program?.planByDay || {};
+  const pick = (key) => {
+    const n = days[key]?.nutrition;
+    return {
+      meals: n?.meals || [],
+      caloriesTarget: Number(n?.caloriesTarget) || 0,
+      proteinTarget: n?.proteinTarget || "",
+    };
+  };
+  const primary = pick(dayKey);
+  if (primary.meals.length) return { ...primary, fallback: false };
+  for (const key of ["sat", "sun", "mon", "tue", "wed", "thu", "fri"]) {
+    if (key === dayKey) continue;
+    const alt = pick(key);
+    if (alt.meals.length) {
+      return {
+        meals: alt.meals,
+        caloriesTarget: primary.caloriesTarget || alt.caloriesTarget,
+        proteinTarget: primary.proteinTarget || alt.proteinTarget,
+        fallback: true,
+      };
+    }
+  }
+  return { ...primary, fallback: false };
+}
+
+export function matchingLogForPlanned(meal, index, allPlanned, logs) {
+  const rank = allPlanned
+    .map((m, i) => ({ m, i }))
+    .filter(({ m }) => plannedSame(m, meal))
+    .findIndex(({ i }) => i === index);
+  const matches = (logs || []).filter((item) => logMatchesPlanned(meal, item));
+  return matches[rank] || null;
+}
+
+export function plannedMealToPickerMeal(meal) {
+  return {
+    title: meal.title,
+    detail: meal.detail || "",
+    calories: meal.calories || 0,
+    protein: meal.protein || 0,
+    carbs: meal.carbs || 0,
+    fat: meal.fat || 0,
+    foodId: meal.foodId || undefined,
+    multiplier: meal.multiplier || 1,
+    mealType: slotToLogMealType(meal.mealSlot) || "snack",
+  };
+}

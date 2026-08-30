@@ -1034,7 +1034,7 @@ function PersonalRecordsCard({ loading, items }) {
       ) : items.length === 0 ? (
         <EmptyState
           icon={Trophy}
-          text="هنوز رکوردی ثبت نکرده‌اید. بالاترین وزنه‌هایی که جابه‌جا می‌کنید را اینجا ثبت کنید."
+          text="هنوز رکوردی ثبت نکرده‌اید. بهترین وزنه، بیشترین تکرار یا طولانی‌ترین نگه‌داشتن خود را اینجا ثبت کنید."
         />
       ) : (
         <ul className="flex flex-col gap-4">

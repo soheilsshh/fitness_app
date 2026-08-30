@@ -61,12 +61,21 @@ type WorkoutHistoryListResponse struct {
 
 // PersonalRecordDTO is one PR-history event for GET /me/personal-records.
 type PersonalRecordDTO struct {
-	ExerciseName   string  `json:"exerciseName"`
-	ExerciseID     *uint   `json:"exerciseId,omitempty"`
-	WeightKg       float64 `json:"weightKg"`
-	Reps           int     `json:"reps"`
-	PreviousBestKg float64 `json:"previousBestKg"`
-	AchievedAt     string  `json:"achievedAt"`
+	ExerciseName string `json:"exerciseName"`
+	ExerciseID   *uint  `json:"exerciseId,omitempty"`
+	// MetricKind is "weight", "reps" or "hold" — which of the value pairs below
+	// the client should render as the record.
+	MetricKind          string  `json:"metricKind"`
+	// MuscleGroup is the canonical group code; MuscleGroupLabel is its Persian name.
+	MuscleGroup      string `json:"muscleGroup,omitempty"`
+	MuscleGroupLabel string `json:"muscleGroupLabel,omitempty"`
+	WeightKg            float64 `json:"weightKg"`
+	Reps                int     `json:"reps"`
+	HoldSeconds         int     `json:"holdSeconds,omitempty"`
+	PreviousBestKg      float64 `json:"previousBestKg"`
+	PreviousBestReps    int     `json:"previousBestReps,omitempty"`
+	PreviousBestHoldSec int     `json:"previousBestHoldSec,omitempty"`
+	AchievedAt          string  `json:"achievedAt"`
 }
 
 type LogSetInput struct {
@@ -75,6 +84,18 @@ type LogSetInput struct {
 	SetNumber    int     `json:"setNumber"`
 	WeightKg     float64 `json:"weightKg"`
 	Reps         int     `json:"reps"`
+	// HoldSeconds is the duration of an isometric set (plank, wall sit, L-sit).
+	HoldSeconds int `json:"holdSeconds,omitempty"`
+	// MetricKind overrides the automatic weight/reps/hold detection. Optional —
+	// the frontend sends it so the user's choice of input wins over the guess.
+	MetricKind string `json:"metricKind,omitempty"`
+	// Equipment is the catalog equipment label, passed through so bodyweight
+	// movements are recognised without a second database lookup.
+	Equipment string `json:"equipment,omitempty"`
+	// Target is the catalog muscle ("target") when the set came from a catalog
+	// exercise. Empty for coach-template and AI-generated movements, which are
+	// then classified from their name.
+	Target string `json:"target,omitempty"`
 }
 
 type LogWorkoutSessionRequest struct {
@@ -114,6 +135,47 @@ type WorkoutSessionVoiceNoteResult struct {
 
 // PersonalRecordsQuery narrows GET /me/personal-records: by exact exercise
 // name, by muscle-group ("target"), and/or a date range. All optional.
+// PersonalRecordShareRequest is the "ارسال برای مربی" payload. MetricKind
+// decides which value the notification text quotes — a bodyweight record has
+// no kilos to report.
+type PersonalRecordShareRequest struct {
+	ExerciseName string  `json:"exerciseName"`
+	MetricKind   string  `json:"metricKind,omitempty"`
+	WeightKg     float64 `json:"weightKg,omitempty"`
+	Reps         int     `json:"reps,omitempty"`
+	HoldSeconds  int     `json:"holdSeconds,omitempty"`
+}
+
+// formatPersonalRecord renders a record the way it should read in Persian for
+// its metric kind.
+func formatPersonalRecord(exerciseName string, req PersonalRecordShareRequest) string {
+	kind := strings.ToLower(strings.TrimSpace(req.MetricKind))
+	if !ValidMetricKind(kind) {
+		kind = MetricKindWeight
+		if req.WeightKg <= 0 {
+			if req.HoldSeconds > 0 {
+				kind = MetricKindHold
+			} else {
+				kind = MetricKindReps
+			}
+		}
+	}
+	switch kind {
+	case MetricKindReps:
+		return fmt.Sprintf("%s با %d تکرار", exerciseName, req.Reps)
+	case MetricKindHold:
+		if req.HoldSeconds >= 60 && req.HoldSeconds%60 == 0 {
+			return fmt.Sprintf("%s با %d دقیقه نگه‌داشتن", exerciseName, req.HoldSeconds/60)
+		}
+		return fmt.Sprintf("%s با %d ثانیه نگه‌داشتن", exerciseName, req.HoldSeconds)
+	default:
+		if req.Reps > 0 {
+			return fmt.Sprintf("%s با %.1f کیلوگرم × %d تکرار", exerciseName, req.WeightKg, req.Reps)
+		}
+		return fmt.Sprintf("%s با %.1f کیلوگرم", exerciseName, req.WeightKg)
+	}
+}
+
 type PersonalRecordsQuery struct {
 	ExerciseName string
 	Target       string
@@ -132,9 +194,11 @@ type WorkoutHistoryService interface {
 	// ListExerciseTargets returns the distinct muscle-group values for the
 	// personal-records body-part selector.
 	ListExerciseTargets(ctx context.Context) ([]string, error)
+	// ListMuscleGroups returns the standard taxonomy with Persian labels.
+	ListMuscleGroups(ctx context.Context) []MuscleGroupInfo
 	// NotifyCoachOfPersonalRecord sends the student's coach an in-app
 	// notification about a PR the student chose to share.
-	NotifyCoachOfPersonalRecord(ctx context.Context, userID uint, exerciseName string, weightKg float64, reps int) error
+	NotifyCoachOfPersonalRecord(ctx context.Context, userID uint, req PersonalRecordShareRequest) error
 	// SubmitSurvey fills in the optional post-workout micro-survey fields on
 	// an already-logged session.
 	SubmitSurvey(ctx context.Context, userID, sessionID uint, req *WorkoutSessionSurveyRequest) error
@@ -246,22 +310,14 @@ func (s *workoutHistoryService) ListPersonalRecords(ctx context.Context, userID 
 		q = q.Where("LOWER(exercise_name) = ?", strings.ToLower(name))
 	}
 	if target != "" {
-		var exerciseIDs []uint
-		var exerciseNames []string
-		s.db.WithContext(ctx).Model(&models.Exercise{}).
-			Where("target = ? AND is_active = ?", target, true).
-			Pluck("id", &exerciseIDs)
-		s.db.WithContext(ctx).Model(&models.Exercise{}).
-			Where("target = ? AND is_active = ?", target, true).
-			Pluck("name", &exerciseNames)
-		if len(exerciseIDs) == 0 && len(exerciseNames) == 0 {
+		// `target` is a canonical muscle-group code (service.MuscleGroup*).
+		// Records store it directly, so template- and AI-sourced movements are
+		// filterable too — they were never in the catalog and so never had a
+		// catalog `target` to join against.
+		if MuscleGroupLabel(target) == "" {
 			return []PersonalRecordDTO{}, nil
 		}
-		lowerNames := make([]string, len(exerciseNames))
-		for i, n := range exerciseNames {
-			lowerNames[i] = strings.ToLower(n)
-		}
-		q = q.Where("exercise_id IN ? OR LOWER(exercise_name) IN ?", exerciseIDs, lowerNames)
+		q = q.Where("muscle_group = ?", target)
 	}
 	if query.From != nil {
 		q = q.Where("achieved_at >= ?", *query.From)
@@ -286,10 +342,12 @@ func (s *workoutHistoryService) ListPersonalRecords(ctx context.Context, userID 
 
 	// No filter requested: collapse newest-first rows down to the latest PR
 	// per exercise (records is already ordered newest-first).
+	// Keyed by exercise *and* metric kind: a student can hold both a weighted
+	// PR and a bodyweight rep PR on the same movement, and both should show.
 	seen := map[string]bool{}
 	latest := make([]models.PersonalRecord, 0, len(records))
 	for _, r := range records {
-		key := strings.ToLower(strings.TrimSpace(r.ExerciseName))
+		key := strings.ToLower(strings.TrimSpace(r.ExerciseName)) + "|" + r.MetricKind
 		if seen[key] {
 			continue
 		}
@@ -299,22 +357,32 @@ func (s *workoutHistoryService) ListPersonalRecords(ctx context.Context, userID 
 	return personalRecordsToDTO(latest), nil
 }
 
-// ListExerciseTargets returns the distinct muscle-group ("target") values
-// from the active exercise catalog, for the personal-records body-part
-// selector — sourced from real seeded data rather than a hardcoded list.
+// ListExerciseTargets returns the standard muscle-group taxonomy for the
+// personal-records picker, as canonical group codes. It used to return whatever
+// distinct `target` strings the catalog happened to hold, which meant
+// coach-template and AI-generated movements — neither of which is in the
+// catalog — could never be selected.
 func (s *workoutHistoryService) ListExerciseTargets(ctx context.Context) ([]string, error) {
-	var targets []string
-	err := s.db.WithContext(ctx).Model(&models.Exercise{}).
-		Where("is_active = ? AND target != ''", true).
-		Distinct("target").Order("target ASC").Pluck("target", &targets).Error
-	return targets, err
+	codes := make([]string, 0, len(MuscleGroupCatalog))
+	for _, group := range MuscleGroupCatalog {
+		if group.Recordable {
+			codes = append(codes, group.Code)
+		}
+	}
+	return codes, nil
+}
+
+// ListMuscleGroups returns the standard taxonomy with Persian labels, for a
+// picker that needs more than the bare codes.
+func (s *workoutHistoryService) ListMuscleGroups(ctx context.Context) []MuscleGroupInfo {
+	return MuscleGroupCatalog
 }
 
 // NotifyCoachOfPersonalRecord sends the student's assigned coach an in-app
 // notification summarizing a PR the student wants to share (roadmap: "ارسال
 // برای مربی" button on the Personal Records tab).
-func (s *workoutHistoryService) NotifyCoachOfPersonalRecord(ctx context.Context, userID uint, exerciseName string, weightKg float64, reps int) error {
-	exerciseName = strings.TrimSpace(exerciseName)
+func (s *workoutHistoryService) NotifyCoachOfPersonalRecord(ctx context.Context, userID uint, req PersonalRecordShareRequest) error {
+	exerciseName := strings.TrimSpace(req.ExerciseName)
 	if exerciseName == "" {
 		return ErrAIInvalidInput
 	}
@@ -330,20 +398,30 @@ func (s *workoutHistoryService) NotifyCoachOfPersonalRecord(ctx context.Context,
 		UserID:  sub.CoachID,
 		Type:    models.NotificationTypeStudentPersonalRecord,
 		Title:   "رکورد جدید یک دانشجو",
-		Message: fmt.Sprintf("%s رکورد تازه‌ای ثبت کرد: %s با %.1f کیلوگرم × %d تکرار", user.Name, exerciseName, weightKg, reps),
+		Message: fmt.Sprintf("%s رکورد تازه‌ای ثبت کرد: %s", user.Name, formatPersonalRecord(exerciseName, req)),
 	})
 }
 
 func personalRecordsToDTO(records []models.PersonalRecord) []PersonalRecordDTO {
 	out := make([]PersonalRecordDTO, 0, len(records))
 	for _, r := range records {
+		kind := r.MetricKind
+		if kind == "" {
+			kind = MetricKindWeight // rows written before metric kinds existed
+		}
 		out = append(out, PersonalRecordDTO{
-			ExerciseName:   r.ExerciseName,
-			ExerciseID:     r.ExerciseID,
-			WeightKg:       r.WeightKg,
-			Reps:           r.Reps,
-			PreviousBestKg: r.PreviousBestKg,
-			AchievedAt:     r.AchievedAt.Format(time.RFC3339),
+			ExerciseName:        r.ExerciseName,
+			ExerciseID:          r.ExerciseID,
+			MetricKind:          kind,
+			MuscleGroup:         r.MuscleGroup,
+			MuscleGroupLabel:    MuscleGroupLabel(r.MuscleGroup),
+			WeightKg:            r.WeightKg,
+			Reps:                r.Reps,
+			HoldSeconds:         r.HoldSeconds,
+			PreviousBestKg:      r.PreviousBestKg,
+			PreviousBestReps:    r.PreviousBestReps,
+			PreviousBestHoldSec: r.PreviousBestHoldSec,
+			AchievedAt:          r.AchievedAt.Format(time.RFC3339),
 		})
 	}
 	return out
@@ -455,7 +533,8 @@ func (s *workoutHistoryService) LogSession(ctx context.Context, userID uint, req
 	// Persist any logged sets (weight x reps), flagging new personal records
 	// (roadmap BE-3.2) before writing them.
 	var newPRExercises []string
-	if logs := buildSetLogs(userID, sub.ID, session.ID, now, req.Sets); len(logs) > 0 {
+	var loggedSets []models.WorkoutSetLog
+	if logs := buildSetLogs(userID, sub.ID, session.ID, now, s.currentBodyweight(ctx, userID), req.Sets); len(logs) > 0 {
 		var previousBest map[int]float64
 		newPRExercises, previousBest = s.markPersonalRecords(ctx, userID, logs)
 		if err := s.db.WithContext(ctx).Create(&logs).Error; err != nil {
@@ -466,6 +545,7 @@ func (s *workoutHistoryService) LogSession(ctx context.Context, userID uint, req
 				return nil, err
 			}
 		}
+		loggedSets = logs
 	}
 
 	if s.achievementSvc != nil {
@@ -473,6 +553,17 @@ func (s *workoutHistoryService) LogSession(ctx context.Context, userID uint, req
 		s.achievementSvc.HandleWeeklyProgramChecked(ctx, userID)
 		for _, exerciseName := range newPRExercises {
 			s.achievementSvc.HandleNewPR(ctx, userID, exerciseName)
+		}
+		// Calisthenics ladders are checked on every set, not only PR sets: a
+		// student can cross the 25-push-up tier on a set that ties, rather than
+		// beats, their previous best.
+		for i := range loggedSets {
+			switch loggedSets[i].MetricKind {
+			case MetricKindReps:
+				s.achievementSvc.HandleBodyweightSet(ctx, userID, loggedSets[i].ExerciseName, MetricKindReps, loggedSets[i].Reps)
+			case MetricKindHold:
+				s.achievementSvc.HandleBodyweightSet(ctx, userID, loggedSets[i].ExerciseName, MetricKindHold, loggedSets[i].HoldSeconds)
+			}
 		}
 	}
 
@@ -560,38 +651,74 @@ func (s *workoutHistoryService) TranscribeSurveyVoiceNote(ctx context.Context, u
 	return &WorkoutSessionVoiceNoteResult{Text: summary.Text}, nil
 }
 
-// markPersonalRecords compares each new set's weight against the user's prior
-// best for the same exercise (case-insensitive) and flags IsPR in place when
-// it's a new max. Returns the distinct exercise names that got a new PR, plus
-// each flagged log's previous best (by index into logs) so the caller can
-// build PersonalRecord history rows once the logs have DB-assigned IDs.
-// Uses a running max within the current batch too, so e.g. set 3 beating set 1
-// of the same session is still detected correctly.
+// setMetricValue is the number that has to go up for a set to be a new record:
+// kilos for weight PRs, reps for bodyweight PRs, seconds for isometric holds.
+func setMetricValue(log models.WorkoutSetLog) float64 {
+	switch log.MetricKind {
+	case MetricKindReps:
+		return float64(log.Reps)
+	case MetricKindHold:
+		return float64(log.HoldSeconds)
+	default:
+		return log.WeightKg
+	}
+}
+
+// prColumnForKind maps a metric kind onto the WorkoutSetLog column that holds
+// its value, for the "previous best" lookup.
+func prColumnForKind(kind string) string {
+	switch kind {
+	case MetricKindReps:
+		return "reps"
+	case MetricKindHold:
+		return "hold_seconds"
+	default:
+		return "weight_kg"
+	}
+}
+
+// markPersonalRecords compares each new set against the user's prior best for
+// the same exercise *and the same metric kind* (case-insensitive on the name)
+// and flags IsPR in place when it's a new best. Returns the distinct exercise
+// names that got a new PR, plus each flagged log's previous best (by index into
+// logs) so the caller can build PersonalRecord history rows once the logs have
+// DB-assigned IDs. Uses a running max within the current batch too, so e.g.
+// set 3 beating set 1 of the same session is still detected correctly.
+//
+// Keying on the metric kind is what lets a bodyweight student set records:
+// "شنا 30 تکرار" is compared against their previous best rep count, never
+// against a weight.
 func (s *workoutHistoryService) markPersonalRecords(ctx context.Context, userID uint, logs []models.WorkoutSetLog) ([]string, map[int]float64) {
-	priorMax := map[string]float64{}
+	type prKey struct {
+		name string
+		kind string
+	}
+	priorMax := map[prKey]float64{}
 	prSet := map[string]bool{}
 	previousBest := map[int]float64{}
 
 	for i := range logs {
-		key := strings.ToLower(strings.TrimSpace(logs[i].ExerciseName))
-		if key == "" {
+		name := strings.ToLower(strings.TrimSpace(logs[i].ExerciseName))
+		if name == "" {
 			continue
 		}
+		key := prKey{name: name, kind: logs[i].MetricKind}
 		best, known := priorMax[key]
 		if !known {
-			var maxWeight *float64
+			var maxValue *float64
 			_ = s.db.WithContext(ctx).Model(&models.WorkoutSetLog{}).
-				Where("user_id = ? AND LOWER(exercise_name) = ?", userID, key).
-				Select("MAX(weight_kg)").Scan(&maxWeight).Error
-			if maxWeight != nil {
-				best = *maxWeight
+				Where("user_id = ? AND LOWER(exercise_name) = ? AND metric_kind = ?", userID, name, key.kind).
+				Select("MAX(" + prColumnForKind(key.kind) + ")").Scan(&maxValue).Error
+			if maxValue != nil {
+				best = *maxValue
 			}
 			priorMax[key] = best
 		}
-		if logs[i].WeightKg > best && logs[i].WeightKg > 0 {
+		value := setMetricValue(logs[i])
+		if value > best && value > 0 {
 			logs[i].IsPR = true
 			previousBest[i] = best
-			priorMax[key] = logs[i].WeightKg
+			priorMax[key] = value
 			prSet[logs[i].ExerciseName] = true
 		}
 	}
@@ -612,37 +739,91 @@ func buildPersonalRecords(userID uint, achievedAt time.Time, logs []models.Worko
 		if !logs[i].IsPR {
 			continue
 		}
-		records = append(records, models.PersonalRecord{
+		record := models.PersonalRecord{
 			UserID:          userID,
 			ExerciseName:    logs[i].ExerciseName,
 			ExerciseID:      logs[i].ExerciseID,
+			MetricKind:      logs[i].MetricKind,
+			MuscleGroup:     logs[i].MuscleGroup,
 			WeightKg:        logs[i].WeightKg,
 			Reps:            logs[i].Reps,
-			PreviousBestKg:  previousBest[i],
+			HoldSeconds:     logs[i].HoldSeconds,
 			WorkoutSetLogID: logs[i].ID,
 			AchievedAt:      achievedAt,
-		})
+		}
+		switch logs[i].MetricKind {
+		case MetricKindReps:
+			record.PreviousBestReps = int(previousBest[i])
+		case MetricKindHold:
+			record.PreviousBestHoldSec = int(previousBest[i])
+		default:
+			record.PreviousBestKg = previousBest[i]
+		}
+		records = append(records, record)
 	}
 	return records
 }
 
-// buildSetLogs converts validated set inputs into WorkoutSetLog rows, skipping
-// entries with no exercise name or a non-positive weight.
-func buildSetLogs(userID, subID, sessionID uint, performedAt time.Time, inputs []LogSetInput) []models.WorkoutSetLog {
+// buildSetLogs converts validated set inputs into WorkoutSetLog rows. A set is
+// kept when it records *any* effort — a weight, a rep count, or a hold in
+// seconds — so bodyweight and isometric work is no longer silently dropped.
+func buildSetLogs(userID, subID, sessionID uint, performedAt time.Time, bodyweightKg float64, inputs []LogSetInput) []models.WorkoutSetLog {
 	logs := make([]models.WorkoutSetLog, 0, len(inputs))
 	for i, in := range inputs {
 		name := strings.TrimSpace(in.ExerciseName)
-		if name == "" || in.WeightKg <= 0 {
+		if name == "" {
 			continue
 		}
-		setNo := in.SetNumber
-		if setNo <= 0 {
-			setNo = i + 1
+		weight := in.WeightKg
+		if weight < 0 {
+			weight = 0
 		}
 		reps := in.Reps
 		if reps < 0 {
 			reps = 0
 		}
+		hold := in.HoldSeconds
+		if hold < 0 {
+			hold = 0
+		}
+		if weight == 0 && reps == 0 && hold == 0 {
+			continue
+		}
+
+		kind := strings.ToLower(strings.TrimSpace(in.MetricKind))
+		if !ValidMetricKind(kind) {
+			kind = DetectMetricKind(name, in.Equipment, weight > 0)
+		}
+		// A kind the set carries no value for would never beat anything; fall
+		// back to whatever the user did enter.
+		switch {
+		case kind == MetricKindWeight && weight == 0:
+			if hold > 0 {
+				kind = MetricKindHold
+			} else {
+				kind = MetricKindReps
+			}
+		case kind == MetricKindHold && hold == 0:
+			if weight > 0 {
+				kind = MetricKindWeight
+			} else {
+				kind = MetricKindReps
+			}
+		case kind == MetricKindReps && reps == 0:
+			if weight > 0 {
+				kind = MetricKindWeight
+			} else if hold > 0 {
+				kind = MetricKindHold
+			} else {
+				continue
+			}
+		}
+
+		setNo := in.SetNumber
+		if setNo <= 0 {
+			setNo = i + 1
+		}
+
 		logs = append(logs, models.WorkoutSetLog{
 			UserID:           userID,
 			SubscriptionID:   subID,
@@ -650,8 +831,12 @@ func buildSetLogs(userID, subID, sessionID uint, performedAt time.Time, inputs [
 			ExerciseName:     name,
 			ExerciseID:       in.ExerciseID,
 			SetNumber:        setNo,
-			WeightKg:         in.WeightKg,
+			WeightKg:         weight,
 			Reps:             reps,
+			HoldSeconds:      hold,
+			MetricKind:       kind,
+			MuscleGroup:      ClassifyMuscleGroup(name, in.Target),
+			BodyweightKg:     bodyweightKg,
 			PerformedAt:      performedAt,
 		})
 	}
@@ -678,6 +863,20 @@ func workoutSessionToDTO(sess models.WorkoutSession, coachName string) WorkoutHi
 		CompletedAt:        sess.CompletedAt.Format(time.RFC3339),
 		CoachName:          coachName,
 	}
+}
+
+// currentBodyweight snapshots the student's latest recorded weight so that
+// bodyweight sets carry the load they were actually performed against.
+// Returns 0 when unknown, which callers treat as "not recorded".
+func (s *workoutHistoryService) currentBodyweight(ctx context.Context, userID uint) float64 {
+	var user models.User
+	if err := s.db.WithContext(ctx).Select("weight_kg").First(&user, userID).Error; err != nil {
+		return 0
+	}
+	if user.WeightKg == nil || *user.WeightKg <= 0 {
+		return 0
+	}
+	return *user.WeightKg
 }
 
 func (s *workoutHistoryService) resolveCoachName(ctx context.Context, coachID uint) string {

@@ -1,12 +1,6 @@
 "use client";
 
 import { Apple, Egg, Fish, Utensils } from "lucide-react";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -187,53 +181,40 @@ function SummaryTile({ label, value, unit, tone }) {
   );
 }
 
-function MealAccordionItem({ meal, index, dayKey }) {
+function MealRow({ meal }) {
   const hasMacros = mealHasMacros(meal);
   const foodId = meal.foodId || meal.food_id;
+  const showMultiplier = hasMacros && meal.multiplier && meal.multiplier !== 1;
 
   return (
-    <AccordionItem value={`${dayKey}-meal-${index}`} className="border-b last:border-b-0">
-      <AccordionTrigger className="py-3 hover:no-underline">
-        <div className="flex w-full min-w-0 items-start gap-3 pe-2 text-start">
-          <MealIcon title={meal.title} />
-          <div className="min-w-0 flex-1 space-y-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-sm font-semibold">{meal.title}</span>
-              {foodId ? (
-                <Badge variant="secondary" className="text-[10px]">
-                  کاتالوگ
-                </Badge>
-              ) : hasMacros ? (
-                <Badge variant="outline" className="text-[10px]">
-                  دستی
-                </Badge>
-              ) : null}
-            </div>
-            {meal.detail ? (
-              <p className="text-xs text-muted-foreground">{meal.detail}</p>
+    <div className="border-b px-2 py-3 last:border-b-0 sm:px-0">
+      <div className="flex w-full min-w-0 items-start gap-3 text-start">
+        <MealIcon title={meal.title} />
+        <div className="min-w-0 flex-1 space-y-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm font-semibold">{meal.title}</span>
+            {foodId ? (
+              <Badge variant="secondary" className="text-[10px]">
+                کاتالوگ
+              </Badge>
+            ) : hasMacros ? (
+              <Badge variant="outline" className="text-[10px]">
+                دستی
+              </Badge>
             ) : null}
-            {hasMacros ? <MacroRow meal={meal} compact /> : null}
           </div>
+          {meal.detail ? (
+            <p className="text-xs text-muted-foreground">{meal.detail}</p>
+          ) : null}
+          {hasMacros ? <MacroRow meal={meal} compact /> : null}
+          {showMultiplier ? (
+            <p className="text-xs text-muted-foreground">
+              ضریب مصرف: ×{roundMacro(meal.multiplier).toLocaleString("fa-IR")}
+            </p>
+          ) : null}
         </div>
-      </AccordionTrigger>
-      <AccordionContent className="pb-3 ps-12 text-sm text-muted-foreground">
-        {hasMacros ? (
-          <div className="space-y-2">
-            <p className="text-xs">جزئیات ماکرو این آیتم:</p>
-            <MacroRow meal={meal} />
-            {meal.multiplier && meal.multiplier !== 1 ? (
-              <p className="text-xs">
-                ضریب مصرف: ×{roundMacro(meal.multiplier).toLocaleString("fa-IR")}
-              </p>
-            ) : null}
-          </div>
-        ) : (
-          <p className="whitespace-pre-wrap leading-relaxed">
-            {meal.detail || "جزئیات بیشتری ثبت نشده است."}
-          </p>
-        )}
-      </AccordionContent>
-    </AccordionItem>
+      </div>
+    </div>
   );
 }
 
@@ -268,16 +249,14 @@ export default function NutritionDayView({ nutrition, dayKey }) {
                     ({group.meals.length.toLocaleString("fa-IR")} آیتم)
                   </span>
                 </p>
-                <Accordion type="multiple" className="w-full">
+                <div className="w-full">
                   {group.meals.map((meal, index) => (
-                    <MealAccordionItem
+                    <MealRow
                       key={`${dayKey}-${group.value}-${meal.foodId || meal.title}-${index}`}
                       meal={meal}
-                      index={index}
-                      dayKey={dayKey}
                     />
                   ))}
-                </Accordion>
+                </div>
               </div>
             ),
           )}
@@ -286,16 +265,14 @@ export default function NutritionDayView({ nutrition, dayKey }) {
               <p className="px-3 pt-3 text-sm font-semibold sm:px-0">
                 {mealSlotLabel("")}
               </p>
-              <Accordion type="multiple" className="w-full">
+              <div className="w-full">
                 {other.map((meal, index) => (
-                  <MealAccordionItem
+                  <MealRow
                     key={`${dayKey}-other-${meal.foodId || meal.title}-${index}`}
                     meal={meal}
-                    index={index}
-                    dayKey={dayKey}
                   />
                 ))}
-              </Accordion>
+              </div>
             </div>
           ) : null}
         </div>

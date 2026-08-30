@@ -14,6 +14,7 @@ import (
 
 	"github.com/yourusername/fitness-management/internal/models"
 	"github.com/yourusername/fitness-management/internal/repository"
+	"github.com/yourusername/fitness-management/internal/service"
 )
 
 const (
@@ -167,9 +168,21 @@ func seedWorkoutTemplates(
 
 	log.Printf("[template-seed] loading %d workout templates from %s", len(payload.Templates), filePath)
 
-	created, skipped, failed, unmatchedExercises := 0, 0, 0, 0
+	// The dump repeats whole programs verbatim under new titles; keep one of each.
+	templates, duplicates := dedupeWorkoutTemplates(payload.Templates)
+	if duplicates > 0 {
+		log.Printf("[template-seed] dropped %d duplicate templates (identical content)", duplicates)
+	}
 
-	for _, src := range payload.Templates {
+	created, skipped, failed, unmatchedExercises, rejected := 0, 0, 0, 0, 0
+
+	for _, src := range templates {
+		title := cleanTemplateTitle(src.Title)
+		if isPlaceholderTemplateTitle(title) || len(src.Days) == 0 {
+			rejected++
+			continue
+		}
+
 		exists, err := templateRepo.WorkoutTemplateExistsBySourceID(ctx, src.ID)
 		if err != nil {
 			failed++
@@ -183,7 +196,7 @@ func seedWorkoutTemplates(
 
 		template := &models.WorkoutTemplate{
 			SourceID: src.ID,
-			Title:    strings.TrimSpace(src.Title),
+			Title:    title,
 			Type:     strings.TrimSpace(src.Type),
 			Gender:   strings.TrimSpace(src.Gender),
 			Location: strings.TrimSpace(src.Location),
@@ -208,8 +221,8 @@ func seedWorkoutTemplates(
 		created++
 	}
 
-	log.Printf("[template-seed] workout complete: total=%d created=%d skipped=%d failed=%d unmatched_exercises=%d",
-		len(payload.Templates), created, skipped, failed, unmatchedExercises)
+	log.Printf("[template-seed] workout complete: total=%d duplicates=%d created=%d skipped=%d rejected=%d failed=%d unmatched_exercises=%d",
+		len(payload.Templates), duplicates, created, skipped, rejected, failed, unmatchedExercises)
 	return nil
 }
 
@@ -238,7 +251,7 @@ func buildWorkoutTemplateItems(
 
 			for _, move := range block.MovementList {
 				order++
-				title := strings.TrimSpace(move.ActionTitle)
+				title := cleanMovementTitle(move.ActionTitle)
 				if title == "" {
 					title = fmt.Sprintf("حرکت %d", move.ActionID)
 				}
@@ -249,9 +262,14 @@ func buildWorkoutTemplateItems(
 				}
 
 				item := models.TemplateProgramItem{
-					DayNumber:         dayNum,
-					OrderIndex:        order,
-					Exercise:          title,
+					DayNumber:  dayNum,
+					OrderIndex: order,
+					Exercise:   title,
+					// Template movements are free-text Persian and mostly not
+					// linked to the catalog, so the muscle group is classified
+					// from the name — that is what lets a program built from a
+					// template feed the personal-records screen.
+					MuscleGroup:       service.ClassifyMuscleGroup(title, ""),
 					Notes:             notes,
 					SupersetID:        supersetID,
 					WorkoutSystemType: systemType,

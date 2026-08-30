@@ -16,7 +16,16 @@ function Stat({ label, value, target }) {
   );
 }
 
-export default function DailySummaryBar({ totals, targets, onConfirm, confirming, confirmed }) {
+export default function DailySummaryBar({
+  totals,
+  targets,
+  onConfirm,
+  confirming,
+  confirmed,
+  onApply,
+  applying,
+  applied,
+}) {
   return (
     <Card className="sticky bottom-3">
       <CardContent className="space-y-3 pt-5">
@@ -39,22 +48,39 @@ export default function DailySummaryBar({ totals, targets, onConfirm, confirming
             target={targets?.fatG ? `${targets.fatG}g` : ""}
           />
         </div>
-        <Button
-          type="button"
-          className="w-full gap-2"
-          disabled={confirming || confirmed}
-          onClick={onConfirm}
-        >
-          {confirming ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            <Check className="size-4" />
-          )}
-          {confirmed ? "برای تأیید مربی ارسال شد" : confirming ? "در حال ارسال..." : "تأیید برنامه"}
-        </Button>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Button
+            type="button"
+            className="h-11 w-full cursor-pointer gap-2"
+            disabled={confirming || confirmed || applying || applied}
+            onClick={onApply}
+          >
+            {applying ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Check className="size-4" />
+            )}
+            {applied ? "روی برنامه اصلی قرار گرفت" : applying ? "در حال اعمال..." : "بگذار روی برنامه اصلیم"}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            className="h-11 w-full cursor-pointer gap-2"
+            disabled={confirming || confirmed || applying}
+            onClick={onConfirm}
+          >
+            {confirming ? <Loader2 className="size-4 animate-spin" /> : null}
+            {confirmed ? "برای تأیید مربی ارسال شد" : confirming ? "در حال ارسال..." : "ارسال برای تأیید مربی"}
+          </Button>
+        </div>
+        {applied ? (
+          <p className="text-center text-xs text-muted-foreground">
+            این برنامه الان برنامه فعال تو است و در دفتر غذا دیده می‌شود.
+          </p>
+        ) : null}
         {confirmed ? (
           <p className="text-center text-xs text-muted-foreground">
-            برنامه برای مربی‌ات ارسال شد و بعد از تأییدش می‌توانی فعالش کنی — پایین همین صفحه را ببین.
+            برای مربی ارسال شد. بعد از تأیید او، روی برنامه اصلیت اعمال می‌شود.
           </p>
         ) : null}
       </CardContent>
